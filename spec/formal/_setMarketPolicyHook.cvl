@@ -1,0 +1,72 @@
+methods {
+    admin() returns address
+    _setMarketPolicyHook(address,address) returns uint256
+    markets(address) returns bool,uint256,uint256,address,address,uint256,uint256,uint256,uint256,uint256,uint256 
+}
+
+_setMarketPolicyHook(uint result, uint currentAdmin, address asset, address currentPolicyHook, address reqPolicyHook,address newPolicyHook, bool isListed)
+description "Failed to set market policy hook from $currentPolicyHook to $reqPolicyHook for $asset (result=$result, admin=$currentAdmin, newPolicyHook=newPolicyHook, isListed=$isListed)" {
+    // N.B. The implementation calls `policyHook.isPolicyHook()`
+    // which needs to return true for the call to _setMarketPolicyHook to succeed.
+    // We can't currently control or specify that, so we may get intermittent failures.
+
+    bool isListedT;
+    address currentPolicyHookT;
+    address newPolicyHookT;
+
+    // Free Variables
+    env e0; havoc e0;
+    env e1; havoc e1;
+    env e2; havoc e2;
+
+    // Strict ordering
+    static_require e1.block > e0.block;
+    static_require e2.block > e1.block;
+
+    // Capture current admin and collateral factor
+    static_require currentAdmin == sinvoke admin(e0);
+
+    isListedT, _, _, _, currentPolicyHookT, _, _, _, _, _, _ = sinvoke markets(e0, asset);
+
+    static_require isListed == isListedT;
+    static_require currentPolicyHook == currentPolicyHookT;
+
+    // Invoke set collateral factor
+    uint256 resultT = sinvoke _setMarketPolicyHook(e1, asset, reqPolicyHook);
+
+    static_require result == resultT;
+
+    _, _, _, _, newPolicyHookT, _, _, _, _, _, _ = sinvoke markets(e2, asset);
+
+    static_require newPolicyHook == newPolicyHookT;
+
+    static_assert (
+        (
+            // success
+            result == 0 &&
+            e1.msg.sender == currentAdmin &&
+            newPolicyHook == reqPolicyHook &&
+            isListed
+        ) ||
+        (
+            // fail unauthorized
+            result == 1 &&
+            e1.msg.sender != currentAdmin &&
+            newPolicyHook == currentPolicyHook
+        ) ||
+        (
+            // fail not listed
+            result == 10 &&
+            e1.msg.sender == currentAdmin &&
+            newPolicyHook == currentPolicyHook &&
+            !isListed
+        ) ||
+        (
+            // fail bad input
+            result == 5 &&
+            e1.msg.sender == currentAdmin &&
+            newPolicyHook == currentPolicyHook &&
+            isListed
+        )
+    );
+}

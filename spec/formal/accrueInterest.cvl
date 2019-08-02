@@ -1,0 +1,77 @@
+methods {
+    getCash() returns uint256
+    accrueInterest() returns uint256
+    interestRateModelGetBorrowRate() returns uint256, uint256
+    accrualBlockNumber() returns uint256
+    borrowIndex() returns uint256
+    totalBorrows() returns uint256
+    totalReserves() returns uint256
+    reserveFactorMantissa() returns uint256
+}
+
+accrueInterest(uint result)
+description "Break accrueInterest with result=$result, block delta is $delta" {
+    // Pre/action/post environments
+    env e0; havoc e0; // pre+action
+    env e1; havoc e1; // post
+
+    static_require e1.block.number >= e0.block.number;
+
+    // fetch pre
+    uint256 cTokenCashPre = sinvoke getCash(e0);
+    uint256 interestRateModelErr;
+    uint256 borrowRateMantissaPre;
+    interestRateModelErr, borrowRateMantissaPre = sinvoke interestRateModelGetBorrowRate(e0);
+    uint256 accrualBlockNumberPre = sinvoke accrualBlockNumber(e0);
+    uint256 borrowIndexPre = sinvoke borrowIndex(e0);
+    uint256 totalBorrowsPre = sinvoke totalBorrows(e0);
+    uint256 totalReservesPre = sinvoke totalReserves(e0);
+    uint256 reserveFactorPre = sinvoke reserveFactorMantissa(e0);
+
+    // internal computations
+    uint256 delta = e0.block.number-accrualBlockNumberPre;
+    uint256 simpleInterestFactor = delta*borrowRateMantissaPre;
+    uint256 interestAccumulated = (totalBorrowsPre * simpleInterestFactor) / 1000000000000000000; // div 1000000000000000000
+
+    // post expected
+    uint256 borrowIndexPostExpected = borrowIndexPre + (borrowIndexPre*simpleInterestFactor)/1000000000000000000; // div 1000000000000000000 the right multiplicand
+    uint256 totalBorrowsPostExpected = totalBorrowsPre + interestAccumulated;
+    uint256 totalReservesPostExpected = totalReservesPre + (interestAccumulated*reserveFactorPre)/1000000000000000000; // div 1000000000000000000 the right multiplicand
+
+    // Action!
+    static_require result == invoke accrueInterest(e0);
+    bool accrueInterestReverted = lastReverted;
+
+    // fetch post
+    uint256 accrualBlockNumberPost = sinvoke accrualBlockNumber(e1);
+    uint256 borrowIndexPostActual = sinvoke borrowIndex(e1);
+    uint256 totalBorrowsPostActual = sinvoke totalBorrows(e1);
+    uint256 totalReservesPostActual = sinvoke totalReserves(e1);
+
+    uint256 NO_ERROR = 0;
+    uint256 INTEREST_RATE_MODEL_ERROR = 5;
+    uint256 MATH_ERROR = 9;
+
+    // Guarantee return values
+    static_assert (!accrueInterestReverted) =>
+        (result == NO_ERROR ||
+         result == INTEREST_RATE_MODEL_ERROR ||
+         result == MATH_ERROR), "Got unexpected error code $result";
+
+    static_assert (!accrueInterestReverted => (result == INTEREST_RATE_MODEL_ERROR <=> interestRateModelErr != 0)), "Mismatch in case of interest rate model error";
+
+    static_assert (!accrueInterestReverted =>
+                   ((result != 0 || delta == 0) <=>
+                    (accrualBlockNumberPost == accrualBlockNumberPre &&
+                     borrowIndexPostActual == borrowIndexPre &&
+                     totalBorrowsPostActual == totalBorrowsPre &&
+                     totalReservesPostActual == totalReservesPre))), "Mismatch in error case";
+
+    static_assert (!accrueInterestReverted =>
+                   ((result == 0 /*&& delta > 0*/) <=>
+                    (accrualBlockNumberPost == e0.block.number &&
+                     borrowIndexPostActual == borrowIndexPostExpected &&
+                     totalBorrowsPostActual == totalBorrowsPostExpected &&
+                     totalReservesPostActual == totalReservesPostExpected
+                     ))), "Mismatch in no error case: borrowIndex: pre=$borrowIndexPre, actual=$borrowIndexPostActual, expected=$borrowIndexPostExpected; totalBorrows: pre=$totalBorrowsPre, actual=$totalBorrowsPostActual, expected=$totalBorrowsPostExpected; totalReserves: pre=$totalReservesPre, acutal=$totalReservesPostActual, expected=$totalReservesPostExpected";
+}

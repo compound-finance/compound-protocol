@@ -1,0 +1,138 @@
+Macro NewBorrow borrowAmount borrowRate user=Geoff
+    PricedComptroller 0.5 20
+    Comptroller LiquidationIncentive 1.1
+    ListedCToken BAT cBAT
+    ListedEtherToken cETH initialExchangeRate:0.05e9
+    PriceOracle SetPrice cBAT 0.001
+    SetCollateralFactor cBAT collateralFactor:0.5
+    Donate cETH 0.001e18
+    SimpleBorrow user borrowAmount
+
+Macro SimpleBorrow user borrowAmount
+    Prep user 100e18 BAT cBAT
+    Mint user 100e18 cBAT
+    EnterMarkets user cETH cBAT
+    Assert Equal (Comptroller Liquidity Geoff) 0.05e18
+    Expect Changes (EtherBalance user) +0.001e18
+    Expect Changes (EtherBalance cETH) -0.001e18
+    BorrowEth user borrowAmount cETH
+
+Test "Insufficient shortfall"
+    NewBorrow borrowAmount:0.001e18 borrowRate:0.0005
+    Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
+    Assert Equal (CToken cETH TotalBorrows) 0.001e18
+    -- Prices is 1:1000 and collateral factor is 0.5
+    -- thus supplies 100.0e18 cBAT which gives the user (0.5 * 100.0e18 * 1.0e-3)=0.05e18
+    -- capacity of Eth. User only borrowed 0.001e18, but after
+    -- a few blocks at a 50% interest rate, he'll be
+    -- underwater.
+    FastForward 98000 Blocks -- 0.001e18 * (1 + 98000 * 0.0005)
+    AccrueInterest cETH -- Note: we have to accrue interest
+                        -- since it's not automatic for liquidity
+    Assert Equal (CToken cETH BorrowBalanceStored Geoff) 0.05e18
+    Assert Equal (CToken cETH TotalBorrows) 0.05e18
+    -- Check user liquidity and verify equals 0
+    -- At exactly zero, should not be able to liquidate
+    AllowFailures
+    Invariant Remains (Comptroller Liquidity Geoff) 0e18
+    Invariant Static (EtherBalance Geoff)
+    Invariant Static (EtherBalance Torrey)
+    LiquidateEthBorrow Torrey "->" Geoff 10e18 cETH "Seizing" cBAT
+    Assert RevertFailure COMPTROLLER_REJECTION "revert liquidateBorrow failed"
+
+Test "Cannot self-liquidate"
+    NewBorrow borrowAmount:0.001e18 borrowRate:0.0005
+    Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
+    Assert Equal (CToken cETH TotalBorrows) 0.001e18
+    -- Prices is 1:1000 and collateral factor is 0.5
+    -- thus supplies 100.0e18 cBAT which gives the user (0.5 * 100.0e18 * 1.0e-3)=0.05e18
+    -- capacity of Eth. User only borrowed 0.001e18, but after
+    -- a few blocks at a 50% interest rate, he'll be
+    -- underwater.
+    FastForward 100000 Blocks -- 0.001e18 * (1 + 100000 * 0.0005)
+    AccrueInterest cETH -- Note: we have to accrue interest
+                        -- since it's not automatic for liquidity
+    Assert Equal (CToken cETH BorrowBalanceStored Geoff) 0.051e18
+    Assert Equal (CToken cETH TotalBorrows) 0.051e18
+    -- Check user liquidity and verify < 0
+    -- ( 0.5 * 100e18 * 1e-3 ) - ( 0.051e18 * 1.0 ) = -0.001e18
+    Assert Equal (Comptroller Liquidity Geoff) -0.001e18
+    -- Okay, so we should be able to liquidate, so let's do that.
+    AllowFailures
+    Invariant Remains (Comptroller Liquidity Geoff) -0.001e18
+    Invariant Static (EtherBalance Geoff)
+    LiquidateEthBorrow Geoff "->" Geoff 0.002e18 cETH "Seizing" cBAT
+    Assert RevertFailure INVALID_ACCOUNT_PAIR "revert liquidateBorrow failed"
+
+Test "Liqidate beyond max close"
+    NewBorrow borrowAmount:0.001e18 borrowRate:0.0005
+    Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
+    Assert Equal (CToken cETH TotalBorrows) 0.001e18
+    -- Prices is 1:1000 and collateral factor is 0.5
+    -- thus supplies 100.0e18 cBAT which gives the user (0.5 * 100.0e18 * 1.0e-3)=0.05e18
+    -- capacity of Eth. User only borrowed 0.001e18, but after
+    -- a few blocks at a 50% interest rate, he'll be
+    -- underwater.
+    FastForward 100000 Blocks -- 0.001e18 * (1 + 100000 * 0.0005)
+    AccrueInterest cETH -- Note: we have to accrue interest
+                        -- since it's not automatic for liquidity
+    Assert Equal (CToken cETH BorrowBalanceStored Geoff) 0.051e18
+    Assert Equal (CToken cETH TotalBorrows) 0.051e18
+    -- Check user liquidity and verify < 0
+    -- ( 0.5 * 100e18 * 1e-3 ) - ( 0.051e18 * 1.0 ) = -0.001e18
+    Assert Equal (Comptroller Liquidity Geoff) -0.001e18
+    -- Okay, so we should be able to liquidate, so let's do that.
+    AllowFailures
+    Invariant Remains (Comptroller Liquidity Geoff) -0.001e18
+    Invariant Static (EtherBalance Geoff)
+    Invariant Static (EtherBalance Torrey)
+    LiquidateEthBorrow Torrey "->" Geoff 0.04e18 cETH "Seizing" cBAT
+    Assert RevertFailure COMPTROLLER_REJECTION "revert liquidateBorrow failed"
+
+Test "Proper liquidation"
+    NewBorrow borrowAmount:0.001e18 borrowRate:0.0005
+    Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
+    Assert Equal (CToken cETH TotalBorrows) 0.001e18
+    -- Prices is 1:1000 and collateral factor is 0.5
+    -- thus supplies 100.0e18 cBAT which gives the user (0.5 * 100.0e18 * 1.0e-3)=0.05e18
+    -- capacity of Eth. User only borrowed 0.001e18, but after
+    -- a few blocks at a 50% interest rate, he'll be
+    -- underwater.
+    FastForward 100000 Blocks -- 0.001e18 * (1 + 100000 * 0.0005)
+    AccrueInterest cETH -- Note: we have to accrue interest
+                        -- since it's not automatic for liquidity
+    Assert Equal (CToken cETH BorrowBalanceStored Geoff) 0.051e18
+    Assert Equal (CToken cETH TotalBorrows) 0.051e18
+    -- Check user liquidity and verify < 0
+    -- ( 0.5 * 100e18 * 1e-3 ) - ( 0.051e18 * 1.0 ) = -0.001e18
+    Assert Equal (Comptroller Liquidity Geoff) -0.001e18
+    -- Okay, so we should be able to liquidate, so let's do that.
+    --
+    -- Let's check how values start before liqudation
+    -- Note: we're going to be some-what exhausive in what we check
+    Invariant Static (EtherBalance Geoff) -- ether balance stays the same for borrower
+    Expect Changes (EtherBalance Torrey) -0.02e18 -- for the repay behalf
+    Expect Changes (EtherBalance cETH) +0.02e18 -- receives repay
+    Assert Equal (Erc20 cBAT TokenBalance Geoff) 500e8 -- from minting (100e18 / 2e9)
+    Expect Changes (Erc20 cBAT TokenBalance Geoff) -110e8 -- from seize loss
+    Assert Equal (Erc20 cBAT TokenBalance Torrey) 0e9 -- never had any
+    Expect Changes (Erc20 cBAT TokenBalance Torrey) +110e8 -- from seize gain
+    Invariant Remains (Erc20 cETH TokenBalance Geoff) 0e8 -- never had any (has underlying)
+    Invariant Remains (Erc20 cETH TokenBalance Torrey) 0e8 -- never had any
+    Assert Equal (CToken cETH BorrowBalanceStored Geoff) 0.051e18 -- all that interest
+    Assert Equal (CToken cETH TotalBorrows) 0.051e18 -- all those borrowers
+    Assert Equal (Comptroller Liquidity Geoff) -0.001e18 -- underwater
+    --
+    -- Do the liquidation
+    LiquidateEthBorrow Torrey "->" Geoff 0.02e18 cETH "Seizing" cBAT
+    --
+    -- And see what they are now
+    Assert Equal (Erc20 cBAT TokenBalance Torrey) 110e8 -- 0.02e18 * (1/1.0e-3) * 1.1 / 2e9 [exchange rate] = 110e8 -> Torrey
+    Assert Equal (Erc20 cBAT TokenBalance Geoff) 390e8
+    Assert Equal (CToken cETH BorrowBalanceStored Geoff) 0.031e18 -- less closed amount
+    Assert Equal (CToken cETH TotalBorrows) 0.031e18 --
+    -- TODO:!
+    -- User now has 390e18 cBAT outstanding supply
+    -- capacity. The user also has a 0.031e18 borrow cETH outstanding.
+    -- ( 0.5 * 390e8 * 2e9 * 0.001 ) - ( 0.031e18 * 1.0 ) = 0.008e18
+    Assert Equal (Comptroller Liquidity Geoff) 0.008e18

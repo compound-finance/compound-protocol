@@ -1,0 +1,173 @@
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@1.0.3
+
+jobs:
+  test:
+    docker:
+      - image: circleci/node:11
+    working_directory: ~/repo
+    steps:
+      - run:
+        |
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.8/solc-static-linux -O /usr/local/bin/solc
+          sudo chmod +x /usr/local/bin/solc
+      - checkout
+      - restore_cache:
+          keys:
+          - v2-dependencies-{{ checksum "package.json" }}
+          - v2-dependencies-
+      - restore_cache:
+          keys:
+          - v2-scenario/dependencies-{{ checksum "scenario/package.json" }}
+          - v2-scenario/dependencies-
+      - run: yarn install
+      - run: cd scenario && yarn install
+      - run:
+          name: Ganache
+          command: script/ganache
+          background: true
+      - run: |
+          while ! nc -z localhost 8545; do
+            sleep 0.1 # wait for ganache to start
+          done
+      - save_cache:
+          paths:
+            - node_modules
+          key: v2-dependencies-{{ checksum "package.json" }}
+      - save_cache:
+          paths:
+            - scenario/node_modules
+          key: v2-scenario-dependencies-{{ checksum "scenario/package.json" }}
+      - attach_workspace:
+          at: ~/repo
+      - run: mkdir ~/junit
+      - run: TSC_ARGS="" MOCHA_FILE=~/junit/test-results.xml script/test
+      - store_test_results:
+          path: ~/junit
+      - store_artifacts:
+          path: ~/junit
+    parallelism: 4
+
+  mocha_coverage:
+    parallelism: 5
+    docker:
+      - image: circleci/node:11
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - v2-dependencies-{{ checksum "package.json" }}
+          - v2-dependencies-
+      - restore_cache:
+          keys:
+          - v2-scenario/dependencies-{{ checksum "scenario/package.json" }}
+          - v2-scenario/dependencies-
+      - run: yarn install
+      - run: cd scenario && yarn install
+      - run:
+          name: Ganache
+          command: script/ganache-coverage
+          background: true
+      - save_cache:
+          paths:
+            - node_modules
+          key: v2-dependencies-{{ checksum "package.json" }}
+      - save_cache:
+          paths:
+            - scenario/node_modules
+          key: v2-scenario-dependencies-{{ checksum "scenario/package.json" }}
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          command: yarn run coverage mocha
+          no_output_timeout: 20m
+      - store_artifacts:
+          path: ~/repo/coverage.json
+          destination: coverage.json
+      - store_artifacts:
+          path: ~/repo/coverage
+          destination: coverage
+      - codecov/upload
+
+  scenario_coverage:
+    docker:
+      - image: circleci/node:11
+    working_directory: ~/repo
+    steps:
+      - run:
+        |
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.8/solc-static-linux -O /usr/local/bin/solc
+          sudo chmod +x /usr/local/bin/solc
+      - checkout
+      - restore_cache:
+          keys:
+          - v2-dependencies-{{ checksum "package.json" }}
+          - v2-dependencies-
+      - restore_cache:
+          keys:
+          - v2-scenario/dependencies-{{ checksum "scenario/package.json" }}
+          - v2-scenario/dependencies-
+      - run: yarn install
+      - run: cd scenario && yarn install
+      - run:
+          name: Ganache
+          command: script/ganache-coverage
+          background: true
+      - save_cache:
+          paths:
+            - node_modules
+          key: v2-dependencies-{{ checksum "package.json" }}
+      - save_cache:
+          paths:
+            - scenario/node_modules
+          key: v2-scenario-dependencies-{{ checksum "scenario/package.json" }}
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          command: yarn run coverage scenario
+          no_output_timeout: 20m
+      - store_artifacts:
+          path: ~/repo/coverage.json
+          destination: coverage.json
+      - store_artifacts:
+          path: ~/repo/coverage
+          destination: coverage
+      - codecov/upload
+
+  lint:
+    docker:
+      - image: circleci/node:11
+      - image: trufflesuite/ganache-cli:v6.2.5
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - v2-dependencies-{{ checksum "package.json" }}
+          - v2-dependencies-
+      - run: yarn install
+      - save_cache:
+          paths:
+            - node_modules
+          key: v2-dependencies-{{ checksum "package.json" }}
+      - attach_workspace:
+          at: ~/repo
+      - run: yarn run lint
+
+workflows:
+  version: 2
+  build-test-and-deploy:
+    jobs:
+      - test
+      - mocha_coverage:
+          filters:
+            branches:
+              only: /^(master|(.*-cov(er(age)?)?))$/
+      - scenario_coverage:
+          filters:
+            branches:
+              only: /^(master|(.*-cov(er(age)?)?))$/
+      - lint

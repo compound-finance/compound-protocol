@@ -1,0 +1,266 @@
+methods {
+// taken from solc --hashes. Need to add "returns"
+/*e9c714f2: */ _acceptAdmin() returns uint256
+/*5cf756d2: */ _setMarketInterestRateModel(address,address) returns uint256
+/*d9226ced: */ _setMaxAssets(uint256) returns uint256
+/*3be59443: */ _setOracle(address) returns uint256
+/*24021127: */ _setOriginationFee(uint256) returns uint256
+/*26617c28: */ _setPaused(bool) returns uint256
+/*b71d1a0c: */ _setPendingAdmin(address) returns uint256
+/*c365a646: */ _setRiskParameters(uint256,uint256) returns uint256
+/*c1abfaa3: */ _supportMarket(address,address) returns uint256
+/*dbe2bc84: */ _suspendMarket(address) returns uint256
+/*f851a440: */ admin() returns address
+/*5e9a523c: */ assetPrices(address) returns uint256
+/*4b8a3529: */ borrow(address,uint256) returns uint256
+/*fc7d42d7: */ borrowBalances(address,address) returns uint256
+/*9f180cf1: */ calculateAccountValues(address) // TODO: returns (uint256, uint256, uint256)
+/*beb54615: */ collateralMarkets(uint256) returns address
+/*b4eae1cb: */ collateralRatio() returns uint256
+/*5ec88c79: */ getAccountLiquidity(address) // TODO: returns int256
+/*118e31b7: */ getBorrowBalance(address,address) returns uint256
+/*6e2ede03: */ getCollateralMarketsLength() returns uint256
+/*ba377731: */ getSupplyBalance(address,address) returns uint256
+/*e61604cf: */ liquidateBorrow(address,address,address,uint256) returns uint256
+/*8053fcbe: */ liquidationDiscount() returns uint256
+/*8e8f294b: */ markets(address) // TODO: returns market tuple
+/*94b2294b: */ maxAssets() returns uint256
+/*7dc0d1d0: */ oracle() returns address
+/*b8bb5c42: */ originationFee() returns uint256
+/*5c975abb: */ paused() // TODO: returns bool
+/*26782247: */ pendingAdmin() returns address
+/*abdb5ea8: */ repayBorrow(address,uint256) returns uint256
+/*f2b9fdb8: */ supply(address,uint256) returns uint256
+/*b7adddac: */ supplyBalances(address,address) returns uint256
+/*f3fef3a3: */ withdraw(address,uint256) returns uint256
+}
+
+_setOriginationFee(uint currentAdmin, uint currentFee, uint newOriginationFee)
+description "Failed to set origination fee from $currentFee to $newOriginationFee (admin=$currentAdmin)" {
+	// Free Variables
+	env e0; havoc e0;
+	env e1; havoc e1;
+	env e2; havoc e2;
+
+	// Strict ordering
+	static_require e1.block > e0.block;
+	static_require e2.block > e1.block;
+
+	// Capture current admin and origination fee
+	static_require currentAdmin == sinvoke admin(e0);
+	static_require currentFee == sinvoke originationFee(e0);
+
+	// Invoke set origination fee
+	uint256 result = sinvoke _setOriginationFee(e1, newOriginationFee);
+
+	// originationFee changes <=> msg.sender == currentAdmin
+	static_assert (
+		(
+			e1.msg.sender == currentAdmin &&
+			result == 0 &&
+			sinvoke originationFee(e2) == newOriginationFee
+		)
+		||
+		(
+			e1.msg.sender != currentAdmin &&
+			result != 0 &&
+			sinvoke originationFee(e2) == currentFee
+		)
+	);
+}
+
+_setPendingAdmin(address currentAdmin, address currentPendingAdmin, address newPendingAdmin)
+description "Failed to set new pending admin $currentPendingAdmin to $newPendingAdmin (admin=$currentAdmin)"
+{
+	// Free Variables
+	env e0; havoc e0;
+	env e1; havoc e1;
+	env e2; havoc e2;
+
+	// Strict ordering
+	static_require e1.block > e0.block;
+	static_require e2.block > e1.block;
+
+	static_require currentAdmin == sinvoke admin(e0);
+	static_require currentPendingAdmin == sinvoke pendingAdmin(e0);
+
+	// Invoke set new pending admin
+	uint256 result = sinvoke _setPendingAdmin(e1, newPendingAdmin);
+
+	// pendingAdmin changes <=> msg.sender == currentAdmin
+	static_assert (
+		(
+			e1.msg.sender == currentAdmin &&
+			result == 0 &&
+			sinvoke pendingAdmin(e2) == newPendingAdmin
+		)
+		||
+		(
+			e1.msg.sender != currentAdmin &&
+			result != 0 &&
+			sinvoke pendingAdmin(e2) == currentPendingAdmin
+		)
+	);
+}
+
+_acceptAdmin(address currentAdmin, address currentPendingAdmin, address newAdmin, address newPendingAdmin)
+description "Failed to accept pending admin currentAdmin=$currentAdmin, currentPendingAdmin=$currentPendingAdmin, newPendingAdmin=$newPendingAdmin, newAdmin=$newAdmin"
+{
+	// Free Variables
+	env e0; havoc e0;
+	env e1; havoc e1;
+	env e2; havoc e2;
+
+	// Strict ordering
+	static_require e1.block > e0.block;
+	static_require e2.block > e1.block;
+
+	static_require currentAdmin == sinvoke admin(e0);
+	static_require currentPendingAdmin == sinvoke pendingAdmin(e0);
+
+	// Invoke accept admin
+	uint256 result = sinvoke _acceptAdmin(e1);
+
+	static_require newAdmin == sinvoke admin(e2);
+	static_require newPendingAdmin == sinvoke pendingAdmin(e2);
+
+	// admin == pendingAdmin <=> msg.sender == pendingAdmin
+	static_assert (
+		(
+			e1.msg.sender == currentPendingAdmin &&
+			currentPendingAdmin != 0 &&
+			result == 0 &&
+			newAdmin == currentPendingAdmin &&
+			newPendingAdmin == 0
+		)
+		||
+		(
+			(
+				e1.msg.sender != currentPendingAdmin ||
+				currentPendingAdmin == 0
+			) &&
+			result != 0 &&
+			newAdmin == currentAdmin &&
+			newPendingAdmin == currentPendingAdmin
+		)
+	);
+}
+
+// Invariant: To change admin or currentPendingAdmin, must come from current admin
+invariantRequireAdminToChangeAdmin(address caller, address currentAdmin, address currentPendingAdmin, address desiredAdmin, address newAdmin, address newPendingAdmin)
+description "Failed to prove that required to be admin to change admin (caller=$caller, currentAdmin=$currentAdmin, currentPendingAdmin=$currentPendingAdmin, desiredAdmin=$desiredAdmin, newAdmin=$newAdmin, newPendingAdmin=$newPendingAdmin)"
+{
+	// Free Variables
+	env e0; havoc e0;
+	env e1; havoc e1;
+	env e2; havoc e2;
+	env e3; havoc e3;
+
+	// Strict ordering (TODO: Can e2.block == e1.block?)
+	static_require e1.block > e0.block;
+	static_require e2.block > e1.block;
+	static_require e3.block > e2.block;
+
+	static_require currentAdmin == sinvoke admin(e0);
+	static_require currentPendingAdmin == sinvoke pendingAdmin(e0);
+
+	// Start with a zero admin
+	static_require currentPendingAdmin == 0;
+
+	static_require caller == e1.msg.caller;
+
+	// Invoke set new pending admin
+	uint256 result0 = sinvoke _setPendingAdmin(e1, desiredAdmin);
+	uint256 result1 = sinvoke _acceptAdmin(e2);
+
+	static_require newAdmin == sinvoke admin(e3);
+	static_require newPendingAdmin == sinvoke pendingAdmin(e3);
+
+	static_assert (
+		e1.msg.sender == currentAdmin ||
+		(
+			newAdmin == currentAdmin &&
+			newPendingAdmin == currentPendingAdmin
+		)
+	);
+}
+
+_setOracle(address sender, address currAdmin, address currOracle, address desiredOracle, address nextOracle)
+description "Failed to set oracle (sender=$sender, currAdmin=$currAdmin, currOracle=$currOracle, desiredOracle=$desiredOracle, nextOracle=$nextOracle)" {
+	// N.B. This merely havocs `oracleInterface.assetPrices(address(0))`
+	//      and does not check or concern itself with the result.
+
+	// Free Variables
+	env e0; havoc e0;
+	env e1; havoc e1;
+	env e2; havoc e2;
+
+	// Strict ordering
+	static_require e1.block > e0.block;
+	static_require e2.block > e1.block;
+
+	static_require currAdmin == sinvoke admin(e0);
+	static_require currOracle == sinvoke oracle(e0);
+
+	static_require sender == e1.msg.sender;
+
+	// Invoke set new pending admin
+	uint256 result = sinvoke _setOracle(e1, desiredOracle);
+
+	static_require nextOracle == sinvoke oracle(e2);
+
+	// nextOracle == desiredOracle <=> msg.sender == admin
+	static_assert (
+		(
+			sender == currAdmin &&
+			result == 0 &&
+			nextOracle == desiredOracle
+		)
+		||
+		(
+			sender != currAdmin &&
+			result != 0 &&
+			(
+				// It's possible that we're trying to set
+				// it to what it previously was. This is
+				// really the same as "succeeding," since
+				// it does become (remain) what you set it to.
+				desiredOracle == currOracle ||
+				nextOracle != desiredOracle
+			)
+		)
+	);
+}
+
+_setMaxAssets(address currentAdmin, uint newMaxAssets, uint oldMaxAssets)
+description "Failed to set new maxAssets admin: $currentAdmin, new: $newMaxAssets, old: $old"
+{
+	// Free Variables
+	env e0; havoc e0;
+	env e1; havoc e1;
+	env e2; havoc e2;
+
+	// Strict ordering
+	static_require e1.block > e0.block;
+	static_require e2.block > e1.block;
+
+	static_require oldMaxAssets == sinvoke maxAssets(e0);
+	static_require currentAdmin == sinvoke admin(e0);
+
+	// Invoke set new max assets
+	uint256 result = sinvoke _setMaxAssets(e1, newMaxAssets);
+
+	static_assert (
+		(
+			e1.msg.sender == currentAdmin &&
+			result == 0 &&
+			sinvoke maxAssets(e2) == newMaxAssets
+		)
+		||
+		(
+			e1.msg.sender != currentAdmin &&
+			result != 0 &&
+			sinvoke maxAssets(e2) == oldMaxAssets
+		)
+	);
+}

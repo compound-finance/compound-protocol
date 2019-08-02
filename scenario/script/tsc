@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -eo
+
+dir=`dirname $0`
+scenario_dir="$(cd $dir/.. && pwd)"
+
+if [ ! -d "$scenario_dir/node_modules" ]; then
+	echo "Getting scenario packages..."
+	cd "$scenario_dir" && yarn
+fi
+
+echo "Building Scenario Runner..."
+cd "$scenario_dir" && node "$scenario_dir/node_modules/.bin/tsc" ${TSC_ARGS-"--skipLibCheck"}

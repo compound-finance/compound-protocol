@@ -1,0 +1,63 @@
+methods {
+    admin() returns address
+    markets(address) returns bool,uint256,uint256,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256
+    _setMarketPriceOracle(address,address) returns uint256
+}
+
+_setMarketPriceOracle(uint result, address asset, address reqPriceOracle)
+description "Failed to set market oracle for $asset with result $result (result=$result, asset=$asset, reqPriceOracle=$reqPriceOracle)" {
+    // N.B. The implementation calls `priceOracle.assetPrices(address(0))`
+    // which needs to not revert for the call to succeed.
+
+    address currAdmin;
+    bool currListed;
+    address currPriceOracle;
+    address nextPriceOracle;
+
+    // Free Variables
+    env e0; havoc e0;
+    env e1; havoc e1;
+    env e2; havoc e2;
+
+    // Strict ordering
+    static_require e1.block > e0.block;
+    static_require e2.block > e1.block;
+
+    // Capture curr values
+    uint currAdmin = sinvoke admin(e0);
+    currListed, _, _, currPriceOracle, _, _, _, _, _, _, _, _ = sinvoke markets(e0, asset);
+
+    // Invoke set market oracle
+    uint256 resultT = sinvoke _setMarketPriceOracle(e1, asset, reqPriceOracle);
+    static_require result == resultT;
+
+    // Get next value
+    _, _, _, nextPriceOracle, _, _, _, _, _, _, _, _ = sinvoke markets(e2, asset);
+
+    // Guarantee return values
+    static_assert(
+      result == 0 ||
+      result == 1 ||
+      result == 10
+    );
+
+    // Success case updates market
+    static_assert(result == 0 <=> (
+        e1.msg.sender == currAdmin &&
+        nextPriceOracle == reqPriceOracle &&
+        currListed
+    ));
+
+    // Unauthorized case
+    static_assert(result == 1 <=> (
+        e1.msg.sender != currAdmin &&
+        nextPriceOracle == currPriceOracle
+    ));
+
+    // Unlisted case
+    static_assert(result == 10 <=> (
+        e1.msg.sender == currAdmin &&
+        nextPriceOracle == currPriceOracle &&
+        !currListed
+    ));
+}

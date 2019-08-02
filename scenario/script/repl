@@ -1,0 +1,78 @@
+#!/usr/bin/env sh
+
+set -eo
+
+dir=`dirname $0`
+tsc_root="$(cd "$dir/.." && pwd)"
+proj_root="$(cd "$dir/../.." && pwd)"
+networks_root="$(cd "$dir/../../networks" && pwd)"
+test_root="$(cd "$dir/../../test" && pwd)"
+contracts_root="$(cd "$dir/../../contracts" && pwd)"
+network=${NETWORK:-development}
+script="$SCRIPT"
+verbose="$VERBOSE"
+dry_run="$DRY_RUN"
+no_tsc="$NO_TSC"
+
+usage() { echo "$0 usage:" && grep ".)\ #" $0; exit 0; }
+while getopts ":hdn:e:s:vt" arg; do
+	case $arg in
+		c) # Don't compile
+			no_compile="true"
+			;;
+		d) # Dry run
+			dry_run="true"
+			;;
+		e) # Add variables for script (key=value,key2=value2)
+			env_vars="$OPTARG"
+			;;
+		n) # Specify network
+			network=$OPTARG
+			;;
+		s) # Specify a script to run
+			if [[ "$OSTYPE" == "darwin"* ]]; then
+				# Darwin doesn't support readlink -f to get absolute path...
+				script=$OPTARG
+			else
+				script=$(readlink -f "$OPTARG")
+			fi
+
+			[ ! -f "$script" ] \
+				&& echo "Cannot find script $script" \
+				&& exit 1
+			;;
+		t) # Don't build TSC
+			no_tsc="true"
+			;;
+
+		v) # Verbose
+			verbose="true"
+			;;
+
+		h | *) # Display help.
+			usage
+			exit 0
+			;;
+	esac
+done
+
+if [ $network = "test" -o $network = "development" -o -n "$add_test_contracts" ]; then
+	function cleanup {
+		mv "$contracts_root/test" "$test_root/contracts"
+	}
+
+	trap cleanup EXIT
+
+	mv "$test_root/contracts" "$contracts_root/test"
+
+	# Compile with test contracts
+	[[ -z $no_compile ]] && solc --combined-json bin,abi --optimize contracts/*.sol contracts/**/*.sol --allow-paths ./contracts,./contracts/test > networks/${network}-contracts.json
+else
+	# Compile without test contracts
+	[[ -z $no_compile ]] && solc --combined-json bin,abi --optimize contracts/*.sol > networks/${network}-contracts.json
+fi
+
+[[ ! -d ./.tsbuilt || -z $no_tsc ]] && . "$dir/tsc"
+
+
+proj_root="$proj_root" env_vars="$env_vars" dry_run="$dry_run" script="$script" network="$network" verbose="$verbose" npx truffle exec --network "$network" "$tsc_root/.tsbuilt/Repl.js"

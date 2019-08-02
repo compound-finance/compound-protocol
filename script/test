@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+dir=`dirname $0`
+proj_root="$dir/.."
+test_root="$dir/../test"
+contracts_root="$dir/../contracts"
+network=${NETWORK:-test}
+verbose=${verbose:-}
+
+function cleanup {
+	mv "$contracts_root/test" "$test_root/contracts"
+}
+
+trap cleanup EXIT
+
+mv "$test_root/contracts" "$contracts_root/test"
+
+if [ "$CI" -a ! "$1" ]; then
+	set -x
+	set -- "$@" $(circleci tests glob "test/**/*Test.js" "test/**/*Test.sol" | circleci tests split --split-by=timings)
+fi
+
+# Coverage clones our project but not node_modules, so let's hop
+# up one directory.
+if [ ! -d "$proj_root/node_modules" -a -d "$proj_root/../node_modules" ]; then
+	proj_root="$proj_root/.."
+fi
+
+# Compile scenario runner
+[[ ! -d ./.tsbuilt || -z $NO_TSC ]] && "$proj_root/scenario/script/tsc"
+[[ -z $no_compile ]] && solc --combined-json bin,abi --optimize contracts/*.sol contracts/**/*.sol --allow-paths ./contracts,./contracts/test > $proj_root/networks/${network}-contracts.json
+
+echo "cwd: $(pwd), proj_root: $(cd $proj_root && pwd), networks: $(ls -l $proj_root/networks/${network}-contracts.json)"
+node --stack_size=10000 "$proj_root/node_modules/truffle/build/cli.bundled.js" compile --network "$network"
+proj_root="$proj_root" verbose="$verbose" node --stack_size=10000 "$proj_root/node_modules/truffle/build/cli.bundled.js" test --network "$network" $@

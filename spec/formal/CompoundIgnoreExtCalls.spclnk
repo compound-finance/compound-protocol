@@ -1,0 +1,13 @@
+{
+  "contracts": [
+    {
+      "name": "CErc20Certora",
+      "file": "spec/formal/contracts/CErc20Certora.sol",
+      "address": "123"
+    }
+  ],
+
+  "cvlsToCheck": {
+    "CErc20Certora": ["spec/formal/general.cvl"]
+  }
+}

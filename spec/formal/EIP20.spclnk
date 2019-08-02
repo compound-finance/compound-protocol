@@ -1,0 +1,145 @@
+{
+  "contracts": [
+    {
+      "name": "ComptrollerModel",
+      "file": "spec/formal/contracts/ComptrollerModel.sol",
+      "address": "789",
+      "methods": [
+	{
+	  "name": "mintAllowed",
+	  "args": ["address","address","uint256"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "mintVerify",
+	  "args": ["address","address","uint256","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "redeemAllowed",
+	  "args": ["address","address","uint256"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "redeemVerify",
+	  "args": ["address","address","uint256","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "borrowAllowed",
+	  "args": ["address","address","uint256"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "borrowVerify",
+	  "args": ["address","address","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "repayBorrowAllowed",
+	  "args": ["address","address","address","uint256"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "repayBorrowVerify",
+	  "args": ["address","address","address","uint256","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "liquidateBorrowAllowed",
+	  "args": ["address","address","address","address","uint256"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "liquidateBorrowVerify",
+	  "args": ["address","address","address","address","uint256","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "seizeAllowed",
+	  "args": ["address","address","address","address","uint256"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "seizeVerify",
+	  "args": ["address","address","address","address","uint256"],
+	  "returns": []
+	},
+        {
+	  "name": "transferAllowed",
+	  "args": ["address","address","address","uint256"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "transferVerify",
+	  "args": ["address","address","address","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "liquidateCalculateSeizeTokens",
+	  "args": ["address","address","uint256"],
+	  "returns": ["uint256","uint256"]
+	}
+      ]
+    },
+
+    {
+      "name": "UnderlyingModelNonStandard",
+      "file": "spec/formal/contracts/UnderlyingModelNonStandard.sol",
+      "address": "456",
+      "methods": [
+	{
+	  "name": "balanceOf",
+	  "args": ["address"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "allowance",
+	  "args": ["address","address"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "totalSupply",
+	  "args": [],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "transfer",
+	  "args": ["address","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "transferFrom",
+	  "args": ["address","address","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "approve",
+	  "args": ["address","uint256"],
+	  "returns": ["bool"]
+	},
+	{
+	  "name": "dummy",
+	  "args": [],
+	  "returns": []
+	}
+      ]
+    },
+
+    {
+      "name": "CErc20Certora",
+      "file": "spec/formal/contracts/CErc20Certora.sol",
+      "address": "123",
+      "state": {
+	6: "789",
+	18: "456"
+      }
+    }
+  ],
+
+  "cvlsToCheck": {
+    "CErc20Certora": [
+      "spec/formal/eip20.cvl"
+    ]
+  }
+}
