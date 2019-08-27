@@ -1,0 +1,167 @@
+methods {
+    _setPendingAdmin(address) returns uint256
+    pendingAdmin() returns address
+
+    _acceptAdmin() returns uint256
+    admin() returns address
+
+    _setComptroller(address) returns uint256
+    comptroller() returns address
+}
+
+_setPendingAdmin(address currentAdmin, address currentPendingAdmin, address newPendingAdmin)
+description "Failed to set new pending admin $currentPendingAdmin to $newPendingAdmin (admin=$currentAdmin)"
+{
+    // Free Variables
+    env e0; havoc e0;
+    env e1; havoc e1;
+    env e2; havoc e2;
+
+    // Strict ordering
+    static_require e1.block > e0.block;
+    static_require e2.block > e1.block;
+
+    static_require currentAdmin == sinvoke admin(e0);
+    static_require currentPendingAdmin == sinvoke pendingAdmin(e0);
+
+    // Invoke set new pending admin
+    uint256 result = sinvoke _setPendingAdmin(e1, newPendingAdmin);
+
+    // pendingAdmin changes <=> msg.sender == currentAdmin
+    static_assert (
+                   (
+                    e1.msg.sender == currentAdmin &&
+                    result == 0 &&
+                    sinvoke pendingAdmin(e2) == newPendingAdmin
+                    )
+                   ||
+                   (
+                    e1.msg.sender != currentAdmin &&
+                    result != 0 &&
+                    sinvoke pendingAdmin(e2) == currentPendingAdmin
+                    )
+                   );
+}
+
+_acceptAdmin(address currentAdmin, address currentPendingAdmin, address newAdmin, address newPendingAdmin)
+    description "Failed to accept pending admin currentAdmin=$currentAdmin, currentPendingAdmin=$currentPendingAdmin, newPendingAdmin=$newPendingAdmin, newAdmin=$newAdmin"
+{
+    // Free Variables
+    env e0; havoc e0;
+    env e1; havoc e1;
+    env e2; havoc e2;
+
+    // Strict ordering
+    static_require e1.block > e0.block;
+    static_require e2.block > e1.block;
+
+    static_require currentAdmin == sinvoke admin(e0);
+    static_require currentPendingAdmin == sinvoke pendingAdmin(e0);
+
+    // Invoke accept admin
+    uint256 result = sinvoke _acceptAdmin(e1);
+
+    static_require newAdmin == sinvoke admin(e2);
+    static_require newPendingAdmin == sinvoke pendingAdmin(e2);
+
+    // admin == pendingAdmin <=> msg.sender == pendingAdmin
+    static_assert (
+                   (
+                    e1.msg.sender == currentPendingAdmin &&
+                    currentPendingAdmin != 0 &&
+                    result == 0 &&
+                    newAdmin == currentPendingAdmin &&
+                    newPendingAdmin == 0
+                    )
+                   ||
+                   (
+                    (
+                     e1.msg.sender != currentPendingAdmin ||
+                     currentPendingAdmin == 0
+                     ) &&
+                    result != 0 &&
+                    newAdmin == currentAdmin &&
+                    newPendingAdmin == currentPendingAdmin
+                    )
+                   );
+}
+
+// Invariant: To change admin or currentPendingAdmin, must come from current admin
+invariantRequireAdminToChangeAdmin(address caller, address currentAdmin, address currentPendingAdmin, address desiredAdmin, address newAdmin, address newPendingAdmin)
+    description "Failed to prove that required to be admin to change admin (caller=$caller, currentAdmin=$currentAdmin, currentPendingAdmin=$currentPendingAdmin, desiredAdmin=$desiredAdmin, newAdmin=$newAdmin, newPendingAdmin=$newPendingAdmin)"
+{
+    // Free Variables
+    env e0; havoc e0;
+    env e1; havoc e1;
+    env e2; havoc e2;
+    env e3; havoc e3;
+
+    // Strict ordering (TODO: Can e2.block == e1.block?)
+    static_require e1.block > e0.block;
+    static_require e2.block > e1.block;
+    static_require e3.block > e2.block;
+
+    static_require currentAdmin == sinvoke admin(e0);
+    static_require currentPendingAdmin == sinvoke pendingAdmin(e0);
+
+    // Start with a zero admin
+    static_require currentPendingAdmin == 0;
+
+    static_require caller == e1.msg.caller;
+
+    // Invoke set new pending admin
+    uint256 result0 = sinvoke _setPendingAdmin(e1, desiredAdmin);
+    uint256 result1 = sinvoke _acceptAdmin(e2);
+
+    static_require newAdmin == sinvoke admin(e3);
+    static_require newPendingAdmin == sinvoke pendingAdmin(e3);
+
+    static_assert (
+                   e1.msg.sender == currentAdmin ||
+                   (
+                    newAdmin == currentAdmin &&
+                    newPendingAdmin == currentPendingAdmin
+                    )
+                   );
+}
+
+_setComptroller(address sender, address currAdmin, address currComptroller, address desiredComptroller, address nextComptroller)
+    description "Failed to set comptroller: result=$result (sender=$sender, currAdmin=$currAdmin, currComptroller=$currComptroller, desiredComptroller=$desiredComptroller, nextComptroller=$nextComptroller)" {
+    // N.B. This merely havocs `oracleInterface.assetPrices(address(0))`
+    //      and does not check or concern itself with the result.
+
+    // Free Variables
+    env e0; havoc e0;
+    env e1; havoc e1;
+    env e2; havoc e2;
+
+    // Strict ordering
+    static_require e1.block > e0.block;
+    static_require e2.block > e1.block;
+
+    static_require currAdmin == sinvoke admin(e0);
+    static_require currComptroller == sinvoke comptroller(e0);
+
+    static_require sender == e1.msg.sender;
+
+    // Invoke set new comptroller
+    uint256 result = sinvoke _setComptroller(e1, desiredComptroller);
+
+    static_require nextComptroller == sinvoke comptroller(e2);
+
+    // nextComptroller == desiredComptroller <=> msg.sender == admin
+    static_assert ((sender == currAdmin &&
+                    result == 0 &&
+                    nextComptroller == desiredComptroller)
+                   ||
+                   (sender != currAdmin &&
+                    result == 1 && // UNAUTHORIZED
+                    (
+                     // It's possible that we're trying to set
+                     // it to what it previously was. This is
+                     // really the same as "succeeding," since
+                     // it does become (remain) what you set it to.
+                     desiredComptroller == currComptroller ||
+                     nextComptroller != desiredComptroller
+                     )));
+}

@@ -1,0 +1,5 @@
+node_modules
+scenario/node_modules
+test
+!test/contracts
+*.DS_Store

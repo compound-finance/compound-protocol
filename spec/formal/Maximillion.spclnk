@@ -1,0 +1,127 @@
+{
+  "contracts": [
+    {
+      "name": "ComptrollerModel",
+      "file": "spec/formal/contracts/ComptrollerModel.sol",
+      "address": "789",
+      "methods": [
+	{
+	  "name": "mintAllowed",
+	  "args": ["address","address","uint256"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "mintVerify",
+	  "args": ["address","address","uint256","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "redeemAllowed",
+	  "args": ["address","address","uint256"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "redeemVerify",
+	  "args": ["address","address","uint256","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "borrowAllowed",
+	  "args": ["address","address","uint256"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "borrowVerify",
+	  "args": ["address","address","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "repayBorrowAllowed",
+	  "args": ["address","address","address","uint256"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "repayBorrowVerify",
+	  "args": ["address","address","address","uint256","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "liquidateBorrowAllowed",
+	  "args": ["address","address","address","address","uint256"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "liquidateBorrowVerify",
+	  "args": ["address","address","address","address","uint256","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "seizeAllowed",
+	  "args": ["address","address","address","address","uint256"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "seizeVerify",
+	  "args": ["address","address","address","address","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "transferAllowed",
+	  "args": ["address","address","address","uint256"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "transferVerify",
+	  "args": ["address","address","address","uint256"],
+	  "returns": []
+	},
+	{
+	  "name": "liquidateCalculateSeizeTokens",
+	  "args": ["address","address","uint256"],
+	  "returns": ["uint256","uint256"]
+	}
+      ]
+    },
+
+    {
+      "name": "CEtherCertora",
+      "file": "spec/formal/contracts/CEtherCertora.sol",
+      "address": "234",
+      "state": {
+	6: "789"
+      },
+      "methods": [
+      	{
+	  "name": "borrowBalanceCurrent",
+	  "args": ["address"],
+	  "returns": ["uint256"]
+	},
+	{
+	  "name": "repayBorrowBehalf",
+	  "args": ["address"],
+	  "returns": []
+	},
+        {
+	  "name": "totalBorrows",
+	  "args": [],
+	  "returns": ["uint256"]
+	}
+      ]
+    },
+
+    {
+      "name": "MaximillionCertora",
+      "file": "spec/formal/contracts/MaximillionCertora.sol",
+      "address": "666",
+      "state": {
+        0: "234"
+      }
+    }
+  ],
+
+  "cvlsToCheck": {
+    "MaximillionCertora": [
+      "spec/formal/maximillion.cvl"
+    ]
+  }
+}

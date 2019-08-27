@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+dir=`dirname $0`
+proj_root="$dir/.."
+
+[[ ! -d ./.tsbuilt || -z $NO_TSC ]] && "$proj_root/scenario/script/tsc"
+case $1 in
+	"mocha")
+		export TEST_COMMAND="NETWORK=coverage SCENARIOS="skipall" script/test"
+		export SKIP_UNITROLLER=""
+	;;
+	"scenario")
+		export TEST_COMMAND="NETWORK=coverage script/test test/ScenarioTest.js"
+		export SKIP_UNITROLLER="true"
+	;;
+	*)
+	;;
+esac
+
+echo "TEST_COMMAND: $TEST_COMMAND"
+echo "SKIP_UNITROLLER: $SKIP_UNITROLLER"
+
+"$proj_root/node_modules/.bin/solidity-coverage"

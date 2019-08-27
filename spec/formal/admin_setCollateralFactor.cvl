@@ -1,0 +1,101 @@
+methods {
+// taken from solc --hashes contracts/MoneyMarket.sol
+/*e4028eee: */ _setCollateralFactor(address,uint256) returns uint256
+/*f851a440: */ admin() returns address
+/*3b8a7478: */ getCollateralFactorREMOVE_ME(address) returns uint256
+/*e43fb3a9: */ getMarketListedREMOVE_ME(address) returns bool
+/*8e8f294b: */ markets(address) // TODO: returns market tuple
+/*7dc0d1d0: */ oracle() returns address
+}
+
+_setCollateralFactor(uint currentAdmin, address asset, uint currentCollateralFactor, uint newCollateralFactor)
+description "Failed to set collateralFactor from $currentCollateralFactor to $newCollateralFactor for $asset (admin=$currentAdmin)" {
+	// N.B. For non-zero collateralFactor, the implementation calls `oracleInterface.assetPrices(address($asset))`
+	// which needs to return non-zero for the call to _setCollateralFactor to succeed.
+	// We can't currently control or specify that, so we may get intermittent failures.
+
+	// Free Variables
+	env e0; havoc e0;
+	env e1; havoc e1;
+	env e2; havoc e2;
+
+	// Strict ordering
+	static_require e1.block > e0.block;
+	static_require e2.block > e1.block;
+
+	// Capture current admin and collateral factor
+	static_require currentAdmin == sinvoke admin(e0);
+	// getCollateralFactorREMOVE_ME is a workaround until we have support for structs
+	static_require currentCollateralFactor == sinvoke getCollateralFactorREMOVE_ME(e0, asset);
+
+	// Invoke set collateral factor
+	uint256 result = sinvoke _setCollateralFactor(e1, asset, newCollateralFactor);
+
+	// collateralFactor changes <=> msg.sender == currentAdmin
+
+	// newCollateralFactor > 0 && oracle non-zero & price > 0
+	// newCollateralFactor == 0
+
+	static_assert (
+		(
+			// fail is caller is not admin
+			e1.msg.sender != currentAdmin &&
+			result != 0 &&
+			// getCollateralFactorREMOVE_ME is a workaround until we have support for structs
+			sinvoke getCollateralFactorREMOVE_ME(e2, asset) == currentCollateralFactor
+		)
+		||
+		(
+			// fail if not listed
+			e1.msg.sender == currentAdmin &&
+			sinvoke getMarketListedREMOVE_ME(e2, asset) != true &&
+			result == 9 && // MARKET_NOT_LISTED
+			sinvoke getCollateralFactorREMOVE_ME(e2, asset) == currentCollateralFactor
+		)
+		||
+		(
+			// fail if listed but newCollateralFactor too high
+			e1.msg.sender == currentAdmin &&
+			sinvoke getMarketListedREMOVE_ME(e2, asset) &&
+			// 0.9 * 1e18: 9e17
+			newCollateralFactor > 900000000000000000 &&
+			result == 25 && // INVALID_COLLATERAL_FACTOR
+			sinvoke getCollateralFactorREMOVE_ME(e2, asset) == currentCollateralFactor
+		)
+		||
+		(
+			// Succeed if sender is admin, market listed, newCollateralFactor > 0 and oracle set
+			// In this case we also require oracleInterface.assetPrices(asset) > 0, but we can't currently specify that
+			// as it involves a call to another contract.
+			e1.msg.sender == currentAdmin &&
+			sinvoke getMarketListedREMOVE_ME(e2, asset) &&
+			// 0.9 * 1e18: 9e17
+			newCollateralFactor > 0 &&
+			newCollateralFactor <= 900000000000000000 &&
+			sinvoke oracle(e2) > 0 &&
+			result == 0 &&
+			sinvoke getCollateralFactorREMOVE_ME(e2, asset) == newCollateralFactor
+		)
+		||
+		(
+			// Succeed if sender is admin, market listed, newCollateralFactor == 0
+			e1.msg.sender == currentAdmin &&
+			sinvoke getMarketListedREMOVE_ME(e2, asset) &&
+			newCollateralFactor == 0 &&
+			result == 0 &&
+			sinvoke getCollateralFactorREMOVE_ME(e2, asset) == newCollateralFactor
+		)
+		||
+		(
+			// fail if listed and newCollateralFactor > 0 but not too high but no oracle has been set
+			e1.msg.sender == currentAdmin &&
+			sinvoke getMarketListedREMOVE_ME(e2, asset) &&
+			// 0.9 * 1e18: 9e17
+			newCollateralFactor > 0 &&
+			newCollateralFactor <= 900000000000000000 &&
+			sinvoke oracle(e2) == 0 &&
+			result == 23 && // ZERO_ORACLE_ADDRESS
+			sinvoke getCollateralFactorREMOVE_ME(e2, asset) == currentCollateralFactor
+		)
+	);
+}
