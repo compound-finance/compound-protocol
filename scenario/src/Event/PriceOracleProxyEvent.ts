@@ -59,6 +59,7 @@ export function priceOracleProxyCommands() {
       ],
       (world, from, {params}) => genPriceOracleProxy(world, from, params.val)
     ),
+
     new View<{priceOracleProxy: PriceOracleProxy, apiKey: StringV, contractName: StringV}>(`
         #### Verify
 

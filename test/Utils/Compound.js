@@ -172,15 +172,12 @@ async function makePriceOracle(opts = {}) {
     const cEther = opts.cEther || await makeCToken({
       kind: 'cether',
       supportMarket: true,
-      comptrollerOpts: {
-        priceOracleOpts: {kind: 'simple'}
-      }, ...opts.cEtherOpts});
+      ...opts.cEtherOpts});
     const comptroller = cEther.comptroller;
     const priceOracle = comptroller.priceOracle;
     const PriceOracleProxy = getContract('PriceOracleProxy');
     const priceOracleProxy = await PriceOracleProxy.deploy({
       arguments: [
-        comptroller._address,
         priceOracle._address,
         cEther._address
       ]}).send({from: root});

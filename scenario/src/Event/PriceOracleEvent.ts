@@ -47,6 +47,14 @@ async function setPrice(world: World, from: string, priceOracle: PriceOracle, cT
   );
 }
 
+async function setDirectPrice(world: World, from: string, priceOracle: PriceOracle, address: string, amount: NumberV): Promise<World> {
+  return addAction(
+    world,
+    `Set price oracle price for ${address} to ${amount.show()}`,
+    await invoke(world, priceOracle.methods.setDirectPrice(address, amount.encode()), from)
+  );
+}
+
 async function verifyPriceOracle(world: World, priceOracle: PriceOracle, apiKey: string, contractName: string): Promise<World> {
   if (world.isLocalNetwork()) {
     world.printer.printLine(`Politely declining to verify on local network: ${world.network}.`);
@@ -84,7 +92,9 @@ export function priceOracleCommands() {
         new Arg("params", getEventV, {variadic: true})
       ],
       (world, from, {params}) => setPriceOracleFn(world, params.val)
-    ),new Command<{priceOracle: PriceOracle, cToken: AddressV, amount: NumberV}>(`
+    ),
+
+    new Command<{priceOracle: PriceOracle, cToken: AddressV, amount: NumberV}>(`
         #### SetPrice
 
         * "SetPrice <CToken> <Amount>" - Sets the per-ether price for the given cToken
@@ -98,6 +108,22 @@ export function priceOracleCommands() {
       ],
       (world, from, {priceOracle, cToken, amount}) => setPrice(world, from, priceOracle, cToken.val, amount)
     ),
+
+    new Command<{priceOracle: PriceOracle, address: AddressV, amount: NumberV}>(`
+        #### SetDirectPrice
+
+        * "SetDirectPrice <Address> <Amount>" - Sets the per-ether price for the given cToken
+          * E.g. "PriceOracle SetDirectPrice (Address Zero) 1.0"
+      `,
+      "SetDirectPrice",
+      [
+        new Arg("priceOracle", getPriceOracle, {implicit: true}),
+        new Arg("address", getAddressV),
+        new Arg("amount", getExpNumberV)
+      ],
+      (world, from, {priceOracle, address, amount}) => setDirectPrice(world, from, priceOracle, address.val, amount)
+    ),
+
     new View<{priceOracle: PriceOracle, apiKey: StringV, contractName: StringV}>(`
         #### Verify
 

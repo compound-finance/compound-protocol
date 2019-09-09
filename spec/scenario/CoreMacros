@@ -11,7 +11,7 @@ Macro PricedComptroller closeFactor=0.1 maxAssets=20
     PriceOracle Deploy Simple
     ComptrollerImpl Deploy Scenario ScenComptroller
     Unitroller SetPendingImpl ScenComptroller
-    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address Zero) (Address Zero) -- Final argument is a Junk address, if listing cEther use ListedEtherToken to replace proxy
+    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) -- Final argument is a Junk address, if listing cEther use ListedEtherToken to replace proxy
     ComptrollerImpl ScenComptroller Become (PriceOracleProxy Address) closeFactor maxAssets
 
 Macro NewComptroller price=1.0 closeFactor=0.1 maxAssets=20
@@ -19,7 +19,7 @@ Macro NewComptroller price=1.0 closeFactor=0.1 maxAssets=20
     PriceOracle Deploy Fixed price
     ComptrollerImpl Deploy Scenario ScenComptroller
     Unitroller SetPendingImpl ScenComptroller
-    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address Zero) (Address Zero) -- Junk address, if listing cEther use ListedEtherToken to replace proxy
+    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) -- Junk address, if listing cEther use ListedEtherToken to replace proxy
     ComptrollerImpl ScenComptroller Become (PriceOracleProxy Address) closeFactor maxAssets
 
 Macro NewCToken erc20 cToken borrowRate=0.0005 initialExchangeRate=2e9 decimals=8 tokenType=Standard cTokenType=Scenario
@@ -38,7 +38,7 @@ Macro ListedCToken erc20 cToken borrowRate=0.0005 initialExchangeRate=2e9 decima
 Macro ListedEtherToken cToken borrowRate=0.0005 initialExchangeRate=2e9 decimals=8
     NewEtherToken cToken borrowRate initialExchangeRate decimals
     Comptroller SupportMarket cToken
-    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address cETH) (Address Zero)
+    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address cETH) (Address Zero) (Address Zero)
     Comptroller SetPriceOracle (PriceOracleProxy Address)
 
 Macro ListedEtherTokenMinted cToken borrowRate=0.0005 initialExchangeRate=2e9 decimals=8

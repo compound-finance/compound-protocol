@@ -9,7 +9,6 @@ const {
 } = require('./Utils/MochaTruffle');
 
 const {
-  makeComptroller,
   makeCToken,
   makePriceOracle,
 } = require('./Utils/Compound');
@@ -17,24 +16,23 @@ const {
 const OraclePriceOracleProxy = getContract('PriceOracleProxy');
 
 contract('PriceOracleProxy', function([root, ...accounts]) {
-  let oracle, comptroller, backingOracle, cEther, cErc20, cUsdc, fakeUSDC;
+  let oracle, backingOracle, cEth, cUsdc, cDai, cOther;
 
   before(async () =>{
-    cEther = await makeCToken({kind: "cether",
-                               comptrollerOpts: { kind: "v1-no-proxy"},
-                               supportMarket: true});
-
-    cUsdc = await makeCToken({comptroller: cEther.comptroller,
-                              supportMarket: true});
+    cEth = await makeCToken({kind: "cether", comptrollerOpts: {kind: "v1-no-proxy"}, supportMarket: true});
+    cUsdc = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
+    cDai = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
+    cOther = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
 
     backingOracle = await makePriceOracle();
     oracle = await OraclePriceOracleProxy
       .deploy({
         arguments: [
-          cEther.comptroller._address,
+          cEth.comptroller._address,
           backingOracle._address,
-          cEther._address,
-          cUsdc._address
+          cEth._address,
+          cUsdc._address,
+          cDai._address
         ]})
       .send({from: root});
   });
@@ -42,7 +40,7 @@ contract('PriceOracleProxy', function([root, ...accounts]) {
   describe("constructor", async () => {
     it("sets address of comptroller", async () => {
       let configuredComptroller = await call(oracle, "comptroller");
-      assert.equal(configuredComptroller, cEther.comptroller._address);
+      assert.equal(configuredComptroller, cEth.comptroller._address);
     });
 
     it("sets address of v1 oracle", async () => {
@@ -50,16 +48,21 @@ contract('PriceOracleProxy', function([root, ...accounts]) {
       assert.equal(configuredOracle, backingOracle._address);
     });
 
-    it("sets address of cEther", async () => {
-      let configuredCEther = await call(oracle, "cEtherAddress");
-      assert.equal(configuredCEther, cEther._address);
+    it("sets address of cEth", async () => {
+      let configuredCEther = await call(oracle, "cEthAddress");
+      assert.equal(configuredCEther, cEth._address);
     });
 
     it("sets address of cUSDC", async () => {
       let configuredCUSD = await call(oracle, "cUsdcAddress");
       assert.equal(configuredCUSD, cUsdc._address);
     });
-  });
+
+    it("sets address of cDAI", async () => {
+      let configuredCDAI = await call(oracle, "cDaiAddress");
+      assert.equal(configuredCDAI, cDai._address);
+    });
+});
 
   describe("getUnderlyingPrice", async () => {
     let setAndVerifyBackingPrice = async (cToken, price) => {
@@ -81,49 +84,52 @@ contract('PriceOracleProxy', function([root, ...accounts]) {
       assert.equal(Number(proxyPrice), price * 1e18);;
     };
 
-    it("always returns 1e18 for cEther", async () => {
-      await readAndVerifyProxyPrice(cEther, 1);
+    it("always returns 1e18 for cEth", async () => {
+      await readAndVerifyProxyPrice(cEth, 1);
     });
 
-    it("checks address(1) for cusdc", async () => {
-      await send(
-        backingOracle,
-        "setDirectPrice",
-        [address(1), etherMantissa(50)]);
-
-      await readAndVerifyProxyPrice(cUsdc, 50);
+    it("proxies to v1 oracle for cusdc", async () => {
+      await setAndVerifyBackingPrice(cDai, 50);
+      await readAndVerifyProxyPrice(cUsdc, 50e12);
     });
 
-    it("proxies to v1 oracle for listed cErc20's", async () => {
-      let listedToken = await makeCToken({comptroller: cEther.comptroller, supportMarket: true});
+    it("computes address(2) / address(1) * maker usd price for cdai", async () => {
+      await setAndVerifyBackingPrice(cDai, 5);
 
-      await setAndVerifyBackingPrice(listedToken, 12);
-      await readAndVerifyProxyPrice(listedToken, 12);
+      // 0.95 < ratio < 1.05
+      await send(backingOracle, "setDirectPrice", [address(1), etherMantissa(1e12)]);
+      await send(backingOracle, "setDirectPrice", [address(2), etherMantissa(1.03)]);
+      await readAndVerifyProxyPrice(cDai, 1.03 * 5);
 
-      await setAndVerifyBackingPrice(listedToken, 37);
-      await readAndVerifyProxyPrice(listedToken, 37);
+      // ratio <= 0.95
+      await send(backingOracle, "setDirectPrice", [address(1), etherMantissa(5e12)]);
+      await readAndVerifyProxyPrice(cDai, 0.95 * 5);
+
+      // 1.05 <= ratio
+      await send(backingOracle, "setDirectPrice", [address(1), etherMantissa(5e11)]);
+      await readAndVerifyProxyPrice(cDai, 1.05 * 5);
     });
 
-    describe("returns 0 for unlisted tokens", async () => {
-      it("right comptroller, not supported", async () => {
-        let unlistedToken = await makeCToken({comptroller: comptroller,
-                                              supportMarket: false});
+    it("proxies for whitelisted tokens", async () => {
+      await setAndVerifyBackingPrice(cOther, 11);
+      await readAndVerifyProxyPrice(cOther, 11);
 
-        await setAndVerifyBackingPrice(unlistedToken, 12);
-        await readAndVerifyProxyPrice(unlistedToken, 0);
-      });
-
-      it("wrong comptroller", async () => {
-        let wrongNetworkToken = await makeCToken({supportMarket: true});
-        await setAndVerifyBackingPrice(wrongNetworkToken, 10);
-
-        await readAndVerifyProxyPrice(wrongNetworkToken, 0);
-      });
-
-      it("not even a cToken", async () => {
-        let proxyPrice = await call(oracle, "getUnderlyingPrice", [root]);
-        assert.equal(Number(proxyPrice), 0);
-      });
+      await setAndVerifyBackingPrice(cOther, 37);
+      await readAndVerifyProxyPrice(cOther, 37);
     });
+
+    it("returns 0 for non-whitelisted token", async () => {
+      let unlistedToken = await makeCToken({comptroller: cEth.comptroller});
+
+      await setAndVerifyBackingPrice(unlistedToken, 12);
+      await readAndVerifyProxyPrice(unlistedToken, 0);
+    });
+
+    it("returns 0 for wrong comptroller", async () => {
+      let wrongNetworkToken = await makeCToken({supportMarket: true});
+      await setAndVerifyBackingPrice(wrongNetworkToken, 10);
+      await readAndVerifyProxyPrice(wrongNetworkToken, 0);
+    });
+
   });
 });

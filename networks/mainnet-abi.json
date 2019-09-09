@@ -1940,6 +1940,21 @@
         {
             "constant": true,
             "inputs": [],
+            "name": "cEthAddress",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x2ed58e15"
+        },
+        {
+            "constant": true,
+            "inputs": [],
             "name": "comptroller",
             "outputs": [
                 {
@@ -1970,7 +1985,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "cEtherAddress",
+            "name": "makerUsdOracleKey",
             "outputs": [
                 {
                     "name": "",
@@ -1980,7 +1995,22 @@
             "payable": false,
             "stateMutability": "view",
             "type": "function",
-            "signature": "0xde836acf"
+            "signature": "0xbc8a4ef4"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "cDaiAddress",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0xf2c65bf9"
         },
         {
             "constant": true,
@@ -2018,6 +2048,21 @@
             "signature": "0xfe10c98d"
         },
         {
+            "constant": true,
+            "inputs": [],
+            "name": "cUsdcAddress",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0xff11439b"
+        },
+        {
             "inputs": [
                 {
                     "name": "comptroller_",
@@ -2028,7 +2073,15 @@
                     "type": "address"
                 },
                 {
-                    "name": "cEtherAddress_",
+                    "name": "cEthAddress_",
+                    "type": "address"
+                },
+                {
+                    "name": "cUsdcAddress_",
+                    "type": "address"
+                },
+                {
+                    "name": "cDaiAddress_",
                     "type": "address"
                 }
             ],

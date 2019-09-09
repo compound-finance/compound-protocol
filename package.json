@@ -1,5 +1,5 @@
 {
-  "name": "compound-money-market",
+  "name": "compound-protocol",
   "version": "0.2.1",
   "description": "The Compound Protocol",
   "main": "index.js",
