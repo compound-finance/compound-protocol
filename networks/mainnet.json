@@ -110,7 +110,8 @@
             "symbol": "DAI",
             "decimals": 18,
             "address": "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359",
-            "reader": "0x729D19f657BD0614b4985Cf1D82531c67569197B"
+            "reader": "0x729D19f657BD0614b4985Cf1D82531c67569197B",
+            "oracle_key": "0x0000000000000000000000000000000000000002"
         },
         "cBAT": {
             "name": "Compound Basic Attention Token",
@@ -179,7 +180,8 @@
             "name": "USD Coin",
             "symbol": "USDC",
             "decimals": 6,
-            "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+            "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "oracle_key": "0x0000000000000000000000000000000000000001"
         }
     },
     "cTokens": {
