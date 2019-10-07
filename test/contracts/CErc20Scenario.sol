@@ -10,7 +10,8 @@ contract CErc20Scenario is CErc20 {
                 uint initialExchangeRateMantissa,
                 string memory name_,
                 string memory symbol_,
-                uint decimals_)
+                uint8 decimals_,
+                address payable admin_)
     CErc20(
     underlying_,
     comptroller_,
@@ -18,7 +19,8 @@ contract CErc20Scenario is CErc20 {
     initialExchangeRateMantissa,
     name_,
     symbol_,
-    decimals_) public {}
+    decimals_,
+    admin_) public {}
 
     function setTotalBorrows(uint totalBorrows_) public {
         totalBorrows = totalBorrows_;

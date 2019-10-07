@@ -10,7 +10,7 @@ contract ComptrollerErrorReporter {
         INVALID_CLOSE_FACTOR,
         INVALID_COLLATERAL_FACTOR,
         INVALID_LIQUIDATION_INCENTIVE,
-        MARKET_NOT_ENTERED,
+        MARKET_NOT_ENTERED, // no longer possible
         MARKET_NOT_LISTED,
         MARKET_ALREADY_LISTED,
         MATH_ERROR,
@@ -42,7 +42,7 @@ contract ComptrollerErrorReporter {
         SET_PRICE_ORACLE_OWNER_CHECK,
         SUPPORT_MARKET_EXISTS,
         SUPPORT_MARKET_OWNER_CHECK,
-        ZUNUSED
+        SET_PAUSE_GUARDIAN_OWNER_CHECK
     }
 
     /**

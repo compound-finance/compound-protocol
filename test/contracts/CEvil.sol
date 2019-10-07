@@ -9,7 +9,8 @@ contract CEvil is CErc20Scenario {
                 uint initialExchangeRateMantissa,
                 string memory name_,
                 string memory symbol_,
-                uint decimals_)
+                uint8 decimals_,
+                address payable admin_)
     CErc20Scenario(
     underlying_,
     comptroller_,
@@ -17,7 +18,8 @@ contract CEvil is CErc20Scenario {
     initialExchangeRateMantissa,
     name_,
     symbol_,
-    decimals_) public {}
+    decimals_,
+    admin_) public {}
 
     function evilSeize(CToken treasure, address liquidator, address borrower, uint seizeTokens) public returns (uint) {
         return treasure.seize(liquidator, borrower, seizeTokens);

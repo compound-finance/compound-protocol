@@ -4,10 +4,13 @@
   "description": "The Compound Protocol",
   "main": "index.js",
   "scripts": {
+    "chain": "./script/ganache",
+    "compile": "truffle compile",
     "console": "./script/console",
     "coverage": "./script/coverage",
     "deploy": "./scenario/script/repl -s ./script/scen/deploy.scen",
     "lint": "./script/lint",
+    "ganache": "./script/ganache",
     "repl": "./scenario/script/repl",
     "scenario": "./script/scenario",
     "test": "./script/test"

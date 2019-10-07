@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 dir=`dirname $0`
 proj_root="$dir/.."
 test_root="$dir/../test"

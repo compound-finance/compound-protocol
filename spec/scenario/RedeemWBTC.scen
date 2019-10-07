@@ -90,10 +90,10 @@ Test "Mint WBTC then redeem with interest - no reserves"
     Assert Equal (CToken cWBTC UnderlyingBalance Geoff) 50e8
     Assert Equal (CToken cWBTC ExchangeRate) 0.1
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest WBTC cWBTC 10e8 5e8 interestRate:0.0001 blocks:5000
-    -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
+    BorrowAndRepayWithInterest WBTC cWBTC 10e8 5e8 interestRate:0.000001 blocks:500000
+    -- We've accrued .001% interest for 500000 blocks, or 50% of the principal,
     --   thus, we should have accrued 5e8 of interest for the protocol
-    --   This is due pro-rata to all holders, but we just have one, so
+    --   This is due pro-rata to all suppliers, but we just have one, so
     --   let's check that account is given correct new balance.
     Assert Equal (Erc20 cWBTC TokenBalance Geoff) 500e8
     Assert Equal (CToken cWBTC UnderlyingBalance Geoff) 55e8
@@ -116,10 +116,10 @@ Test "Mint WBTC then redeem part with interest - no reserves"
     Assert Equal (CToken cWBTC UnderlyingBalance Geoff) 50e8
     Assert Equal (CToken cWBTC ExchangeRate) 0.1
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest WBTC cWBTC 10e8 5e8 interestRate:0.0001 blocks:5000
-    -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
+    BorrowAndRepayWithInterest WBTC cWBTC 10e8 5e8 interestRate:0.000001 blocks:500000
+    -- We've accrued .001% interest for 500000 blocks, or 50% of the principal,
     --   thus, we should have accrued 5e8 of interest for the protocol
-    --   This is due pro-rata to all holders, but we just have one, so
+    --   This is due pro-rata to all suppliers, but we just have one, so
     --   let's check that account is given correct new balance.
     Assert Equal (Erc20 cWBTC TokenBalance Geoff) 500e8
     Assert Equal (CToken cWBTC UnderlyingBalance Geoff) 55e8
@@ -139,11 +139,11 @@ Test "Mint WBTC then redeem with reserves and interest"
     Assert Equal (CToken cWBTC UnderlyingBalance Geoff) 50e8
     Assert Equal (CToken cWBTC ExchangeRate) 0.1
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest WBTC cWBTC 10e8 5e8 interestRate:0.0001 blocks:5000 reserveRate:0.2
-    -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
+    BorrowAndRepayWithInterest WBTC cWBTC 10e8 5e8 interestRate:0.000001 blocks:500000 reserveRate:0.2
+    -- We've accrued .001% interest for 500000 blocks, or 50% of the principal,
     --   thus, we should have accrued 5e8 of interest for the protocol
     --   The reserves should get 20% of this, or 1e8, and the rest
-    --   is due pro-rata to all holders. We just have one, so
+    --   is due pro-rata to all suppliers. We just have one, so
     --   let's check that account is given correct new balance.
     Assert Equal (Erc20 cWBTC TokenBalance Geoff) 500e8
     Assert Equal (CToken cWBTC Reserves) 1e8

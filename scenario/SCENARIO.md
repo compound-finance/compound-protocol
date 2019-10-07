@@ -61,7 +61,7 @@
 
 ## cToken Events
 
-* `CToken Deploy name:<CToken> underlying:<Contract> comptroller:<Contract> interestRateModel:<Contract> initialExchangeRate:<Number> decimals:<Number>` - Generates a new comptroller and sets to world global
+* `CToken Deploy name:<CToken> underlying:<Contract> comptroller:<Contract> interestRateModel:<Contract> initialExchangeRate:<Number> decimals:<Number> admin:<Address>` - Generates a new comptroller and sets to world global
   * E.g. `CToken Deploy cZRX (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 18`
 * `CToken <cToken> AccrueInterest` - Accrues interest for given token
   * E.g. `CToken cZRX AccrueInterest`

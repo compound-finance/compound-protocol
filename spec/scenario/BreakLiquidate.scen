@@ -1,5 +1,5 @@
 
-Macro NewBorrow borrowAmount mintAmount borrowRate=0.0005 user=Geoff collateralPrice=1.0 borrowPrice=1.0 liquidationIncentive=1.1
+Macro NewBorrow borrowAmount mintAmount borrowRate=0.000005 user=Geoff collateralPrice=1.0 borrowPrice=1.0 liquidationIncentive=1.1
     PricedComptroller closeFactor:0.9 -- Set the close factor high to reduce number of steps to demonstrate
     Comptroller LiquidationIncentive liquidationIncentive
     NewCToken ZRX cZRX

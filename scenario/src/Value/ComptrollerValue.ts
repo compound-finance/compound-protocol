@@ -304,6 +304,58 @@ export function comptrollerFetchers() {
         new Arg("cToken", getCTokenV)
       ],
       (world, {comptroller, cToken}) => checkListed(world, comptroller, cToken)
+    ),
+    new Fetcher<{comptroller: Comptroller}, AddressV>(`
+        #### PauseGuardian
+
+        * "PauseGuardian" - Returns the Comptrollers's PauseGuardian
+        * E.g. "Comptroller PauseGuardian"
+        `,
+        "PauseGuardian",
+        [
+          new Arg("comptroller", getComptroller, {implicit: true})
+        ],
+        async (world, {comptroller}) => new AddressV(await comptroller.methods.pauseGuardian().call())
+    ),
+    new Fetcher<{comptroller: Comptroller}, BoolV>(`
+        #### MintGuardianPaused
+
+        * "MintGuardianPaused" - Returns the Comptrollers's Mint paused status
+        * E.g. "Comptroller MintGuardianPaused"
+        `,
+        "MintGuardianPaused",
+        [new Arg("comptroller", getComptroller, {implicit: true})],
+        async (world, {comptroller}) => new BoolV(await comptroller.methods.mintGuardianPaused().call())
+    ),
+    new Fetcher<{comptroller: Comptroller}, BoolV>(`
+        #### BorrowGuardianPaused
+
+        * "BorrowGuardianPaused" - Returns the Comptrollers's Borrow paused status
+        * E.g. "Comptroller BorrowGuardianPaused"
+        `,
+        "BorrowGuardianPaused",
+        [new Arg("comptroller", getComptroller, {implicit: true})],
+        async (world, {comptroller}) => new BoolV(await comptroller.methods.borrowGuardianPaused().call())
+        ),
+    new Fetcher<{comptroller: Comptroller}, BoolV>(`
+        #### TransferGuardianPaused
+
+        * "TransferGuardianPaused" - Returns the Comptrollers's Transfer paused status
+        * E.g. "Comptroller TransferGuardianPaused"
+        `,
+        "TransferGuardianPaused",
+        [new Arg("comptroller", getComptroller, {implicit: true})],
+        async (world, {comptroller}) => new BoolV(await comptroller.methods.transferGuardianPaused().call())
+    ),
+    new Fetcher<{comptroller: Comptroller}, BoolV>(`
+        #### SeizeGuardianPaused
+
+        * "SeizeGuardianPaused" - Returns the Comptrollers's Seize paused status
+        * E.g. "Comptroller SeizeGuardianPaused"
+        `,
+        "SeizeGuardianPaused",
+        [new Arg("comptroller", getComptroller, {implicit: true})],
+        async (world, {comptroller}) => new BoolV(await comptroller.methods.seizeGuardianPaused().call())
     )
   ];
 }
