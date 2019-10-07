@@ -6,7 +6,7 @@ const {
 
 const blockNumber = 2e7;
 const borrowIndex = 1e18;
-const borrowRate = .0001;
+const borrowRate = .000001;
 
 async function pretendBlock(cToken, accrualBlock = blockNumber, deltaBlocks = 1) {
   await send(cToken, 'harnessSetAccrualBlockNumber', [etherUnsigned(blockNumber)]);
@@ -96,7 +96,7 @@ contract('CToken', function ([root, ...accounts]) {
     });
 
     it('fails if interest accumulated for reserves calculation fails', async () => {
-      await setBorrowRate(cToken, .0001);
+      await setBorrowRate(cToken, .000001);
       await send(cToken, 'harnessExchangeRateDetails', [0, etherUnsigned(1e30), -1]);
       await send(cToken, 'harnessSetReserveFactorFresh', [etherUnsigned(1e10)]);
       await pretendBlock(cToken, blockNumber, 5e20)
@@ -120,14 +120,18 @@ contract('CToken', function ([root, ...accounts]) {
     });
 
     it('succeeds and saves updated values in storage on success', async () => {
-      await send(cToken, 'harnessExchangeRateDetails', [0, etherUnsigned(1e22), etherUnsigned(1e20)]);
-      await send(cToken, 'harnessSetReserveFactorFresh', [etherUnsigned(1e17)]);
+      const startingTotalBorrows = 1e22;
+      const startingTotalReserves = 1e20;
+      const reserveFactor = 1e17;
+
+      await send(cToken, 'harnessExchangeRateDetails', [0, etherUnsigned(startingTotalBorrows), etherUnsigned(startingTotalReserves)]);
+      await send(cToken, 'harnessSetReserveFactorFresh', [etherUnsigned(reserveFactor)]);
       await pretendBlock(cToken)
 
       const expectedAccrualBlockNumber = blockNumber + 1;
-      const expectedBorrowIndex = borrowIndex + borrowRate * 1e18;
-      const expectedTotalBorrows = 1e22 + 1e18;
-      const expectedTotalReserves = 1e20 + 1e17;
+      const expectedBorrowIndex = borrowIndex + borrowIndex * borrowRate;
+      const expectedTotalBorrows = startingTotalBorrows + startingTotalBorrows * borrowRate;
+      const expectedTotalReserves = startingTotalReserves + startingTotalBorrows *  borrowRate * reserveFactor / 1e18;
 
       assert.success(await send(cToken, 'accrueInterest'));
       assert.equal(await call(cToken, 'accrualBlockNumber'), expectedAccrualBlockNumber);

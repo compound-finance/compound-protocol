@@ -90,10 +90,10 @@ Test "Mint then redeem with interest - no reserves"
     Assert Equal (CToken cZRX UnderlyingBalance Geoff) 50e18
     Assert Equal (CToken cZRX ExchangeRate) 1e9
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest ZRX cZRX 10e18 5e18 interestRate:0.0001 blocks:5000
-    -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
+    BorrowAndRepayWithInterest ZRX cZRX 10e18 5e18 interestRate:0.000001 blocks:500000
+    -- We've accrued .001% interest for 500000 blocks, or 50% of the principal,
     --   thus, we should have accrued 5e18 of interest for the protocol
-    --   This is due pro-rata to all holders, but we just have one, so
+    --   This is due pro-rata to all suppliers, but we just have one, so
     --   let's check that account is given correct new balance.
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 500e8
     Assert Equal (CToken cZRX UnderlyingBalance Geoff) 55e18
@@ -116,10 +116,10 @@ Test "Mint then redeem part with interest - no reserves"
     Assert Equal (CToken cZRX UnderlyingBalance Geoff) 50e18
     Assert Equal (CToken cZRX ExchangeRate) 1e9
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest ZRX cZRX 10e18 5e18 interestRate:0.0001 blocks:5000
-    -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
+    BorrowAndRepayWithInterest ZRX cZRX 10e18 5e18 interestRate:0.000001 blocks:500000
+    -- We've accrued .001% interest for 500000 blocks, or 50% of the principal,
     --   thus, we should have accrued 5e18 of interest for the protocol
-    --   This is due pro-rata to all holders, but we just have one, so
+    --   This is due pro-rata to all suppliers, but we just have one, so
     --   let's check that account is given correct new balance.
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 500e8
     Assert Equal (CToken cZRX UnderlyingBalance Geoff) 55e18
@@ -139,8 +139,8 @@ Test "Mint then redeem with reserves and interest"
     Assert Equal (CToken cZRX UnderlyingBalance Geoff) 50e18
     Assert Equal (CToken cZRX ExchangeRate) 1e9
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest ZRX cZRX 10e18 5e18 interestRate:0.0001 blocks:5000 reserveRate:0.2
-    -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
+    BorrowAndRepayWithInterest ZRX cZRX 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
+    -- We've accrued .001% interest for 500000 blocks, or 50% of the principal,
     --   thus, we should have accrued 5e18 of interest for the protocol
     --   The reserves should get 20% of this, or 1e18, and the rest
     --   is due pro-rata to all holders. We just have one, so

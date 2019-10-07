@@ -19,6 +19,7 @@ import {storeAndSaveContract} from '../Networks';
 import {getContract, getTestContract} from '../Contract';
 
 const ComptrollerContract = getContract("Comptroller");
+const ComptrollerScenarioG1Contract = getTestContract('ComptrollerScenarioG1');
 const ComptrollerScenarioContract = getTestContract('ComptrollerScenario');
 const ComptrollerBorkedContract = getTestContract('ComptrollerBorked');
 const ComptrollerBoolContract = getTestContract('BoolComptroller');
@@ -32,6 +33,23 @@ export interface ComptrollerImplData {
 
 export async function buildComptrollerImpl(world: World, from: string, event: Event): Promise<{world: World, comptrollerImpl: ComptrollerImpl, comptrollerImplData: ComptrollerImplData}> {
   const fetchers = [
+    new Fetcher<{name: StringV}, ComptrollerImplData>(`
+        #### ScenarioG1
+
+        * "ScenarioG1 name:<String>" - The Comptroller Scenario for local testing (G1)
+          * E.g. "ComptrollerImpl Deploy ScenarioG1 MyScen"
+      `,
+      "ScenarioG1",
+      [
+        new Arg("name", getStringV),
+      ],
+      async (world, {name}) => ({
+        invokation: await ComptrollerScenarioG1Contract.deploy<ComptrollerImpl>(world, from, []),
+        name: name.val,
+        contract: "ComptrollerScenarioG1",
+        description: "ScenarioG1 Comptroller Impl"
+      })
+    ),
     new Fetcher<{name: StringV | NothingV}, ComptrollerImplData>(`
         #### Scenario
 

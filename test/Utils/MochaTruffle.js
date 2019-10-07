@@ -150,7 +150,16 @@ const assert = Object.assign(global.assert || require('assert'), {
 });
 
 function address(n) {
-  return `0x${(n).toString(16).padStart(40, '0')}`;
+  return `0x${n.toString(16).padStart(40, '0')}`;
+}
+
+function bigNumberify(num) {
+  return ethers.utils.bigNumberify(new BigNum(num).toFixed());
+}
+
+function encodeParameters(types, values) {
+  const abi = new ethers.utils.AbiCoder();
+  return abi.encode(types, values);
 }
 
 async function etherBalance(addr) {
@@ -197,6 +206,10 @@ async function guessRoot() {
   if (!global.accounts)
     global.accounts = await web3.eth.getAccounts();
   return accounts[0];
+}
+
+function keccak256(values) {
+  return ethers.utils.keccak256(values);
 }
 
 async function minerStart() {
@@ -246,6 +259,8 @@ module.exports = {
   asIfTesting,
   assert,
   address,
+  bigNumberify,
+  encodeParameters,
   etherBalance,
   etherGasCost,
   etherMantissa,
@@ -253,6 +268,7 @@ module.exports = {
   getContract,
   getTestContract,
   guessRoot,
+  keccak256,
 
   minerStart,
   minerStop,

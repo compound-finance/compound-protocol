@@ -19,7 +19,8 @@ contract CErc20Harness is CErc20 {
                 uint initialExchangeRateMantissa,
                 string memory name_,
                 string memory symbol_,
-                uint decimals_)
+                uint8 decimals_,
+                address payable admin_)
     CErc20(
     underlying_,
     comptroller_,
@@ -27,7 +28,8 @@ contract CErc20Harness is CErc20 {
     initialExchangeRateMantissa,
     name_,
     symbol_,
-    decimals_) public {}
+    decimals_,
+    admin_) public {}
 
     /**
       * Fresh
@@ -183,5 +185,9 @@ contract CErc20Harness is CErc20 {
       */
     function harnessSetInterestRateModel(address newInterestRateModelAddress) public {
         interestRateModel = InterestRateModel(newInterestRateModelAddress);
+    }
+
+    function harnessCallBorrowAllowed(uint amount) public returns (uint) {
+        return comptroller.borrowAllowed(address(this), msg.sender, amount);
     }
 }

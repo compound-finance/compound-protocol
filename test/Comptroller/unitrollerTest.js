@@ -13,7 +13,7 @@ const {
 } = require('../Utils/Compound');
 
 const Unitroller = getContract('Unitroller');
-const Comptroller = getContract('Comptroller');
+const ComptrollerG1 = getContract('ComptrollerG1');
 const EchoTypesComptroller = getTestContract('EchoTypesComptroller');
 
 contract('Unitroller', function([root, ...accounts]) {
@@ -21,8 +21,8 @@ contract('Unitroller', function([root, ...accounts]) {
   let brains;
   let oracle;
   before(async () => {
-    oracle = await makePriceOracle()
-    brains = await Comptroller.deploy().send({from: root});
+    oracle = await makePriceOracle();
+    brains = await ComptrollerG1.deploy().send({ from: root });
   });
 
   beforeEach(async () => {

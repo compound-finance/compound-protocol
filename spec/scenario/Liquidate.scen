@@ -2,7 +2,7 @@
 Macro NewBorrow borrowAmount borrowRate user=Geoff collateralPrice=1.0 borrowPrice=1.0 mintAmount=100e18 collateralTokenType=Standard borrowTokenType=Standard
     PricedComptroller
     Comptroller LiquidationIncentive 1.1
-    NewCToken ZRX cZRX 0.0005 2e9 8 collateralTokenType
+    NewCToken ZRX cZRX 0.000005 2e9 8 collateralTokenType
     NewCToken BAT cBAT borrowRate 2e9 8 borrowTokenType -- note: cannot use macros with named args right now
     Give cBAT 10e18 BAT -- Faucet some bat to borrow
     PriceOracle SetPrice cZRX collateralPrice
@@ -18,17 +18,16 @@ Macro SimpleBorrow user borrowAmount mintAmount
     Borrow user borrowAmount cBAT
 
 Test "Insufficient shortfall"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 9e18
     -- Prices is 1:1 and collateral factor is 0.5
-    -- thus supplies 100e18 cZRX which gives the user 50e18
-    -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a few blocks at a 50% interest rate, he'll be
-    -- underwater.
-    FastForward 98000 Blocks -- 1e18 * (1 + 98000 * 0.0005)
+    -- thus suppluing 100e18 cZRX  gives the user 50e18
+    -- capacity of BAT. After 9800000 at a 0.005% interest rate
+    -- the user will have 50e18 oustanding BAT, just barely enough collateral to avoid liquidation
+    FastForward 9800000 Blocks -- 1e18 * (1 + 9800000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 50e18
@@ -42,17 +41,17 @@ Test "Insufficient shortfall"
     Assert Failure COMPTROLLER_REJECTION LIQUIDATE_COMPTROLLER_REJECTION INSUFFICIENT_SHORTFALL
 
 Test "Cannot self-liquidate"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 9e18
     -- Prices is 1:1 and collateral factor is 0.5
-    -- thus supplies 100e18 cZRX which gives the user 50e18
+    -- thus supplying 100e18 cZRX gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot of blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -66,7 +65,7 @@ Test "Cannot self-liquidate"
     Assert Failure INVALID_ACCOUNT_PAIR LIQUIDATE_LIQUIDATOR_IS_BORROWER
 
 Test "Liqidate beyond max close"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
@@ -74,9 +73,9 @@ Test "Liqidate beyond max close"
     -- Prices is 1:1 and collateral factor is 0.5
     -- thus supplies 100e18 cZRX which gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot of blocks at a 0.005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -90,17 +89,17 @@ Test "Liqidate beyond max close"
     Assert Failure COMPTROLLER_REJECTION LIQUIDATE_COMPTROLLER_REJECTION TOO_MUCH_REPAY
 
 Test "Proper liquidation with 1:1 price ratio"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 9e18
     -- Prices are 1:1 and collateral factor is 0.5
-    -- thus supplies 100e18 cZRX which gives the user 50e18
+    -- thus supplying 100e18 cZRX gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a lot of blocks at a 0.05% interest rate, he'll be
+    -- a lot of blocks at a 0.005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -141,17 +140,17 @@ Test "Proper liquidation with 1:1 price ratio"
     Assert Equal (Comptroller Liquidity Geoff) -0.1e18
 
 Test "Proper liquidation with 2:1 price ratio"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005 borrowPrice:2.0
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005 borrowPrice:2.0
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 9e18
-    -- Prices are 2:1 and collateral factor is 0.5
-    -- thus supplies 100e18 cZRX which gives the user 50e18
+    -- Prices are 2:1 and collateral factor is 0.5,
+    -- thus supplying 100e18 cZRX gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a lot blocks at a 0.05% interest rate, he'll be
+    -- a lot blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -193,7 +192,7 @@ Test "Proper liquidation with 2:1 price ratio"
     Assert Equal (Comptroller Liquidity Geoff) -50.2e18
 
 Test "Liquidate exactly zero"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
@@ -201,9 +200,9 @@ Test "Liquidate exactly zero"
     -- Prices is 1:1 and collateral factor is 0.5
     -- thus supplies 100e18 cZRX which gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 100000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -217,7 +216,7 @@ Test "Liquidate exactly zero"
     Assert Failure INVALID_CLOSE_AMOUNT_REQUESTED LIQUIDATE_CLOSE_AMOUNT_IS_ZERO
 
 Test "When price oracle for collateral token is zero"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
@@ -225,9 +224,9 @@ Test "When price oracle for collateral token is zero"
     -- Prices is 1:1 and collateral factor is 0.5
     -- thus supplies 100e18 cZRX which gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -242,7 +241,7 @@ Test "When price oracle for collateral token is zero"
     Assert Failure COMPTROLLER_REJECTION LIQUIDATE_COMPTROLLER_REJECTION PRICE_ERROR
 
 Test "When price oracle for collateral token is whack"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
@@ -250,9 +249,9 @@ Test "When price oracle for collateral token is whack"
     -- Prices is 1:1 and collateral factor is 0.5
     -- thus supplies 100e18 cZRX which gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -267,7 +266,7 @@ Test "When price oracle for collateral token is whack"
     Assert Failure COMPTROLLER_REJECTION LIQUIDATE_COMPTROLLER_REJECTION MATH_ERROR
 
 Test "When price oracle for borrow token is zero"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
@@ -275,9 +274,9 @@ Test "When price oracle for borrow token is zero"
     -- Prices is 1:1 and collateral factor is 0.5
     -- thus supplies 100e18 cZRX which gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -292,7 +291,7 @@ Test "When price oracle for borrow token is zero"
     Assert Failure COMPTROLLER_REJECTION LIQUIDATE_COMPTROLLER_REJECTION PRICE_ERROR
 
 Test "When price oracle for borrow token is whack"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
@@ -300,9 +299,9 @@ Test "When price oracle for borrow token is whack"
     -- Prices is 1:1 and collateral factor is 0.5
     -- thus supplies 100e18 cZRX which gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -317,7 +316,7 @@ Test "When price oracle for borrow token is whack"
     Assert Failure COMPTROLLER_REJECTION LIQUIDATE_COMPTROLLER_REJECTION MATH_ERROR
 
 Test "When repay borrow fails"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
@@ -325,9 +324,9 @@ Test "When repay borrow fails"
     -- Prices is 1:1 and collateral factor is 0.5
     -- thus supplies 100e18 cZRX which gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -342,7 +341,7 @@ Test "When repay borrow fails"
 
 
 Test "Proper liquidation of paused WBTC as collateral"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005 collateralTokenType:WBTC
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005 collateralTokenType:WBTC
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
@@ -350,9 +349,9 @@ Test "Proper liquidation of paused WBTC as collateral"
     -- Prices are 1:1 and collateral factor is 0.5
     -- thus supplies 100e18 cZRX which gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a lot of blocks at a 0.05% interest rate, he'll be
+    -- a lot blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -396,7 +395,7 @@ Test "Proper liquidation of paused WBTC as collateral"
 
 
 Test "When WBTC token as borrowed is paused, cannot liquidate"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005 borrowTokenType:WBTC
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005 borrowTokenType:WBTC
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
@@ -404,9 +403,9 @@ Test "When WBTC token as borrowed is paused, cannot liquidate"
     -- Prices is 1:1 and collateral factor is 0.5
     -- thus supplies 100e18 cZRX which gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -422,7 +421,7 @@ Test "When WBTC token as borrowed is paused, cannot liquidate"
 
 
 Test "When seize not allowed due to unlisted collateral"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
@@ -430,9 +429,9 @@ Test "When seize not allowed due to unlisted collateral"
     -- Prices is 1:1 and collateral factor is 0.5
     -- thus supplies 100e18 cZRX which gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -445,7 +444,7 @@ Test "When seize not allowed due to unlisted collateral"
     Assert Failure COMPTROLLER_REJECTION LIQUIDATE_COMPTROLLER_REJECTION MARKET_NOT_LISTED
 
 Test "When seize not allowed due to unlisted borrow"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
@@ -453,9 +452,9 @@ Test "When seize not allowed due to unlisted borrow"
     -- Prices is 1:1 and collateral factor is 0.5
     -- thus supplies 100e18 cZRX which gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -468,7 +467,7 @@ Test "When seize not allowed due to unlisted borrow"
     Assert Failure COMPTROLLER_REJECTION LIQUIDATE_COMPTROLLER_REJECTION MARKET_NOT_LISTED
 
 Test "When seize not allowed due to mismatched comptrollers"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
@@ -476,9 +475,9 @@ Test "When seize not allowed due to mismatched comptrollers"
     -- Prices is 1:1 and collateral factor is 0.5
     -- thus supplies 100e18 cZRX which gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 51e18
@@ -488,14 +487,14 @@ Test "When seize not allowed due to mismatched comptrollers"
     -- Change the comptroller of cZRX
     NewComptroller
     From Root (CToken cZRX SetComptroller (Unitroller Address))
-    FastForward 100000 Blocks -- To match other comptroller
+    FastForward 10000000 Blocks -- To match other comptroller
     --
     AllowFailures
     Liquidate Torrey "->" Geoff 2e18 cBAT "Seizing" cZRX
     Assert Revert "revert token seizure failed"
 
 Test "When there's insufficient collateral"
-    NewBorrow borrowAmount:1e18 borrowRate:0.0005 borrowPrice:0.001 mintAmount:1e18
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005 borrowPrice:0.001 mintAmount:1e18
     Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
     Assert Equal (CToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
@@ -503,9 +502,9 @@ Test "When there's insufficient collateral"
     -- Prices is 1:1 and collateral factor is 0.5
     -- thus supplies 100e18 cZRX which gives the user 50e18
     -- capacity of BAT. User only borrowed 1BAT, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 1e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 51e18

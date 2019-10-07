@@ -2,9 +2,17 @@
 Test "Standard Upgrade"
     Unitroller Deploy
     PriceOracle Deploy Fixed 1.0
+    -- Upgrade to G1
+    ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
+    Unitroller SetPendingImpl ScenComptrollerG1
+    ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracle Address) 0.2 20
+    Assert Equal (Comptroller CloseFactor) 0.2
+    Assert Equal (Comptroller MaxAssets) 20
+    Assert Equal (Comptroller Implementation) (Address ScenComptrollerG1)
+    -- Upgrade to G*
     ComptrollerImpl Deploy Scenario ScenComptroller
     Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become (PriceOracle Address) 0.2 20
+    ComptrollerImpl ScenComptroller Become
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
     Assert Equal (Comptroller Implementation) (Address ScenComptroller)
@@ -12,48 +20,48 @@ Test "Standard Upgrade"
 Test "Once become, can become again"
     Unitroller Deploy
     PriceOracle Deploy Fixed 1.0
-    ComptrollerImpl Deploy Scenario ScenComptroller
-    Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become (PriceOracle Address) 0.2 20
+    ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
+    Unitroller SetPendingImpl ScenComptrollerG1
+    ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracle Address) 0.2 20
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
-    Assert Equal (Comptroller Implementation) (Address ScenComptroller)
-    ComptrollerImpl Deploy Scenario ScenComptroller2
-    Unitroller SetPendingImpl ScenComptroller2
-    ComptrollerImpl ScenComptroller2 Become (PriceOracle Address) 0.4 40
+    Assert Equal (Comptroller Implementation) (Address ScenComptrollerG1)
+    ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1_2
+    Unitroller SetPendingImpl ScenComptrollerG1_2
+    ComptrollerImpl ScenComptrollerG1_2 BecomeG1 (PriceOracle Address) 0.4 40
     Assert Equal (Comptroller CloseFactor) 0.4
     Assert Equal (Comptroller MaxAssets) 40
-    Assert Equal (Comptroller Implementation) (Address ScenComptroller2)
+    Assert Equal (Comptroller Implementation) (Address ScenComptrollerG1_2)
 
 Test "Recome has default values"
     Unitroller Deploy
     PriceOracle Deploy Fixed 1.0
-    ComptrollerImpl Deploy Scenario ScenComptroller
-    Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Recome
+    ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
+    Unitroller SetPendingImpl ScenComptrollerG1
+    ComptrollerImpl ScenComptrollerG1 Recome
     Assert Equal (Comptroller CloseFactor) 0.0
     Assert Equal (Comptroller MaxAssets) 0
-    Assert Equal (Comptroller Implementation) (Address ScenComptroller)
+    Assert Equal (Comptroller Implementation) (Address ScenComptrollerG1)
 
 Test "Bork and unbork"
     Unitroller Deploy
     PriceOracle Deploy Fixed 1.0
-    ComptrollerImpl Deploy Scenario ScenComptroller
+    ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
     -- Set a normal impl
-    Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become (PriceOracle Address) 0.2 20
+    Unitroller SetPendingImpl ScenComptrollerG1
+    ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracle Address) 0.2 20
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
-    Assert Equal (Comptroller Implementation) (Address ScenComptroller)
+    Assert Equal (Comptroller Implementation) (Address ScenComptrollerG1)
     -- Now move to a borked one that's bad
     ComptrollerImpl Deploy Borked MyBork
     Unitroller SetPendingImpl MyBork
-    ComptrollerImpl MyBork Become (PriceOracle Address) 0.4 40
+    ComptrollerImpl MyBork BecomeG1 (PriceOracle Address) 0.4 40
     Assert ReadRevert (Comptroller CloseFactor) "revert"
     Assert Equal (Comptroller Implementation) (Address MyBork)
     -- Now change back to the first good one
-    Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Recome
+    Unitroller SetPendingImpl ScenComptrollerG1
+    ComptrollerImpl ScenComptrollerG1 Recome
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
-    Assert Equal (Comptroller Implementation) (Address ScenComptroller)
+    Assert Equal (Comptroller Implementation) (Address ScenComptrollerG1)

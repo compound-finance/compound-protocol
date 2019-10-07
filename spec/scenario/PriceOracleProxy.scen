@@ -1,10 +1,15 @@
 Macro SetupPriceOracleProxy
     Unitroller Deploy
     PriceOracle Deploy Simple
+    -- Update to G1
+    ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
+    Unitroller SetPendingImpl ScenComptrollerG1
+    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero)
+    ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracleProxy Address) 0.1 20
+    -- Update to G*
     ComptrollerImpl Deploy Scenario ScenComptroller
     Unitroller SetPendingImpl ScenComptroller
-    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero)
-    ComptrollerImpl ScenComptroller Become (PriceOracleProxy Address) 0.1 20
+    ComptrollerImpl ScenComptroller Become
     NewEtherToken cETH
     NewCToken USDC cUSDC
     NewCToken DAI cDAI

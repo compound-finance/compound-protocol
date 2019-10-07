@@ -32,17 +32,18 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
     /**
      * @notice EIP-20 token decimals for this token
      */
-    uint public decimals;
+    uint8 public decimals;
 
     /**
      * @notice Maximum borrow rate that can ever be applied (.0005% / block)
      */
-    uint constant borrowRateMaxMantissa = 5e14;
+
+    uint internal constant borrowRateMaxMantissa = 5e14;
 
     /**
      * @notice Maximum fraction of interest that can be set aside for reserves
      */
-    uint constant reserveFactorMaxMantissa = 1e18;
+    uint internal constant reserveFactorMaxMantissa = 1e18;
 
     /**
      * @notice Administrator for this contract
@@ -80,7 +81,7 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
     uint public accrualBlockNumber;
 
     /**
-     * @notice Accumulator of total earned interest since the opening of the market
+     * @notice Accumulator of the total earned interest rate since the opening of the market
      */
     uint public borrowIndex;
 
@@ -102,12 +103,12 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
     /**
      * @notice Official record of token balances for each account
      */
-    mapping (address => uint256) accountTokens;
+    mapping (address => uint256) internal accountTokens;
 
     /**
      * @notice Approved token transfer amounts on behalf of others
      */
-    mapping (address => mapping (address => uint256)) transferAllowances;
+    mapping (address => mapping (address => uint256)) internal transferAllowances;
 
     /**
      * @notice Container for borrow balance information
@@ -122,7 +123,7 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
     /**
      * @notice Mapping of account addresses to outstanding borrow balances
      */
-    mapping(address => BorrowSnapshot) accountBorrows;
+    mapping(address => BorrowSnapshot) internal accountBorrows;
 
 
     /*** Market Events ***/
@@ -199,19 +200,21 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
      * @param name_ EIP-20 name of this token
      * @param symbol_ EIP-20 symbol of this token
      * @param decimals_ EIP-20 decimal precision of this token
+     * @param admin_ Administrator of this token
      */
     constructor(ComptrollerInterface comptroller_,
                 InterestRateModel interestRateModel_,
                 uint initialExchangeRateMantissa_,
                 string memory name_,
                 string memory symbol_,
-                uint decimals_) internal {
-        // Set admin to msg.sender
-        admin = msg.sender;
-
+                uint8 decimals_,
+                address payable admin_) internal {
         // Set initial exchange rate
         initialExchangeRateMantissa = initialExchangeRateMantissa_;
         require(initialExchangeRateMantissa > 0, "Initial exchange rate must be greater than zero.");
+
+        // Temporarily set msg.sender to admin to set comptroller and interest rate model
+        admin = msg.sender;
 
         // Set the comptroller
         uint err = _setComptroller(comptroller_);
@@ -228,6 +231,9 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
         name = name_;
         symbol = symbol_;
         decimals = decimals_;
+
+        // Set the proper admin now that initialization is done
+        admin = admin_;
     }
 
     /**
@@ -295,7 +301,6 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
         /* We emit a Transfer event */
         emit Transfer(src, dst, tokens);
 
-        /* We call the defense hook (which checks for under-collateralization) */
         comptroller.transferVerify(address(this), src, dst, tokens);
 
         return uint(Error.NO_ERROR);
@@ -790,7 +795,7 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
     /**
      * @notice Sender redeems cTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param redeemAmount The amount of underlying to redeem
+     * @param redeemAmount The amount of underlying to receive from redeeming cTokens
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemUnderlyingInternal(uint redeemAmount) internal nonReentrant returns (uint) {
@@ -817,8 +822,8 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
      * @notice User redeems cTokens in exchange for the underlying asset
      * @dev Assumes interest has already been accrued up to the current block
      * @param redeemer The address of the account which is redeeming the tokens
-     * @param redeemTokensIn The number of cTokens to redeem into underlying (only one of redeemTokensIn or redeemAmountIn may be zero)
-     * @param redeemAmountIn The number of cTokens to redeem into underlying (only one of redeemTokensIn or redeemAmountIn may be zero)
+     * @param redeemTokensIn The number of cTokens to redeem into underlying (only one of redeemTokensIn or redeemAmountIn may be non-zero)
+     * @param redeemAmountIn The number of underlying tokens to receive from redeeming cTokens (only one of redeemTokensIn or redeemAmountIn may be non-zero)
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemFresh(address payable redeemer, uint redeemTokensIn, uint redeemAmountIn) internal returns (uint) {
@@ -1302,8 +1307,6 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
       * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
       * @param newPendingAdmin New pending admin.
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-      *
-      * TODO: Should we add a second arg to verify, like a checksum of `newAdmin` address?
       */
     function _setPendingAdmin(address payable newPendingAdmin) external returns (uint) {
         // Check caller = admin
@@ -1402,7 +1405,6 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
 
         // Verify market's block number equals current block number
         if (accrualBlockNumber != getBlockNumber()) {
-            // TODO: static_assert + no error code?
             return fail(Error.MARKET_NOT_FRESH, FailureInfo.SET_RESERVE_FACTOR_FRESH_CHECK);
         }
 
@@ -1452,7 +1454,6 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
 
         // We fail gracefully unless market's block number equals current block number
         if (accrualBlockNumber != getBlockNumber()) {
-            // TODO: static_assert + no error code?
             return fail(Error.MARKET_NOT_FRESH, FailureInfo.REDUCE_RESERVES_FRESH_CHECK);
         }
 
@@ -1462,7 +1463,6 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
         }
 
         // Check reduceAmount ≤ reserves[n] (totalReserves)
-        // TODO: I'm following the spec literally here but I think we should we just use SafeMath instead and fail on an error (which would be underflow)
         if (reduceAmount > totalReserves) {
             return fail(Error.BAD_INPUT, FailureInfo.REDUCE_RESERVES_VALIDATION);
         }
@@ -1522,7 +1522,6 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
 
         // We fail gracefully unless market's block number equals current block number
         if (accrualBlockNumber != getBlockNumber()) {
-            // TODO: static_assert + no error code?
             return fail(Error.MARKET_NOT_FRESH, FailureInfo.SET_INTEREST_RATE_MODEL_FRESH_CHECK);
         }
 

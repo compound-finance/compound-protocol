@@ -3,7 +3,7 @@ pragma solidity ^0.5.8;
 import "./CarefulMath.sol";
 
 /**
- * @title Exponential module for storing fixed-decision decimals
+ * @title Exponential module for storing fixed-precision decimals
  * @author Compound
  * @notice Exp is a struct which stores decimals with a fixed precision of 18 decimal places.
  *         Thus, if we wanted to store the 5.1, mantissa would store 5.1e18. That is:
@@ -200,7 +200,7 @@ contract Exponential is CarefulMath {
      * @dev Checks if first Exp is less than second Exp.
      */
     function lessThanExp(Exp memory left, Exp memory right) pure internal returns (bool) {
-        return left.mantissa < right.mantissa; //TODO: Add some simple tests and this in another PR yo.
+        return left.mantissa < right.mantissa;
     }
 
     /**

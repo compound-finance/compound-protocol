@@ -14,7 +14,9 @@ const {
 } = require('../Utils/Compound');
 
 const Unitroller = getContract('Unitroller');
-const Comptroller = getContract('Comptroller');
+const ComptrollerG1 = getContract('ComptrollerG1');
+
+// XXX add missing tests for Comptroller.sol
 
 contract('ComptrollerV1', function([root, ...accounts]) {
   let unitroller;
@@ -23,7 +25,7 @@ contract('ComptrollerV1', function([root, ...accounts]) {
 
   before(async () => {
     oracle = await makePriceOracle()
-    brains = await Comptroller.deploy().send({from: root});
+    brains = await ComptrollerG1.deploy().send({from: root});
   });
 
   beforeEach(async () => {
@@ -33,13 +35,13 @@ contract('ComptrollerV1', function([root, ...accounts]) {
   let initializeBrains = async (priceOracle, closeFactor, maxAssets) => {
     await send(unitroller, '_setPendingImplementation', [brains._address]);
     await send(brains, '_become', [unitroller._address, priceOracle._address, closeFactor, maxAssets, false]);
-    return Comptroller.at(unitroller._address);
+    return ComptrollerG1.at(unitroller._address);
   };
 
   let reinitializeBrains = async () => {
     await send(unitroller, '_setPendingImplementation', [brains._address]);
     await send(brains, '_become', [unitroller._address, address(0), 0, 0, true]);
-    return Comptroller.at(unitroller._address);
+    return ComptrollerG1.at(unitroller._address);
   };
 
   describe("delegating to comptroller v1", async () => {
@@ -74,7 +76,7 @@ contract('ComptrollerV1', function([root, ...accounts]) {
         assert.equal(await call(comptroller, 'maxAssets'), maxAssets, "maxAssets");
 
         // Create new brains
-        brains = await Comptroller.deploy().send({from: root});
+        brains = await ComptrollerG1.deploy().send({from: root});
         comptroller = await reinitializeBrains();
 
         assert.equal(await call(unitroller, 'comptrollerImplementation'), brains._address);

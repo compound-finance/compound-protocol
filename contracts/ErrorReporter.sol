@@ -42,7 +42,8 @@ contract ComptrollerErrorReporter {
         SET_PRICE_ORACLE_OWNER_CHECK,
         SUPPORT_MARKET_EXISTS,
         SUPPORT_MARKET_OWNER_CHECK,
-        ZUNUSED
+        ACCEPT_PAUSE_GUARDIAN_OWNER_CHECK,
+        SET_PENDING_PAUSE_GUARDIAN_OWNER_CHECK
     }
 
     /**

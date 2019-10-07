@@ -4,9 +4,8 @@ import "./ErrorReporter.sol";
 import "./ComptrollerStorage.sol";
 /**
  * @title ComptrollerCore
- * @dev storage for the comptroller will be at this address, and
- * cTokens should reference this contract rather than a deployed implementation if
- *
+ * @dev Storage for the comptroller is at this address, while execution is delegated to the `comptrollerImplementation`.
+ * CTokens should reference this contract as their comptroller.
  */
 contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
 
@@ -82,8 +81,6 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
       * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
       * @param newPendingAdmin New pending admin.
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-      *
-      * TODO: Should we add a second arg to verify, like a checksum of `newAdmin` address?
       */
     function _setPendingAdmin(address newPendingAdmin) public returns (uint) {
         // Check caller = admin
