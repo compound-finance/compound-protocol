@@ -517,3 +517,35 @@ Test "When there's insufficient collateral"
     AllowFailures
     Liquidate Torrey "->" Geoff 2e18 cBAT "Seizing" cZRX
     Assert Failure TOKEN_INSUFFICIENT_BALANCE LIQUIDATE_SEIZE_TOO_MUCH
+
+Test "when seize is paused"
+    NewBorrow borrowAmount:1e18 borrowRate:0.000005 borrowPrice:2.0
+    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (CToken cBAT TotalBorrows) 1e18
+    Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
+    Assert Equal (Erc20 BAT TokenBalance cBAT) 9e18
+    FastForward 10000000 Blocks -- 1e18 * (1 + 10000000 * 0.000005)
+    AccrueInterest cBAT -- Note: we have to accrue interest
+                        -- since it's not automatic for liquidity
+    Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 51e18
+    Assert Equal (CToken cBAT TotalBorrows) 51e18
+    -- Check user liquidity and verify < 0
+    Assert Equal (Comptroller Liquidity Geoff) -52e18 -- ( ( 1.0 * 100e18 * 0.5 ) - ( 2.0 * 51e18 ) ) / 1e18
+    -- Okay, so we should be able to liquidate, so let's do that.
+    Prep Torrey 2e18 BAT cBAT
+    Comptroller SetPauseGuardian Coburn
+    From Coburn (Comptroller SetGuardianPaused "Seize" True)
+    AllowFailures
+    Liquidate Torrey "->" Geoff 2e18 cBAT "Seizing" cZRX
+    Assert Revert "revert seize is paused"
+    -- unpause and check correct values
+    Invariant Success
+    Comptroller SetGuardianPaused "Seize" False
+    Liquidate Torrey "->" Geoff 2e18 cBAT "Seizing" cZRX
+    Assert Equal (Erc20 cZRX TokenBalance Geoff) 47.8e9
+    Assert Equal (Erc20 cZRX TokenBalance Torrey) 2.2e9
+    Assert Equal (Erc20 BAT TokenBalance Torrey) 0e18
+    Assert Equal (Erc20 BAT TokenBalance cBAT) 11e18
+    Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 49e18
+    Assert Equal (CToken cBAT TotalBorrows) 49e18
+    Assert Equal (Comptroller Liquidity Geoff) -50.2e18

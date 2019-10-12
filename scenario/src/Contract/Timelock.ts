@@ -4,10 +4,12 @@ import { encodedNumber } from '../Encoding';
 
 interface TimelockMethods {
   admin(): Callable<string>;
+  pendingAdmin(): Callable<string>;
   delay(): Callable<number>;
   queuedTransactions(txHash: string): Callable<boolean>;
   setDelay(delay: encodedNumber): Sendable<void>;
-  setAdmin(admin: string): Sendable<void>;
+  acceptAdmin(): Sendable<void>;
+  setPendingAdmin(admin: string): Sendable<void>;
   queueTransaction(
     target: string,
     value: encodedNumber,

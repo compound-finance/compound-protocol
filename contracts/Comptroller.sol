@@ -59,11 +59,6 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     event NewPauseGuardian(address oldPauseGuardian, address newPauseGuardian);
 
     /**
-     * @notice Emitted when pending pause guardian is changed
-     */
-    event NewPendingPauseGuardian(address oldPendingPauseGuardian, address newPendingPauseGuardian);
-
-    /**
      * @notice Emitted when an action is paused
      */
     event ActionPaused(string action, bool pauseState);
@@ -127,7 +122,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         for (uint i = 0; i < len; i++) {
             CToken cToken = CToken(cTokens[i]);
 
-            results[i] = addToMarketInternal(cToken, msg.sender);
+            results[i] = uint(addToMarketInternal(cToken, msg.sender));
         }
 
         return results;
@@ -139,22 +134,22 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      * @param borrower The address of the account to modify
      * @return Success indicator for whether the market was entered
      */
-    function addToMarketInternal(CToken cToken, address borrower) internal returns (uint) {
+    function addToMarketInternal(CToken cToken, address borrower) internal returns (Error) {
         Market storage marketToJoin = markets[address(cToken)];
 
         if (!marketToJoin.isListed) {
             // market is not listed, cannot join
-            return uint(Error.MARKET_NOT_LISTED);
+            return Error.MARKET_NOT_LISTED;
         }
 
         if (marketToJoin.accountMembership[borrower] == true) {
             // already joined
-            return uint(Error.NO_ERROR);
+            return Error.NO_ERROR;
         }
 
         if (accountAssets[borrower].length >= maxAssets)  {
             // no space, cannot join
-            return uint(Error.TOO_MANY_ASSETS);
+            return Error.TOO_MANY_ASSETS;
         }
 
         // survived the gauntlet, add to list
@@ -167,7 +162,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
 
         emit MarketEntered(cToken, borrower);
 
-        return uint(Error.NO_ERROR);
+        return Error.NO_ERROR;
     }
 
     /**
@@ -346,15 +341,17 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         // *may include Policy Hook-type checks
 
         if (!markets[cToken].accountMembership[borrower]) {
+            // only cTokens may call borrowAllowed if borrower not in market
+            require(msg.sender == cToken, "sender must be cToken");
+
             // attempt to add borrower to the market
-            if (msg.sender == cToken) {
-                addToMarketInternal(CToken(msg.sender), borrower);
+            Error err = addToMarketInternal(CToken(msg.sender), borrower);
+            if (err != Error.NO_ERROR) {
+                return uint(err);
             }
 
-            // check again if borrower has been added to market
-            if (!markets[cToken].accountMembership[borrower]) {
-                return uint(Error.MARKET_NOT_ENTERED);
-            }
+            // it should be impossible to break the important invariant
+            assert(markets[cToken].accountMembership[borrower]);
         }
 
         if (oracle.getUnderlyingPrice(CToken(cToken)) == 0) {
@@ -457,9 +454,6 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         address liquidator,
         address borrower,
         uint repayAmount) external returns (uint) {
-        // Pausing is a very serious situation - we revert to sound the alarms
-        require(!liquidateBorrowGuardianPaused, "liquidateBorrow is paused");
-
         // Shh - currently unused
         liquidator;
 
@@ -534,6 +528,9 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         address liquidator,
         address borrower,
         uint seizeTokens) external returns (uint) {
+        // Pausing is a very serious situation - we revert to sound the alarms
+        require(!seizeGuardianPaused, "seize is paused");
+
         // Shh - currently unused
         liquidator;
         borrower;
@@ -976,74 +973,67 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         return uint(Error.NO_ERROR);
     }
 
-    function _setPendingPauseGuardian(address newPendingPauseGuardian) public returns (uint) {
-        if (msg.sender != admin && msg.sender != pauseGuardian) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.SET_PENDING_PAUSE_GUARDIAN_OWNER_CHECK);
+    /**
+     * @notice Admin function to change the Pause Guardian
+     * @param newPauseGuardian The address of the new Pause Guardian
+     * @return uint 0=success, otherwise a failure. (See enum Error for details)
+     */
+    function _setPauseGuardian(address newPauseGuardian) public returns (uint) {
+        if (msg.sender != admin) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_PAUSE_GUARDIAN_OWNER_CHECK);
         }
 
-        // Save current value, if any, for inclusion in log
-        address oldPendingPauseGuardian = pendingPauseGuardian;
-
-        // Store pendingPauseGuardian with value newPendingPauseGuardian
-        pendingPauseGuardian = newPendingPauseGuardian;
-
-        // Emit NewPendingPauseGuardian(OldPendingPauseGuardian, NewPendingPauseGuardian)
-        emit NewPendingPauseGuardian(oldPendingPauseGuardian, pendingPauseGuardian);
-
-        return uint(Error.NO_ERROR);
-    }
-
-    function _acceptPauseGuardian() public returns (uint) {
-        if (msg.sender != pendingPauseGuardian || msg.sender == address(0)) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.ACCEPT_PAUSE_GUARDIAN_OWNER_CHECK);
-        }
-
-        // Save current values for inclusion in log
+        // Save current value for inclusion in log
         address oldPauseGuardian = pauseGuardian;
-        address oldPendingPauseGuardian = pendingPauseGuardian;
 
-        // Store pauseGuardian with value pendingPauseGuardian
-        pauseGuardian = pendingPauseGuardian;
+        // Store pauseGuardian with value newPauseGuardian
+        pauseGuardian = newPauseGuardian;
 
-        // Clear the pending value
-        pendingPauseGuardian = address(0);
-
+        // Emit NewPauseGuardian(OldPauseGuardian, NewPauseGuardian)
         emit NewPauseGuardian(oldPauseGuardian, pauseGuardian);
-        emit NewPendingPauseGuardian(oldPendingPauseGuardian, pendingPauseGuardian);
 
         return uint(Error.NO_ERROR);
     }
 
     function _setMintPaused(bool state) public returns (bool) {
-        require(msg.sender == pauseGuardian, "only pause guardian can pause or unpause");
+        require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
+        require(msg.sender == admin || state == true, "only admin can unpause");
+
         mintGuardianPaused = state;
         emit ActionPaused("Mint", state);
         return state;
     }
 
     function _setBorrowPaused(bool state) public returns (bool) {
-        require(msg.sender == pauseGuardian, "only pause guardian can pause or unpause");
+        require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
+        require(msg.sender == admin || state == true, "only admin can unpause");
+
         borrowGuardianPaused = state;
         emit ActionPaused("Borrow", state);
         return state;
     }
 
     function _setTransferPaused(bool state) public returns (bool) {
-        require(msg.sender == pauseGuardian, "only pause guardian can pause or unpause");
+        require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
+        require(msg.sender == admin || state == true, "only admin can unpause");
+
         transferGuardianPaused = state;
         emit ActionPaused("Transfer", state);
         return state;
     }
 
-    function _setLiquidateBorrowPaused(bool state) public returns (bool) {
-        require(msg.sender == pauseGuardian, "only pause guardian can pause or unpause");
-        liquidateBorrowGuardianPaused = state;
-        emit ActionPaused("LiquidateBorrow", state);
+    function _setSeizePaused(bool state) public returns (bool) {
+        require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
+        require(msg.sender == admin || state == true, "only admin can unpause");
+
+        seizeGuardianPaused = state;
+        emit ActionPaused("Seize", state);
         return state;
     }
 
     function _become(Unitroller unitroller) public {
         require(msg.sender == unitroller.admin(), "only unitroller admin can change brains");
+
         uint changeStatus = unitroller._acceptImplementation();
         require(changeStatus == 0, "change not authorized");
     }

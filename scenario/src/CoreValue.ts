@@ -338,6 +338,178 @@ export const fetchers = [
     [new Arg('addr', getAddressV)],
     async (world, { addr }) => addr
   ),
+  new Fetcher<
+    { addr: AddressV; slot: NumberV; start: NumberV; valType: StringV },
+    BoolV | AddressV | ExpNumberV | undefined
+  >(
+    `
+    #### StorageAt
+
+    * "StorageAt addr:<Address> slot:<Number> start:<Number>, valType:<VToCastTo>" - Returns bytes at storage slot
+    `,
+    'StorageAt',
+    [
+      new Arg('addr', getAddressV),
+      new Arg('slot', getNumberV),
+      new Arg('start', getNumberV),
+      new Arg('valType', getStringV)
+    ],
+    async (world, { addr, slot, start, valType }) => {
+      let stored = await world.web3.eth.getStorageAt(addr.val, slot.val);
+      const startVal = start.val;
+      let reverse = s =>
+        s
+          .split('')
+          .reverse()
+          .join('');
+      let val;
+      stored = stored
+        .slice(2) //drop leading 0x and reverse since items are packed from the back of the slot
+        .split('')
+        .reverse()
+        .join('');
+
+      //dont forget to re-reverse
+      switch (valType.val) {
+        case 'bool':
+          val = '0x' + reverse(stored.slice(startVal, (startVal as number) + 2));
+          return new BoolV(val != '0x' && val != '0x0');
+        case 'address':
+          val = '0x' + reverse(stored.slice(startVal, (startVal as number) + 40));
+          return new AddressV(val);
+        case 'number':
+          let parsed = world.web3.utils.toBN('0x' + reverse(stored));
+
+          // if the numbers are big, they are big...
+          if (parsed.gt(world.web3.utils.toBN(1000))) {
+            return new ExpNumberV(parsed, 1e18);
+          } else {
+            return new ExpNumberV(parsed, 1);
+          }
+      }
+    }
+  ),
+
+  new Fetcher<
+    { addr: AddressV; slot: NumberV; key: AddressV; nestedKey: AddressV; valType: StringV },
+    ListV | undefined
+  >(
+    `
+    #### StorageAtNestedMapping
+
+    * "StorageAtNestedMapping addr:<Address> slot:<Number>, key:<address>, nestedKey:<address>, valType:<VToCastTo>" - Returns bytes at storage slot
+    `,
+    'StorageAtNestedMapping',
+    [
+      new Arg('addr', getAddressV),
+      new Arg('slot', getNumberV),
+      new Arg('key', getAddressV),
+      new Arg('nestedKey', getAddressV),
+      new Arg('valType', getStringV)
+    ],
+    async (world, { addr, slot, key, nestedKey, valType }) => {
+      let paddedSlot = world.web3.utils.padLeft(slot.val, 64);
+      let paddedKey = world.web3.utils.padLeft(key.val, 64);
+      let newKey = world.web3.utils.sha3(paddedKey + paddedSlot, { encoding: 'hex' });
+
+      let val = await world.web3.eth.getStorageAt(addr.val, newKey);
+
+      switch (valType.val) {
+        case 'marketStruct':
+          let isListed = val == '0x01';
+          let collateralFactorKey =
+            '0x' +
+            world.web3.utils
+              .toBN(newKey)
+              .add(world.web3.utils.toBN(1))
+              .toString(16);
+
+          let collateralFactor = await world.web3.eth.getStorageAt(addr.val, collateralFactorKey);
+          collateralFactor = world.web3.utils.toBN(collateralFactor);
+
+          let userMarketBaseKey = world.web3.utils
+            .toBN(newKey)
+            .add(world.web3.utils.toBN(2))
+            .toString(16);
+          userMarketBaseKey = world.web3.utils.padLeft(userMarketBaseKey, 64);
+
+          let paddedSlot = world.web3.utils.padLeft(userMarketBaseKey, 64);
+          let paddedKey = world.web3.utils.padLeft(nestedKey.val, 64);
+          let newKeyToo = world.web3.utils.sha3(paddedKey + paddedSlot, { encoding: 'hex' });
+
+          let userInMarket = await world.web3.eth.getStorageAt(addr.val, newKeyToo);
+
+          return new ListV([
+            new BoolV(isListed),
+            new ExpNumberV(collateralFactor, 1e18),
+            new BoolV(userInMarket == '0x01')
+          ]);
+      }
+    }
+  ),
+
+  new Fetcher<
+    { addr: AddressV; slot: NumberV; key: AddressV; valType: StringV },
+    AddressV | BoolV | ExpNumberV | ListV | undefined
+  >(
+    `
+    #### StorageAtMapping
+
+    * "StorageAtMapping addr:<Address> slot:<Number>, key:<address>, valType:<VToCastTo>" - Returns bytes at storage slot
+    `,
+    'StorageAtMapping',
+    [
+      new Arg('addr', getAddressV),
+      new Arg('slot', getNumberV),
+      new Arg('key', getAddressV),
+      new Arg('valType', getStringV)
+    ],
+    async (world, { addr, slot, key, valType }) => {
+      let paddedSlot = world.web3.utils.padLeft(slot.val, 64);
+      let paddedKey = world.web3.utils.padLeft(key.val, 64);
+      let newKey = world.web3.utils.sha3(paddedKey + paddedSlot, { encoding: 'hex' });
+
+      let val = await world.web3.eth.getStorageAt(addr.val, newKey);
+
+      switch (valType.val) {
+        case 'list(address)':
+          let num = world.web3.utils.toBN(val);
+
+          let p = new Array(num, 'n').map(async (_v, index) => {
+            let itemKey;
+            itemKey = world.web3.utils.sha3(newKey, { encoding: 'hex' });
+            itemKey =
+              '0x' +
+              world.web3.utils
+                .toBN(itemKey)
+                .add(world.web3.utils.toBN(index))
+                .toString(16);
+
+            let x = await world.web3.eth.getStorageAt(addr.val, itemKey);
+
+            return new AddressV(x);
+          });
+
+          let all = await Promise.all(p);
+          return new ListV(all);
+
+        case 'bool':
+          return new BoolV(val != '0x' && val != '0x0');
+        case 'address':
+          return new AddressV(val);
+        case 'number':
+          let parsed = world.web3.utils.toBN(val);
+
+          // if the numbers are big, they are big...
+          if (parsed.gt(world.web3.utils.toBN(1000))) {
+            return new ExpNumberV(parsed, 1e18);
+          } else {
+            return new ExpNumberV(parsed, 1);
+          }
+      }
+    }
+  ),
+
   new Fetcher<{}, AddressV>(
     `
       #### LastContract
@@ -394,6 +566,95 @@ export const fetchers = [
         return await getCoreValue(world, def.val);
       }
     }
+  ),
+  new Fetcher<{ minutes: NumberV }, NumberV>(
+    `
+      #### Minutes
+
+      * "Minutes minutes:<NumberV>" - Returns number of minutes in seconds
+    `,
+    'Minutes',
+    [new Arg('minutes', getNumberV)],
+    async (world, { minutes }) => {
+      const minutesBn = new BigNumber(minutes.val);
+      return new NumberV(minutesBn.times(60).toFixed(0));
+    }
+  ),
+  new Fetcher<{ hours: NumberV }, NumberV>(
+    `
+      #### Hours
+
+      * "Hours hours:<NumberV>" - Returns number of hours in seconds
+    `,
+    'Hours',
+    [new Arg('hours', getNumberV)],
+    async (world, { hours }) => {
+      const hoursBn = new BigNumber(hours.val);
+      return new NumberV(hoursBn.times(3600).toFixed(0));
+    }
+  ),
+  new Fetcher<{ days: NumberV }, NumberV>(
+    `
+      #### Days
+
+      * "Days days:<NumberV>" - Returns number of days in seconds
+    `,
+    'Days',
+    [new Arg('days', getNumberV)],
+    async (world, { days }) => {
+      const daysBn = new BigNumber(days.val);
+      return new NumberV(daysBn.times(86400).toFixed(0));
+    }
+  ),
+  new Fetcher<{ weeks: NumberV }, NumberV>(
+    `
+      #### Weeks
+
+      * "Weeks weeks:<NumberV>" - Returns number of weeks in seconds
+    `,
+    'Weeks',
+    [new Arg('weeks', getNumberV)],
+    async (world, { weeks }) => {
+      const weeksBn = new BigNumber(weeks.val);
+      return new NumberV(weeksBn.times(604800).toFixed(0));
+    }
+  ),
+  new Fetcher<{ years: NumberV }, NumberV>(
+    `
+      #### Years
+
+      * "Years years:<NumberV>" - Returns number of years in seconds
+    `,
+    'Years',
+    [new Arg('years', getNumberV)],
+    async (world, { years }) => {
+      const yearsBn = new BigNumber(years.val);
+      return new NumberV(yearsBn.times(31536000).toFixed(0));
+    }
+  ),
+  new Fetcher<{ seconds: NumberV }, NumberV>(
+    `
+      #### FromNow
+
+      * "FromNow seconds:<NumberV>" - Returns future timestamp of given seconds from now
+    `,
+    'FromNow',
+    [new Arg('seconds', getNumberV)],
+    async (world, { seconds }) => {
+      const secondsBn = new BigNumber(seconds.val);
+      const now = Math.floor(Date.now() / 1000);
+      return new NumberV(secondsBn.plus(now).toFixed(0));
+    }
+  ),
+  new Fetcher<{}, StringV>(
+    `
+      #### Network
+
+      * "Network" - Returns the current Network
+    `,
+    'Network',
+    [],
+    async world => new StringV(world.network)
   ),
   new Fetcher<{ res: Value }, Value>(
     `
@@ -519,7 +780,7 @@ export const fetchers = [
   ),
   new Fetcher<{ res: Value }, Value>(
     `
-      #### Timelock 
+      #### Timelock
 
       * "Timelock ...timeLockArgs" - Returns Timelock value
     `,

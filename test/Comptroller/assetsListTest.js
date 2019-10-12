@@ -195,8 +195,8 @@ contract('assetListTest', function([root, customer, ...accounts]) {
       await checkMarkets([BAT]);
     });
 
-    it("does not enter when called by not a ctoken", async () => {
-      await send(comptroller, 'borrowAllowed', [BAT._address, customer, 1], {from: customer});
+    it("reverts when called by not a ctoken", async () => {
+      await assert.revert(send(comptroller, 'borrowAllowed', [BAT._address, customer, 1], {from: customer}), 'revert sender must be cToken');
 
       const assetsIn = await call(comptroller, 'getAssetsIn', [customer]);
 
@@ -206,11 +206,11 @@ contract('assetListTest', function([root, customer, ...accounts]) {
     });
 
     it("adds to the asset list only once", async () => {
-      await send(comptroller, 'borrowAllowed', [BAT._address, customer, 1], {from: customer});
+      await send(BAT, 'harnessCallBorrowAllowed', [1], {from: customer});
 
       await enterAndCheckMarkets([BAT], [BAT]);
 
-      await send(comptroller, 'borrowAllowed', [BAT._address, customer, 1], {from: customer});
+      await send(BAT, 'harnessCallBorrowAllowed', [1], {from: customer});
       const assetsIn = await call(comptroller, 'getAssetsIn', [customer]);
       assert.deepEqual([BAT._address], assetsIn);
     });

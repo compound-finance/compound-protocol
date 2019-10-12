@@ -88,3 +88,18 @@ Test "Denied by comptroller because unlisted"
     AllowFailures
     Mint Geoff 2e18 cZRX
     Assert Failure COMPTROLLER_REJECTION MINT_COMPTROLLER_REJECTION MARKET_NOT_LISTED
+
+Test "mint reverts if mint is paused"
+    NewComptroller
+    ListedCToken ZRX cZRX
+    Prep Geoff Some ZRX cZRX
+    Prep Torrey Some ZRX cZRX
+    Invariant Static (Erc20 cZRX TokenBalance Geoff)
+    Invariant Static (Erc20 cZRX TotalSupply)
+    Invariant Static (Erc20 ZRX TotalSupply)
+    Comptroller SetPauseGuardian Coburn
+    From Coburn (Comptroller SetGuardianPaused "Mint" True)
+    AllowFailures
+    Mint Geoff 2e18 cZRX
+    Assert Revert "revert mint is paused"
+    Comptroller SetGuardianPaused "Mint" False

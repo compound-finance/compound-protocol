@@ -33,6 +33,16 @@ interface ComptrollerMethods {
   pendingAdmin(): Callable<string>
   _setPendingAdmin(string): Sendable<number>
   _acceptAdmin(): Sendable<number>
+  _setPauseGuardian(string): Sendable<number>
+  pauseGuardian(): Callable<string>
+  _setMintPaused(string): Sendable<number>
+  _setBorrowPaused(string): Sendable<number>
+  _setTransferPaused(string): Sendable<number>
+  _setSeizePaused(string): Sendable<number>
+  mintGuardianPaused(): Callable<boolean>
+  borrowGuardianPaused(): Callable<boolean>
+  transferGuardianPaused(): Callable<boolean>
+  seizeGuardianPaused(): Callable<boolean>
 }
 
 export interface Comptroller extends Contract {

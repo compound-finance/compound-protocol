@@ -1,4 +1,9 @@
-const {etherUnsigned, call, send} = require('../Utils/MochaTruffle');
+const {
+  etherMantissa,
+  etherUnsigned,
+  call,
+  send
+} = require('../Utils/MochaTruffle');
 const {
   makeCToken,
   setBorrowRate
@@ -33,7 +38,8 @@ contract('CToken', function ([root, ...accounts]) {
 
   describe('accrueInterest', async () => {
     it('reverts if the interest rate is absurdly high', async () => {
-      await setBorrowRate(cToken, .001);
+      assert.numEqual(await call(cToken, 'getBorrowRateMaxMantissa'), etherMantissa(0.000005)); // 0.0005% per block
+      await setBorrowRate(cToken, 0.001e-2);                                                    // 0.0010% per block
       await assert.revert(send(cToken, 'accrueInterest'), "revert borrow rate is absurdly high");
     });
 

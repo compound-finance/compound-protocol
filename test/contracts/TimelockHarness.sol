@@ -22,6 +22,14 @@ contract TimelockHarness is Timelock {
         blockTimestamp = newBlockTimestamp;
     }
 
+    function harnessSetPendingAdmin(address pendingAdmin_) public {
+        pendingAdmin = pendingAdmin_;
+    }
+
+    function harnessSetAdmin(address admin_) public {
+        admin = admin_;
+    }
+
     function harnessFastForward(uint seconds_) public {
         blockTimestamp += seconds_;
     }

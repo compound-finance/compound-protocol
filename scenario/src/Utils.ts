@@ -63,6 +63,19 @@ export function encodeParameters(world: World, fnABI: string, fnParams: string[]
   return world.web3.eth.abi.encodeParameters(fnInputs.split(','), fnParams);
 }
 
+export function decodeParameters(world: World, fnABI: string, data: string): string[] {
+  const regex = /(\w+)\(([\w,]+)\)/;
+  const res = regex.exec(fnABI);
+  if (!res) {
+    return [];
+  }
+  const [_, __, fnInputs] = <[string, string, string]>(<unknown>res);
+  const inputTypes = fnInputs.split(',');
+  const parameters = world.web3.eth.abi.decodeParameters(inputTypes, data);
+
+  return inputTypes.map((_, index) => parameters[index]);
+}
+
 export function sleep(timeout: number): Promise<void> {
   return new Promise((resolve, reject) => {
     setTimeout(() => {

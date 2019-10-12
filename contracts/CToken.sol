@@ -38,7 +38,7 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
      * @notice Maximum borrow rate that can ever be applied (.0005% / block)
      */
 
-    uint internal constant borrowRateMaxMantissa = 5e14;
+    uint internal constant borrowRateMaxMantissa = 0.0005e16;
 
     /**
      * @notice Maximum fraction of interest that can be set aside for reserves
@@ -215,7 +215,6 @@ contract CToken is EIP20Interface, Exponential, TokenErrorReporter, ReentrancyGu
 
         // Temporarily set msg.sender to admin to set comptroller and interest rate model
         admin = msg.sender;
-
         // Set the comptroller
         uint err = _setComptroller(comptroller_);
         require(err == uint(Error.NO_ERROR), "Setting comptroller failed");

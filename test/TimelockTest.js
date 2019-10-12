@@ -64,12 +64,42 @@ contract('Timelock', function([root, notAdmin, newAdmin]) {
     });
   });
 
-  describe('setAdmin', async () => {
+  describe('setPendingAdmin', async () => {
     it('requires msg.sender to be Timelock', async () => {
       await assert.revert(
-        send(timelock, 'setAdmin', [newAdmin], { from: root }),
-        'revert Timelock::setAdmin: Call must come from Timelock.'
+        send(timelock, 'setPendingAdmin', [newAdmin], { from: root }),
+        'revert Timelock::setPendingAdmin: Call must come from Timelock.'
       );
+    });
+  });
+
+  describe('acceptAdmin', async () => {
+    after(async () => {
+      await send(timelock, 'harnessSetAdmin', [root], { from: root });
+    });
+
+    it('requires msg.sender to be pendingAdmin', async () => {
+      await assert.revert(
+        send(timelock, 'acceptAdmin', [], { from: notAdmin }),
+        'revert Timelock::acceptAdmin: Call must come from pendingAdmin.'
+      );
+    });
+
+    it('sets pendingAdmin to address 0 and changes admin', async () => {
+      await send(timelock, 'harnessSetPendingAdmin', [newAdmin], { from: root });
+      const pendingAdminBefore = await call(timelock, 'pendingAdmin');
+      assert.equal(pendingAdminBefore, newAdmin);
+
+      const result = await send(timelock, 'acceptAdmin', [], { from: newAdmin });
+      const pendingAdminAfter = await call(timelock, 'pendingAdmin');
+      assert.equal(pendingAdminAfter, '0x0000000000000000000000000000000000000000');
+
+      const timelockAdmin = await call(timelock, 'admin');
+      assert.equal(timelockAdmin, newAdmin);
+
+      assert.hasLog(result, 'NewAdmin', {
+        newAdmin
+      });
     });
   });
 
@@ -120,9 +150,7 @@ contract('Timelock', function([root, notAdmin, newAdmin]) {
 
   describe('cancelTransaction', async () => {
     before(async () => {
-      await send(timelock, 'queueTransaction', [target, value, signature, data, eta], {
-        from: root
-      });
+      await send(timelock, 'queueTransaction', [target, value, signature, data, eta], { from: root });
     });
 
     it('requires admin to be msg.sender', async () => {
@@ -155,6 +183,22 @@ contract('Timelock', function([root, notAdmin, newAdmin]) {
         txHash: queuedTxHash,
         value: value.toString()
       });
+    });
+  });
+
+  describe('queue and cancel empty', async () => {
+    it('can queue and cancel an empty signature and data', async () => {
+      const txHash = keccak256(
+        encodeParameters(
+          ['address', 'uint256', 'string', 'bytes', 'uint256'],
+          [target, value, '', '0x', eta]
+        )
+      );
+      assert.notOk(await call(timelock, 'queuedTransactions', [txHash]));
+      await send(timelock, 'queueTransaction', [target, value, '', '0x', eta], {from: root});
+      assert.ok(await call(timelock, 'queuedTransactions', [txHash]));
+      await send(timelock, 'cancelTransaction', [target, value, '', '0x', eta], {from: root});
+      assert.notOk(await call(timelock, 'queuedTransactions', [txHash]));
     });
   });
 
@@ -247,15 +291,19 @@ contract('Timelock', function([root, notAdmin, newAdmin]) {
         txHash: queuedTxHash,
         value: value.toString()
       });
+
+      assert.hasLog(result, 'NewDelay', {
+        newDelay: newDelay.toString()
+      });
     });
   });
 
-  describe('executeTransaction (setAdmin)', async () => {
+  describe('executeTransaction (setPendingAdmin)', async () => {
     before(async () => {
       const configuredDelay = await call(timelock, 'delay');
 
       delay = bigNumberify(configuredDelay);
-      signature = 'setAdmin(address)';
+      signature = 'setPendingAdmin(address)';
       data = encodeParameters(['address'], [newAdmin]);
       eta = blockTimestamp.add(delay);
 
@@ -309,8 +357,8 @@ contract('Timelock', function([root, notAdmin, newAdmin]) {
     });
 
     it('sets hash from true to false in queuedTransactions mapping, updates admin, and emits ExecuteTransaction event', async () => {
-      const configuredAdminBefore = await call(timelock, 'admin');
-      assert.equal(configuredAdminBefore, root);
+      const configuredPendingAdminBefore = await call(timelock, 'pendingAdmin');
+      assert.equal(configuredPendingAdminBefore, '0x0000000000000000000000000000000000000000');
 
       const queueTransactionsHashValueBefore = await call(timelock, 'queuedTransactions', [queuedTxHash]);
       assert.equal(queueTransactionsHashValueBefore, true);
@@ -325,8 +373,8 @@ contract('Timelock', function([root, notAdmin, newAdmin]) {
       const queueTransactionsHashValueAfter = await call(timelock, 'queuedTransactions', [queuedTxHash]);
       assert.equal(queueTransactionsHashValueAfter, false);
 
-      const configuredAdminAfter = await call(timelock, 'admin');
-      assert.equal(configuredAdminAfter, newAdmin);
+      const configuredPendingAdminAfter = await call(timelock, 'pendingAdmin');
+      assert.equal(configuredPendingAdminAfter, newAdmin);
 
       assert.hasLog(result, 'ExecuteTransaction', {
         data,
@@ -335,6 +383,10 @@ contract('Timelock', function([root, notAdmin, newAdmin]) {
         eta: eta.toString(),
         txHash: queuedTxHash,
         value: value.toString()
+      });
+
+      assert.hasLog(result, 'NewPendingAdmin', {
+        newPendingAdmin: newAdmin
       });
     });
   });

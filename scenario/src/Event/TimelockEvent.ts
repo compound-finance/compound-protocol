@@ -8,7 +8,7 @@ import { AddressV, EventV, NumberV, StringV } from '../Value';
 import { Arg, Command, processCommandEvent, View } from '../Command';
 import { getTimelock } from '../ContractLookup';
 import { verify } from '../Verify';
-import { encodeParameters } from '../Utils';
+import { decodeParameters, encodeParameters } from '../Utils';
 
 async function genTimelock(world: World, from: string, params: Event): Promise<World> {
   let { world: nextWorld, timelock, timelockData } = await buildTimelock(world, from, params);
@@ -19,11 +19,24 @@ async function genTimelock(world: World, from: string, params: Event): Promise<W
   return world;
 }
 
-async function setAdmin(world: World, from: string, timeLock: Timelock, admin: string): Promise<World> {
+async function acceptAdmin(world: World, from: string, timeLock: Timelock): Promise<World> {
+  return addAction(
+    world,
+    `Set Timelock admin to ${from}`,
+    await invoke(world, timeLock.methods.acceptAdmin(), from)
+  );
+}
+
+async function setPendingAdmin(
+  world: World,
+  from: string,
+  timeLock: Timelock,
+  admin: string
+): Promise<World> {
   return addAction(
     world,
     `Set Timelock admin to ${admin}`,
-    await invoke(world, timeLock.methods.setAdmin(admin), from)
+    await invoke(world, timeLock.methods.setPendingAdmin(admin), from)
   );
 }
 
@@ -71,9 +84,15 @@ async function queueTransaction(
   data: string,
   eta: NumberV
 ): Promise<World> {
+  const dataArgs = decodeParameters(world, signature, data);
+  const etaString = eta.show();
+  const dateFromEta = new Date(Number(etaString) * 1000);
+
   return addAction(
     world,
-    `Queue transaction on Timelock with target: ${target} value: ${value.show()} signature: ${signature} data: ${data} eta: ${eta.show()}`,
+    `Queue transaction on Timelock with target: ${target}\nvalue: ${value.show()}\nsignature: ${signature}\ndata: ${data} (args: ${dataArgs.join(
+      ', '
+    )})\neta: ${etaString} (${dateFromEta.toString()})`,
     await invoke(
       world,
       timeLock.methods.queueTransaction(target, value.encode(), signature, data, eta.encode()),
@@ -113,9 +132,15 @@ async function executeTransaction(
   data: string,
   eta: NumberV
 ): Promise<World> {
+  const dataArgs = decodeParameters(world, signature, data);
+  const etaString = eta.show();
+  const dateFromEta = new Date(Number(etaString) * 1000);
+
   return addAction(
     world,
-    `Cancel transaction on Timelock with target: ${target} value: ${value.show()} signature: ${signature} data: ${data} eta: ${eta.show()}`,
+    `Execute transaction on Timelock with target: ${target}\nvalue: ${value.show()}\nsignature: ${signature}\ndata: ${data} (args: ${dataArgs.join(
+      ', '
+    )})\neta: ${etaString} (${dateFromEta.toString()})`,
     await invoke(
       world,
       timeLock.methods.executeTransaction(target, value.encode(), signature, data, eta.encode()),
@@ -185,16 +210,27 @@ export function timelockCommands() {
       [new Arg('timelock', getTimelock, { implicit: true }), new Arg('delay', getNumberV)],
       (world, from, { timelock, delay }) => setDelay(world, from, timelock, delay)
     ),
+    new Command<{ timelock: Timelock }>(
+      `
+        #### AcceptAdmin
+
+        * "AcceptAdmin" - Accept the admin for the Timelock
+        * E.g. "Timelock AcceptAdmin"
+    `,
+      'AcceptAdmin',
+      [new Arg('timelock', getTimelock, { implicit: true })],
+      (world, from, { timelock }) => acceptAdmin(world, from, timelock)
+    ),
     new Command<{ timelock: Timelock; admin: AddressV }>(
       `
-        #### SetAdmin
+        #### SetPendingAdmin
 
-        * "SetAdmin <Address>" - Sets the admin for the Timelock
-        * E.g. "Timelock SetAdmin \"0x0000000000000000000000000000000000000000\""
+        * "SetPendingAdmin <Address>" - Sets the pending admin for the Timelock
+        * E.g. "Timelock SetPendingAdmin \"0x0000000000000000000000000000000000000000\""
     `,
-      'SetAdmin',
+      'SetPendingAdmin',
       [new Arg('timelock', getTimelock, { implicit: true }), new Arg('admin', getAddressV)],
-      (world, from, { timelock, admin }) => setAdmin(world, from, timelock, admin.val)
+      (world, from, { timelock, admin }) => setPendingAdmin(world, from, timelock, admin.val)
     ),
     new Command<{
       timelock: Timelock;
@@ -207,7 +243,7 @@ export function timelockCommands() {
       `
         #### QueueTransaction
 
-        * "QueueTransaction target:<Address> value:<Number> eta:<Number> signature:<String> ...funArgs:<String>" - Queues a transaction for the Timelock
+        * "QueueTransaction target:<Address> value:<Number> eta:<Number> signature:<String> ...funArgs:<CoreValue>" - Queues a transaction for the Timelock
         * E.g. "Timelock QueueTransaction \"0x0000000000000000000000000000000000000000\" 0 1569286014 \"setDelay(uint256)\" 60680"
         *
     `,
@@ -236,7 +272,7 @@ export function timelockCommands() {
       `
         #### CancelTransaction
 
-        * "CancelTransaction target:<Address> value:<Number> eta:<Number> signature:<String> ...funArgs:<String>" - Cancels a transaction from the Timelock
+        * "CancelTransaction target:<Address> value:<Number> eta:<Number> signature:<String> ...funArgs:<CoreValue>" - Cancels a transaction from the Timelock
         * E.g. "Timelock CancelTransaction \"0x0000000000000000000000000000000000000000\" 0 1569286014 \"setDelay(uint256)\" 60680"
     `,
       'CancelTransaction',
@@ -264,7 +300,7 @@ export function timelockCommands() {
       `
         #### ExecuteTransaction
 
-        * "ExecuteTransaction target:<Address> value:<Number> eta:<Number> signature:<String> ...funArgs:<String>" - Executes a transaction from the Timelock
+        * "ExecuteTransaction target:<Address> value:<Number> eta:<Number> signature:<String> ...funArgs:<CoreValue>" - Executes a transaction from the Timelock
         * E.g. "Timelock ExecuteTransaction \"0x0000000000000000000000000000000000000000\" 0 1569286014 \"setDelay(uint256)\" 60680"
     `,
       'ExecuteTransaction',

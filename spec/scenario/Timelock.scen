@@ -5,11 +5,17 @@ Test "Reverts if calling setDelay directly"
     Timelock SetDelay 604
     Assert Revert "revert Timelock::setDelay: Call must come from Timelock."
 
-Test "Reverts if calling setAdmin directly"
+Test "Reverts if calling setPendingAdmin directly"
     Timelock Deploy Geoff 604800
     AllowFailures
-    Timelock SetAdmin Jared
-    Assert Revert "revert Timelock::setAdmin: Call must come from Timelock."
+    Timelock SetPendingAdmin Jared
+    Assert Revert "revert Timelock::setPendingAdmin: Call must come from Timelock."
+
+Test "Reverts if calling acceptAdmin while not being pendingAdmin"
+    Timelock Deploy Geoff 604800
+    AllowFailures
+    From Jared (Timelock AcceptAdmin)
+    Assert Revert "revert Timelock::acceptAdmin: Call must come from pendingAdmin."
 
 Test "Queuing and execute a transaction for setDelay"
     -- The default blockTimestamp is 100
@@ -26,20 +32,24 @@ Test "Queuing and execute a transaction for setDelay"
     Assert False (Timelock QueuedTransaction (Timelock TxHash (Timelock Address) 0 604900 "setDelay(uint256)" "1209600"))
     Assert Equal (Timelock Delay) 1209600
 
-Test "Queuing and execute a transaction for setAdmin"
+Test "Queuing and execute a transaction for setPendingAdmin"
     -- The default blockTimestamp is 100
     -- Admin:Geoff Delay:1 week
     Timelock Deploy Geoff 604800
     Assert Equal (Timelock Admin) (User Geoff Address)
+    Assert Equal (Timelock PendingAdmin) (Address Zero)
     -- eta = 1 week (604800) + blockTimestamp (100) = 604900
-    Assert False (Timelock QueuedTransaction (Timelock TxHash (Timelock Address) 0 604900 "setAdmin(address)" "0x0000000000000000000000000000000000000001"))
-    From Geoff (Timelock QueueTransaction (Timelock Address) 0 604900 "setAdmin(address)" "0x0000000000000000000000000000000000000001")
-    Assert True (Timelock QueuedTransaction (Timelock TxHash (Timelock Address) 0 604900 "setAdmin(address)" "0x0000000000000000000000000000000000000001"))
+    Assert False (Timelock QueuedTransaction (Timelock TxHash (Timelock Address) 0 604900 "setPendingAdmin(address)" (User Jared Address)))
+    From Geoff (Timelock QueueTransaction (Timelock Address) 0 604900 "setPendingAdmin(address)" (User Jared Address))
+    Assert True (Timelock QueuedTransaction (Timelock TxHash (Timelock Address) 0 604900 "setPendingAdmin(address)" (User Jared Address)))
     --  Now execute after delay time
     Timelock FastForward 604801
-    From Geoff (Timelock ExecuteTransaction (Timelock Address) 0 604900 "setAdmin(address)" "0x0000000000000000000000000000000000000001")
-    Assert False (Timelock QueuedTransaction (Timelock TxHash (Timelock Address) 0 604900 "setAdmin(address)" "0x0000000000000000000000000000000000000001"))
-    Assert Equal (Timelock Admin) "0x0000000000000000000000000000000000000001"
+    From Geoff (Timelock ExecuteTransaction (Timelock Address) 0 604900 "setPendingAdmin(address)" (User Jared Address))
+    Assert False (Timelock QueuedTransaction (Timelock TxHash (Timelock Address) 0 604900 "setPendingAdmin(address)" (User Jared Address)))
+    Assert Equal (Timelock PendingAdmin) (User Jared Address)
+    From Jared (Timelock AcceptAdmin)
+    Assert Equal (Timelock Admin) (User Jared Address)
+    Assert Equal (Timelock PendingAdmin) (Address Zero)
 
 Test "Accept cToken admin from Timelock"
     -- The default blockTimestamp is 100
@@ -93,7 +103,7 @@ Test "Reduce reserves for CErc20 from Timelock and send reserves to external add
     Assert Equal (Erc20 cZRX TokenBalance Geoff) (Exactly 500e8)
     Assert Equal (CToken cZRX UnderlyingBalance Geoff) (Exactly 50e18)
     Assert Equal (CToken cZRX ExchangeRate) (Exactly 1e9)
-    BorrowAndRepayWithInterest ZRX cZRX 10e18 5e18 interestRate:0.0001 blocks:5000 reserveRate:0.2
+    BorrowAndRepayWithInterest ZRX cZRX 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
     -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
     --   thus, we should have accrued 5e18 of interest for the protocol
     --   The reserves should get 20% of this, or 1e18, and the rest
@@ -136,7 +146,7 @@ Test "Reduce reserves for CEther from Timelock and send reserves to external add
     Assert Equal (Erc20 cETH TokenBalance Geoff) (Exactly 500e8)
     Assert Equal (CToken cETH UnderlyingBalance Geoff) (Exactly 50e18)
     Assert Equal (CToken cETH ExchangeRate) (Exactly 1e9)
-    BorrowAndRepayEthWithInterest cETH 10e18 5e18 interestRate:0.0001 blocks:5000 reserveRate:0.2
+    BorrowAndRepayEthWithInterest cETH 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
     -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
     --   thus, we should have accrued 5e18 of interest for the protocol
     --   The reserves should get 20% of this, or 1e18, and the rest

@@ -10,6 +10,7 @@ import { getContract, getTestContract } from '../Contract';
 
 const TimelockContract = getContract('Timelock');
 const TimelockScenarioContract = getTestContract('TimelockHarness');
+const TimelockTestContract = getTestContract('TimelockTest');
 
 export interface TimelockData {
   invokation: Invokation<Timelock>;
@@ -55,7 +56,24 @@ export async function buildTimelock(
       async (world, { admin, delay }) => ({
         invokation: await TimelockContract.deploy<Timelock>(world, from, [admin.val, delay.val]),
         contract: 'Timelock',
-        description: 'Scenario',
+        description: 'Standard Timelock',
+        admin: admin.val,
+        delay: delay.val
+      })
+    ),
+    new Fetcher<{ admin: AddressV; delay: NumberV }, TimelockData>(
+      `
+        #### Test
+
+        * "Test admin:<Address> delay:<Number>" - The a standard Timelock contract with a lower minimum delay for testing
+          * E.g. "Timelock Deploy Test Geoff 120"
+      `,
+      'Test',
+      [new Arg('admin', getAddressV), new Arg('delay', getNumberV)],
+      async (world, { admin, delay }) => ({
+        invokation: await TimelockTestContract.deploy<Timelock>(world, from, [admin.val, delay.val]),
+        contract: 'Timelock',
+        description: 'Test Timelock',
         admin: admin.val,
         delay: delay.val
       })
@@ -83,7 +101,7 @@ export async function buildTimelock(
           return {
             invokation: await TimelockContract.deploy<Timelock>(world, from, [admin.val, delay.val]),
             contract: 'Timelock',
-            description: 'Scenario',
+            description: 'Standard Timelock',
             admin: admin.val,
             delay: delay.val
           };

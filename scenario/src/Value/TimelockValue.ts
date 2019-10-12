@@ -15,6 +15,10 @@ async function getAdmin(world: World, timelock: Timelock): Promise<AddressV> {
   return new AddressV(await timelock.methods.admin().call());
 }
 
+async function getPendingAdmin(world: World, timelock: Timelock): Promise<AddressV> {
+  return new AddressV(await timelock.methods.pendingAdmin().call());
+}
+
 async function getBlockTimestamp(world: World, timelock: Timelock): Promise<NumberV> {
   return new NumberV(await timelock.methods.blockTimestamp().call());
 }
@@ -49,6 +53,16 @@ export function timelockFetchers() {
       [new Arg('timelock', getTimelock, { implicit: true })],
       (world, { timelock }) => getAdmin(world, timelock)
     ),
+    new Fetcher<{ timelock: Timelock }, AddressV>(
+      `
+        #### PendingAdmin
+
+        * "PendingAdmin" - Gets the address of the Timelock pendingAdmin
+      `,
+      'PendingAdmin',
+      [new Arg('timelock', getTimelock, { implicit: true })],
+      (world, { timelock }) => getPendingAdmin(world, timelock)
+    ),
     new Fetcher<{ timelock: Timelock }, NumberV>(
       `
         #### BlockTimestamp
@@ -82,7 +96,7 @@ export function timelockFetchers() {
       `
         #### TxHash
 
-        * "TxHash target:<Address> value:<Number> eta:<Number> signature:<String> ...funArgs:<String>" - Returns a hash of a transactions values
+        * "TxHash target:<Address> value:<Number> eta:<Number> signature:<String> ...funArgs:<CoreValue>" - Returns a hash of a transactions values
         * E.g. "Timelock TxHash \"0x0000000000000000000000000000000000000000\" 0 1569286014 \"setDelay(uint256)\" 60680"
       `,
       'TxHash',

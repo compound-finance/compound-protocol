@@ -31,6 +31,10 @@ contract CErc20Harness is CErc20 {
     decimals_,
     admin_) public {}
 
+    function getBorrowRateMaxMantissa() public pure returns (uint) {
+        return borrowRateMaxMantissa;
+    }
+
     /**
       * Fresh
       *

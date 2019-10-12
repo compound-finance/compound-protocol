@@ -61,7 +61,7 @@ Test "Borrow some BAT fails when already entered max assets"
     EnterMarkets Geoff cZRX
     AllowFailures
     Borrow Geoff 1e18 cBAT
-    Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION MARKET_NOT_ENTERED
+    Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION TOO_MANY_ASSETS
 
 Test "Borrow fails if market not listed"
     NewComptroller price:1.0
@@ -88,7 +88,30 @@ Test "Borrow some BAT from Excess Cash"
     Mint Geoff 100e18 cZRX
     EnterMarkets Geoff cZRX cBAT
     Borrow Geoff 1e18 cBAT
+    Assert Equal (cToken cBAT BorrowBalance Geoff) (Exactly 1e18)
+    Assert Equal (Erc20 BAT TokenBalance Geoff) (Exactly 1e18)
+    Assert Equal (Erc20 BAT TokenBalance cBAT) (Exactly 9e18)
+
+Test "Borrow some BAT reverts if borrow is paused"
+    NewComptroller price:1.0
+    Comptroller SetPauseGuardian Coburn
+    NewCToken ZRX cZRX
+    NewCToken BAT cBAT
+    Give cBAT 10e18 BAT -- Faucet some bat to borrow
+    Support cZRX collateralFactor:0.5
+    Support cBAT collateralFactor:0.5
+    Prep Geoff Some ZRX cZRX
+    Mint Geoff 100e18 cZRX
     EnterMarkets Geoff cZRX cBAT
+    From Coburn (Comptroller SetGuardianPaused "Borrow" True)
+    AllowFailures
+    Borrow Geoff 1e18 cBAT
+    Assert Revert "revert borrow is paused"
+    Assert Equal (cToken cBAT BorrowBalance Geoff) 0
+    Assert Equal (Erc20 BAT TokenBalance Geoff) 0
+    Assert Equal (Erc20 BAT TokenBalance cBAT) (Exactly 10e18)
+    Comptroller SetGuardianPaused "Borrow" False
+    Borrow Geoff 1e18 cBAT
     Assert Equal (cToken cBAT BorrowBalance Geoff) (Exactly 1e18)
     Assert Equal (Erc20 BAT TokenBalance Geoff) (Exactly 1e18)
     Assert Equal (Erc20 BAT TokenBalance cBAT) (Exactly 9e18)
