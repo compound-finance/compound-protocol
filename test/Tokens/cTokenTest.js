@@ -11,7 +11,7 @@ const {
   pretendBorrow
 } = require('../Utils/Compound');
 
-contract('CToken', function ([root, ...accounts]) {
+contract('CToken', function ([root, admin, ...accounts]) {
   describe('constructor', async () => {
     it("fails when non erc-20 underlying", async () => {
       await assert.revert(makeCToken({underlying: {_address: root}}));
@@ -25,6 +25,11 @@ contract('CToken', function ([root, ...accounts]) {
       const cToken = await makeCToken();
       assert.equal(await call(cToken, 'underlying'), cToken.underlying._address);
       assert.equal(await call(cToken, 'admin',), root);
+    });
+
+    it("succeeds when setting admin to contructor argument", async () => {
+      const cToken = await makeCToken({admin: admin});
+      assert.equal(await call(cToken, 'admin',), admin);
     });
   });
 

@@ -113,12 +113,6 @@ Test "Realistic Market Scenario"
 	-- Enter ZRX and check liquidity
 	EnterMarkets Geoff cZRX
 	Assert Equal (Comptroller Liquidity Geoff) 1.0e18
-	-- Try to borrow BAT but fail
-	HoldInvariants
-	Borrow Geoff 1.0e27 cBAT
-	Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION MARKET_NOT_ENTERED
-	-- Enter BAT for borrowing
-	EnterMarkets Geoff cBAT
 	-- Fail to borrow BAT due to liquidity
 	Give cBAT 1000e18 BAT
 	HoldInvariants

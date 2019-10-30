@@ -9,40 +9,46 @@ Macro AllowFailures
 Macro PricedComptroller closeFactor=0.1 maxAssets=20
     Unitroller Deploy
     PriceOracle Deploy Simple
+    ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
+    Unitroller SetPendingImpl ScenComptrollerG1
+    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) -- Final argument is a Junk address, if listing cEther use ListedEtherToken to replace proxy
+    ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracleProxy Address) closeFactor maxAssets
     ComptrollerImpl Deploy Scenario ScenComptroller
     Unitroller SetPendingImpl ScenComptroller
-    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) -- Final argument is a Junk address, if listing cEther use ListedEtherToken to replace proxy
-    ComptrollerImpl ScenComptroller Become (PriceOracleProxy Address) closeFactor maxAssets
+    ComptrollerImpl ScenComptroller Become
 
 Macro NewComptroller price=1.0 closeFactor=0.1 maxAssets=20
     Unitroller Deploy
     PriceOracle Deploy Fixed price
+    ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
+    Unitroller SetPendingImpl ScenComptrollerG1
+    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) -- Junk address, if listing cEther use ListedEtherToken to replace proxy
+    ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracleProxy Address) closeFactor maxAssets
     ComptrollerImpl Deploy Scenario ScenComptroller
     Unitroller SetPendingImpl ScenComptroller
-    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) -- Junk address, if listing cEther use ListedEtherToken to replace proxy
-    ComptrollerImpl ScenComptroller Become (PriceOracleProxy Address) closeFactor maxAssets
+    ComptrollerImpl ScenComptroller Become
 
-Macro NewCToken erc20 cToken borrowRate=0.0005 initialExchangeRate=2e9 decimals=8 tokenType=Standard cTokenType=Scenario
+Macro NewCToken erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard cTokenType=Scenario admin=Admin
     Erc20 Deploy tokenType erc20 erc20
     InterestRateModel Deploy Fixed StdInterest borrowRate -- Note: interest rate model probably shouldn't be global
-    CToken Deploy cTokenType cToken cToken (Erc20 erc20 Address) (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals
+    CToken Deploy cTokenType cToken cToken (Erc20 erc20 Address) (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin
 
-Macro NewEtherToken cToken borrowRate=0.0005 initialExchangeRate=2e9 decimals=8
+Macro NewEtherToken cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin
     InterestRateModel Deploy Fixed StdInterest borrowRate -- Note: interest rate model probably shouldn't be global
-    CToken Deploy CEtherScenario cToken cToken (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals
+    CToken Deploy CEtherScenario cToken cToken (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin
 
-Macro ListedCToken erc20 cToken borrowRate=0.0005 initialExchangeRate=2e9 decimals=8 tokenType=Standard cTokenType=Scenario
-    NewCToken erc20 cToken borrowRate initialExchangeRate decimals tokenType cTokenType
+Macro ListedCToken erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard cTokenType=Scenario admin=Admin
+    NewCToken erc20 cToken borrowRate initialExchangeRate decimals tokenType cTokenType admin
     Comptroller SupportMarket cToken
 
-Macro ListedEtherToken cToken borrowRate=0.0005 initialExchangeRate=2e9 decimals=8
-    NewEtherToken cToken borrowRate initialExchangeRate decimals
+Macro ListedEtherToken cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin
+    NewEtherToken cToken borrowRate initialExchangeRate decimals admin
     Comptroller SupportMarket cToken
     PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address cETH) (Address Zero) (Address Zero)
     Comptroller SetPriceOracle (PriceOracleProxy Address)
 
-Macro ListedEtherTokenMinted cToken borrowRate=0.0005 initialExchangeRate=2e9 decimals=8
-    NewEtherToken cToken borrowRate initialExchangeRate decimals
+Macro ListedEtherTokenMinted cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin
+    NewEtherToken cToken borrowRate initialExchangeRate decimals admin
     Comptroller SupportMarket cToken
     CallMintEth Root 1e18 cToken
 
@@ -183,3 +189,26 @@ Macro BorrowAndRepayWithInterest erc20 cToken amount interestAmount interestRate
     Give Torrey interestAmount erc20
     RepayBorrow Torrey interestAmount cToken
     Assert Equal (CToken cToken BorrowBalance Torrey) Zero
+
+-- Macro for performing a borrow with the sole
+-- purpose of adding interest to the ether market
+Macro BorrowAndRepayEthWithInterest cEther amount interestAmount interestRate blocks reserveRate=0
+    -- TODO: Make invariant success for these?
+    -- TODO: Named args as macros
+    InterestRateModel Deploy Fixed Std interestRate
+    CToken cEther SetInterestRateModel (InterestRateModel Std Address)
+    CToken cEther SetReserveFactor reserveRate
+    ListedCToken COLLAT cCOLLAT
+    Comptroller SetCollateralFactor cCOLLAT 0.9
+    Prep Torrey 1e30 COLLAT cCOLLAT
+    Mint Torrey 1e30 cCOLLAT
+    EnterMarkets Torrey cCOLLAT cEther
+    Assert True (Comptroller CheckMembership Torrey cCOLLAT)
+    Assert True (Comptroller CheckMembership Torrey cEther)
+    Borrow Torrey amount cEther
+    -- Cool, we've borrowed, now let's accrue interest then repay all
+    FastForward blocks Blocks
+    -- RepayBorrow Torrey (CToken BorrowBalance Torrey) cEther
+    RepayBorrowEth Torrey amount cEther
+    RepayBorrowEth Torrey interestAmount cEther
+    Assert Equal (CToken cEther BorrowBalance Torrey) Zero

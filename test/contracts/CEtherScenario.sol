@@ -9,6 +9,7 @@ contract CEtherScenario is CEther {
     constructor(string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
+                address payable admin_,
                 ComptrollerInterface comptroller_,
                 InterestRateModel interestRateModel_,
                 uint initialExchangeRateMantissa)
@@ -17,7 +18,8 @@ contract CEtherScenario is CEther {
                initialExchangeRateMantissa,
                name_,
                symbol_,
-               decimals_) public {
+               decimals_,
+               admin_) public {
     }
 
     function setTotalBorrows(uint totalBorrows_) public {

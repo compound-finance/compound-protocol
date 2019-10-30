@@ -16,11 +16,11 @@ Macro NewBorrowEth borrowAmount borrowRate
     Borrow Geoff borrowAmount cETH
 
 Test "Borrow, hold a few blocks, and repay part"
-    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.0005
+    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
-    FastForward 3000 Blocks -- 0.001e18 * (1 + 3000 * 0.0005)
+    FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay one full token
     Expect Changes (EtherBalance Geoff) -0.001e18
@@ -29,17 +29,17 @@ Test "Borrow, hold a few blocks, and repay part"
     ---- Let's check the overall numbers
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.0015e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.0015e18
-    FastForward 2000 Blocks -- 0.0015e18 * (1 + 2000 * 0.0005)
+    FastForward 200000 Blocks -- 0.0015e18 * (1 + 2000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.003e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.003e18
 
 Test "Borrow, hold a few blocks, and repay part via maximillion"
-    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.0005
+    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
     Maximillion Deploy cETH
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
-    FastForward 3000 Blocks -- 0.001e18 * (1 + 3000 * 0.0005)
+    FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay one full token
     Expect Changes (EtherBalance Geoff) -0.001e18
@@ -48,16 +48,16 @@ Test "Borrow, hold a few blocks, and repay part via maximillion"
     ---- Let's check the overall numbers
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.0015e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.0015e18
-    FastForward 2000 Blocks -- 0.0015e18 * (1 + 2000 * 0.0005)
+    FastForward 200000 Blocks -- 0.0015e18 * (1 + 200000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.003e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.003e18
 
 Test "Don't borrow and then do repay"
-    SetupBorrow borrowRate:0.0005
+    SetupBorrow borrowRate:0.000005
     Assert Equal (CToken cETH BorrowBalance Geoff) Zero
     Assert Equal (CToken cETH TotalBorrowsCurrent) Zero
     -- Now let's add some blocks and see what happs
-    FastForward 3000 Blocks -- 0 * (1 + 3000 * 0.0005)
+    FastForward 300000 Blocks -- 0 * (1 + 300000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) Zero
     -- Now let's repay one full token
     Expect Changes (EtherBalance Geoff) Zero
@@ -68,12 +68,12 @@ Test "Don't borrow and then do repay"
     Assert Equal (CToken cETH TotalBorrowsCurrent) Zero
 
 Test "Don't borrow and repay part via maximillion"
-    SetupBorrow borrowRate:0.0005
+    SetupBorrow borrowRate:0.000005
     Maximillion Deploy cETH
     Assert Equal (CToken cETH BorrowBalance Geoff) Zero
     Assert Equal (CToken cETH TotalBorrowsCurrent) Zero
     -- Now let's add some blocks and see what happs
-    FastForward 3000 Blocks -- 0 * (1 + 3000 * 0.0005)
+    FastForward 300000 Blocks -- 0 * (1 + 300000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) Zero
     -- Now let's repay one full token
     Expect Changes (EtherBalance Geoff) Zero
@@ -84,11 +84,11 @@ Test "Don't borrow and repay part via maximillion"
     Assert Equal (CToken cETH TotalBorrowsCurrent) Zero
 
 Test "Borrow, hold a few blocks, and repay full"
-    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.0005
+    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
-    FastForward 3000 Blocks -- 0.001e18 * (1 + 3000 * 0.0005)
+    FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay fully
     Expect Changes (EtherBalance Geoff) -0.0025e18
@@ -97,17 +97,17 @@ Test "Borrow, hold a few blocks, and repay full"
     -- Let's check the overall numbers
     Assert Equal (CToken cETH BorrowBalance Geoff) Zero
     Assert Equal (CToken cETH TotalBorrowsCurrent) Zero
-    FastForward 2000 Blocks -- 0e18 * (1 + 2000 * 0.0005)
+    FastForward 200000 Blocks -- 0e18 * (1 + 200000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) Zero
     Assert Equal (CToken cETH TotalBorrowsCurrent) Zero
 
 Test "Borrow, hold a few blocks, and repay full via maximillion"
-    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.0005
+    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
     Maximillion Deploy cETH
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
-    FastForward 3000 Blocks -- 0.001e18 * (1 + 3000 * 0.0005)
+    FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay fully
     Expect Changes (EtherBalance Geoff) -0.0025e18
@@ -116,16 +116,16 @@ Test "Borrow, hold a few blocks, and repay full via maximillion"
     -- Let's check the overall numbers
     Assert Equal (CToken cETH BorrowBalance Geoff) Zero
     Assert Equal (CToken cETH TotalBorrowsCurrent) Zero
-    FastForward 2000 Blocks -- 0e18 * (1 + 2000 * 0.0005)
+    FastForward 200000 Blocks -- 0e18 * (1 + 200000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) Zero
     Assert Equal (CToken cETH TotalBorrowsCurrent) Zero
 
 Test "Borrow, hold a few blocks, and repay too much"
-    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.0005
+    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
-    FastForward 3000 Blocks -- 0.001e18 * (1 + 3000 * 0.0005)
+    FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay fully
     Expect Changes (EtherBalance Geoff) Zero
@@ -139,12 +139,12 @@ Test "Borrow, hold a few blocks, and repay too much"
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.0025e18
 
 Test "Borrow, hold a few blocks, and repay too much via maximillion"
-    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.0005
+    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
     Maximillion Deploy cETH
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
-    FastForward 3000 Blocks -- 0.001e18 * (1 + 3000 * 0.0005)
+    FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay fully
     Expect Changes (EtherBalance Geoff) -0.0025e18
@@ -153,16 +153,16 @@ Test "Borrow, hold a few blocks, and repay too much via maximillion"
     -- Let's check the overall numbers
     Assert Equal (CToken cETH BorrowBalance Geoff) Zero
     Assert Equal (CToken cETH TotalBorrowsCurrent) Zero
-    FastForward 2000 Blocks -- 0e18 * (1 + 2000 * 0.0005)
+    FastForward 200000 Blocks -- 0e18 * (1 + 200000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) Zero
     Assert Equal (CToken cETH TotalBorrowsCurrent) Zero
 
 Test "Borrow, and get a negative total cash situation"
-    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.0005
+    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.001e18
     -- Let's zoom way forward into the future
-    FastForward 98000 Blocks -- 0.001e18 * (1 + 98000 * 0.0005)
+    FastForward 9800000 Blocks -- 0.001e18 * (1 + 9800000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.05e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.05e18
     -- Now let's repay one bit
@@ -171,28 +171,28 @@ Test "Borrow, and get a negative total cash situation"
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.049e18
 
 Test "Borrow, hold a few blocks, and repay behalf part"
-    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.0005
+    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
-    FastForward 3000 Blocks -- 0.001e18 * (1 + 3000 * 0.0005)
+    FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay one full token from another user
     RepayBorrowEthBehalf Torrey Geoff 0.001e18 cETH
     Assert Equal (CToken cETH BorrowBalance Torrey) Zero
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.0015e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.0015e18
-    FastForward 2000 Blocks -- 0.0015e18 * (1 + 2000 * 0.0005)
+    FastForward 200000 Blocks -- 0.0015e18 * (1 + 200000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Torrey) Zero
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.003e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.003e18
 
 Test "Prohibit repay by comptroller hook"
-    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.0005
+    NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
-    FastForward 3000 Blocks -- 0.001e18 * (1 + 3000 * 0.0005)
+    FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay one full token
     Expect Changes (EtherBalance Geoff) Zero

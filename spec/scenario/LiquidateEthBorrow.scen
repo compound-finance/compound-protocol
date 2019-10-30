@@ -18,15 +18,15 @@ Macro SimpleBorrow user borrowAmount
     BorrowEth user borrowAmount cETH
 
 Test "Insufficient shortfall"
-    NewBorrow borrowAmount:0.001e18 borrowRate:0.0005
+    NewBorrow borrowAmount:0.001e18 borrowRate:0.000005
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
     Assert Equal (CToken cETH TotalBorrows) 0.001e18
     -- Prices is 1:1000 and collateral factor is 0.5
     -- thus supplies 100.0e18 cBAT which gives the user (0.5 * 100.0e18 * 1.0e-3)=0.05e18
     -- capacity of Eth. User only borrowed 0.001e18, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot of blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 98000 Blocks -- 0.001e18 * (1 + 98000 * 0.0005)
+    FastForward 9800000 Blocks -- 0.001e18 * (1 + 9800000 * 0.000005)
     AccrueInterest cETH -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Assert Equal (CToken cETH BorrowBalanceStored Geoff) 0.05e18
@@ -41,15 +41,15 @@ Test "Insufficient shortfall"
     Assert RevertFailure COMPTROLLER_REJECTION "revert liquidateBorrow failed"
 
 Test "Cannot self-liquidate"
-    NewBorrow borrowAmount:0.001e18 borrowRate:0.0005
+    NewBorrow borrowAmount:0.001e18 borrowRate:0.000005
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
     Assert Equal (CToken cETH TotalBorrows) 0.001e18
     -- Prices is 1:1000 and collateral factor is 0.5
     -- thus supplies 100.0e18 cBAT which gives the user (0.5 * 100.0e18 * 1.0e-3)=0.05e18
     -- capacity of Eth. User only borrowed 0.001e18, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot of blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 0.001e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 0.001e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cETH -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Assert Equal (CToken cETH BorrowBalanceStored Geoff) 0.051e18
@@ -65,15 +65,15 @@ Test "Cannot self-liquidate"
     Assert RevertFailure INVALID_ACCOUNT_PAIR "revert liquidateBorrow failed"
 
 Test "Liqidate beyond max close"
-    NewBorrow borrowAmount:0.001e18 borrowRate:0.0005
+    NewBorrow borrowAmount:0.001e18 borrowRate:0.000005
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
     Assert Equal (CToken cETH TotalBorrows) 0.001e18
     -- Prices is 1:1000 and collateral factor is 0.5
     -- thus supplies 100.0e18 cBAT which gives the user (0.5 * 100.0e18 * 1.0e-3)=0.05e18
     -- capacity of Eth. User only borrowed 0.001e18, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot of blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 0.001e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 0.001e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cETH -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Assert Equal (CToken cETH BorrowBalanceStored Geoff) 0.051e18
@@ -90,15 +90,15 @@ Test "Liqidate beyond max close"
     Assert RevertFailure COMPTROLLER_REJECTION "revert liquidateBorrow failed"
 
 Test "Proper liquidation"
-    NewBorrow borrowAmount:0.001e18 borrowRate:0.0005
+    NewBorrow borrowAmount:0.001e18 borrowRate:0.000005
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.001e18
     Assert Equal (CToken cETH TotalBorrows) 0.001e18
     -- Prices is 1:1000 and collateral factor is 0.5
     -- thus supplies 100.0e18 cBAT which gives the user (0.5 * 100.0e18 * 1.0e-3)=0.05e18
     -- capacity of Eth. User only borrowed 0.001e18, but after
-    -- a few blocks at a 50% interest rate, he'll be
+    -- a lot of blocks at a 0.0005% interest rate, he'll be
     -- underwater.
-    FastForward 100000 Blocks -- 0.001e18 * (1 + 100000 * 0.0005)
+    FastForward 10000000 Blocks -- 0.001e18 * (1 + 10000000 * 0.000005)
     AccrueInterest cETH -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
     Assert Equal (CToken cETH BorrowBalanceStored Geoff) 0.051e18

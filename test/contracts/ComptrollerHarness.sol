@@ -15,4 +15,8 @@ contract ComptrollerHarness is Comptroller {
             super.getHypotheticalAccountLiquidityInternal(account, CToken(cTokenModify), redeemTokens, borrowAmount);
         return (uint(err), liquidity, shortfall);
     }
+
+    function setPauseGuardian(address harnessedPauseGuardian) public {
+        pauseGuardian = harnessedPauseGuardian;
+    }
 }

@@ -26,10 +26,6 @@ contract('Comptroller', ([root, ...accounts]) => {
       assert.equal(10, await call(comptroller, 'maxAssets'));
     });
 
-    it("reverts on invalid closeFactor", async () => {
-      await assert.revert(makeComptroller({closeFactor: 1}), 'revert set close factor error');
-    });
-
     it("allows small and large maxAssets", async () => {
       const comptroller = await makeComptroller({maxAssets: 0});
       assert.equal(0, await call(comptroller, 'maxAssets'));
@@ -59,7 +55,7 @@ contract('Comptroller', ([root, ...accounts]) => {
         'UNAUTHORIZED',
         'SET_LIQUIDATION_INCENTIVE_OWNER_CHECK'
       );
-      assert.equal(await call(comptroller, 'liquidationIncentiveMantissa'), initialIncentive);
+      assert.numEqual(await call(comptroller, 'liquidationIncentiveMantissa'), initialIncentive);
     });
 
     it("fails if incentive is less than min", async () => {
@@ -70,7 +66,7 @@ contract('Comptroller', ([root, ...accounts]) => {
         'INVALID_LIQUIDATION_INCENTIVE',
         'SET_LIQUIDATION_INCENTIVE_VALIDATION'
       );
-      assert.equal(await call(comptroller, 'liquidationIncentiveMantissa'), initialIncentive);
+      assert.numEqual(await call(comptroller, 'liquidationIncentiveMantissa'), initialIncentive);
     });
 
     it("fails if incentive is greater than max", async () => {
@@ -81,7 +77,7 @@ contract('Comptroller', ([root, ...accounts]) => {
         'INVALID_LIQUIDATION_INCENTIVE',
         'SET_LIQUIDATION_INCENTIVE_VALIDATION'
       );
-      assert.equal(await call(comptroller, 'liquidationIncentiveMantissa'), initialIncentive);
+      assert.numEqual(await call(comptroller, 'liquidationIncentiveMantissa'), initialIncentive);
     });
 
     it("accepts a valid incentive and emits a NewLiquidationIncentive event", async () => {
@@ -91,7 +87,7 @@ contract('Comptroller', ([root, ...accounts]) => {
         oldLiquidationIncentiveMantissa: initialIncentive.toString(),
         newLiquidationIncentiveMantissa: validIncentive.toString()
       });
-      assert.equal(await call(comptroller, 'liquidationIncentiveMantissa'), validIncentive);
+      assert.numEqual(await call(comptroller, 'liquidationIncentiveMantissa'), validIncentive);
     });
   });
 
@@ -131,6 +127,35 @@ contract('Comptroller', ([root, ...accounts]) => {
         newPriceOracle: newOracle._address
       });
       assert.equal(await call(comptroller, 'oracle'), newOracle._address);
+    });
+  });
+
+  describe('_setCloseFactor', async () => {
+    it("fails if not called by admin", async () => {
+      const cToken = await makeCToken();
+      assert.hasTrollFailure(
+        await send(cToken.comptroller, '_setCloseFactor', [1], {from: accounts[0]}),
+        'UNAUTHORIZED',
+        'SET_CLOSE_FACTOR_OWNER_CHECK'
+      );
+    });
+
+    it("fails if close factor too low", async () => {
+      const cToken = await makeCToken();
+      assert.hasTrollFailure(
+        await send(cToken.comptroller, '_setCloseFactor', [1]),
+        'INVALID_CLOSE_FACTOR',
+        'SET_CLOSE_FACTOR_VALIDATION'
+      );
+    });
+
+    it("fails if close factor too low", async () => {
+      const cToken = await makeCToken();
+      assert.hasTrollFailure(
+        await send(cToken.comptroller, '_setCloseFactor', [etherMantissa(1e18)]),
+        'INVALID_CLOSE_FACTOR',
+        'SET_CLOSE_FACTOR_VALIDATION'
+      );
     });
   });
 

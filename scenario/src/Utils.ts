@@ -1,5 +1,5 @@
-import {Event} from './Event';
-import {World} from './World';
+import { Event } from './Event';
+import { World } from './World';
 
 // Wraps the element in an array, if it was not already an array
 // If array is null or undefined, return the empty array
@@ -30,7 +30,7 @@ export function mustLen(arg: any[] | any, len: number, maxLen?: number): any[] {
 }
 
 export function mustString(arg: Event): string {
-  if (typeof(arg) === "string") {
+  if (typeof arg === 'string') {
     return arg;
   }
 
@@ -45,12 +45,35 @@ export function encodeABI(world: World, fnABI: string, fnParams: string[]): stri
   if (!res) {
     throw new Error(`Expected ABI signature, got: ${fnABI}`);
   }
-  const [_, fnName, fnInputs] = <[string, string, string]><unknown>res;
+  const [_, fnName, fnInputs] = <[string, string, string]>(<unknown>res);
   const jsonInterface = {
     name: fnName,
-    inputs: fnInputs.split(',').map((i) => ({name: '', type: i}))
+    inputs: fnInputs.split(',').map(i => ({ name: '', type: i }))
   };
   return world.web3.eth.abi.encodeFunctionCall(jsonInterface, fnParams);
+}
+
+export function encodeParameters(world: World, fnABI: string, fnParams: string[]): string {
+  const regex = /(\w+)\(([\w,]+)\)/;
+  const res = regex.exec(fnABI);
+  if (!res) {
+    return '0x0';
+  }
+  const [_, __, fnInputs] = <[string, string, string]>(<unknown>res);
+  return world.web3.eth.abi.encodeParameters(fnInputs.split(','), fnParams);
+}
+
+export function decodeParameters(world: World, fnABI: string, data: string): string[] {
+  const regex = /(\w+)\(([\w,]+)\)/;
+  const res = regex.exec(fnABI);
+  if (!res) {
+    return [];
+  }
+  const [_, __, fnInputs] = <[string, string, string]>(<unknown>res);
+  const inputTypes = fnInputs.split(',');
+  const parameters = world.web3.eth.abi.decodeParameters(inputTypes, data);
+
+  return inputTypes.map((_, index) => parameters[index]);
 }
 
 export function sleep(timeout: number): Promise<void> {

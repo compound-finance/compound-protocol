@@ -1,12 +1,12 @@
 pragma solidity ^0.5.8;
 
-import "../Comptroller.sol";
+import "../ComptrollerG1.sol";
 import "../PriceOracle.sol";
 
-contract ComptrollerScenario is Comptroller {
+contract ComptrollerScenarioG1 is ComptrollerG1 {
     uint public blockNumber;
 
-    constructor() Comptroller() public {}
+    constructor() ComptrollerG1() public {}
 
     function membershipLength(CToken cToken) public view returns (uint) {
         return accountAssets[address(cToken)].length;
@@ -22,8 +22,8 @@ contract ComptrollerScenario is Comptroller {
         blockNumber = number;
     }
 
-    function _become(Unitroller unitroller) public {
-        super._become(unitroller);
+    function _become(Unitroller unitroller, PriceOracle _oracle, uint _closeFactorMantissa, uint _maxAssets, bool reinitializing) public {
+        super._become(unitroller, _oracle, _closeFactorMantissa, _maxAssets, reinitializing);
     }
 
     function getHypotheticalAccountLiquidity(

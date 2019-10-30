@@ -58,18 +58,17 @@ Test "Mint then Redeem Zero"
     FastForward 2 Blocks
     RedeemUnderlyingEth Geoff 0e18 cETH
 
-Pending "Mint then redeem with interest - no reserves"
+Test "Mint then redeem with interest - no reserves"
     Invariant Success
     NewComptroller
-    ListedCToken ZRX cETH initialExchangeRate:1e9
+    ListedEtherToken cETH initialExchangeRate:1e9
     Invariant Remains (CToken cETH Reserves) Zero
-    Prep Geoff 50e18 ZRX cETH
-    Mint Geoff 50e18 cETH
+    CallMintEth Geoff 50e18 cETH
     Assert Equal (Erc20 cETH TokenBalance Geoff) 500e8
     Assert Equal (CToken cETH UnderlyingBalance Geoff) 50e18
     Assert Equal (CToken cETH ExchangeRate) 1e9
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest ZRX cETH 10e18 5e18 interestRate:0.0001 blocks:5000
+    BorrowAndRepayEthWithInterest cETH 10e18 5e18 interestRate:0.000001 blocks:500000
     -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
     --   thus, we should have accrued 5e18 of interest for the protocol
     --   This is due pro-rata to all holders, but we just have one, so
@@ -78,9 +77,9 @@ Pending "Mint then redeem with interest - no reserves"
     Assert Equal (CToken cETH UnderlyingBalance Geoff) 55e18
     Assert Equal (CToken cETH ExchangeRate) 1.1e9
     -- Now redeem all with interest
-    Redeem Geoff 500e8 cETH
-    Assert Equal (Erc20 ZRX TokenBalance Geoff) 55e18
-    Assert Equal (Erc20 ZRX TokenBalance cETH) 0e18
+    Expect Changes (EtherBalance Geoff) 55e18
+    RedeemUnderlyingEth Geoff 55e18 cETH
+    Assert Equal (EtherBalance cETH) 0e18
     Assert Equal (Erc20 cETH TokenBalance Geoff) 0e8
     Assert Equal (CToken cETH UnderlyingBalance Geoff) 0e18
     Assert Equal (CToken cETH ExchangeRate) 1e9
@@ -96,7 +95,7 @@ Pending "Mint then redeem part with interest - no reserves"
     Assert Equal (CToken cETH UnderlyingBalance Geoff) 50e18
     Assert Equal (CToken cETH ExchangeRate) 1e9
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest ZRX cETH 10e18 5e18 interestRate:0.0001 blocks:5000
+    BorrowAndRepayWithInterest ZRX cETH 10e18 5e18 interestRate:0.000001 blocks:500000
     -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
     --   thus, we should have accrued 5e18 of interest for the protocol
     --   This is due pro-rata to all holders, but we just have one, so
@@ -120,7 +119,7 @@ Pending "Mint then redeem with reserves and interest"
     Assert Equal (CToken cETH UnderlyingBalance Geoff) 50e18
     Assert Equal (CToken cETH ExchangeRate) 1e9
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest ZRX cETH 10e18 5e18 interestRate:0.0001 blocks:5000 reserveRate:0.2
+    BorrowAndRepayWithInterest ZRX cETH 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
     -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
     --   thus, we should have accrued 5e18 of interest for the protocol
     --   The reserves should get 20% of this, or 1e18, and the rest

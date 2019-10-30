@@ -183,4 +183,36 @@ contract('assetListTest', function([root, customer, ...accounts]) {
       await exitAndCheckMarkets(ZRX, [OMG, BAT], 'NO_ERROR');
     });
   });
+
+  describe('entering from borrowAllowed', async () => {
+    it("enters when called by a ctoken", async () => {
+      await send(BAT, 'harnessCallBorrowAllowed', [1], {from: customer});
+
+      const assetsIn = await call(comptroller, 'getAssetsIn', [customer]);
+
+      assert.deepEqual([BAT._address], assetsIn);
+
+      await checkMarkets([BAT]);
+    });
+
+    it("reverts when called by not a ctoken", async () => {
+      await assert.revert(send(comptroller, 'borrowAllowed', [BAT._address, customer, 1], {from: customer}), 'revert sender must be cToken');
+
+      const assetsIn = await call(comptroller, 'getAssetsIn', [customer]);
+
+      assert.deepEqual([], assetsIn);
+
+      await checkMarkets([]);
+    });
+
+    it("adds to the asset list only once", async () => {
+      await send(BAT, 'harnessCallBorrowAllowed', [1], {from: customer});
+
+      await enterAndCheckMarkets([BAT], [BAT]);
+
+      await send(BAT, 'harnessCallBorrowAllowed', [1], {from: customer});
+      const assetsIn = await call(comptroller, 'getAssetsIn', [customer]);
+      assert.deepEqual([BAT._address], assetsIn);
+    });
+  });
 });

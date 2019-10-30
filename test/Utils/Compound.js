@@ -38,10 +38,8 @@ async function makeComptroller(opts = {}) {
     const priceOracle = opts.priceOracle || await makePriceOracle(opts.priceOracleOpts);
     const closeFactor = etherMantissa(dfn(opts.closeFactor, .051));
     const maxAssets = etherUnsigned(dfn(opts.maxAssets, 10));
-    const liquidationIncentive = etherUnsigned(1);
     const comptroller = await Comptroller.deploy().send({from: root});
 
-    await comptroller.methods._setLiquidationIncentive(liquidationIncentive).send({from: root});
     await comptroller.methods._setCloseFactor(closeFactor).send({from: root});
     await comptroller.methods._setMaxAssets(maxAssets).send({from: root});
     await comptroller.methods._setPriceOracle(priceOracle._address).send({from: root});
@@ -56,11 +54,16 @@ async function makeComptroller(opts = {}) {
     const priceOracle = opts.priceOracle || await makePriceOracle(opts.priceOracleOpts);
     const closeFactor = etherMantissa(dfn(opts.closeFactor, .051));
     const maxAssets = etherUnsigned(dfn(opts.maxAssets, 10));
+    const liquidationIncentive = etherMantissa(1);
     const unitroller = await Unitroller.deploy().send({from: root});
     const comptroller = await Comptroller.deploy().send({from: root});
     await unitroller.methods._setPendingImplementation(comptroller._address).send({from: root});
-    await comptroller.methods._become(unitroller._address, priceOracle._address, closeFactor, maxAssets, false).send({from: root});
+    await comptroller.methods._become(unitroller._address).send({from: root});
     comptroller.options.address = unitroller._address;
+    await comptroller.methods._setLiquidationIncentive(liquidationIncentive).send({from: root});
+    await comptroller.methods._setCloseFactor(closeFactor).send({from: root});
+    await comptroller.methods._setMaxAssets(maxAssets).send({from: root});
+    await comptroller.methods._setPriceOracle(priceOracle._address).send({from: root});
     return Object.assign(comptroller, {priceOracle});
   }
 }
@@ -77,6 +80,7 @@ async function makeCToken(opts = {}) {
   const decimals = etherUnsigned(dfn(opts.decimals, 8));
   const symbol = opts.symbol || 'cOMG';
   const name = opts.name || `CToken ${symbol}`;
+  const admin = opts.admin || root;
 
   let cToken, underlying;
 
@@ -90,7 +94,8 @@ async function makeCToken(opts = {}) {
         exchangeRate,
         name,
         symbol,
-        decimals
+        decimals,
+        admin
       ]}).send({from: root});
     break;
   case 'cerc20':
@@ -105,7 +110,8 @@ async function makeCToken(opts = {}) {
         exchangeRate,
         name,
         symbol,
-        decimals
+        decimals,
+        admin
       ]}).send({from: root});
     break;
   }

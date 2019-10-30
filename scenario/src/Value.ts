@@ -147,8 +147,8 @@ export class StringV implements Value {
   compareTo(world: World, given: Value): boolean {
     if (given instanceof StringV) {
       return this.val === given.val;
-    } else if (given instanceof AddressV) {
-      return this.val === given.val;
+    } else if ( given instanceof AddressV) {
+      return world.web3.utils.toChecksumAddress(this.val) === world.web3.utils.toChecksumAddress(given.val);
     } else {
       throw new Error(`Cannot compare ${typeof this} to ${typeof given} (${this.toString()}, ${given.toString()})`);
     }
@@ -203,10 +203,8 @@ export class AddressV implements Value {
   }
 
   compareTo(world: World, given: Value): boolean {
-    if (given instanceof AddressV) {
-      return this.val === given.val;
-    } else if (given instanceof StringV) {
-      return this.val === given.val;
+    if (given instanceof AddressV || given instanceof StringV) {
+      return world.web3.utils.toChecksumAddress(this.val) === world.web3.utils.toChecksumAddress(given.val);
     } else {
       throw new Error(`Cannot compare ${typeof this} to ${typeof given} (${this.toString()}, ${given.toString()})`);
     }

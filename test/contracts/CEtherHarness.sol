@@ -17,14 +17,16 @@ contract CEtherHarness is CEther {
                 uint initialExchangeRateMantissa,
                 string memory name_,
                 string memory symbol_,
-                uint decimals_)
+                uint8 decimals_,
+                address payable admin_)
     CEther(
     comptroller_,
     interestRateModel_,
     initialExchangeRateMantissa,
     name_,
     symbol_,
-    decimals_) public {}
+    decimals_,
+    admin_) public {}
 
     /**
       * Fresh
