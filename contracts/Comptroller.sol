@@ -168,7 +168,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     /**
      * @notice Removes asset from sender's account liquidity calculation
      * @dev Sender must not have an outstanding borrow balance in the asset,
-     *  or be providing neccessary collateral for an outstanding borrow.
+     *  or be providing necessary collateral for an outstanding borrow.
      * @param cTokenAddress The address of the asset to be removed
      * @return Whether or not the account successfully exited the market
      */
