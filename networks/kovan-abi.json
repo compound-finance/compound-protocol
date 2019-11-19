@@ -4895,93 +4895,6 @@
             "signature": "0x675d972c"
         },
         {
-            "constant": false,
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "underlying_",
-                    "type": "address"
-                },
-                {
-                    "internalType": "contract ComptrollerInterface",
-                    "name": "comptroller_",
-                    "type": "address"
-                },
-                {
-                    "internalType": "contract InterestRateModel",
-                    "name": "interestRateModel_",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "initialExchangeRateMantissa_",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "string",
-                    "name": "name_",
-                    "type": "string"
-                },
-                {
-                    "internalType": "string",
-                    "name": "symbol_",
-                    "type": "string"
-                },
-                {
-                    "internalType": "uint8",
-                    "name": "decimals_",
-                    "type": "uint8"
-                }
-            ],
-            "name": "initialize",
-            "outputs": [],
-            "payable": false,
-            "stateMutability": "nonpayable",
-            "type": "function",
-            "signature": "0x1a31d465"
-        },
-        {
-            "constant": false,
-            "inputs": [
-                {
-                    "internalType": "contract ComptrollerInterface",
-                    "name": "comptroller_",
-                    "type": "address"
-                },
-                {
-                    "internalType": "contract InterestRateModel",
-                    "name": "interestRateModel_",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "initialExchangeRateMantissa_",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "string",
-                    "name": "name_",
-                    "type": "string"
-                },
-                {
-                    "internalType": "string",
-                    "name": "symbol_",
-                    "type": "string"
-                },
-                {
-                    "internalType": "uint8",
-                    "name": "decimals_",
-                    "type": "uint8"
-                }
-            ],
-            "name": "initialize",
-            "outputs": [],
-            "payable": false,
-            "stateMutability": "nonpayable",
-            "type": "function",
-            "signature": "0x99d8c1b4"
-        },
-        {
             "constant": true,
             "inputs": [],
             "name": "interestRateModel",
@@ -10830,11 +10743,6 @@
                     "internalType": "uint256",
                     "name": "",
                     "type": "uint256"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "",
-                    "type": "uint256"
                 }
             ],
             "payable": false,
@@ -14315,11 +14223,6 @@
                     "internalType": "uint256",
                     "name": "",
                     "type": "uint256"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "",
-                    "type": "uint256"
                 }
             ],
             "payable": false,
@@ -14553,11 +14456,6 @@
             ],
             "name": "getBorrowRate",
             "outputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "",
-                    "type": "uint256"
-                },
                 {
                     "internalType": "uint256",
                     "name": "",
@@ -20689,11 +20587,6 @@
             ],
             "name": "getBorrowRate",
             "outputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "",
-                    "type": "uint256"
-                },
                 {
                     "internalType": "uint256",
                     "name": "",
