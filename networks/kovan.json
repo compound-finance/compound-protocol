@@ -135,7 +135,7 @@
             "address": "0x85B7e36b697B7b9E00efF8f5AF5455660Cd4c0b4"
         },
         "cDAI": {
-            "name": "Compound MultiCollateral DAI 📈",
+            "name": "Compound DAI 📈",
             "symbol": "cDAI",
             "decimals": 8,
             "underlying": "0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa",
@@ -154,7 +154,7 @@
         },
         "DAI": {
             "description": "Existing",
-            "name": "Dai",
+            "name": "Multi-Collateral Dai",
             "symbol": "DAI",
             "decimals": 18,
             "contract": "ExistingToken",
@@ -265,7 +265,7 @@
             "address": "0x85B7e36b697B7b9E00efF8f5AF5455660Cd4c0b4"
         },
         "cDAI": {
-            "name": "Compound MultiCollateral Dai 📈",
+            "name": "Compound Dai 📈",
             "symbol": "cDAI",
             "decimals": 8,
             "underlying": "0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa",
