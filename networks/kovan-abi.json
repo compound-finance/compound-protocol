@@ -2263,7 +2263,7 @@
             "signature": "0x367b7f05"
         }
     ],
-    "cDAI": [
+    "cSAI": [
         {
             "inputs": [
                 {
@@ -3777,7 +3777,7 @@
             "signature": "0x6f307dc3"
         }
     ],
-    "cMCD": [
+    "cDAI": [
         {
             "inputs": [
                 {
@@ -5325,7 +5325,7 @@
             "signature": "0x6f307dc3"
         }
     ],
-    "DAI": [
+    "SAI": [
         {
             "anonymous": false,
             "inputs": [
@@ -7214,7 +7214,7 @@
             "signature": "0xdcfbc0c7"
         }
     ],
-    "MCD": [
+    "DAI": [
         {
             "anonymous": false,
             "inputs": [
