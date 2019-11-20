@@ -146,7 +146,7 @@
         },
         "SAI": {
             "description": "Existing",
-            "name": "SAI (Legacy DAI)",
+            "name": "Sai (Legacy DAI)",
             "symbol": "SAI",
             "decimals": 18,
             "contract": "ExistingToken",
