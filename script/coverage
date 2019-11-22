@@ -3,21 +3,20 @@
 dir=`dirname $0`
 proj_root="$dir/.."
 
-[[ ! -d ./.tsbuilt || -z $NO_TSC ]] && "$proj_root/scenario/script/tsc"
+export NETWORK="coverage"
 case $1 in
-	"mocha")
-		export TEST_COMMAND="NETWORK=coverage SCENARIOS="skipall" script/test"
-		export SKIP_UNITROLLER=""
-	;;
-	"scenario")
-		export TEST_COMMAND="NETWORK=coverage script/test test/ScenarioTest.js"
-		export SKIP_UNITROLLER="true"
-	;;
-	*)
-	;;
+    "mocha")
+        export SCENARIOS="skipall"
+        export NO_TSC="true"
+        export no_compile="true" # mocha doesnt need contracts written to by solc
+        source $dir/test
+        ;;
+    "scenario")
+        # dont instrument unitroller, slows everything down bigly
+        export SKIP_UNITROLLER="true"
+        source $dir/test --file="test/ScenarioTest.js"
+	      ;;
+	  *)
+        echo "must provide mocha/scenario option to coverage script"
+	      ;;
 esac
-
-echo "TEST_COMMAND: $TEST_COMMAND"
-echo "SKIP_UNITROLLER: $SKIP_UNITROLLER"
-
-"$proj_root/node_modules/.bin/solidity-coverage"

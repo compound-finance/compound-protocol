@@ -1,3 +1,4 @@
+import { loadAccounts } from './Accounts';
 import {
   addAction,
   checkExpectations,
@@ -17,6 +18,7 @@ import { comptrollerCommands, processComptrollerEvent } from './Event/Comptrolle
 import { processUnitrollerEvent, unitrollerCommands } from './Event/UnitrollerEvent';
 import { comptrollerImplCommands, processComptrollerImplEvent } from './Event/ComptrollerImplEvent';
 import { cTokenCommands, processCTokenEvent } from './Event/CTokenEvent';
+import { cTokenDelegateCommands, processCTokenDelegateEvent } from './Event/CTokenDelegateEvent';
 import { erc20Commands, processErc20Event } from './Event/Erc20Event';
 import { interestRateModelCommands, processInterestRateModelEvent } from './Event/InterestRateModelEvent';
 import { priceOracleCommands, processPriceOracleEvent } from './Event/PriceOracleEvent';
@@ -29,10 +31,12 @@ import { processTrxEvent, trxCommands } from './Event/TrxEvent';
 import { fetchers, getCoreValue } from './CoreValue';
 import { formatEvent } from './Formatter';
 import { fallback } from './Invokation';
-import { sleep } from './Utils';
+import { sendRPC, sleep } from './Utils';
 import { Map } from 'immutable';
 import { encodedNumber } from './Encoding';
 import { printHelp } from './Help';
+import Ganache from 'ganache-core';
+import Web3 from 'web3';
 
 export class EventProcessingError extends Error {
   error: Error;
@@ -181,6 +185,49 @@ export const commands = [
     [new Arg('message', getStringV)],
     async (world, { message }) => print(world, message.val)
   ),
+  new View<{}>(
+    `
+      #### PrintTransactionLogs
+
+      * "PrintTransactionLogs" - Prints logs from all transacions
+    `,
+    'PrintTransactionLogs',
+    [],
+    async (world, { }) => {
+      return await world.updateSettings(async settings => {
+        settings.printTxLogs = true;
+
+        return settings;
+      });
+    }
+  ),
+  new View<{ fork: StringV; unlockedAccounts: AddressV[] }>(
+    `
+      #### Web3Fork
+
+      * "Web3Fork fork:<String> unlockedAccounts:<String>[]" - Creates an in-memory ganache
+        * E.g. "Web3Fork \"https://mainnet.infura.io/v3/e1a5d4d2c06a4e81945fca56d0d5d8ea\" (\"0x8b8592e9570e96166336603a1b4bd1e8db20fa20\")"
+    `,
+    'Web3Fork',
+    [new Arg('fork', getStringV), new Arg('unlockedAccounts', getAddressV, { mapped: true })],
+    async (world, { fork, unlockedAccounts }) => {
+      let lastBlock = await world.web3.eth.getBlock("latest")
+      const newWeb3 = new Web3(
+        Ganache.provider({
+          allowUnlimitedContractSize: true,
+          fork: fork.val,
+          gasLimit: lastBlock.gasLimit, // maintain configured gas limit
+          gasPrice: '20000',
+          port: 8546,
+          unlocked_accounts: unlockedAccounts.map(v => v.val)
+        })
+      );
+      const newAccounts = loadAccounts(await newWeb3.eth.getAccounts())
+      return world
+        .set('web3', newWeb3)
+        .set('accounts', newAccounts);
+    }
+  ),
   new View<{ address: AddressV }>(
     `
       #### MyAddress
@@ -215,6 +262,7 @@ export const commands = [
       });
     }
   ),
+
   new View<{ name: StringV; address: AddressV }>(
     `
       #### Aliases
@@ -232,6 +280,38 @@ export const commands = [
       return world;
     }
   ),
+
+  new View<{ seconds: NumberV }>(
+    `
+      #### IncreaseTime
+
+      * "IncreaseTime seconds:<Number>" - Increase Ganache evm time by a number of seconds
+        * E.g. "IncreaseTime 60"
+    `,
+    'IncreaseTime',
+    [new Arg('seconds', getNumberV)],
+    async (world, { seconds }) => {
+      await sendRPC(world, 'evm_increaseTime', [Number(seconds.val)]);
+      await sendRPC(world, 'evm_mine', []);
+      return world;
+    }
+  ),
+
+  new View<{ timestamp: NumberV }>(
+    `
+      #### SetTime
+
+      * "SetTime timestamp:<Number>" - Increase Ganache evm time to specific timestamp
+        * E.g. "SetTime 1573597400"
+    `,
+    'SetTime',
+    [new Arg('timestamp', getNumberV)],
+    async (world, { timestamp }) => {
+      await sendRPC(world, 'evm_mine', [timestamp.val]);
+      return world;
+    }
+  ),
+
   new View<{}>(
     `
       #### Inspect
@@ -240,8 +320,9 @@ export const commands = [
     `,
     'Inspect',
     [],
-    async (world, {}) => inspect(world, null)
+    async (world, { }) => inspect(world, null)
   ),
+
   new View<{ message: StringV }>(
     `
       #### Debug
@@ -252,6 +333,7 @@ export const commands = [
     [new Arg('message', getStringV)],
     async (world, { message }) => inspect(world, message.val)
   ),
+
   new View<{ account: AddressV; event: EventV }>(
     `
       #### From
@@ -263,6 +345,7 @@ export const commands = [
     [new Arg('account', getAddressV), new Arg('event', getEventV)],
     async (world, { account, event }) => processCoreEvent(world, event.val, account.val)
   ),
+
   new Command<{ event: EventV }>(
     `
       #### Trx
@@ -275,6 +358,7 @@ export const commands = [
     async (world, from, { event }) => processTrxEvent(world, event.val, from),
     { subExpressions: trxCommands() }
   ),
+
   new Command<{ event: EventV }>(
     `
       #### Invariant
@@ -287,6 +371,7 @@ export const commands = [
     async (world, from, { event }) => processInvariantEvent(world, event.val, from),
     { subExpressions: invariantCommands() }
   ),
+
   new Command<{ event: EventV }>(
     `
       #### Expect
@@ -299,6 +384,7 @@ export const commands = [
     async (world, from, { event }) => processExpectationEvent(world, event.val, from),
     { subExpressions: expectationCommands() }
   ),
+
   new View<{ type: StringV }>(
     `
       #### HoldInvariants
@@ -314,6 +400,7 @@ export const commands = [
     [new Arg('type', getStringV, { default: new StringV('All') })],
     async (world, { type }) => holdInvariants(world, type.val)
   ),
+
   new View<{ type: StringV }>(
     `
       #### ClearInvariants
@@ -329,6 +416,7 @@ export const commands = [
     [new Arg('type', getStringV, { default: new StringV('All') })],
     async (world, { type }) => clearInvariants(world, type.val)
   ),
+
   new Command<{ event: EventV }>(
     `
       #### Assert
@@ -341,6 +429,7 @@ export const commands = [
     async (world, from, { event }) => processAssertionEvent(world, event.val, from),
     { subExpressions: assertionCommands() }
   ),
+
   new Command<{ gate: Value; event: EventV }>(
     `
       #### Gate
@@ -358,6 +447,7 @@ export const commands = [
       }
     }
   ),
+
   new Command<{ given: Value; event: EventV }>(
     `
       #### Given
@@ -375,6 +465,7 @@ export const commands = [
       }
     }
   ),
+
   new Command<{ address: AddressV; amount: NumberV }>(
     `
       #### Send
@@ -386,6 +477,7 @@ export const commands = [
     [new Arg('address', getAddressV), new Arg('amount', getNumberV)],
     (world, from, { address, amount }) => sendEther(world, from, address.val, amount.encode())
   ),
+
   new Command<{ event: EventV }>(
     `
       #### Unitroller
@@ -398,6 +490,7 @@ export const commands = [
     (world, from, { event }) => processUnitrollerEvent(world, event.val, from),
     { subExpressions: unitrollerCommands() }
   ),
+
   new Command<{ event: EventV }>(
     `
       #### Comptroller
@@ -410,6 +503,7 @@ export const commands = [
     (world, from, { event }) => processComptrollerEvent(world, event.val, from),
     { subExpressions: comptrollerCommands() }
   ),
+
   new Command<{ event: EventV }>(
     `
       #### ComptrollerImpl
@@ -422,6 +516,7 @@ export const commands = [
     (world, from, { event }) => processComptrollerImplEvent(world, event.val, from),
     { subExpressions: comptrollerImplCommands() }
   ),
+
   new Command<{ event: EventV }>(
     `
       #### CToken
@@ -434,6 +529,20 @@ export const commands = [
     (world, from, { event }) => processCTokenEvent(world, event.val, from),
     { subExpressions: cTokenCommands() }
   ),
+
+  new Command<{ event: EventV }>(
+    `
+      #### CTokenDelegate
+
+      * "CTokenDelegate ...event" - Runs given CTokenDelegate event
+        * E.g. "CTokenDelegate Deploy CDaiDelegate cDaiDelegate"
+    `,
+    'CTokenDelegate',
+    [new Arg('event', getEventV, { variadic: true })],
+    (world, from, { event }) => processCTokenDelegateEvent(world, event.val, from),
+    { subExpressions: cTokenDelegateCommands() }
+  ),
+
   new Command<{ event: EventV }>(
     `
       #### Erc20
@@ -446,6 +555,7 @@ export const commands = [
     (world, from, { event }) => processErc20Event(world, event.val, from),
     { subExpressions: erc20Commands() }
   ),
+
   new Command<{ event: EventV }>(
     `
       #### InterestRateModel
@@ -458,6 +568,7 @@ export const commands = [
     (world, from, { event }) => processInterestRateModelEvent(world, event.val, from),
     { subExpressions: interestRateModelCommands() }
   ),
+
   new Command<{ event: EventV }>(
     `
       #### PriceOracle
@@ -470,6 +581,7 @@ export const commands = [
     (world, from, { event }) => processPriceOracleEvent(world, event.val, from),
     { subExpressions: priceOracleCommands() }
   ),
+
   new Command<{ event: EventV }>(
     `
       #### PriceOracleProxy
@@ -484,6 +596,7 @@ export const commands = [
     },
     { subExpressions: priceOracleProxyCommands() }
   ),
+
   new Command<{ event: EventV }>(
     `
       #### Maximillion
@@ -498,6 +611,7 @@ export const commands = [
     },
     { subExpressions: maximillionCommands() }
   ),
+
   new Command<{ event: EventV }>(
     `
       #### Timelock
@@ -512,6 +626,7 @@ export const commands = [
     },
     { subExpressions: timelockCommands() }
   ),
+
   new View<{ event: EventV }>(
     `
       #### Help

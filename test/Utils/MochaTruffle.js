@@ -47,12 +47,15 @@ const assert = Object.assign(global.assert || require('assert'), {
     assert.equal(actualErrorCode, reporter.Error[expectedErrorName], `expected Error.${expectedErrorName}, instead got Error.${reporter.ErrorInv[actualErrorCode]}`);
   },
 
-  hasLog: (result, event, params) => {
+  hasLog: (result, event, params, numEq) => {
     const events = result.events;
     const log = lookup(events, event);
     if (!log)
       assert.fail(0, 1, `expected log with event '${event}', found logs with events: ${Object.keys(events)}`);
-    assert.partEqual(log.returnValues, params);
+    if (numEq)
+      assert.partNumEqual(log.returnValues, params);
+    else
+      assert.partEqual(log.returnValues, params);
   },
 
   hasNoLog: (result, event) => {
@@ -81,7 +84,6 @@ const assert = Object.assign(global.assert || require('assert'), {
     assert.hasTokenFailure(result, 'COMPTROLLER_REJECTION', info, detail && ComptrollerErr.Error[detail]);
   },
 
-  hasIRErrorTuple: (result, tuple) => assert.hasErrorTuple(result, tuple, IRErr),
   hasMathErrorTuple: (result, tuple) => assert.hasErrorTuple(result, tuple, MathErr),
   hasTrollErrorTuple: (result, tuple) => assert.hasErrorTuple(result, tuple, ComptrollerErr),
   hasTokenErrorTuple: (result, tuple) => assert.hasErrorTuple(result, tuple, TokenErr),
@@ -106,12 +108,17 @@ const assert = Object.assign(global.assert || require('assert'), {
     assert.notEqual(actual.toString(), expected.toString(), reason);
   },
 
+  partNumEqual: (actual, partial) => {
+    for (let key of Object.keys(partial)) {
+      assert.numEqual(etherUnsigned(actual[key]), etherUnsigned(partial[key]), `expected ${key} in ${JSON.stringify(actual)} similar to ${JSON.stringify(partial)}`);
+    }
+  },
+
   partEqual: (actual, partial, reason) => {
     assert.deepEqual(select(actual, Object.keys(partial)), partial, reason);
   },
 
   revert: async (trx, reason='revert') => {
-    // coverage tests don't currently support checking full message given with a revert
     let result;
     try {
       result = await trx;
@@ -123,7 +130,7 @@ const assert = Object.assign(global.assert || require('assert'), {
   },
 
   revertWithError: async (trx, expectedErrorName, reason='revert', reporter=TokenErr) => {
-    assert.revert(trx, `${reason} (${reporter.Error[expectedErrorName].padStart(2, '0')})`)
+    return assert.revert(trx, `${reason} (${reporter.Error[expectedErrorName].padStart(2, '0')})`)
   },
 
   succeeds: async (contract, method, args = [], opts = [], reporter=TokenErr) => {
@@ -184,16 +191,16 @@ function etherUnsigned(num) {
 }
 
 function getContractDefaults() {
-  if (process.env.NETWORK === 'coverage')
+  if (process.env.NETWORK === "coverage")
     return {gas: 0xfffffffffff, gasPrice: 1};
   return {gas: 20000000, gasPrice: 20000};
 }
 
-function getContract(name, opts = getContractDefaults()) {
+function getContract(name, opts = getContractDefaults(), chosenWeb3 = web3) {
   const code = artifacts.require(name);
-  const contract = new web3.eth.Contract(code._json.abi, null, {data: code._json.bytecode, ...opts});
+  const contract = new chosenWeb3.eth.Contract(code._json.abi, null, {data: code._json.bytecode, ...opts});
   contract.at = (addr) => {
-    return new web3.eth.Contract(code._json.abi, addr, {data: code._json.bytecode, ...opts});
+    return new chosenWeb3.eth.Contract(code._json.abi, addr, {data: code._json.bytecode, ...opts});
   }
   return contract;
 }
@@ -251,7 +258,7 @@ async function send(contract, method, args = [], opts = {}) {
 }
 
 async function sendFallback(contract, opts = {}) {
-  const receipt = await web3.eth.sendTransaction({to: contract._address, ...opts});
+  const receipt = await web3.eth.sendTransaction({to: contract._address, ...Object.assign(getContractDefaults(), opts)});
   return Object.assign(receipt, {events: receipt.logs});
 }
 
@@ -266,6 +273,7 @@ module.exports = {
   etherMantissa,
   etherUnsigned,
   getContract,
+  getContractDefaults,
   getTestContract,
   guessRoot,
   keccak256,

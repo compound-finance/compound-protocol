@@ -125,7 +125,7 @@ export abstract class Expression<Args> {
         [eventArg, ...restEventArgs] = currEvents;
 
         if (eventArg === undefined) {
-          if (arg.defaultValue) {
+          if (arg.defaultValue !== undefined) {
             val = arg.defaultValue;
           } else {
             throw new Error(`Missing argument ${arg.name} when processing ${this.name}`);

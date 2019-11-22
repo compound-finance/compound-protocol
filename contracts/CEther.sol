@@ -1,4 +1,4 @@
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.12;
 
 import "./CToken.sol";
 
@@ -16,6 +16,7 @@ contract CEther is CToken {
      * @param name_ ERC-20 name of this token
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
+     * @param admin_ Address of the administrator of this token
      */
     constructor(ComptrollerInterface comptroller_,
                 InterestRateModel interestRateModel_,
@@ -23,8 +24,16 @@ contract CEther is CToken {
                 string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
-                address payable admin_) public
-    CToken(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, admin_) {}
+                address payable admin_) public {
+        // Creator of the contract is admin during initialization
+        admin = msg.sender;
+
+        initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
+
+        // Set the proper admin now that initialization is done
+        admin = admin_;
+    }
+
 
     /*** User Interface ***/
 
@@ -33,7 +42,8 @@ contract CEther is CToken {
      * @dev Reverts upon any failure
      */
     function mint() external payable {
-        requireNoError(mintInternal(msg.value), "mint failed");
+        (uint err,) = mintInternal(msg.value);
+        requireNoError(err, "mint failed");
     }
 
     /**
@@ -70,7 +80,8 @@ contract CEther is CToken {
      * @dev Reverts upon any failure
      */
     function repayBorrow() external payable {
-        requireNoError(repayBorrowInternal(msg.value), "repayBorrow failed");
+        (uint err,) = repayBorrowInternal(msg.value);
+        requireNoError(err, "repayBorrow failed");
     }
 
     /**
@@ -79,7 +90,8 @@ contract CEther is CToken {
      * @param borrower the account with the debt being payed off
      */
     function repayBorrowBehalf(address borrower) external payable {
-        requireNoError(repayBorrowBehalfInternal(borrower, msg.value), "repayBorrowBehalf failed");
+        (uint err,) = repayBorrowBehalfInternal(borrower, msg.value);
+        requireNoError(err, "repayBorrowBehalf failed");
     }
 
     /**
@@ -90,14 +102,16 @@ contract CEther is CToken {
      * @param cTokenCollateral The market in which to seize collateral from the borrower
      */
     function liquidateBorrow(address borrower, CToken cTokenCollateral) external payable {
-        requireNoError(liquidateBorrowInternal(borrower, msg.value, cTokenCollateral), "liquidateBorrow failed");
+        (uint err,) = liquidateBorrowInternal(borrower, msg.value, cTokenCollateral);
+        requireNoError(err, "liquidateBorrow failed");
     }
 
     /**
      * @notice Send Ether to CEther to mint
      */
     function () external payable {
-        requireNoError(mintInternal(msg.value), "mint failed");
+        (uint err,) = mintInternal(msg.value);
+        requireNoError(err, "mint failed");
     }
 
     /*** Safe Token ***/
@@ -131,19 +145,18 @@ contract CEther is CToken {
      * @notice Perform the actual transfer in, which is a no-op
      * @param from Address sending the Ether
      * @param amount Amount of Ether being sent
-     * @return Success
+     * @return The actual amount of Ether transferred
      */
-    function doTransferIn(address from, uint amount) internal returns (Error) {
+    function doTransferIn(address from, uint amount) internal returns (uint) {
         // Sanity checks
         require(msg.sender == from, "sender mismatch");
         require(msg.value == amount, "value mismatch");
-        return Error.NO_ERROR;
+        return amount;
     }
 
-    function doTransferOut(address payable to, uint amount) internal returns (Error) {
+    function doTransferOut(address payable to, uint amount) internal {
         /* Send the Ether, with minimal gas and revert on failure */
         to.transfer(amount);
-        return Error.NO_ERROR;
     }
 
     function requireNoError(uint errCode, string memory message) internal pure {

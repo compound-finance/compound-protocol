@@ -81,6 +81,10 @@ async function getExchangeRate(world: World, cToken: CToken): Promise<NumberV> {
   return new NumberV(await cToken.methods.exchangeRateCurrent().call(), 1e18);
 }
 
+async function getCash(world: World, cToken: CToken): Promise<NumberV> {
+  return new NumberV(await cToken.methods.getCash().call());
+}
+
 async function getInterestRate(world: World, cToken: CToken): Promise<NumberV> {
   return new NumberV(await cToken.methods.borrowRatePerBlock().call(), 1.0e18 / 2102400);
 }
@@ -100,6 +104,7 @@ export function cTokenFetchers() {
       (world, {cToken}) => cTokenAddress(world, cToken),
       {namePos: 1}
     ),
+
     new Fetcher<{cToken: CToken}, AddressV>(`
         #### Admin
 
@@ -113,6 +118,7 @@ export function cTokenFetchers() {
       (world, {cToken}) => getCTokenAdmin(world, cToken),
       {namePos: 1}
     ),
+
     new Fetcher<{cToken: CToken}, AddressV>(`
         #### PendingAdmin
 
@@ -126,6 +132,7 @@ export function cTokenFetchers() {
       (world, {cToken}) => getCTokenPendingAdmin(world, cToken),
       {namePos: 1}
     ),
+
     new Fetcher<{cToken: CToken}, AddressV>(`
         #### Underlying
 
@@ -139,6 +146,7 @@ export function cTokenFetchers() {
       async (world, {cToken}) => new AddressV(await cToken.methods.underlying().call()),
       {namePos: 1}
     ),
+
     new Fetcher<{cToken: CToken, address: AddressV}, NumberV>(`
         #### UnderlyingBalance
 
@@ -153,6 +161,7 @@ export function cTokenFetchers() {
       (world, {cToken, address}) => balanceOfUnderlying(world, cToken, address.val),
       {namePos: 1}
     ),
+
     new Fetcher<{cToken: CToken, address: AddressV}, NumberV>(`
         #### BorrowBalance
 
@@ -167,6 +176,7 @@ export function cTokenFetchers() {
       (world, {cToken, address}) => getBorrowBalance(world, cToken, address.val),
       {namePos: 1}
     ),
+
     new Fetcher<{cToken: CToken, address: AddressV}, NumberV>(`
         #### BorrowBalanceStored
 
@@ -181,6 +191,7 @@ export function cTokenFetchers() {
       (world, {cToken, address}) => getBorrowBalanceStored(world, cToken, address.val),
       {namePos: 1}
     ),
+
     new Fetcher<{cToken: CToken}, NumberV>(`
         #### TotalBorrows
 
@@ -194,6 +205,7 @@ export function cTokenFetchers() {
       (world, {cToken}) => getTotalBorrows(world, cToken),
       {namePos: 1}
     ),
+
     new Fetcher<{cToken: CToken}, NumberV>(`
         #### TotalBorrowsCurrent
 
@@ -207,6 +219,7 @@ export function cTokenFetchers() {
       (world, {cToken}) => getTotalBorrowsCurrent(world, cToken),
       {namePos: 1}
     ),
+
     new Fetcher<{cToken: CToken}, NumberV>(`
         #### Reserves
 
@@ -220,6 +233,7 @@ export function cTokenFetchers() {
       (world, {cToken}) => getTotalReserves(world, cToken),
       {namePos: 1}
     ),
+
     new Fetcher<{cToken: CToken}, NumberV>(`
         #### ReserveFactor
 
@@ -233,6 +247,7 @@ export function cTokenFetchers() {
       (world, {cToken}) => getReserveFactor(world, cToken),
       {namePos: 1}
     ),
+
     new Fetcher<{cToken: CToken}, AddressV>(`
         #### Comptroller
 
@@ -246,6 +261,7 @@ export function cTokenFetchers() {
       (world, {cToken}) => getComptroller(world, cToken),
       {namePos: 1}
     ),
+
     new Fetcher<{cToken: CToken}, NumberV>(`
         #### ExchangeRateStored
 
@@ -259,6 +275,7 @@ export function cTokenFetchers() {
       (world, {cToken}) => getExchangeRateStored(world, cToken),
       {namePos: 1}
     ),
+
     new Fetcher<{cToken: CToken}, NumberV>(`
         #### ExchangeRate
 
@@ -272,6 +289,21 @@ export function cTokenFetchers() {
       (world, {cToken}) => getExchangeRate(world, cToken),
       {namePos: 1}
     ),
+
+    new Fetcher<{cToken: CToken}, NumberV>(`
+        #### Cash
+
+        * "CToken <CToken> Cash" - Returns the cToken's current cash
+          * E.g. "CToken cZRX Cash"
+      `,
+      "Cash",
+      [
+        new Arg("cToken", getCTokenV)
+      ],
+      (world, {cToken}) => getCash(world, cToken),
+      {namePos: 1}
+    ),
+
     new Fetcher<{cToken: CToken}, NumberV>(`
         #### InterestRate
 

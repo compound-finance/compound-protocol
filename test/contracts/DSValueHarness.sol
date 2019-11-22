@@ -1,6 +1,6 @@
 // Abstract contract for the full DSValue standard
 // --
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.12;
 
 contract DSValueHarness {
     bool public has;

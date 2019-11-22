@@ -119,18 +119,31 @@ async function setPaused(world: World, from: string, erc20: Erc20, pause: boolea
   return world;
 }
 
+async function setFee(world: World, from: string, erc20: Erc20, basisPointFee: NumberV, maxFee: NumberV): Promise<World> {
+  let invokation = await invoke(world, erc20.methods.setParams(basisPointFee.encode(), maxFee.encode()), from);
+
+  world = addAction(
+    world,
+    `Set fee on ${erc20.name} to ${basisPointFee} with a max of ${maxFee}`,
+    invokation
+  );
+
+  return world;
+}
+
 export function erc20Commands() {
   return [
     new Command<{erc20Params: EventV}>(`
         #### Deploy
 
         * "Erc20 Deploy ...erc20Params" - Generates a new ERC-20 token by name
-          * E.g. "Erc20 ZRX Deploy"
+          * E.g. "Erc20 Deploy ZRX ..."
       `,
       "Deploy",
       [new Arg("erc20Params", getEventV, {variadic: true})],
       (world, from, {erc20Params}) => genToken(world, from, erc20Params.val)
     ),
+
     new View<{erc20Arg: StringV, apiKey: StringV}>(`
         #### Verify
 
@@ -151,6 +164,7 @@ export function erc20Commands() {
       },
       {namePos: 1}
     ),
+
     new Command<{erc20: Erc20, spender: AddressV, amount: NumberV}>(`
         #### Approve
 
@@ -163,9 +177,12 @@ export function erc20Commands() {
         new Arg("spender", getAddressV),
         new Arg("amount", getNumberV)
       ],
-      (world, from, {erc20, spender, amount}) => approve(world, from, erc20, spender.val, amount),
+      (world, from, {erc20, spender, amount}) => {
+        return approve(world, from, erc20, spender.val, amount)
+      },
       {namePos: 1}
     ),
+
     new Command<{erc20: Erc20, recipient: AddressV, amount: NumberV}>(`
         #### Faucet
 
@@ -241,6 +258,22 @@ export function erc20Commands() {
         new Arg("paused", getBoolV, {default: new BoolV(true)})
       ],
       (world, from, {erc20, paused}) => setPaused(world, from, erc20, paused.val),
+      {namePos: 1}
+    ),
+    new Command<{erc20: Erc20, basisPointFee: NumberV, maxFee: NumberV}>(`
+        #### SetFee
+
+        * "Erc20 <Erc20> SetFee basisPointFee:<Number> maxFee:<Number>" - Sets the current fee and max fee on Tether. Current 
+        * Current fee (basisPointFee) has a max of 20 basis points, while maxFee is capped at 50 Tether (a max absolute fee of 50 * 10 ^ decimals)
+          * E.g. "Erc20 USDT SetFee 10 10"
+      `,
+      "SetFee",
+      [
+        new Arg("erc20", getErc20V),
+        new Arg("basisPointFee", getNumberV),
+        new Arg("maxFee", getNumberV)
+      ],
+      (world, from, {erc20, basisPointFee, maxFee}) => setFee(world, from, erc20, basisPointFee, maxFee),
       {namePos: 1}
     )
   ];

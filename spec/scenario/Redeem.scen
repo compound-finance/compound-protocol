@@ -191,7 +191,7 @@ Test "Redeem transfer out fails"
     Erc20 EVL SetFail True
     AllowFailures
     Redeem Geoff 500e8 cEVL
-    Assert Revert "revert redeem transfer out failed"
+    Assert Revert "revert TOKEN_TRANSFER_OUT_FAILED"
 
 Test "Mint, Enter, then Redeem Too Much (collateral factor: 0)"
     NewComptroller

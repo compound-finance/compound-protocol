@@ -4,7 +4,7 @@ Macro SetupPriceOracleProxy
     -- Update to G1
     ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
     Unitroller SetPendingImpl ScenComptrollerG1
-    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero)
+    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero)
     ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracleProxy Address) 0.1 20
     -- Update to G*
     ComptrollerImpl Deploy Scenario ScenComptroller
@@ -12,33 +12,35 @@ Macro SetupPriceOracleProxy
     ComptrollerImpl ScenComptroller Become
     NewEtherToken cETH
     NewCToken USDC cUSDC
+    NewCToken SAI cSAI
     NewCToken DAI cDAI
     Comptroller SupportMarket cETH
     Comptroller SupportMarket cUSDC
+    Comptroller SupportMarket cSAI
     Comptroller SupportMarket cDAI
-    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address cETH) (Address cUSDC) (Address cDAI)
+    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address cETH) (Address cUSDC) (Address cSAI) (Address cDAI)
     Comptroller SetPriceOracle (PriceOracleProxy Address)
 
 Test "computes address(2) / address(1) * maker usd price for cdai when within ratio bound"
     SetupPriceOracleProxy
-    PriceOracle SetPrice cDAI 0.005 -- the maker usd/eth price is at the dai address
+    PriceOracle SetPrice cSAI 0.005 -- the maker usd/eth price is at the dai address
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000001) 5740564708572881000000000000
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000002) 5842307360923634
-    Assert Equal (PriceOracleProxy Price cDAI) 0.005088617285507479e18
+    Assert Equal (PriceOracleProxy Price cSAI) 0.005088617285507479e18
     Assert Equal (PriceOracleProxy Price cUSDC) 0.005e30
 
 Test "computes address(2) / address(1) * maker usd price for cdai when below ratio bound"
     SetupPriceOracleProxy
-    PriceOracle SetPrice cDAI 0.005 -- the maker usd/eth price is at the dai address
+    PriceOracle SetPrice cSAI 0.005 -- the maker usd/eth price is at the dai address
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000001) 57405647085728810000000000000
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000002) 5842307360923634
-    Assert Equal (PriceOracleProxy Price cDAI) 0.00475e18
+    Assert Equal (PriceOracleProxy Price cSAI) 0.00475e18
     Assert Equal (PriceOracleProxy Price cUSDC) 0.005e30
 
 Test "computes address(2) / address(1) * maker usd price for cdai when above ratio bound"
     SetupPriceOracleProxy
-    PriceOracle SetPrice cDAI 0.005 -- the maker usd/eth price is at the dai address - will be scaled by 1e18
+    PriceOracle SetPrice cSAI 0.005 -- the maker usd/eth price is at the dai address - will be scaled by 1e18
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000001) 5740564708572881000000000000
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000002) 58423073609236340
-    Assert Equal (PriceOracleProxy Price cDAI) 0.00525e18
+    Assert Equal (PriceOracleProxy Price cSAI) 0.00525e18
     Assert Equal (PriceOracleProxy Price cUSDC) 0.005e30

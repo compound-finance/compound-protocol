@@ -45,11 +45,7 @@ contract('CToken', function ([root, ...accounts]) {
 
     it('fails if new borrow rate calculation fails', async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
-      assert.hasTokenFailure(
-        await send(cToken, 'accrueInterest'),
-        'INTEREST_RATE_MODEL_ERROR',
-        'ACCRUE_INTEREST_BORROW_RATE_CALCULATION_FAILED'
-      );
+      await assert.revert(send(cToken, 'accrueInterest'), "revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it('fails if simple interest factor calculation fails', async () => {
@@ -139,7 +135,14 @@ contract('CToken', function ([root, ...accounts]) {
       const expectedTotalBorrows = startingTotalBorrows + startingTotalBorrows * borrowRate;
       const expectedTotalReserves = startingTotalReserves + startingTotalBorrows *  borrowRate * reserveFactor / 1e18;
 
-      assert.success(await send(cToken, 'accrueInterest'));
+      const receipt = await send(cToken, 'accrueInterest')
+      assert.success(receipt);
+      assert.hasLog(receipt, 'AccrueInterest', {
+        cashPrior: 0,
+        interestAccumulated: etherUnsigned(expectedTotalBorrows).sub(etherUnsigned(startingTotalBorrows)),
+        borrowIndex: expectedBorrowIndex,
+        totalBorrows: expectedTotalBorrows
+      }, true);
       assert.equal(await call(cToken, 'accrualBlockNumber'), expectedAccrualBlockNumber);
       assert.equal(await call(cToken, 'borrowIndex'), expectedBorrowIndex);
       assert.equal(await call(cToken, 'totalBorrows'), expectedTotalBorrows);

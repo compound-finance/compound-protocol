@@ -1,3 +1,4 @@
+
 import {Event} from '../Event';
 import {addAction, World} from '../World';
 import {Erc20} from '../Contract/Erc20';
@@ -19,29 +20,83 @@ import {storeAndSaveContract} from '../Networks';
 import {getContract, getTestContract} from '../Contract';
 import {encodeABI} from '../Utils';
 
+const ExistingToken = getContract("FullErc20Interface");
+const TetherInterface = getContract("TetherInterface");
+
 const FaucetTokenHarness = getContract("FaucetToken");
 const FaucetTokenNonStandardHarness = getContract("FaucetNonStandardToken");
 const FaucetTokenReEntrantHarness = getContract("FaucetTokenReEntrantHarness");
 const EvilTokenHarness = getContract("EvilToken");
 const WBTCTokenHarness = getContract("WBTCToken");
+const FeeTokenHarness = getContract("FeeToken");
 
 export interface TokenData {
   invokation: Invokation<Erc20>,
   description: string,
   name: string,
   symbol: string,
-  decimals: number,
+  decimals?: number,
   address?: string,
   contract: string
 }
 
-export async function buildErc20(world: World, from: string, event: Event): Promise<{world: World, erc20: Erc20, tokenData: TokenData}> {
+export async function buildErc20(world: World, from: string, event: Event): Promise<{ world: World, erc20: Erc20, tokenData: TokenData }> {
   const fetchers = [
+    new Fetcher<{ symbol: StringV, address: AddressV, name: StringV }, TokenData>(`
+        #### Existing
+
+        * "Existing symbol:<String> address:<Address>" - Wrap an existing Erc20 token
+          * E.g. "Erc20 Deploy Existing DAI 0x123...
+      `,
+      "Existing",
+      [
+        new Arg("symbol", getStringV),
+        new Arg("address", getAddressV),
+        new Arg("name", getStringV, { default: undefined }),
+      ],
+      async (world, { symbol, name, address }) => {
+        const existingToken = ExistingToken.at<Erc20>(world, address.val);
+                                                                   const tokenName = name.val === undefined ? symbol.val : name.val;
+        const decimals = await existingToken.methods.decimals().call();
+
+        return {
+          invokation: new Invokation<Erc20>(existingToken, null, null, null),
+          description: "Existing",
+          decimals: Number(decimals),
+          name: tokenName,
+          symbol: symbol.val,
+          contract: 'ExistingToken'
+        };
+      }
+    ),
+
+    new Fetcher<{symbol: StringV, address: AddressV}, TokenData>(`
+        #### ExistingTether
+
+        * "Existing symbol:<String> address:<Address>" - Wrap an existing Erc20 token
+          * E.g. "Erc20 Deploy ExistingTether USDT 0x123...
+      `,
+      "ExistingTether",
+      [
+        new Arg("symbol", getStringV),
+        new Arg("address", getAddressV)
+      ],
+      async (world, {symbol, address}) => {
+        return {
+          invokation: new Invokation<Erc20>(TetherInterface.at<Erc20>(world, address.val), null, null, null),
+          description: "ExistingTether",
+          name: symbol.val,
+          symbol: symbol.val,
+          contract: 'TetherInterface'
+        };
+      }
+    ),
+
     new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV}, TokenData>(`
         #### NonStandard
 
         * "NonStandard symbol:<String> name:<String> decimals:<Number=18>" - A non-standard token, like BAT
-          * E.g. "Erc20 Deploy NonStandard BAT 18"
+          * E.g. "Erc20 Deploy NonStandard BAT \"Basic Attention Token\" 18"
       `,
       "NonStandard",
       [
@@ -60,6 +115,7 @@ export async function buildErc20(world: World, from: string, event: Event): Prom
         };
       }
     ),
+
     new Fetcher<{symbol: StringV, name: StringV, fun:StringV, reEntryFunSig: StringV, reEntryFunArgs: StringV[]}, TokenData>(`
         #### ReEntrant
 
@@ -89,11 +145,12 @@ export async function buildErc20(world: World, from: string, event: Event): Prom
         };
       }
     ),
+
     new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV}, TokenData>(`
         #### Evil
 
         * "Evil symbol:<String> name:<String> decimals:<Number>" - A less vanilla ERC-20 contract that fails transfers
-          * E.g. "Erc20 Deploy Evil BAT 18"
+          * E.g. "Erc20 Deploy Evil BAT \"Basic Attention Token\" 18"
       `,
       "Evil",
       [
@@ -112,11 +169,12 @@ export async function buildErc20(world: World, from: string, event: Event): Prom
         };
       }
     ),
+
     new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV}, TokenData>(`
         #### Standard
 
         * "Standard symbol:<String> name:<String> decimals:<Number>" - A vanilla ERC-20 contract
-          * E.g. "Erc20 Deploy Standard BAT 18"
+          * E.g. "Erc20 Deploy Standard BAT \"Basic Attention Token\" 18"
       `,
       "Standard",
       [
@@ -135,6 +193,7 @@ export async function buildErc20(world: World, from: string, event: Event): Prom
         };
       }
     ),
+
     new Fetcher<{symbol: StringV, name: StringV}, TokenData>(`
         #### WBTC
 
@@ -158,7 +217,34 @@ export async function buildErc20(world: World, from: string, event: Event): Prom
           contract: 'WBTCToken'
         };
       }
-    )
+    ),
+
+    new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV, basisPointFee: NumberV, owner: AddressV}, TokenData>(`
+        #### Fee
+
+        * "Fee symbol:<String> name:<String> decimals:<Number> basisPointFee:<Number> owner:<Address>" - An ERC20 whose owner takes a fee on transfers. Used for mocking USDT.
+          * E.g. "Erc20 Deploy Fee USDT USDT 100 Root"
+      `,
+      "Fee",
+      [
+        new Arg("symbol", getStringV),
+        new Arg("name", getStringV),
+        new Arg("decimals", getNumberV),
+        new Arg("basisPointFee", getNumberV),
+        new Arg("owner", getAddressV)
+      ],
+      async (world, {symbol, name, decimals, basisPointFee, owner}) => {
+        return {
+          invokation: await FeeTokenHarness.deploy<Erc20>(world, from, [0, name.val, decimals.val, symbol.val, basisPointFee.val, owner.val]),
+          description: "Fee",
+          name: name.val,
+          symbol: symbol.val,
+          decimals: decimals.toNumber(),
+          owner: owner.val,
+          contract: 'FeeToken'
+        };
+      }
+    ),
   ];
 
   let tokenData = await getFetcherValue<any, TokenData>("DeployErc20", fetchers, world, event);

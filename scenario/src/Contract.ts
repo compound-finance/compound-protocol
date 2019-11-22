@@ -26,6 +26,14 @@ export interface ABI {
   outputs: ABIOutput[]
 }
 
+export interface ABIEvent {
+  anonymous: boolean;
+  inputs: ABIInput[];
+  name: string;
+  type: string;
+  signature: string;
+}
+
 export interface Raw {
   data: string
   topics: string[]
@@ -71,17 +79,15 @@ class ContractStub {
     const opts = world.web3.currentProvider.opts || {};
     opts.from = from;
 
-    let {networkContracts} = await getNetworkContracts(world);
-    let networkContract = networkContracts[this.name];
+    let networkContract = await getNetworkContract(world, this.name);
     if (!networkContract) {
-      throw new Error(`Cannot find contract ${this.name}, found: ${Object.keys(networkContracts)}`)
+      throw new Error(`Cannot find contract ${this.name}, found: ${Object.keys(networkContract)}`)
     }
 
     let invokationOpts = world.getInvokationOpts(opts);
 
-    let contractAbi = JSON.parse(networkContract.abi);
-    const contract = new world.web3.eth.Contract(contractAbi, null, opts);
-    const constructorAbi = contractAbi.find((x) => x.type === 'constructor');
+    const contract = new world.web3.eth.Contract(networkContract.abi);
+    const constructorAbi = networkContract.abi.find((x) => x.type === 'constructor');
     let inputs;
 
     if (constructorAbi) {
@@ -197,6 +203,31 @@ export async function decodeCall(world: World, contract: Contract, input: string
   world.printer.printLine(`\n${contract.name}.${abi.name}(\n\t${args.join("\n\t")}\n)`);
 
   return world;
+}
+
+async function getNetworkContract(world: World, name: string): Promise<{abi: any[], bin: string}> {
+  let basePath = world.basePath || ""
+  let network = world.network || ""
+
+  let pizath = (name, ext) => path.join(basePath, 'networks', `${network}-contracts`, `${name}.${ext}`);
+  let abi, bin;
+  if ( network == 'coverage' ) {
+    let json = await readFile(pizath(name, 'json'), null, JSON.parse);
+    abi = json.abi;
+    bin = json.bytecode.substr(2);
+  } else {
+    let {networkContracts} = await getNetworkContracts(world);
+    let networkContract = networkContracts[name];
+    abi = JSON.parse(networkContract.abi);
+    bin = networkContract.bin;
+  }
+  if (!bin) {
+    throw new Error(`no bin for contract ${name} ${network}`)
+  }
+  return {
+    abi: abi,
+    bin: bin
+  }
 }
 
 export async function getNetworkContracts(world: World): Promise<{networkContracts: object, version: string}> {

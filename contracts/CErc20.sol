@@ -1,4 +1,4 @@
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.12;
 
 import "./CToken.sol";
 
@@ -7,15 +7,9 @@ import "./CToken.sol";
  * @notice CTokens which wrap an EIP-20 underlying
  * @author Compound
  */
-contract CErc20 is CToken {
-
+contract CErc20 is CToken, CErc20Interface {
     /**
-     * @notice Underlying asset for this CToken
-     */
-    address public underlying;
-
-    /**
-     * @notice Construct a new money market
+     * @notice Initialize the new money market
      * @param underlying_ The address of the underlying asset
      * @param comptroller_ The address of the Comptroller
      * @param interestRateModel_ The address of the interest rate model
@@ -24,18 +18,19 @@ contract CErc20 is CToken {
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
      */
-    constructor(address underlying_,
-                ComptrollerInterface comptroller_,
-                InterestRateModel interestRateModel_,
-                uint initialExchangeRateMantissa_,
-                string memory name_,
-                string memory symbol_,
-                uint8 decimals_,
-                address payable admin_) public
-    CToken(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, admin_) {
-        // Set underlying
+    function initialize(address underlying_,
+                        ComptrollerInterface comptroller_,
+                        InterestRateModel interestRateModel_,
+                        uint initialExchangeRateMantissa_,
+                        string memory name_,
+                        string memory symbol_,
+                        uint8 decimals_) public {
+        // CToken initialize does the bulk of the work
+        super.initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
+
+        // Set underlying and sanity check it
         underlying = underlying_;
-        EIP20Interface(underlying).totalSupply(); // Sanity check the underlying
+        EIP20Interface(underlying).totalSupply();
     }
 
     /*** User Interface ***/
@@ -47,7 +42,8 @@ contract CErc20 is CToken {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function mint(uint mintAmount) external returns (uint) {
-        return mintInternal(mintAmount);
+        (uint err,) = mintInternal(mintAmount);
+        return err;
     }
 
     /**
@@ -85,7 +81,8 @@ contract CErc20 is CToken {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function repayBorrow(uint repayAmount) external returns (uint) {
-        return repayBorrowInternal(repayAmount);
+        (uint err,) = repayBorrowInternal(repayAmount);
+        return err;
     }
 
     /**
@@ -95,19 +92,30 @@ contract CErc20 is CToken {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function repayBorrowBehalf(address borrower, uint repayAmount) external returns (uint) {
-        return repayBorrowBehalfInternal(borrower, repayAmount);
+        (uint err,) = repayBorrowBehalfInternal(borrower, repayAmount);
+        return err;
     }
 
     /**
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
      * @param borrower The borrower of this cToken to be liquidated
-     * @param cTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
+     * @param cTokenCollateral The market in which to seize collateral from the borrower
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function liquidateBorrow(address borrower, uint repayAmount, CToken cTokenCollateral) external returns (uint) {
-        return liquidateBorrowInternal(borrower, repayAmount, cTokenCollateral);
+    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) external returns (uint) {
+        (uint err,) = liquidateBorrowInternal(borrower, repayAmount, cTokenCollateral);
+        return err;
+    }
+
+    /**
+     * @notice The sender adds to reserves.
+     * @param addAmount The amount fo underlying token to add as reserves
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _addReserves(uint addAmount) external returns (uint) {
+        return _addReservesInternal(addAmount);
     }
 
     /*** Safe Token ***/
@@ -141,44 +149,44 @@ contract CErc20 is CToken {
     }
 
     /**
-     * @dev Similar to EIP20 transfer, except it handles a False result from `transferFrom` and returns an explanatory
-     *      error code rather than reverting.  If caller has not called `checkTransferIn`, this may revert due to
-     *      insufficient balance or insufficient allowance. If caller has called `checkTransferIn` prior to this call,
-     *      and it returned Error.NO_ERROR, this should not revert in normal conditions.
+     * @dev Similar to EIP20 transfer, except it handles a False result from `transferFrom` reverts in that case.
+     *      If caller has not called `checkTransferIn`, this may revert due to insufficient balance or insufficient
+     *      allowance. If caller has called `checkTransferIn` prior to this call, and it returned Error.NO_ERROR,
+     *      this should not revert in normal conditions. This function returns the actual amount received,
+     *      with may be less than `amount` if there is a fee attached with the transfer.
      *
      *      Note: This wrapper safely handles non-standard ERC-20 tokens that do not return a value.
      *            See here: https://medium.com/coinmonks/missing-return-value-bug-at-least-130-tokens-affected-d67bf08521ca
      */
-    function doTransferIn(address from, uint amount) internal returns (Error) {
+    function doTransferIn(address from, uint amount) internal returns (uint) {
         EIP20NonStandardInterface token = EIP20NonStandardInterface(underlying);
-        bool result;
-
+        uint balanceBefore = EIP20Interface(underlying).balanceOf(address(this));
         token.transferFrom(from, address(this), amount);
 
-        // solium-disable-next-line security/no-inline-assembly
+        bool success;
         assembly {
             switch returndatasize()
-                case 0 {                      // This is a non-standard ERC-20
-                    result := not(0)          // set result to true
+                case 0 {                       // This is a non-standard ERC-20
+                    success := not(0)          // set success to true
                 }
-                case 32 {                     // This is a complaint ERC-20
+                case 32 {                      // This is a compliant ERC-20
                     returndatacopy(0, 0, 32)
-                    result := mload(0)        // Set `result = returndata` of external call
+                    success := mload(0)        // Set `success = returndata` of external call
                 }
-                default {                     // This is an excessively non-compliant ERC-20, revert.
+                default {                      // This is an excessively non-compliant ERC-20, revert.
                     revert(0, 0)
                 }
         }
+        require(success, "TOKEN_TRANSFER_IN_FAILED");
 
-        if (!result) {
-            return Error.TOKEN_TRANSFER_IN_FAILED;
-        }
-
-        return Error.NO_ERROR;
+        // Calculate the amount that was *actually* transferred
+        uint balanceAfter = EIP20Interface(underlying).balanceOf(address(this));
+        require(balanceAfter >= balanceBefore, "TOKEN_TRANSFER_IN_OVERFLOW");
+        return balanceAfter - balanceBefore;   // underflow already checked above, just subtract
     }
 
     /**
-     * @dev Similar to EIP20 transfer, except it handles a False result from `transfer` and returns an explanatory
+     * @dev Similar to EIP20 transfer, except it handles a False success from `transfer` and returns an explanatory
      *      error code rather than reverting. If caller has not called checked protocol's balance, this may revert due to
      *      insufficient cash held in this contract. If caller has checked protocol's balance prior to this call, and verified
      *      it is >= amount, this should not revert in normal conditions.
@@ -186,31 +194,24 @@ contract CErc20 is CToken {
      *      Note: This wrapper safely handles non-standard ERC-20 tokens that do not return a value.
      *            See here: https://medium.com/coinmonks/missing-return-value-bug-at-least-130-tokens-affected-d67bf08521ca
      */
-    function doTransferOut(address payable to, uint amount) internal returns (Error) {
+    function doTransferOut(address payable to, uint amount) internal {
         EIP20NonStandardInterface token = EIP20NonStandardInterface(underlying);
-        bool result;
-
         token.transfer(to, amount);
 
-        // solium-disable-next-line security/no-inline-assembly
+        bool success;
         assembly {
             switch returndatasize()
                 case 0 {                      // This is a non-standard ERC-20
-                    result := not(0)          // set result to true
+                    success := not(0)          // set success to true
                 }
                 case 32 {                     // This is a complaint ERC-20
                     returndatacopy(0, 0, 32)
-                    result := mload(0)        // Set `result = returndata` of external call
+                    success := mload(0)        // Set `success = returndata` of external call
                 }
                 default {                     // This is an excessively non-compliant ERC-20, revert.
                     revert(0, 0)
                 }
         }
-
-        if (!result) {
-            return Error.TOKEN_TRANSFER_OUT_FAILED;
-        }
-
-        return Error.NO_ERROR;
+        require(success, "TOKEN_TRANSFER_OUT_FAILED");
     }
 }

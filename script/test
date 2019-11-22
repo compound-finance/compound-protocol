@@ -30,8 +30,12 @@ fi
 
 # Compile scenario runner
 [[ ! -d ./.tsbuilt || -z $NO_TSC ]] && "$proj_root/scenario/script/tsc"
-[[ -z $no_compile ]] && solc --combined-json bin,abi --optimize contracts/*.sol contracts/**/*.sol --allow-paths ./contracts,./contracts/test > $proj_root/networks/${network}-contracts.json
 
-echo "cwd: $(pwd), proj_root: $(cd $proj_root && pwd), networks: $(ls -l $proj_root/networks/${network}-contracts.json)"
-node --stack_size=10000 "$proj_root/node_modules/truffle/build/cli.bundled.js" compile --network "$network"
-proj_root="$proj_root" verbose="$verbose" node --stack_size=10000 "$proj_root/node_modules/truffle/build/cli.bundled.js" test --network "$network" $@
+if [ "$NETWORK" = "coverage" ]
+   then
+       proj_root="$proj_root" verbose="$verbose" truffle run coverage --network "$network" $@
+else
+    # compile with solc for scenarios
+    [[ -z $no_compile ]] && solc --combined-json bin,abi --optimize contracts/*.sol contracts/**/*.sol --allow-paths ./contracts,./contracts/test > networks/${network}-contracts.json
+    proj_root="$proj_root" verbose="$verbose" node  --stack_size=10000 "$proj_root/node_modules/truffle/build/cli.bundled.js" test --network "$network" $@
+fi

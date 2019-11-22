@@ -135,7 +135,7 @@ contract('CEther', function ([root, borrower, benefactor, ...accounts]) {
 
     it("reverts if transfer out fails", async () => {
       await send(cToken, 'harnessSetFailTransferToAddress', [borrower, true]);
-      await assert.revert(borrowFresh(cToken, borrower, borrowAmount), "revert borrow transfer out failed");
+      await assert.revert(borrowFresh(cToken, borrower, borrowAmount), "revert TOKEN_TRANSFER_OUT_FAILED");
     });
 
     it("reverts if borrowVerify fails", async() => {
@@ -179,11 +179,7 @@ contract('CEther', function ([root, borrower, benefactor, ...accounts]) {
 
     it("emits a borrow failure if interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
-      assert.hasTokenFailure(
-        await borrow(cToken, borrower, borrowAmount),
-        'INTEREST_RATE_MODEL_ERROR',
-        'BORROW_ACCRUE_INTEREST_FAILED'
-      );
+      await assert.revert(borrow(cToken, borrower, borrowAmount), "revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it("returns error from borrowFresh without emitting any extra logs", async () => {
@@ -237,19 +233,17 @@ contract('CEther', function ([root, borrower, benefactor, ...accounts]) {
 
         it("returns an error if calculating account new account borrow balance fails", async () => {
           await pretendBorrow(cToken, borrower, 1, 1, 1);
-          assert.hasTokenMathFail(
-            await repayBorrowFresh(cToken, payer, borrower, repayAmount),
-            'REPAY_BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED',
-            'INTEGER_UNDERFLOW'
+          await assert.revert(
+            repayBorrowFresh(cToken, payer, borrower, repayAmount),
+            'revert REPAY_BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED'
           );
         });
 
         it("returns an error if calculation of new total borrow balance fails", async () => {
           await send(cToken, 'harnessSetTotalBorrows', [1]);
-          assert.hasTokenMathFail(
-            await repayBorrowFresh(cToken, payer, borrower, repayAmount),
-            'REPAY_BORROW_NEW_TOTAL_BALANCE_CALCULATION_FAILED',
-            'INTEGER_UNDERFLOW'
+          await assert.revert(
+            repayBorrowFresh(cToken, payer, borrower, repayAmount),
+            'revert REPAY_BORROW_NEW_TOTAL_BALANCE_CALCULATION_FAILED'
           );
         });
 
@@ -311,7 +305,7 @@ contract('CEther', function ([root, borrower, benefactor, ...accounts]) {
 
     it("reverts if interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
-      await assert.revertWithError(repayBorrow(cToken, borrower, repayAmount), 'INTEREST_RATE_MODEL_ERROR', "revert repayBorrow failed");
+      await assert.revert(repayBorrow(cToken, borrower, repayAmount), "revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it("reverts when repay borrow fresh fails", async () => {
@@ -330,7 +324,8 @@ contract('CEther', function ([root, borrower, benefactor, ...accounts]) {
     it("reverts if overpaying", async () => {
       const beforeAccountBorrowSnap = await borrowSnapshot(cToken, borrower);
       let tooMuch = new BigNumber(beforeAccountBorrowSnap.principal).plus(1);
-      await assert.revertWithError(repayBorrow(cToken, borrower, tooMuch), 'MATH_ERROR', "revert repayBorrow failed");
+      await assert.revert(repayBorrow(cToken, borrower, tooMuch), "revert REPAY_BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED");
+      // await assert.revertWithError(repayBorrow(cToken, borrower, tooMuch), 'MATH_ERROR', "revert repayBorrow failed");
     });
   });
 
@@ -343,7 +338,7 @@ contract('CEther', function ([root, borrower, benefactor, ...accounts]) {
 
     it("reverts if interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
-      await assert.revertWithError(repayBorrowBehalf(cToken, payer, borrower, repayAmount), 'INTEREST_RATE_MODEL_ERROR', "revert repayBorrowBehalf failed");
+      await assert.revert(repayBorrowBehalf(cToken, payer, borrower, repayAmount), "revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it("reverts from within repay borrow fresh", async () => {

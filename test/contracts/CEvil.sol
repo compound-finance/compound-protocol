@@ -1,4 +1,4 @@
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.12;
 
 import "./CErc20Scenario.sol";
 
@@ -6,7 +6,7 @@ contract CEvil is CErc20Scenario {
     constructor(address underlying_,
                 ComptrollerInterface comptroller_,
                 InterestRateModel interestRateModel_,
-                uint initialExchangeRateMantissa,
+                uint initialExchangeRateMantissa_,
                 string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
@@ -15,7 +15,7 @@ contract CEvil is CErc20Scenario {
     underlying_,
     comptroller_,
     interestRateModel_,
-    initialExchangeRateMantissa,
+    initialExchangeRateMantissa_,
     name_,
     symbol_,
     decimals_,

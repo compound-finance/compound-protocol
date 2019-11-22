@@ -8,9 +8,12 @@
       "error",
       "double"
     ],
-    "indentation": [
+    "indentation": "off",
+    "max-len": [
       "error",
-      4
-    ]
+      200
+    ],
+    "security/no-inline-assembly": "off",
+    "security/no-low-level-calls": "off"
   }
 }

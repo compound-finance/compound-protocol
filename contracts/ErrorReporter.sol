@@ -1,4 +1,4 @@
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.12;
 
 contract ComptrollerErrorReporter {
     enum Error {
@@ -175,7 +175,10 @@ contract TokenErrorReporter {
         TRANSFER_COMPTROLLER_REJECTION,
         TRANSFER_NOT_ALLOWED,
         TRANSFER_NOT_ENOUGH,
-        TRANSFER_TOO_MUCH
+        TRANSFER_TOO_MUCH,
+        ADD_RESERVES_ACCRUE_INTEREST_FAILED,
+        ADD_RESERVES_FRESH_CHECK,
+        ADD_RESERVES_TRANSFER_IN_NOT_POSSIBLE
     }
 
     /**

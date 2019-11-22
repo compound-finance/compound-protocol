@@ -1,4 +1,4 @@
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.12;
 
 import "../CEther.sol";
 
@@ -107,10 +107,8 @@ contract CEtherHarness is CEther {
         failTransferToAddresses[_to] = _fail;
     }
 
-    function doTransferOut(address payable to, uint amount) internal returns (Error) {
-        if (failTransferToAddresses[to]) {
-            return Error.TOKEN_TRANSFER_OUT_FAILED;
-        }
+    function doTransferOut(address payable to, uint amount) internal {
+        require(failTransferToAddresses[to] == false, "TOKEN_TRANSFER_OUT_FAILED");
         return super.doTransferOut(to, amount);
     }
 
@@ -119,7 +117,8 @@ contract CEtherHarness is CEther {
      *
      */
     function harnessMintFresh(address account, uint mintAmount) public returns (uint) {
-        return super.mintFresh(account, mintAmount);
+        (uint err,) = super.mintFresh(account, mintAmount);
+        return err;
     }
 
     /**
@@ -151,12 +150,14 @@ contract CEtherHarness is CEther {
         return borrowFresh(account, borrowAmount);
     }
 
-    function harnessRepayBorrowFresh(address payer, address account, uint borrowAmount) public payable returns (uint) {
-        return repayBorrowFresh(payer, account, borrowAmount);
+    function harnessRepayBorrowFresh(address payer, address account, uint repayBorrowAmount) public payable returns (uint) {
+        (uint err,) = repayBorrowFresh(payer, account, repayBorrowAmount);
+        return err;
     }
 
     function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CToken cTokenCollateral) public returns (uint) {
-        return liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
+        (uint err,) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
+        return err;
     }
     /**
       * Admin
@@ -192,11 +193,11 @@ contract CEtherHarness is CEther {
     }
 
     function harnessDoTransferIn(address from, uint amount) public payable returns (uint) {
-        return uint(doTransferIn(from, amount));
+        return doTransferIn(from, amount);
     }
 
-    function harnessDoTransferOut(address payable to, uint amount) public payable returns (uint) {
-        return uint(doTransferOut(to, amount));
+    function harnessDoTransferOut(address payable to, uint amount) public payable {
+        return doTransferOut(to, amount);
     }
 
     function harnessCheckTransferIn(address from, uint amount) external payable returns (uint) {

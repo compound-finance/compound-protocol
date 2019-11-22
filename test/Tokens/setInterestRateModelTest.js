@@ -77,11 +77,7 @@ contract('CToken', function ([root, ...accounts]) {
 
     it("emits a set market interest rate model failure if interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
-      assert.hasTokenFailure(
-        await send(cToken, '_setInterestRateModel', [newModel._address]),
-        'INTEREST_RATE_MODEL_ERROR',
-        'SET_INTEREST_RATE_MODEL_ACCRUE_INTEREST_FAILED'
-      );
+      await assert.revert(send(cToken, '_setInterestRateModel', [newModel._address]), "revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it("returns error from _setInterestRateModelFresh without emitting any extra logs", async () => {

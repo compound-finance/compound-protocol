@@ -33,16 +33,10 @@ const MathError = invert(MathErrorInv);
 
 const whitePaperModelPath = path.join(__dirname, '..', 'contracts', 'WhitePaperInterestRateModel.sol');
 const whitePaperModel = solparse.parseFile(whitePaperModelPath).body.find(k => k.type === 'ContractStatement');
-const IRErrorInv = whitePaperModel.body.find(k => k.name == 'IRError').members;
-const IRError = invert(IRErrorInv);
 
 module.exports = {
   ComptrollerErr: parse(ComptrollerErrorReporter),
   TokenErr: parse(TokenErrorReporter),
-  IRErr: {
-    Error: IRError,
-    ErrorInv: IRErrorInv
-  },
   MathErr: {
     Error: MathError,
     ErrorInv: MathErrorInv

@@ -1,10 +1,10 @@
-const {call, send} = require('../Utils/MochaTruffle');
+const { call, send } = require('../Utils/MochaTruffle');
 const {
   makeComptroller,
   makeCToken
 } = require('../Utils/Compound');
 
-contract('CToken', function([root, ...accounts]) {
+contract('CToken', function ([root, ...accounts]) {
   let cToken, oldComptroller, newComptroller;
   before(async () => {
     cToken = await makeCToken();
@@ -16,7 +16,7 @@ contract('CToken', function([root, ...accounts]) {
   describe('_setComptroller', async () => {
     it("should fail if called by non-admin", async () => {
       assert.hasTokenFailure(
-        await send(cToken, '_setComptroller', [newComptroller._address], {from: accounts[0]}),
+        await send(cToken, '_setComptroller', [newComptroller._address], { from: accounts[0] }),
         'UNAUTHORIZED',
         'SET_COMPTROLLER_OWNER_CHECK'
       );
@@ -24,13 +24,13 @@ contract('CToken', function([root, ...accounts]) {
     });
 
     it("reverts if passed a contract that doesn't implement isComptroller", async () => {
-      await assert.revert(send(cToken, '_setComptroller', [cToken.underlying._address]));
+      await assert.revert(send(cToken, '_setComptroller', [cToken.underlying._address]), "revert");
       assert.equal(await call(cToken, 'comptroller'), oldComptroller._address);
     });
 
     it("reverts if passed a contract that implements isComptroller as false", async () => {
       // extremely unlikely to occur, of course, but let's be exhaustive
-      const badComptroller = await makeComptroller({kind: 'false-marker'});
+      const badComptroller = await makeComptroller({ kind: 'false-marker' });
       await assert.revert(send(cToken, '_setComptroller', [badComptroller._address]), "revert marker method returned false");
       assert.equal(await call(cToken, 'comptroller'), oldComptroller._address);
     });

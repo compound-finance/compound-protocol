@@ -16,6 +16,7 @@ interface Erc20Methods {
   setFail(fail: boolean): Sendable<void>
   pause(): Sendable<void>
   unpause(): Sendable<void>
+  setParams(newBasisPoints: encodedNumber, maxFee: encodedNumber): Sendable<void>
 }
 
 export interface Erc20 extends Contract {

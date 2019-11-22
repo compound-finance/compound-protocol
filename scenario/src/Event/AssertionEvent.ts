@@ -25,6 +25,14 @@ import {
 } from '../Value';
 import {Arg, View, processCommandEvent} from '../Command';
 
+async function assertApprox(world: World, given: NumberV, expected: NumberV, tolerance: NumberV): Promise<World> {
+  if (Math.abs(Number(expected.sub(given).div(expected).val)) > Number(tolerance.val)) {
+    return fail(world, `Expected ${given.toString()} to approximately equal ${expected.toString()} within ${tolerance.toString()}`);
+  }
+
+  return world;
+}
+
 async function assertEqual(world: World, given: Value, expected: Value): Promise<World> {
   if (!expected.compareTo(world, given)) {
     return fail(world, `Expected ${given.toString()} to equal ${expected.toString()}`);
@@ -186,6 +194,23 @@ async function assertLog(world: World, event: string, keyValues: MapV): Promise<
 
 export function assertionCommands() {
   return [
+    new View<{given: NumberV, expected: NumberV, tolerance: NumberV}>(`
+        #### Approx
+
+        * "Approx given:<Value> expected:<Value> tolerance:<Value>" - Asserts that given approximately matches expected.
+          * E.g. "Assert Approx (Exactly 0) Zero "
+          * E.g. "Assert Approx (CToken cZRX TotalSupply) (Exactly 55) 1e-18"
+          * E.g. "Assert Approx (CToken cZRX Comptroller) (Comptroller Address) 1"
+      `,
+      "Approx",
+      [
+        new Arg("given", getNumberV),
+        new Arg("expected", getNumberV),
+        new Arg("tolerance", getNumberV, {default: new NumberV(0.001)})
+      ],
+      (world, {given, expected, tolerance}) => assertApprox(world, given, expected, tolerance)
+    ),
+
     new View<{given: Value, expected: Value}>(`
         #### Equal
 
@@ -196,15 +221,16 @@ export function assertionCommands() {
       `,
       "Equal",
       [
-        new Arg("given", getCoreValue),  
+        new Arg("given", getCoreValue),
         new Arg("expected", getCoreValue)
       ],
       (world, {given, expected}) => assertEqual(world, given, expected)
     ),
+
     new View<{given: Value, expected: Value}>(`
         #### LessThan
 
-        * "given:<Value> LastThan expected:<Value>" - Asserts that given matches expected.
+        * "given:<Value> LessThan expected:<Value>" - Asserts that given matches expected.
           * E.g. "Assert (Exactly 0) LessThan (Exactly 1)"
       `,
       "LessThan",
@@ -215,6 +241,7 @@ export function assertionCommands() {
       (world, {given, expected}) => assertLessThan(world, given, expected),
       {namePos: 1}
     ),
+
     new View<{given: Value}>(`
         #### True
 
@@ -227,6 +254,7 @@ export function assertionCommands() {
       ],
       (world, {given}) => assertEqual(world, given, new BoolV(true))
     ),
+
     new View<{given: Value}>(`
         #### False
 
@@ -252,6 +280,7 @@ export function assertionCommands() {
       ],
       (world, {event, message}) => assertReadError(world, event.val, message.val, true)
     ),
+
     new View<{event: EventV, message: StringV}>(`
         #### ReadError
 
@@ -265,6 +294,7 @@ export function assertionCommands() {
       ],
       (world, {event, message}) => assertReadError(world, event.val, message.val, false)
     ),
+
     new View<{error: StringV, info: StringV, detail: StringV}>(`
         #### Failure
 
@@ -280,6 +310,7 @@ export function assertionCommands() {
       ],
       (world, {error, info, detail}) => assertFailure(world, new Failure(error.val, info.val, detail.val))
     ),
+
     new View<{error: StringV, message: StringV}>(`
         #### RevertFailure
 
@@ -293,6 +324,7 @@ export function assertionCommands() {
       ],
       (world, {error, message}) => assertRevertFailure(world, error.val, message.val)
     ),
+
     new View<{message: StringV}>(`
         #### Revert
 
@@ -304,6 +336,7 @@ export function assertionCommands() {
       ],
       (world, {message}) => assertRevert(world, message.val)
     ),
+
     new View<{message: StringV}>(`
         #### Error
 
@@ -315,6 +348,7 @@ export function assertionCommands() {
       ],
       (world, {message}) => assertError(world, message.val)
     ),
+
     new View<{given: Value}>(`
         #### Success
 
@@ -324,6 +358,7 @@ export function assertionCommands() {
       [],
       (world, {given}) => assertSuccess(world)
     ),
+
     new View<{name: StringV, params: MapV}>(`
         #### Log
 

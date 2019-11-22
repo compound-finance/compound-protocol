@@ -16,9 +16,9 @@ import {RemainsExpectation} from '../Expectation/RemainsExpectation';
 import {formatEvent} from '../Formatter';
 import {Arg, View, processCommandEvent} from '../Command';
 
-async function changesExpectation(world: World, condition: Event, delta: Value): Promise<World> {
+async function changesExpectation(world: World, condition: Event, delta: NumberV, tolerance: NumberV): Promise<World> {
   const value = await getCoreValue(world, condition);
-  const expectation = new ChangesExpectation(condition, value, delta);
+  const expectation = new ChangesExpectation(condition, value, delta, tolerance);
 
   return addExpectation(world, expectation);
 }
@@ -34,19 +34,21 @@ async function remainsExpectation(world: World, condition: Event, value: Value):
 
 export function expectationCommands() {
   return [
-    new View<{condition: EventV, delta: NumberV}>(`
+    new View<{condition: EventV, delta: NumberV, tolerance: NumberV}>(`
         #### Changes
 
-        * "Changes <Value> amount:<Number>" - Expects that given value changes by amount
+        * "Changes <Value> amount:<Number> tolerance:<Number>" - Expects that given value changes by amount
           * E.g ."Expect Changes (CToken cZRX UnderlyingBalance Geoff) +10e18"
       `,
       "Changes",
       [
         new Arg("condition", getEventV),
-        new Arg("delta", getNumberV)
+        new Arg("delta", getNumberV),
+        new Arg("tolerance", getNumberV, {default: new NumberV(0)})
       ],
-      (world, {condition, delta}) => changesExpectation(world, condition.val, delta)
+      (world, {condition, delta, tolerance}) => changesExpectation(world, condition.val, delta, tolerance)
     ),
+
     new View<{condition: EventV, value: Value}>(`
         #### Remains
 

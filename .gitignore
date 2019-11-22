@@ -14,6 +14,8 @@ networks/coverage.json
 networks/coverage-abi.json
 networks/development.json
 networks/development-abi.json
+networks/coverage-contracts/*
+networks/test-contracts/*
 networks/*-contracts.json
 networks/*-history
 networks/*-settings.json

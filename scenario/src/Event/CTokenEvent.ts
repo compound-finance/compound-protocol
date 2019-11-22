@@ -1,37 +1,42 @@
-import {Event} from '../Event';
-import {addAction, describeUser, World} from '../World';
-import {decodeCall, getPastEvents} from '../Contract';
-import {CToken, CTokenScenario} from '../Contract/CToken';
-import {invoke, Sendable} from '../Invokation';
+import { Event } from '../Event';
+import { addAction, describeUser, World } from '../World';
+import { decodeCall, getPastEvents } from '../Contract';
+import { CToken, CTokenScenario } from '../Contract/CToken';
+import { CErc20Delegate } from '../Contract/CErc20Delegate'
+import { CErc20Delegator } from '../Contract/CErc20Delegator'
+import { invoke, Sendable } from '../Invokation';
 import {
   getAddressV,
   getEventV,
   getExpNumberV,
   getNumberV,
-  getStringV
+  getStringV,
+  getBoolV
 } from '../CoreValue';
 import {
   AddressV,
+  BoolV,
   EventV,
   NothingV,
   NumberV,
-  StringV} from '../Value';
-import {Arg, Command, View, processCommandEvent} from '../Command';
-import {CTokenErrorReporter} from '../ErrorReporter';
-import {getComptroller, getCTokenData} from '../ContractLookup';
-import {getExpMantissa} from '../Encoding';
-import {buildCToken} from '../Builder/CTokenBuilder';
-import {verify} from '../Verify';
-import {getLiquidity} from '../Value/ComptrollerValue';
-import {encodedNumber} from '../Encoding';
-import {getCTokenV} from '../Value/CTokenValue';
+  StringV
+} from '../Value';
+import { Arg, Command, View, processCommandEvent } from '../Command';
+import { CTokenErrorReporter } from '../ErrorReporter';
+import { getComptroller, getCTokenData } from '../ContractLookup';
+import { getExpMantissa } from '../Encoding';
+import { buildCToken } from '../Builder/CTokenBuilder';
+import { verify } from '../Verify';
+import { getLiquidity } from '../Value/ComptrollerValue';
+import { encodedNumber } from '../Encoding';
+import { getCTokenV } from '../Value/CTokenValue';
 
 function showTrxValue(world: World): string {
   return new NumberV(world.trxInvokationOpts.get('value')).show();
 }
 
 async function genCToken(world: World, from: string, event: Event): Promise<World> {
-  let {world: nextWorld, cToken, tokenData} = await buildCToken(world, from, event);
+  let { world: nextWorld, cToken, tokenData } = await buildCToken(world, from, event);
   world = nextWorld;
 
   world = addAction(
@@ -223,6 +228,18 @@ async function acceptAdmin(world: World, from: string, cToken: CToken): Promise<
   return world;
 }
 
+async function addReserves(world: World, from: string, cToken: CToken, amount: NumberV): Promise<World> {
+  let invokation = await invoke(world, cToken.methods._addReserves(amount.encode()), from, CTokenErrorReporter);
+
+  world = addAction(
+    world,
+    `CToken ${cToken.name}: ${describeUser(world, from)} adds to reserves by ${amount.show()}`,
+    invokation
+  );
+
+  return world;
+}
+
 async function reduceReserves(world: World, from: string, cToken: CToken, amount: NumberV): Promise<World> {
   let invokation = await invoke(world, cToken.methods._reduceReserves(amount.encode()), from, CTokenErrorReporter);
 
@@ -265,6 +282,64 @@ async function setComptroller(world: World, from: string, cToken: CToken, comptr
   world = addAction(
     world,
     `Set comptroller for ${cToken.name} to ${comptroller} as ${describeUser(world, from)}`,
+    invokation
+  );
+
+  return world;
+}
+
+async function becomImplementation(
+  world: World,
+  from: string,
+  cToken: CToken,
+  becomeImplementationData: string
+): Promise<World> {
+  let invokation = await invoke(
+    world,
+    (cToken as CErc20Delegate).methods._becomeImplementation(
+      becomeImplementationData
+    ),
+    from,
+    CTokenErrorReporter
+  );
+
+  world = addAction(
+    world,
+    `CToken ${cToken.name}: ${describeUser(
+      world,
+      from
+    )} initiates _becomeImplementation with data:${becomeImplementationData}.`,
+    invokation
+  );
+
+  return world;
+}
+
+async function setImplementation(
+  world: World,
+  from: string,
+  cToken: CToken,
+  implementation: string,
+  allowResign: boolean,
+  becomeImplementationData: string
+): Promise<World> {
+  let invokation = await invoke(
+    world,
+    (cToken as CErc20Delegator).methods._setImplementation(
+      implementation,
+      allowResign,
+      becomeImplementationData
+    ),
+    from,
+    CTokenErrorReporter
+  );
+
+  world = addAction(
+    world,
+    `CToken ${cToken.name}: ${describeUser(
+      world,
+      from
+    )} initiates setImplementation with implementation:${implementation} allowResign:${allowResign} data:${becomeImplementationData}.`,
     invokation
   );
 
@@ -371,17 +446,17 @@ async function printLiquidity(world: World, cToken: CToken): Promise<World> {
 
 export function cTokenCommands() {
   return [
-    new Command<{cTokenParams: EventV}>(`
+    new Command<{ cTokenParams: EventV }>(`
         #### Deploy
 
         * "CToken Deploy ...cTokenParams" - Generates a new CToken
           * E.g. "CToken cZRX Deploy"
       `,
       "Deploy",
-      [new Arg("cTokenParams", getEventV, {variadic: true})],
-      (world, from, {cTokenParams}) => genCToken(world, from, cTokenParams.val)
+      [new Arg("cTokenParams", getEventV, { variadic: true })],
+      (world, from, { cTokenParams }) => genCToken(world, from, cTokenParams.val)
     ),
-    new View<{cTokenArg: StringV, apiKey: StringV}>(`
+    new View<{ cTokenArg: StringV, apiKey: StringV }>(`
         #### Verify
 
         * "CToken <cToken> Verify apiKey:<String>" - Verifies CToken in Etherscan
@@ -392,14 +467,14 @@ export function cTokenCommands() {
         new Arg("cTokenArg", getStringV),
         new Arg("apiKey", getStringV)
       ],
-      async (world, {cTokenArg, apiKey}) => {
+      async (world, { cTokenArg, apiKey }) => {
         let [cToken, name, data] = await getCTokenData(world, cTokenArg.val);
 
         return await verifyCToken(world, cToken, name, data.get('contract')!, apiKey.val);
       },
-      {namePos: 1}
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken}>(`
+    new Command<{ cToken: CToken }>(`
         #### AccrueInterest
 
         * "CToken <cToken> AccrueInterest" - Accrues interest for given token
@@ -409,10 +484,10 @@ export function cTokenCommands() {
       [
         new Arg("cToken", getCTokenV)
       ],
-      (world, from, {cToken}) => accrueInterest(world, from, cToken),
-      {namePos: 1}
+      (world, from, { cToken }) => accrueInterest(world, from, cToken),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken, amount: NumberV | NothingV}>(`
+    new Command<{ cToken: CToken, amount: NumberV | NothingV }>(`
         #### Mint
 
         * "CToken <cToken> Mint amount:<Number>" - Mints the given amount of cToken as specified user
@@ -421,12 +496,12 @@ export function cTokenCommands() {
       "Mint",
       [
         new Arg("cToken", getCTokenV),
-        new Arg("amount", getNumberV, {nullable: true})
+        new Arg("amount", getNumberV, { nullable: true })
       ],
-      (world, from, {cToken, amount}) => mint(world, from, cToken, amount),
-      {namePos: 1}
+      (world, from, { cToken, amount }) => mint(world, from, cToken, amount),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken, tokens: NumberV}>(`
+    new Command<{ cToken: CToken, tokens: NumberV }>(`
         #### Redeem
 
         * "CToken <cToken> Redeem tokens:<Number>" - Redeems the given amount of cTokens as specified user
@@ -437,10 +512,10 @@ export function cTokenCommands() {
         new Arg("cToken", getCTokenV),
         new Arg("tokens", getNumberV)
       ],
-      (world, from, {cToken, tokens}) => redeem(world, from, cToken, tokens),
-      {namePos: 1}
+      (world, from, { cToken, tokens }) => redeem(world, from, cToken, tokens),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken, amount: NumberV}>(`
+    new Command<{ cToken: CToken, amount: NumberV }>(`
         #### RedeemUnderlying
 
         * "CToken <cToken> RedeemUnderlying amount:<Number>" - Redeems the given amount of underlying as specified user
@@ -451,10 +526,10 @@ export function cTokenCommands() {
         new Arg("cToken", getCTokenV),
         new Arg("amount", getNumberV)
       ],
-      (world, from, {cToken, amount}) => redeemUnderlying(world, from, cToken, amount),
-      {namePos: 1}
+      (world, from, { cToken, amount }) => redeemUnderlying(world, from, cToken, amount),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken, amount: NumberV}>(`
+    new Command<{ cToken: CToken, amount: NumberV }>(`
         #### Borrow
 
         * "CToken <cToken> Borrow amount:<Number>" - Borrows the given amount of this cToken as specified user
@@ -466,10 +541,10 @@ export function cTokenCommands() {
         new Arg("amount", getNumberV)
       ],
       // Note: we override from
-      (world, from, {cToken, amount}) => borrow(world, from, cToken, amount),
-      {namePos: 1}
+      (world, from, { cToken, amount }) => borrow(world, from, cToken, amount),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken, amount: NumberV | NothingV}>(`
+    new Command<{ cToken: CToken, amount: NumberV | NothingV }>(`
         #### RepayBorrow
 
         * "CToken <cToken> RepayBorrow underlyingAmount:<Number>" - Repays borrow in the given underlying amount as specified user
@@ -478,12 +553,12 @@ export function cTokenCommands() {
       "RepayBorrow",
       [
         new Arg("cToken", getCTokenV),
-        new Arg("amount", getNumberV, {nullable: true})
+        new Arg("amount", getNumberV, { nullable: true })
       ],
-      (world, from, {cToken, amount}) => repayBorrow(world, from, cToken, amount),
-      {namePos: 1}
+      (world, from, { cToken, amount }) => repayBorrow(world, from, cToken, amount),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken, behalf: AddressV, amount: NumberV | NothingV}>(`
+    new Command<{ cToken: CToken, behalf: AddressV, amount: NumberV | NothingV }>(`
         #### RepayBorrowBehalf
 
         * "CToken <cToken> RepayBorrowBehalf behalf:<User> underlyingAmount:<Number>" - Repays borrow in the given underlying amount on behalf of another user
@@ -493,12 +568,12 @@ export function cTokenCommands() {
       [
         new Arg("cToken", getCTokenV),
         new Arg("behalf", getAddressV),
-        new Arg("amount", getNumberV, {nullable: true})
+        new Arg("amount", getNumberV, { nullable: true })
       ],
-      (world, from, {cToken, behalf, amount}) => repayBorrowBehalf(world, from, behalf.val, cToken, amount),
-      {namePos: 1}
+      (world, from, { cToken, behalf, amount }) => repayBorrowBehalf(world, from, behalf.val, cToken, amount),
+      { namePos: 1 }
     ),
-    new Command<{borrower: AddressV, cToken: CToken, collateral: CToken, repayAmount: NumberV | NothingV}>(`
+    new Command<{ borrower: AddressV, cToken: CToken, collateral: CToken, repayAmount: NumberV | NothingV }>(`
         #### Liquidate
 
         * "CToken <cToken> Liquidate borrower:<User> cTokenCollateral:<Address> repayAmount:<Number>" - Liquidates repayAmount of given token seizing collateral token
@@ -509,12 +584,12 @@ export function cTokenCommands() {
         new Arg("cToken", getCTokenV),
         new Arg("borrower", getAddressV),
         new Arg("collateral", getCTokenV),
-        new Arg("repayAmount", getNumberV, {nullable: true})
+        new Arg("repayAmount", getNumberV, { nullable: true })
       ],
-      (world, from, {borrower, cToken, collateral, repayAmount}) => liquidateBorrow(world, from, cToken, borrower.val, collateral, repayAmount),
-      {namePos: 1}
+      (world, from, { borrower, cToken, collateral, repayAmount }) => liquidateBorrow(world, from, cToken, borrower.val, collateral, repayAmount),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken, liquidator: AddressV, borrower: AddressV, seizeTokens: NumberV}>(`
+    new Command<{ cToken: CToken, liquidator: AddressV, borrower: AddressV, seizeTokens: NumberV }>(`
         #### Seize
 
         * "CToken <cToken> Seize liquidator:<User> borrower:<User> seizeTokens:<Number>" - Seizes a given number of tokens from a user (to be called from other CToken)
@@ -527,10 +602,10 @@ export function cTokenCommands() {
         new Arg("borrower", getAddressV),
         new Arg("seizeTokens", getNumberV)
       ],
-      (world, from, {cToken, liquidator, borrower, seizeTokens}) => seize(world, from, cToken, liquidator.val, borrower.val, seizeTokens),
-      {namePos: 1}
+      (world, from, { cToken, liquidator, borrower, seizeTokens }) => seize(world, from, cToken, liquidator.val, borrower.val, seizeTokens),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken, treasure: CToken, liquidator: AddressV, borrower: AddressV, seizeTokens: NumberV}>(`
+    new Command<{ cToken: CToken, treasure: CToken, liquidator: AddressV, borrower: AddressV, seizeTokens: NumberV }>(`
         #### EvilSeize
 
         * "CToken <cToken> EvilSeize treasure:<Token> liquidator:<User> borrower:<User> seizeTokens:<Number>" - Improperly seizes a given number of tokens from a user
@@ -544,10 +619,10 @@ export function cTokenCommands() {
         new Arg("borrower", getAddressV),
         new Arg("seizeTokens", getNumberV)
       ],
-      (world, from, {cToken, treasure, liquidator, borrower, seizeTokens}) => evilSeize(world, from, cToken, treasure, liquidator.val, borrower.val, seizeTokens),
-      {namePos: 1}
+      (world, from, { cToken, treasure, liquidator, borrower, seizeTokens }) => evilSeize(world, from, cToken, treasure, liquidator.val, borrower.val, seizeTokens),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken, amount: NumberV}>(`
+    new Command<{ cToken: CToken, amount: NumberV }>(`
         #### ReduceReserves
 
         * "CToken <cToken> ReduceReserves amount:<Number>" - Reduces the reserves of the cToken
@@ -558,10 +633,24 @@ export function cTokenCommands() {
         new Arg("cToken", getCTokenV),
         new Arg("amount", getNumberV)
       ],
-      (world, from, {cToken, amount}) => reduceReserves(world, from, cToken, amount),
-      {namePos: 1}
+      (world, from, { cToken, amount }) => reduceReserves(world, from, cToken, amount),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken, newPendingAdmin: AddressV}>(`
+    new Command<{ cToken: CToken, amount: NumberV }>(`
+    #### AddReserves
+
+    * "CToken <cToken> AddReserves amount:<Number>" - Adds reserves to the cToken
+      * E.g. "CToken cZRX AddReserves 1.0e18"
+  `,
+      "AddReserves",
+      [
+        new Arg("cToken", getCTokenV),
+        new Arg("amount", getNumberV)
+      ],
+      (world, from, { cToken, amount }) => addReserves(world, from, cToken, amount),
+      { namePos: 1 }
+    ),
+    new Command<{ cToken: CToken, newPendingAdmin: AddressV }>(`
         #### SetPendingAdmin
 
         * "CToken <cToken> SetPendingAdmin newPendingAdmin:<Address>" - Sets the pending admin for the cToken
@@ -572,10 +661,10 @@ export function cTokenCommands() {
         new Arg("cToken", getCTokenV),
         new Arg("newPendingAdmin", getAddressV)
       ],
-      (world, from, {cToken, newPendingAdmin}) => setPendingAdmin(world, from, cToken, newPendingAdmin.val),
-      {namePos: 1}
+      (world, from, { cToken, newPendingAdmin }) => setPendingAdmin(world, from, cToken, newPendingAdmin.val),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken}>(`
+    new Command<{ cToken: CToken }>(`
         #### AcceptAdmin
 
         * "CToken <cToken> AcceptAdmin" - Accepts admin for the cToken
@@ -585,10 +674,10 @@ export function cTokenCommands() {
       [
         new Arg("cToken", getCTokenV)
       ],
-      (world, from, {cToken}) => acceptAdmin(world, from, cToken),
-      {namePos: 1}
+      (world, from, { cToken }) => acceptAdmin(world, from, cToken),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken, reserveFactor: NumberV}>(`
+    new Command<{ cToken: CToken, reserveFactor: NumberV }>(`
         #### SetReserveFactor
 
         * "CToken <cToken> SetReserveFactor reserveFactor:<Number>" - Sets the reserve factor for the cToken
@@ -599,10 +688,10 @@ export function cTokenCommands() {
         new Arg("cToken", getCTokenV),
         new Arg("reserveFactor", getExpNumberV)
       ],
-      (world, from, {cToken, reserveFactor}) => setReserveFactor(world, from, cToken, reserveFactor),
-      {namePos: 1}
+      (world, from, { cToken, reserveFactor }) => setReserveFactor(world, from, cToken, reserveFactor),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken, interestRateModel: AddressV}>(`
+    new Command<{ cToken: CToken, interestRateModel: AddressV }>(`
         #### SetInterestRateModel
 
         * "CToken <cToken> SetInterestRateModel interestRateModel:<Contract>" - Sets the interest rate model for the given cToken
@@ -613,10 +702,10 @@ export function cTokenCommands() {
         new Arg("cToken", getCTokenV),
         new Arg("interestRateModel", getAddressV)
       ],
-      (world, from, {cToken, interestRateModel}) => setInterestRateModel(world, from, cToken, interestRateModel.val),
-      {namePos: 1}
+      (world, from, { cToken, interestRateModel }) => setInterestRateModel(world, from, cToken, interestRateModel.val),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken, comptroller: AddressV}>(`
+    new Command<{ cToken: CToken, comptroller: AddressV }>(`
         #### SetComptroller
 
         * "CToken <cToken> SetComptroller comptroller:<Contract>" - Sets the comptroller for the given cToken
@@ -627,10 +716,64 @@ export function cTokenCommands() {
         new Arg("cToken", getCTokenV),
         new Arg("comptroller", getAddressV)
       ],
-      (world, from, {cToken, comptroller}) => setComptroller(world, from, cToken, comptroller.val),
-      {namePos: 1}
+      (world, from, { cToken, comptroller }) => setComptroller(world, from, cToken, comptroller.val),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken}>(`
+    new Command<{
+      cToken: CToken;
+      becomeImplementationData: StringV;
+    }>(
+      `
+        #### BecomeImplementation
+
+        * "CToken <cToken> BecomeImplementation becomeImplementationData:<String>"
+          * E.g. "CToken cDAI BecomeImplementation "0x01234anyByTeS56789""
+      `,
+      'BecomeImplementation',
+      [
+        new Arg('cToken', getCTokenV),
+        new Arg('becomeImplementationData', getStringV)
+      ],
+      (world, from, { cToken, becomeImplementationData }) =>
+        becomImplementation(
+          world,
+          from,
+          cToken,
+          becomeImplementationData.val
+        ),
+      { namePos: 1 }
+    ),
+    new Command<{
+      cToken: CToken;
+      implementation: AddressV;
+      allowResign: BoolV;
+      becomeImplementationData: StringV;
+    }>(
+      `
+        #### SetImplementation
+
+        * "CToken <cToken> SetImplementation implementation:<Address> allowResign:<Bool> becomImplementationData:<String>"
+          * E.g. "CToken cDAI SetImplementation (CToken cDAIDelegate Address) True "0x01234anyByTeS56789"
+      `,
+      'SetImplementation',
+      [
+        new Arg('cToken', getCTokenV),
+        new Arg('implementation', getAddressV),
+        new Arg('allowResign', getBoolV),
+        new Arg('becomeImplementationData', getStringV)
+      ],
+      (world, from, { cToken, implementation, allowResign, becomeImplementationData }) =>
+        setImplementation(
+          world,
+          from,
+          cToken,
+          implementation.val,
+          allowResign.val,
+          becomeImplementationData.val
+        ),
+      { namePos: 1 }
+    ),
+    new Command<{ cToken: CToken }>(`
         #### Donate
 
         * "CToken <cToken> Donate" - Calls the donate (payable no-op) function
@@ -640,10 +783,10 @@ export function cTokenCommands() {
       [
         new Arg("cToken", getCTokenV)
       ],
-      (world, from, {cToken}) => donate(world, from, cToken),
-      {namePos: 1}
+      (world, from, { cToken }) => donate(world, from, cToken),
+      { namePos: 1 }
     ),
-    new Command<{cToken: CToken, variable: StringV, value: NumberV}>(`
+    new Command<{ cToken: CToken, variable: StringV, value: NumberV }>(`
         #### Mock
 
         * "CToken <cToken> Mock variable:<String> value:<Number>" - Mocks a given value on cToken. Note: value must be a supported mock and this will only work on a "CTokenScenario" contract.
@@ -656,10 +799,10 @@ export function cTokenCommands() {
         new Arg("variable", getStringV),
         new Arg("value", getNumberV),
       ],
-      (world, from, {cToken, variable, value}) => setCTokenMock(world, from, <CTokenScenario>cToken, variable.val, value),
-      {namePos: 1}
+      (world, from, { cToken, variable, value }) => setCTokenMock(world, from, <CTokenScenario>cToken, variable.val, value),
+      { namePos: 1 }
     ),
-    new View<{cToken: CToken}>(`
+    new View<{ cToken: CToken }>(`
         #### Minters
 
         * "CToken <cToken> Minters" - Print address of all minters
@@ -668,10 +811,10 @@ export function cTokenCommands() {
       [
         new Arg("cToken", getCTokenV)
       ],
-      (world, {cToken}) => printMinters(world, cToken),
-      {namePos: 1}
+      (world, { cToken }) => printMinters(world, cToken),
+      { namePos: 1 }
     ),
-    new View<{cToken: CToken}>(`
+    new View<{ cToken: CToken }>(`
         #### Borrowers
 
         * "CToken <cToken> Borrowers" - Print address of all borrowers
@@ -680,10 +823,10 @@ export function cTokenCommands() {
       [
         new Arg("cToken", getCTokenV)
       ],
-      (world, {cToken}) => printBorrowers(world, cToken),
-      {namePos: 1}
+      (world, { cToken }) => printBorrowers(world, cToken),
+      { namePos: 1 }
     ),
-    new View<{cToken: CToken}>(`
+    new View<{ cToken: CToken }>(`
         #### Liquidity
 
         * "CToken <cToken> Liquidity" - Prints liquidity of all minters or borrowers
@@ -692,10 +835,10 @@ export function cTokenCommands() {
       [
         new Arg("cToken", getCTokenV)
       ],
-      (world, {cToken}) => printLiquidity(world, cToken),
-      {namePos: 1}
+      (world, { cToken }) => printLiquidity(world, cToken),
+      { namePos: 1 }
     ),
-    new View<{cToken: CToken, input: StringV}>(`
+    new View<{ cToken: CToken, input: StringV }>(`
         #### Decode
 
         * "Decode <cToken> input:<String>" - Prints information about a call to a cToken contract
@@ -706,8 +849,8 @@ export function cTokenCommands() {
         new Arg("input", getStringV)
 
       ],
-      (world, {cToken, input}) => decodeCall(world, cToken, input.val),
-      {namePos: 1}
+      (world, { cToken, input }) => decodeCall(world, cToken, input.val),
+      { namePos: 1 }
     )
   ];
 }

@@ -85,11 +85,7 @@ contract('CToken', function ([root, ...accounts]) {
 
     it("emits a reserve factor failure if interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
-      assert.hasTokenFailure(
-        await send(cToken, '_setReserveFactor', [factor]),
-        'INTEREST_RATE_MODEL_ERROR',
-        'SET_RESERVE_FACTOR_ACCRUE_INTEREST_FAILED'
-      );
+      await assert.revert(send(cToken, '_setReserveFactor', [factor]), "revert INTEREST_RATE_MODEL_ERROR");
       assert.equal(await call(cToken, 'reserveFactorMantissa'), 0, "reserve factor should be 0");
     });
 
@@ -187,11 +183,7 @@ contract('CToken', function ([root, ...accounts]) {
 
     it("emits a reserve-reduction failure if interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
-      assert.hasTokenFailure(
-        await send(cToken, '_reduceReserves', [reduction]),
-        'INTEREST_RATE_MODEL_ERROR',
-        'REDUCE_RESERVES_ACCRUE_INTEREST_FAILED'
-      );
+      await assert.revert(send(cToken, '_reduceReserves', [reduction]), "revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it("returns error from _reduceReservesFresh without emitting any extra logs", async () => {

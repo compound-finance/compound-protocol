@@ -16,11 +16,12 @@ const {
 const OraclePriceOracleProxy = getContract('PriceOracleProxy');
 
 contract('PriceOracleProxy', function([root, ...accounts]) {
-  let oracle, backingOracle, cEth, cUsdc, cDai, cOther;
+  let oracle, backingOracle, cEth, cUsdc, cSai, cDai, cOther;
 
   before(async () =>{
     cEth = await makeCToken({kind: "cether", comptrollerOpts: {kind: "v1-no-proxy"}, supportMarket: true});
     cUsdc = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
+    cSai = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
     cDai = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
     cOther = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
 
@@ -32,6 +33,7 @@ contract('PriceOracleProxy', function([root, ...accounts]) {
           backingOracle._address,
           cEth._address,
           cUsdc._address,
+          cSai._address,
           cDai._address
         ]})
       .send({from: root});
@@ -57,6 +59,12 @@ contract('PriceOracleProxy', function([root, ...accounts]) {
       let configuredCUSD = await call(oracle, "cUsdcAddress");
       assert.equal(configuredCUSD, cUsdc._address);
     });
+
+    it("sets address of cSAI", async () => {
+      let configuredCSAI = await call(oracle, "cSaiAddress");
+      assert.equal(configuredCSAI, cSai._address);
+    });
+
 
     it("sets address of cDAI", async () => {
       let configuredCDAI = await call(oracle, "cDaiAddress");
@@ -89,24 +97,27 @@ contract('PriceOracleProxy', function([root, ...accounts]) {
     });
 
     it("proxies to v1 oracle for cusdc", async () => {
-      await setAndVerifyBackingPrice(cDai, 50);
+      await setAndVerifyBackingPrice(cSai, 50);
       await readAndVerifyProxyPrice(cUsdc, 50e12);
     });
 
-    it("computes address(2) / address(1) * maker usd price for cdai", async () => {
-      await setAndVerifyBackingPrice(cDai, 5);
+    it("computes address(2) / address(1) * maker usd price for csai and cdai", async () => {
+      await setAndVerifyBackingPrice(cSai, 5);
 
       // 0.95 < ratio < 1.05
       await send(backingOracle, "setDirectPrice", [address(1), etherMantissa(1e12)]);
       await send(backingOracle, "setDirectPrice", [address(2), etherMantissa(1.03)]);
+      await readAndVerifyProxyPrice(cSai, 1.03 * 5);
       await readAndVerifyProxyPrice(cDai, 1.03 * 5);
 
       // ratio <= 0.95
       await send(backingOracle, "setDirectPrice", [address(1), etherMantissa(5e12)]);
+      await readAndVerifyProxyPrice(cSai, 0.95 * 5);
       await readAndVerifyProxyPrice(cDai, 0.95 * 5);
 
       // 1.05 <= ratio
       await send(backingOracle, "setDirectPrice", [address(1), etherMantissa(5e11)]);
+      await readAndVerifyProxyPrice(cSai, 1.05 * 5);
       await readAndVerifyProxyPrice(cDai, 1.05 * 5);
     });
 

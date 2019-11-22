@@ -115,10 +115,9 @@ contract('CToken', function ([root, liquidator, borrower, ...accounts]) {
     it("fails if calculating seize tokens fails and does not adjust balances", async () => {
       const beforeBalances = await getBalances([cToken, cTokenCollateral], [liquidator, borrower]);
       await send(cToken.comptroller, 'setFailCalculateSeizeTokens', [true]);
-      assert.hasTokenFailure(
-        await liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral),
-        'COMPTROLLER_CALCULATION_ERROR',
-        'LIQUIDATE_COMPTROLLER_CALCULATE_AMOUNT_SEIZE_FAILED',
+      await assert.revert(
+        liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral),
+        'revert LIQUIDATE_COMPTROLLER_CALCULATE_AMOUNT_SEIZE_FAILED',
       );
       const afterBalances = await getBalances([cToken, cTokenCollateral], [liquidator, borrower]);
       assert.deepEqual(afterBalances, beforeBalances);
@@ -178,20 +177,12 @@ contract('CToken', function ([root, liquidator, borrower, ...accounts]) {
   describe('liquidateBorrow', async () => {
     it("emits a liquidation failure if borrowed asset interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
-      assert.hasTokenFailure(
-        await liquidate(cToken, liquidator, borrower, repayAmount, cTokenCollateral),
-        'INTEREST_RATE_MODEL_ERROR',
-        'LIQUIDATE_ACCRUE_BORROW_INTEREST_FAILED'
-      );
+      await assert.revert(liquidate(cToken, liquidator, borrower, repayAmount, cTokenCollateral), "revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it("emits a liquidation failure if collateral asset interest accrual fails", async () => {
       await send(cTokenCollateral.interestRateModel, 'setFailBorrowRate', [true]);
-      assert.hasTokenFailure(
-        await liquidate(cToken, liquidator, borrower, repayAmount, cTokenCollateral),
-        'INTEREST_RATE_MODEL_ERROR',
-        'LIQUIDATE_ACCRUE_COLLATERAL_INTEREST_FAILED'
-      );
+      await assert.revert(liquidate(cToken, liquidator, borrower, repayAmount, cTokenCollateral), "revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it("returns error from liquidateBorrowFresh without emitting any extra logs", async () => {

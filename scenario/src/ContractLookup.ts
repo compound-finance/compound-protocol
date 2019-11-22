@@ -6,6 +6,7 @@ import { accountMap } from './Accounts';
 import { Contract } from './Contract';
 import { mustString } from './Utils';
 
+import { CErc20Delegate } from './Contract/CErc20Delegate';
 import { Comptroller } from './Contract/Comptroller';
 import { ComptrollerImpl } from './Contract/ComptrollerImpl';
 import { CToken } from './Contract/CToken';
@@ -94,6 +95,10 @@ export function getCTokenAddress(world: World, cTokenArg: string): string {
   return getContractDataString(world, [['cTokens', cTokenArg, 'address']]);
 }
 
+export function getCTokenDelegateAddress(world: World, cTokenDelegateArg: string): string {
+  return getContractDataString(world, [['CTokenDelegate', cTokenDelegateArg, 'address']]);
+}
+
 export function getErc20Address(world: World, erc20Arg: string): string {
   return getContractDataString(world, [['Tokens', erc20Arg, 'address']]);
 }
@@ -143,6 +148,16 @@ export async function getCTokenData(
   return [contract, cTokenArg, <Map<string, string>>(<any>data)];
 }
 
+export async function getCTokenDelegateData(
+  world: World,
+  cTokenDelegateArg: string
+): Promise<[CErc20Delegate, string, Map<string, string>]> {
+  let contract = getWorldContract<CErc20Delegate>(world, [['CTokenDelegate', cTokenDelegateArg, 'address']]);
+  let data = getContractData(world, [['CTokenDelegate', cTokenDelegateArg]]);
+
+  return [contract, cTokenDelegateArg, <Map<string, string>>(<any>data)];
+}
+
 export async function getComptrollerImplData(
   world: World,
   comptrollerImplArg: string
@@ -177,6 +192,7 @@ export function getAddress(world: World, addressArg: string): string {
   return getContractDataString(world, [
     ['Contracts', addressArg],
     ['cTokens', addressArg, 'address'],
+    ['CTokenDelegate', addressArg, 'address'],
     ['Tokens', addressArg, 'address'],
     ['Comptroller', addressArg, 'address']
   ]);

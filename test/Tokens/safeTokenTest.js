@@ -25,7 +25,7 @@ contract('CEther', function ([root, nonRoot, ...accounts]) {
 
   describe("doTransferIn", async () => {
     it("succeeds if from is msg.nonRoot and amount is msg.value", async () => {
-      assert.equal(await call(cToken, 'harnessDoTransferIn', [root, 100], {value: 100}), 0);
+      assert.equal(await call(cToken, 'harnessDoTransferIn', [root, 100], {value: 100}), 100);
     });
 
     it("reverts if from != msg.sender", async () => {
