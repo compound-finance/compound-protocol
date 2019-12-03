@@ -35,6 +35,7 @@ import { sendRPC, sleep } from './Utils';
 import { Map } from 'immutable';
 import { encodedNumber } from './Encoding';
 import { printHelp } from './Help';
+import { loadContracts } from './Networks';
 import Ganache from 'ganache-core';
 import Web3 from 'web3';
 
@@ -228,6 +229,34 @@ export const commands = [
         .set('accounts', newAccounts);
     }
   ),
+
+  new View<{ networkVal: StringV; }>(
+    `
+      #### UseConfigs
+
+      * "UseConfigs networkVal:<String>" - Updates world to use the configs for specified network
+        * E.g. "UseConfigs mainnet"
+    `,
+    'UseConfigs',
+    [new Arg('networkVal', getStringV)],
+    async (world, { networkVal }) => {
+      const network = networkVal.val;
+      if (world.basePath && (network === 'mainnet' || network === 'kovan' || network === 'goerli' || network === 'rinkeby')) {
+        let newWorld = world.set('network', network);
+        let contractInfo;
+        [newWorld, contractInfo] = await loadContracts(newWorld);
+        if (contractInfo.length > 0) {
+          world.printer.printLine(`Contracts:`);
+          contractInfo.forEach((info) => world.printer.printLine(`\t${info}`));
+        }
+
+        return newWorld;
+      }
+
+      return world;
+    }
+  ),
+
   new View<{ address: AddressV }>(
     `
       #### MyAddress
@@ -308,6 +337,21 @@ export const commands = [
     [new Arg('timestamp', getNumberV)],
     async (world, { timestamp }) => {
       await sendRPC(world, 'evm_mine', [timestamp.val]);
+      return world;
+    }
+  ),
+
+  new View<{}>(
+    `
+      #### MineBlock
+
+      * "MineBlock" - Increase Ganache evm block number
+        * E.g. "MineBlock"
+    `,
+    'MineBlock',
+    [],
+    async (world, { }) => {
+      await sendRPC(world, 'evm_mine', []);
       return world;
     }
   ),

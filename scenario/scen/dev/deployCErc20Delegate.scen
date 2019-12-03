@@ -1,0 +1,8 @@
+#!/usr/bin/env yarn run repl -s
+-- Deploys new cDaiDelegate and sets it as the implementation of cDAI
+
+Gate (CTokenDelegate cErc20Delegate Address) (CTokenDelegate Deploy CErc20Delegate cErc20Delegate)
+Gate (Equal (CToken cDAI Implementation) (CTokenDelegate cErc20Delegate Address)) (CToken cDAI SetImplementation (CTokenDelegate cErc20Delegate Address) True "0x0")
+
+
+

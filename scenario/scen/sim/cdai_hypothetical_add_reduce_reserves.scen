@@ -1,0 +1,33 @@
+#!/usr/bin/env yarn repl -s
+
+PrintTransactionLogs
+Alias RedKey "0x8b8592e9570e96166336603a1b4bd1e8db20fa20"
+Alias DaiHolder "0x447a9652221f46471a2323B98B73911cda58FD8A"
+Web3Fork "https://mainnet.infura.io/v3/e1a5d4d2c06a4e81945fca56d0d5d8ea@8998553" (RedKey DaiHolder)
+UseConfigs mainnet
+Assert True (Timelock QueuedTransaction (Timelock TxHash (Comptroller Address) 0 1574806914 "_supportMarket(address)" (CToken cDAI Address)))
+Assert True (Timelock QueuedTransaction (Timelock TxHash (Comptroller Address) 0 1574806855 "_setPriceOracle(address)" (PriceOracleProxy Address)))
+Assert True (Timelock QueuedTransaction (Timelock TxHash (CToken cDAI Address) 0 1574806586 "_setReserveFactor(uint256)" 100000000000000000))
+SetTime 1574807000
+From RedKey (Timelock ExecuteTransaction (CToken cDAI Address) 0 1574806586 "_setReserveFactor(uint256)" 100000000000000000)
+From RedKey (Timelock ExecuteTransaction (Comptroller Address) 0 1574806855 "_setPriceOracle(address)" (PriceOracleProxy Address))
+From RedKey (Timelock ExecuteTransaction (Comptroller Address) 0 1574806914 "_supportMarket(address)" (CToken cDAI Address))
+Assert True (Comptroller CheckListed cDAI)
+Assert Equal (CToken cDAI ReserveFactor) 0.1
+Assert Equal (PriceOracleProxy Address) (Comptroller PriceOracle)
+From DaiHolder (Erc20 DAI Transfer (Timelock Address) 2e18)
+From RedKey (Timelock QueueTransaction (Erc20 DAI Address) 0 1600000000 "approve(address,uint256)" (CToken cDAI Address) 2000000000000000000)
+From RedKey (Timelock QueueTransaction (CToken cDAI Address) 0 1600000000 "_addReserves(uint256)" 2000000000000000000)
+From RedKey (Timelock QueueTransaction (CToken cDAI Address) 0 1600000000 "_reduceReserves(uint256)" 2000000000000000000)
+SetTime 1600000000
+Assert Equal (Erc20 DAI TokenBalance (Timelock Address)) 2e18
+From RedKey (Timelock ExecuteTransaction (Erc20 DAI Address) 0 1600000000 "approve(address,uint256)" (CToken cDAI Address) 2000000000000000000)
+From RedKey (Timelock ExecuteTransaction (CToken cDAI Address) 0 1600000000 "_addReserves(uint256)" 2000000000000000000)
+Assert Equal (CToken cDAI Reserves) 2e18
+Assert Equal (Erc20 DAI TokenBalance (CToken cDAI Address)) 2e18
+Assert Equal (Erc20 DAI TokenBalance (Timelock Address)) 0
+From RedKey (Timelock ExecuteTransaction (CToken cDAI Address) 0 1600000000 "_reduceReserves(uint256)" 2000000000000000000)
+Assert Equal (CToken cDAI Reserves) 0
+Assert Equal (Erc20 DAI TokenBalance (CToken cDAI Address)) 0
+Assert Equal (Erc20 DAI TokenBalance (Timelock Address)) 2e18
+Print "Mint and Redeem all good for cDAI."

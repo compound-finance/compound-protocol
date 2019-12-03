@@ -11,6 +11,14 @@ Macro ForkMCD
     Erc20 Deploy Existing DAI DaiAddress DAI
     Assert Equal (EtherBalance CTokenAdmin) 1.680448935e18 -- Ensure the fork works as expected
 
+Macro DeployCDAIWithDSR
+    ForkMCD
+    NewComptroller
+    InterestRateModel Deploy Fixed StdInterest 0.000005
+    CTokenDelegate Deploy CDaiDelegate cDaiDelegate
+    From CTokenAdmin (CToken Deploy CErc20Delegator cDAI cDAI (Erc20 DAI Address) (Comptroller Address) (InterestRateModel StdInterest Address) 1e9 8 CTokenAdmin (CTokenDelegate cDaiDelegate Address) (EncodeParameters ("address" "address") (DaiJoinAddress PotAddress)))
+    Comptroller SupportMarket cDAI
+
 Macro DeployCDAI
     ForkMCD
     NewComptroller
@@ -18,6 +26,10 @@ Macro DeployCDAI
     CTokenDelegate Deploy CErc20Delegate cErc20Delegate
     From CTokenAdmin (CToken Deploy CErc20Delegator cDAI cDAI (Erc20 DAI Address) (Comptroller Address) (InterestRateModel StdInterest Address) 1e9 8 CTokenAdmin (CTokenDelegate cErc20Delegate Address) "0x0")
     Comptroller SupportMarket cDAI
+
+Macro UpgradeToDSR
+    CTokenDelegate Deploy CDaiDelegate cDaiDelegate
+    From CTokenAdmin (CToken cDAI SetImplementation (CTokenDelegate cDaiDelegate Address) True (EncodeParameters ("address" "address") (DaiJoinAddress PotAddress)))
 
 Macro CheckBasicMintRedeem
     From DaiHolder (Erc20 DAI Transfer Jared 2e18)
@@ -74,3 +86,24 @@ Macro CheckBasicBorrowRepayWithDSR repayAmount=1000015000000000000
     -- Note: we always move a little too much into vat on transfer out, so it might be extra dusty
     Assert Approx (MCD PotAt PotAddress "pie" (CToken cDAI Address)) repayAmount         -- pot is a wad (1e18), check for ~ 1 DAI + interest
     Assert (MCD VatAt VatAddress "dai" (CToken cDAI Address)) LessThan 2e27              -- vat is a rad (1e45), check for ~ dust
+
+Test "Basic mint and redeem cDAI2 (directly to swept DSR)"
+    DeployCDAIWithDSR
+    CheckBasicMintRedeemWithDSR
+
+Test "Basic borrow and repay cDAI2 (directly to swept DSR)"
+    DeployCDAIWithDSR
+    CheckBasicBorrowRepayWithDSR
+
+Test "Basic mint and redeem cDAI2 (upgrade to swept DSR)"
+    DeployCDAI
+    CheckBasicMintRedeem
+    UpgradeToDSR
+    CheckBasicMintRedeemWithDSR
+
+
+Test "Basic borrow and repay cDAI2 (upgrade to swept DSR)"
+    DeployCDAI
+    CheckBasicMintRedeem
+    UpgradeToDSR
+    CheckBasicBorrowRepayWithDSR repayAmount:1000014999999999999 -- real block numbers can get nasty
