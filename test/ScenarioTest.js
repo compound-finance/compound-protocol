@@ -118,4 +118,4 @@ contract('ScenarioTest', function(accounts) {
       it.skip("scenario: " + name, async () => {});
     }
   });
-});
+}, 60000);

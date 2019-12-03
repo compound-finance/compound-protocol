@@ -18,12 +18,14 @@ export class ChangesExpectation implements Expectation {
   condition: Event;
   originalValue: NumberV;
   delta: NumberV;
+  tolerance: NumberV;
   expected: NumberV;
 
-  constructor(condition: Event, originalValue: Value, delta: Value) {
+  constructor(condition: Event, originalValue: Value, delta: NumberV, tolerance: NumberV) {
     this.condition = condition;
     this.originalValue = asNumberV(originalValue);
-    this.delta = asNumberV(delta);
+    this.delta = delta;
+    this.tolerance = tolerance;
     this.expected = this.originalValue.add(this.delta);
   }
 
@@ -33,10 +35,13 @@ export class ChangesExpectation implements Expectation {
 
   async checker(world: World, initialCheck: boolean=false): Promise<void> {
     const currentValue = asNumberV(await this.getCurrentValue(world));
+    const trueDelta = currentValue.sub(this.originalValue);
 
-    if (!currentValue.compareTo(world, this.expected)) {
-      const trueDelta = currentValue.sub(this.originalValue);
-
+    if (this.tolerance.val != 0) {
+      if (Math.abs(Number(trueDelta.sub(this.delta).div(this.originalValue).val)) > Number(this.tolerance.val)) {
+        fail(world, `Expected ${trueDelta.toString()} to approximately equal ${this.delta.toString()} within ${this.tolerance.toString()}`);
+      }
+    } else if (!currentValue.compareTo(world, this.expected)) {
       fail(world, `${this.toString()} instead had value \`${currentValue.toString()}\` (true delta: ${trueDelta.toString()})`);
     }
   }

@@ -11,7 +11,7 @@ jobs:
     steps:
       - run:
         |
-          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.8/solc-static-linux -O /usr/local/bin/solc
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.12/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
       - checkout
       - restore_cache:
@@ -43,7 +43,7 @@ jobs:
       - attach_workspace:
           at: ~/repo
       - run: mkdir ~/junit
-      - run: TSC_ARGS="" MOCHA_FILE=~/junit/test-results.xml script/test
+      - run: MOCHA_FILE=~/junit/test-results.xml script/test
       - store_test_results:
           path: ~/junit
       - store_artifacts:
@@ -61,24 +61,11 @@ jobs:
           keys:
           - v2-dependencies-{{ checksum "package.json" }}
           - v2-dependencies-
-      - restore_cache:
-          keys:
-          - v2-scenario/dependencies-{{ checksum "scenario/package.json" }}
-          - v2-scenario/dependencies-
       - run: yarn install
-      - run: cd scenario && yarn install
-      - run:
-          name: Ganache
-          command: script/ganache-coverage
-          background: true
       - save_cache:
           paths:
             - node_modules
           key: v2-dependencies-{{ checksum "package.json" }}
-      - save_cache:
-          paths:
-            - scenario/node_modules
-          key: v2-scenario-dependencies-{{ checksum "scenario/package.json" }}
       - attach_workspace:
           at: ~/repo
       - run:
@@ -110,12 +97,12 @@ jobs:
           keys:
           - v2-scenario/dependencies-{{ checksum "scenario/package.json" }}
           - v2-scenario/dependencies-
+      - run:
+        |
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.12/solc-static-linux -O /usr/local/bin/solc
+          sudo chmod +x /usr/local/bin/solc
       - run: yarn install
       - run: cd scenario && yarn install
-      - run:
-          name: Ganache
-          command: script/ganache-coverage
-          background: true
       - save_cache:
           paths:
             - node_modules

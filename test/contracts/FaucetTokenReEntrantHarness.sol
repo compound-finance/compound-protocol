@@ -1,4 +1,4 @@
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.12;
 
 import "./ERC20NonView.sol";
 
@@ -28,9 +28,12 @@ contract FaucetTokenReEntrantHarness is ERC20NonView {
         string memory _reEntryFun = reEntryFun;
         if (compareStrings(_reEntryFun, funName)) {
             reEntryFun = ""; // Clear re-entry fun
-            (bool _res, bytes memory _ret) = msg.sender.call(reEntryCallData);
-            _res; // unused
-            _ret; // unused
+            (bool success, bytes memory returndata) = msg.sender.call(reEntryCallData);
+            assembly {
+                if eq(success, 0) {
+                    revert(add(returndata, 0x20), returndatasize)
+                }
+            }
         }
 
         _;

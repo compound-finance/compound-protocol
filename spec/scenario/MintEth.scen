@@ -7,7 +7,7 @@ GasTest "Send Mint 1 cETH"
     Expect Changes (CToken cETH UnderlyingBalance Geoff) +0.005e18
     SendMintEth Geoff 0.005e18 cETH
     Assert Equal (Erc20 cETH TokenBalance Geoff) 10e8
-    Assert LastGas LessThan 90e3
+    Assert LastGas LessThan 1.2e5
 
 GasTest "Call Mint 1 cETH"
     NewComptroller
@@ -16,7 +16,7 @@ GasTest "Call Mint 1 cETH"
     Expect Changes (CToken cETH UnderlyingBalance Geoff) +0.005e18
     CallMintEth Geoff 0.005e18 cETH
     Assert Equal (Erc20 cETH TokenBalance Geoff) 10e8
-    Assert LastGas LessThan 90e3
+    Assert LastGas LessThan 1.2e5
 
 Test "Mint with insufficient eth balance"
     NewComptroller

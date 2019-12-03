@@ -3,7 +3,7 @@
 dir=`dirname $0`
 proj_root="$dir/.."
 
-node "$proj_root/node_modules/ganache-cli/cli.js" \
+node --stack-size=10000 "$proj_root/node_modules/ganache-cli/cli.js" \
 	--gasLimit 20000000 \
 	--gasPrice 20000 \
 	--defaultBalanceEther 1000000000 \

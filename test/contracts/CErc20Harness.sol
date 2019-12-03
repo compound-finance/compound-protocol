@@ -1,8 +1,8 @@
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.12;
 
-import "../CErc20.sol";
+import "../CErc20Immutable.sol";
 
-contract CErc20Harness is CErc20 {
+contract CErc20Harness is CErc20Immutable {
 
     uint blockNumber = 100000;
     uint harnessExchangeRate;
@@ -16,16 +16,16 @@ contract CErc20Harness is CErc20 {
     constructor(address underlying_,
                 ComptrollerInterface comptroller_,
                 InterestRateModel interestRateModel_,
-                uint initialExchangeRateMantissa,
+                uint initialExchangeRateMantissa_,
                 string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
                 address payable admin_)
-    CErc20(
+    CErc20Immutable(
     underlying_,
     comptroller_,
     interestRateModel_,
-    initialExchangeRateMantissa,
+    initialExchangeRateMantissa_,
     name_,
     symbol_,
     decimals_,
@@ -115,10 +115,8 @@ contract CErc20Harness is CErc20 {
         failTransferToAddresses[_to] = _fail;
     }
 
-    function doTransferOut(address payable to, uint amount) internal returns (Error) {
-        if (failTransferToAddresses[to]) {
-            return Error.TOKEN_TRANSFER_OUT_FAILED;
-        }
+    function doTransferOut(address payable to, uint amount) internal {
+        require(failTransferToAddresses[to] == false, "TOKEN_TRANSFER_OUT_FAILED");
         return super.doTransferOut(to, amount);
     }
 
@@ -127,7 +125,8 @@ contract CErc20Harness is CErc20 {
      *
      */
     function harnessMintFresh(address account, uint mintAmount) public returns (uint) {
-        return super.mintFresh(account, mintAmount);
+        (uint err,) = super.mintFresh(account, mintAmount);
+        return err;
     }
 
     /**
@@ -159,12 +158,14 @@ contract CErc20Harness is CErc20 {
         return borrowFresh(account, borrowAmount);
     }
 
-    function harnessRepayBorrowFresh(address payer, address account, uint borrowAmount) public returns (uint) {
-        return repayBorrowFresh(payer, account, borrowAmount);
+    function harnessRepayBorrowFresh(address payer, address account, uint repayAmount) public returns (uint) {
+        (uint err,) = repayBorrowFresh(payer, account, repayAmount);
+        return err;
     }
 
     function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CToken cTokenCollateral) public returns (uint) {
-        return liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
+        (uint err,) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
+        return err;
     }
 
     /**

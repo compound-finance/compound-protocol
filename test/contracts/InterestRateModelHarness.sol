@@ -1,4 +1,4 @@
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.12;
 
 import "../InterestRateModel.sol";
 
@@ -24,14 +24,18 @@ contract InterestRateModelHarness is InterestRateModel {
         borrowRate = borrowRate_;
     }
 
-    function getBorrowRate(uint _cash, uint _borrows, uint _reserves) public view returns (uint, uint) {
+    function getBorrowRate(uint _cash, uint _borrows, uint _reserves) public view returns (uint) {
         _cash;     // unused
         _borrows;  // unused
         _reserves; // unused
+        require(!failBorrowRate, "INTEREST_RATE_MODEL_ERROR");
+        return borrowRate;
+    }
 
-        if (failBorrowRate) {
-            return (opaqueBorrowFailureCode, 0);
-        }
-        return (0, borrowRate);
+    function getSupplyRate(uint _cash, uint _borrows, uint _reserves, uint _reserveFactor) external view returns (uint) {
+        _cash;     // unused
+        _borrows;  // unused
+        _reserves; // unused
+        return borrowRate * (1 - _reserveFactor);
     }
 }

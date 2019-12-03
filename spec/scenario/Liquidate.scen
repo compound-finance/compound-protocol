@@ -516,7 +516,7 @@ Test "When there's insufficient collateral"
     Prep Torrey 10e18 BAT cBAT
     AllowFailures
     Liquidate Torrey "->" Geoff 2e18 cBAT "Seizing" cZRX
-    Assert Failure TOKEN_INSUFFICIENT_BALANCE LIQUIDATE_SEIZE_TOO_MUCH
+    Assert Revert "revert LIQUIDATE_SEIZE_TOO_MUCH"
 
 Test "when seize is paused"
     NewBorrow borrowAmount:1e18 borrowRate:0.000005 borrowPrice:2.0

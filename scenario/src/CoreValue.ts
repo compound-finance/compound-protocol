@@ -21,7 +21,9 @@ import { comptrollerFetchers, getComptrollerValue } from './Value/ComptrollerVal
 import { comptrollerImplFetchers, getComptrollerImplValue } from './Value/ComptrollerImplValue';
 import { getUnitrollerValue, unitrollerFetchers } from './Value/UnitrollerValue';
 import { cTokenFetchers, getCTokenValue } from './Value/CTokenValue';
+import { cTokenDelegateFetchers, getCTokenDelegateValue } from './Value/CTokenDelegateValue';
 import { erc20Fetchers, getErc20Value } from './Value/Erc20Value';
+import { mcdFetchers, getMCDValue } from './Value/MCDValue';
 import { getInterestRateModelValue, interestRateModelFetchers } from './Value/InterestRateModelValue';
 import { getPriceOracleValue, priceOracleFetchers } from './Value/PriceOracleValue';
 import { getPriceOracleProxyValue, priceOracleProxyFetchers } from './Value/PriceOracleProxyValue';
@@ -202,6 +204,7 @@ export const fetchers = [
     [],
     async (world, {}) => new BoolV(true)
   ),
+
   new Fetcher<{}, BoolV>(
     `
       #### False
@@ -212,6 +215,7 @@ export const fetchers = [
     [],
     async (world, {}) => new BoolV(false)
   ),
+
   new Fetcher<{}, NumberV>(
     `
       #### Zero
@@ -222,6 +226,7 @@ export const fetchers = [
     [],
     async (world, {}) => strToNumberV('0')
   ),
+
   new Fetcher<{}, NumberV>(
     `
       #### Max
@@ -233,6 +238,7 @@ export const fetchers = [
     async (world, {}) =>
       new NumberV('115792089237316195423570985008687907853269984665640564039457584007913129639935')
   ),
+
   new Fetcher<{}, NumberV>(
     `
       #### Some
@@ -243,6 +249,7 @@ export const fetchers = [
     [],
     async (world, {}) => strToNumberV('100e18')
   ),
+
   new Fetcher<{}, NumberV>(
     `
       #### Little
@@ -253,6 +260,7 @@ export const fetchers = [
     [],
     async (world, {}) => strToNumberV('100e10')
   ),
+
   new Fetcher<{ amt: EventV }, NumberV>(
     `
       #### Exactly
@@ -263,7 +271,8 @@ export const fetchers = [
     'Exactly',
     [new Arg('amt', getEventV)],
     async (world, { amt }) => getNumberV(world, amt.val)
-  ),
+    ),
+
   new Fetcher<{ hexVal: EventV }, StringV>(
     `
       #### Hex
@@ -275,6 +284,7 @@ export const fetchers = [
     [new Arg('hexVal', getEventV)],
     async (world, { hexVal }) => getStringV(world, hexVal.val)
   ),
+
   new Fetcher<{ str: EventV }, StringV>(
     `
       #### String
@@ -286,6 +296,7 @@ export const fetchers = [
     [new Arg('str', getEventV)],
     async (world, { str }) => getStringV(world, str.val)
   ),
+
   new Fetcher<{ amt: EventV }, NumberV>(
     `
       #### Exp
@@ -297,17 +308,31 @@ export const fetchers = [
     [new Arg('amt', getEventV)],
     async (world, { amt }) => getExpNumberV(world, amt.val)
   ),
+
+  new Fetcher<{ amt: EventV }, NumberV>(
+    `
+      #### Neg
+
+      * "Neg <Amount>" - Returns the amount subtracted from zero
+        * E.g. "Neg amount"
+    `,
+    'Neg',
+    [new Arg('amt', getEventV)],
+    async (world, { amt }) => new NumberV(0).sub(await getNumberV(world, amt.val))
+  ),
+
   new Fetcher<{ amt: StringV }, PreciseV>(
     `
       #### Precisely
 
       * "Precisely <Amount>" - Matches a number to given number of significant figures
-        * E.g. "Exactly 5.1000" - Matches to 5 sig figs
+        * E.g. "Precisely 5.1000" - Matches to 5 sig figs
     `,
     'Precisely',
     [new Arg('amt', getStringV)],
     async (world, { amt }) => new PreciseV(toEncodableNum(amt.val), getSigFigs(amt.val))
   ),
+
   new Fetcher<{}, AnythingV>(
     `
       #### Anything
@@ -318,6 +343,7 @@ export const fetchers = [
     [],
     async (world, {}) => new AnythingV()
   ),
+
   new Fetcher<{}, NothingV>(
     `
       #### Nothing
@@ -328,6 +354,7 @@ export const fetchers = [
     [],
     async (world, {}) => new NothingV()
   ),
+
   new Fetcher<{ addr: AddressV }, AddressV>(
     `
       #### Address
@@ -338,6 +365,7 @@ export const fetchers = [
     [new Arg('addr', getAddressV)],
     async (world, { addr }) => addr
   ),
+
   new Fetcher<
     { addr: AddressV; slot: NumberV; start: NumberV; valType: StringV },
     BoolV | AddressV | ExpNumberV | undefined
@@ -690,6 +718,33 @@ export const fetchers = [
     [new Arg('given', getCoreValue), new Arg('expected', getCoreValue)],
     async (world, { given, expected }) => new BoolV(expected.compareTo(world, given))
   ),
+  new Fetcher<
+      {
+        argTypes: StringV[];
+        args: StringV[];
+      },
+      StringV
+    >(
+      `
+        #### EncodeParameters
+
+        * "EncodeParameters (...argTypes:<String>) (...args:<Anything>)
+          * E.g. "EncodeParameters (\"address\" \"address\") (\"0xabc\" \"0x123\")
+      `,
+      'EncodeParameters',
+      [
+        new Arg('argTypes', getStringV, { mapped: true }),
+        new Arg('args', getStringV, { mapped: true })
+      ],
+      async (world, { argTypes, args }) => {
+        const realArgs = args.map((a, i) => {
+          if (argTypes[i].val == 'address')
+            return getAddress(world, a.val);
+          return a.val;
+        });
+        return new StringV(world.web3.eth.abi.encodeParameters(argTypes.map(t => t.val), realArgs));
+      }
+    ),
   new Fetcher<{ res: Value }, Value>(
     `
       #### Unitroller
@@ -733,6 +788,17 @@ export const fetchers = [
     [new Arg('res', getCTokenValue, { variadic: true })],
     async (world, { res }) => res,
     { subExpressions: cTokenFetchers() }
+  ),
+  new Fetcher<{ res: Value }, Value>(
+    `
+      #### CTokenDelegate
+
+      * "CTokenDelegate ...cTokenDelegateArgs" - Returns cToken delegate value
+    `,
+    'CTokenDelegate',
+    [new Arg('res', getCTokenDelegateValue, { variadic: true })],
+    async (world, { res }) => res,
+    { subExpressions: cTokenDelegateFetchers() }
   ),
   new Fetcher<{ res: Value }, Value>(
     `
@@ -799,6 +865,17 @@ export const fetchers = [
     [new Arg('res', getMaximillionValue, { variadic: true })],
     async (world, { res }) => res,
     { subExpressions: maximillionFetchers() }
+  ),
+  new Fetcher<{ res: Value }, Value>(
+    `
+      #### MCD
+
+      * "MCD ...mcdArgs" - Returns MCD value
+    `,
+    'MCD',
+    [new Arg('res', getMCDValue, { variadic: true })],
+    async (world, { res }) => res,
+    { subExpressions: mcdFetchers() }
   )
 ];
 

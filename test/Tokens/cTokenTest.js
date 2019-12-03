@@ -14,29 +14,29 @@ const {
 contract('CToken', function ([root, admin, ...accounts]) {
   describe('constructor', async () => {
     it("fails when non erc-20 underlying", async () => {
-      await assert.revert(makeCToken({underlying: {_address: root}}));
+      await assert.revert(makeCToken({ underlying: { _address: root } }), "revert");
     });
 
     it("fails when 0 initial exchange rate", async () => {
-      await assert.revert(makeCToken({exchangeRate: 0}), "revert Initial exchange rate must be greater than zero.");
+      await assert.revert(makeCToken({ exchangeRate: 0 }), "revert initial exchange rate must be greater than zero.");
     });
 
     it("succeeds with erc-20 underlying and non-zero exchange rate", async () => {
       const cToken = await makeCToken();
       assert.equal(await call(cToken, 'underlying'), cToken.underlying._address);
-      assert.equal(await call(cToken, 'admin',), root);
+      assert.equal(await call(cToken, 'admin'), root);
     });
 
     it("succeeds when setting admin to contructor argument", async () => {
-      const cToken = await makeCToken({admin: admin});
-      assert.equal(await call(cToken, 'admin',), admin);
+      const cToken = await makeCToken({ admin: admin });
+      assert.equal(await call(cToken, 'admin'), admin);
     });
   });
 
   describe('name, symbol, decimals', async () => {
     let cToken;
     before(async () => {
-      cToken = await makeCToken({name: "CToken Foo", symbol: "cFOO", decimals: 10});
+      cToken = await makeCToken({ name: "CToken Foo", symbol: "cFOO", decimals: 10 });
     });
 
     it('should return correct name', async () => {
@@ -54,7 +54,7 @@ contract('CToken', function ([root, admin, ...accounts]) {
 
   describe('balanceOfUnderlying', () => {
     it("has an underlying balance", async () => {
-      const cToken = await makeCToken({supportMarket: true, exchangeRate: 2});
+      const cToken = await makeCToken({ supportMarket: true, exchangeRate: 2 });
       await send(cToken, 'harnessSetBalance', [root, 100]);
       assert.equal(await call(cToken, 'balanceOfUnderlying', [root]), 200);
     });
@@ -62,25 +62,35 @@ contract('CToken', function ([root, admin, ...accounts]) {
 
   describe('borrowRatePerBlock', () => {
     it("has a borrow rate", async () => {
-      const cToken = await makeCToken({supportMarket: true, interestRateModelOpts: {kind: 'white-paper', baseRate: .05, multiplier: 0.45}});
+      const cToken = await makeCToken({ supportMarket: true, interestRateModelOpts: { kind: 'jump-rate', baseRate: .05, multiplier: 0.45, kink: 0.95, jump: 5 } });
       const perBlock = await call(cToken, 'borrowRatePerBlock');
       assert.approximately(perBlock * 2102400, 5e16, 1e8);
     });
   });
 
   describe('supplyRatePerBlock', () => {
-    it("reverts if there's no supply", async () => {
-      const cToken = await makeCToken({supportMarket: true, interestRateModelOpts: {kind: 'white-paper', baseRate: .05, multiplier: 0.45}});
-      await assert.revert(call(cToken, 'supplyRatePerBlock'), "revert supplyRatePerBlock: calculating borrowsPer failed");
+    it("returns 0 if there's no supply", async () => {
+      const cToken = await makeCToken({ supportMarket: true, interestRateModelOpts: { kind: 'jump-rate', baseRate: .05, multiplier: 0.45, kink: 0.95, jump: 5 } });
+      const perBlock = await call(cToken, 'supplyRatePerBlock');
+      await assert.equal(perBlock, 0);
     });
 
     it("has a supply rate", async () => {
-      const cToken = await makeCToken({supportMarket: true, interestRateModelOpts: {kind: 'white-paper', baseRate: .05, multiplier: 0.45}});
+      const baseRate = 0.05;
+      const multiplier = 0.45;
+      const kink = 0.95;
+      const jump = 5;
+      const cToken = await makeCToken({ supportMarket: true, interestRateModelOpts: { kind: 'jump-rate', baseRate, multiplier, kink, jump } });
       await send(cToken, 'harnessSetReserveFactorFresh', [etherMantissa(.01)]);
       await send(cToken, 'harnessExchangeRateDetails', [1, 1, 0]);
       await send(cToken, 'harnessSetExchangeRate', [etherMantissa(1)]);
+      // Full utilization (Over the kink so jump is included), 1% reserves
+      const additionalJump = multiplier * jump * .05;
+      const borrowRate = (kink * multiplier) + baseRate + additionalJump;
+      const expectedSuplyRate = borrowRate * .99;
+
       const perBlock = await call(cToken, 'supplyRatePerBlock');
-      assert.approximately(perBlock * 2102400, 50e16 * .99, 1e8); // full utilization, 1% reserves
+      assert.approximately(perBlock * 2102400, expectedSuplyRate * 1e18, 1e8);
     });
   });
 
@@ -99,7 +109,7 @@ contract('CToken', function ([root, admin, ...accounts]) {
 
     it("reverts if interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
-      await assert.revert(send(cToken, 'borrowBalanceCurrent', [borrower]), "revert accrue interest failed");
+      await assert.revert(send(cToken, 'borrowBalanceCurrent', [borrower]), "revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it("returns successful result from borrowBalanceStored with no interest", async () => {
@@ -121,7 +131,7 @@ contract('CToken', function ([root, admin, ...accounts]) {
 
     let cToken;
     beforeEach(async () => {
-      cToken = await makeCToken({comptrollerOpts: {kind: 'bool'}});
+      cToken = await makeCToken({ comptrollerOpts: { kind: 'bool' } });
     });
 
     it("returns 0 for account with no borrows", async () => {
@@ -156,11 +166,11 @@ contract('CToken', function ([root, admin, ...accounts]) {
   describe('exchangeRateStored', async () => {
     let cToken, exchangeRate = 2;
     beforeEach(async () => {
-        cToken = await makeCToken({exchangeRate});
+      cToken = await makeCToken({ exchangeRate });
     });
 
     it("returns initial exchange rate with zero cTokenSupply", async () => {
-      const result  = await call(cToken, 'exchangeRateStored');
+      const result = await call(cToken, 'exchangeRateStored');
       assert.equal(result, etherMantissa(exchangeRate), "exchange rate should be initial exchange rate");
     });
 

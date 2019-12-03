@@ -1,12 +1,18 @@
-import {getNetworkPath, readFile, writeFile} from './File';
+import { getNetworkPath, readFile, writeFile } from './File';
 
 export class Settings {
-  basePath: string | null
-  network: string | null
-  aliases: {[name: string]: string}
-  from: string | undefined
+  basePath: string | null;
+  network: string | null;
+  aliases: { [name: string]: string };
+  from: string | undefined;
+  printTxLogs: boolean = false;
 
-  constructor(basePath: string | null, network: string | null, aliases: {[name: string]: string}, from?: string) {
+  constructor(
+    basePath: string | null,
+    network: string | null,
+    aliases: { [name: string]: string },
+    from?: string
+  ) {
     this.basePath = basePath;
     this.network = network;
     this.aliases = aliases;
@@ -14,7 +20,7 @@ export class Settings {
   }
 
   static deserialize(basePath: string, network: string, data: string): Settings {
-    const {aliases} = JSON.parse(data);
+    const { aliases } = JSON.parse(data);
 
     return new Settings(basePath, network, aliases);
   }
@@ -34,7 +40,9 @@ export class Settings {
   }
 
   static load(basePath: string, network: string): Promise<Settings> {
-    return readFile(Settings.getFilePath(basePath, network), Settings.default(basePath, network), (data) => Settings.deserialize(basePath, network, data));
+    return readFile(Settings.getFilePath(basePath, network), Settings.default(basePath, network), data =>
+      Settings.deserialize(basePath, network, data)
+    );
   }
 
   async save(): Promise<void> {
@@ -64,7 +72,9 @@ export class Settings {
   }
 
   findAlias(name: string): string | null {
-    const alias = Object.entries(this.aliases).find(([alias, addr]) => alias.toLowerCase() === name.toLowerCase());
+    const alias = Object.entries(this.aliases).find(
+      ([alias, addr]) => alias.toLowerCase() === name.toLowerCase()
+    );
 
     if (alias) {
       return alias[1];

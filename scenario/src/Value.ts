@@ -298,6 +298,14 @@ export class NumberV implements Value {
     return new NumberV(new BigNumber(this.val).plus(new BigNumber(b.val)).toFixed());
   }
 
+  div(b: NumberV): NumberV {
+    return new NumberV(new BigNumber(this.val).div(new BigNumber(b.val)).toFixed());
+  }
+
+  mul(b: NumberV): NumberV {
+    return new NumberV(new BigNumber(this.val).times(new BigNumber(b.val)).toFixed());
+  }
+
   sub(b: NumberV): NumberV {
     return new NumberV(new BigNumber(this.val).minus(new BigNumber(b.val)).toFixed());
   }

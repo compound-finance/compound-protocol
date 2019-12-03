@@ -56,7 +56,7 @@ while getopts ":hdn:e:s:vt" arg; do
 	esac
 done
 
-if [ $network = "test" -o $network = "development" -o -n "$add_test_contracts" ]; then
+if [ ! $network = "mainnet" ]; then
 	function cleanup {
 		mv "$contracts_root/test" "$test_root/contracts"
 	}
@@ -74,5 +74,6 @@ fi
 
 [[ ! -d ./.tsbuilt || -z $no_tsc ]] && . "$dir/tsc"
 
+[[ -z $no_compile ]] && node --stack_size=10000 "$proj_root/node_modules/truffle/build/cli.bundled.js" compile
 
 proj_root="$proj_root" env_vars="$env_vars" dry_run="$dry_run" script="$script" network="$network" verbose="$verbose" npx truffle exec --network "$network" "$tsc_root/.tsbuilt/Repl.js"

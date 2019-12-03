@@ -83,3 +83,23 @@ export function sleep(timeout: number): Promise<void> {
     }, timeout);
   });
 }
+
+export function sendRPC(world: World, method: string, params: any[]) {
+  return new Promise((resolve, reject) => {
+    world.web3.currentProvider.send(
+      {
+        jsonrpc: '2.0',
+        method: method,
+        params: params,
+        id: new Date().getTime() // Id of the request; anything works, really
+      },
+      (err, response) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(response);
+        }
+      }
+    );
+  });
+}

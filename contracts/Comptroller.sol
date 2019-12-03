@@ -1,4 +1,4 @@
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.12;
 
 import "./CToken.sol";
 import "./ErrorReporter.sol";
@@ -254,14 +254,14 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      * @notice Validates mint and reverts on rejection. May emit logs.
      * @param cToken Asset being minted
      * @param minter The address minting the tokens
-     * @param mintAmount The amount of the underlying asset being minted
+     * @param actualMintAmount The amount of the underlying asset being minted
      * @param mintTokens The number of tokens being minted
      */
-    function mintVerify(address cToken, address minter, uint mintAmount, uint mintTokens) external {
+    function mintVerify(address cToken, address minter, uint actualMintAmount, uint mintTokens) external {
         // Shh - currently unused
         cToken;
         minter;
-        mintAmount;
+        actualMintAmount;
         mintTokens;
 
         // Shh - we don't ever want this hook to be marked pure
@@ -419,19 +419,19 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      * @param cToken Asset being repaid
      * @param payer The address repaying the borrow
      * @param borrower The address of the borrower
-     * @param repayAmount The amount of underlying being repaid
+     * @param actualRepayAmount The amount of underlying being repaid
      */
     function repayBorrowVerify(
         address cToken,
         address payer,
         address borrower,
-        uint repayAmount,
+        uint actualRepayAmount,
         uint borrowerIndex) external {
         // Shh - currently unused
         cToken;
         payer;
         borrower;
-        repayAmount;
+        actualRepayAmount;
         borrowerIndex;
 
         // Shh - we don't ever want this hook to be marked pure
@@ -491,21 +491,21 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      * @param cTokenCollateral Asset which was used as collateral and will be seized
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
-     * @param repayAmount The amount of underlying being repaid
+     * @param actualRepayAmount The amount of underlying being repaid
      */
     function liquidateBorrowVerify(
         address cTokenBorrowed,
         address cTokenCollateral,
         address liquidator,
         address borrower,
-        uint repayAmount,
+        uint actualRepayAmount,
         uint seizeTokens) external {
         // Shh - currently unused
         cTokenBorrowed;
         cTokenCollateral;
         liquidator;
         borrower;
-        repayAmount;
+        actualRepayAmount;
         seizeTokens;
 
         // Shh - we don't ever want this hook to be marked pure
@@ -751,10 +751,10 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      * @dev Used in liquidation (called in cToken.liquidateBorrowFresh)
      * @param cTokenBorrowed The address of the borrowed cToken
      * @param cTokenCollateral The address of the collateral cToken
-     * @param repayAmount The amount of cTokenBorrowed underlying to convert into cTokenCollateral tokens
+     * @param actualRepayAmount The amount of cTokenBorrowed underlying to convert into cTokenCollateral tokens
      * @return (errorCode, number of cTokenCollateral tokens to be seized in a liquidation)
      */
-    function liquidateCalculateSeizeTokens(address cTokenBorrowed, address cTokenCollateral, uint repayAmount) external view returns (uint, uint) {
+    function liquidateCalculateSeizeTokens(address cTokenBorrowed, address cTokenCollateral, uint actualRepayAmount) external view returns (uint, uint) {
         /* Read oracle prices for borrowed and collateral markets */
         uint priceBorrowedMantissa = oracle.getUnderlyingPrice(CToken(cTokenBorrowed));
         uint priceCollateralMantissa = oracle.getUnderlyingPrice(CToken(cTokenCollateral));
@@ -764,9 +764,9 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
 
         /*
          * Get the exchange rate and calculate the number of collateral tokens to seize:
-         *  seizeAmount = repayAmount * liquidationIncentive * priceBorrowed / priceCollateral
+         *  seizeAmount = actualRepayAmount * liquidationIncentive * priceBorrowed / priceCollateral
          *  seizeTokens = seizeAmount / exchangeRate
-         *   = repayAmount * (liquidationIncentive * priceBorrowed) / (priceCollateral * exchangeRate)
+         *   = actualRepayAmount * (liquidationIncentive * priceBorrowed) / (priceCollateral * exchangeRate)
          */
         uint exchangeRateMantissa = CToken(cTokenCollateral).exchangeRateStored(); // Note: reverts on error
         uint seizeTokens;
@@ -790,7 +790,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
             return (uint(Error.MATH_ERROR), 0);
         }
 
-        (mathErr, seizeTokens) = mulScalarTruncate(ratio, repayAmount);
+        (mathErr, seizeTokens) = mulScalarTruncate(ratio, actualRepayAmount);
         if (mathErr != MathError.NO_ERROR) {
             return (uint(Error.MATH_ERROR), 0);
         }

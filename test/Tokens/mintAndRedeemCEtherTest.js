@@ -68,7 +68,7 @@ contract('CEther', function ([root, minter, redeemer, ...accounts]) {
 
       it("reverts if interest accrual fails", async () => {
         await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
-        await assert.revertWithError(mint(cToken, minter, mintAmount), 'INTEREST_RATE_MODEL_ERROR', "revert mint failed");
+        await assert.revert(mint(cToken, minter, mintAmount), "revert INTEREST_RATE_MODEL_ERROR");
       });
 
       it("returns success from mintFresh and mints the correct number of tokens", async () => {
@@ -95,11 +95,7 @@ contract('CEther', function ([root, minter, redeemer, ...accounts]) {
 
       it("emits a redeem failure if interest accrual fails", async () => {
         await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
-        assert.hasTokenFailure(
-          await redeem(cToken, redeemer, redeemTokens, redeemAmount),
-          'INTEREST_RATE_MODEL_ERROR',
-          'REDEEM_ACCRUE_INTEREST_FAILED'
-        );
+        await assert.revert(redeem(cToken, redeemer, redeemTokens, redeemAmount), "revert INTEREST_RATE_MODEL_ERROR");
       });
 
       it("returns error from redeemFresh without emitting any extra logs", async () => {

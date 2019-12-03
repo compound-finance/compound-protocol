@@ -4,6 +4,7 @@ import {InterestRateModel} from '../Contract/InterestRateModel';
 import {Invokation, invoke} from '../Invokation';
 import {
   getExpNumberV,
+  getNumberV,
   getPercentV,
   getStringV,
 } from '../CoreValue';
@@ -18,6 +19,7 @@ import {getContract, getTestContract} from '../Contract';
 
 const FixedInterestRateModel = getTestContract('InterestRateModelHarness');
 const WhitePaperInterestRateModel = getContract('WhitePaperInterestRateModel');
+const JumpRateModel = getContract('JumpRateModel');
 
 export interface InterestRateModelData {
   invokation: Invokation<InterestRateModel>
@@ -27,6 +29,8 @@ export interface InterestRateModelData {
   description: string
   base?: string
   slope?: string
+  kink?: string
+  jump?: string
 }
 
 export async function buildInterestRateModel(world: World, from: string, event: Event): Promise<{world: World, interestRateModel: InterestRateModel, interestRateModelData: InterestRateModelData}> {
@@ -70,7 +74,34 @@ export async function buildInterestRateModel(world: World, from: string, event: 
         base: baseRate.encode().toString(),
         slope: multiplier.encode().toString()
       })
-    )
+                                                                                               ),
+
+
+    new Fetcher<{name: StringV, baseRate: NumberV, multiplier: NumberV, kink: NumberV, jump: NumberV}, InterestRateModelData>(`
+#### JumpRateModel
+
+* "JumpRateModel name:<String> baseRate:<Number> multiplier:<Number> kink:<Number> jump:<Number>" - The Jump interest rate
+* E.g. "InterestRateModel Deploy JumpRateModel MyInterestRateModel 0.05 0.2 0.90 5" - 5% base rate and 20% utilization multiplier and 5x jump at 90% utilization
+`,
+                                                                                                "JumpRateModel",
+                                                                                                [
+                                                                                                  new Arg("name", getStringV),
+                                                                                                  new Arg("baseRate", getExpNumberV),
+                                                                                                  new Arg("multiplier", getExpNumberV),
+                                                                                                  new Arg("kink", getExpNumberV),
+                                                                                                  new Arg("jump", getNumberV)
+                                                                                                ],
+                                                                                                async (world, {name, baseRate, multiplier, kink, jump}) => ({
+                                                                                                  invokation: await JumpRateModel.deploy<InterestRateModel>(world, from, [baseRate.val, multiplier.val, kink.val, jump.val]),
+                                                                                                  name: name.val,
+                                                                                                  contract: "JumpRateModel",
+                                                                                                  description: `JumpRate model baseRate=${baseRate.val} multiplier=${multiplier.val} kink=${kink.val} jump=${jump.val}`,
+                                                                                                  base: baseRate.encode().toString(),
+                                                                                                  slope: multiplier.encode().toString(),
+                                                                                                  kink: kink.encode().toString(),
+                                                                                                  jump: jump.encode().toString()
+                                                                                                })
+                                                                                               )
   ];
 
   let interestRateModelData = await getFetcherValue<any, InterestRateModelData>("DeployInterestRateModel", fetchers, world, event);

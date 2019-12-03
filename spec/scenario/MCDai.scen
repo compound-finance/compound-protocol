@@ -1,0 +1,76 @@
+-- Multi-collateral DAI tests
+
+Macro ForkMCD
+    Alias CTokenAdmin "0x9C1856636d78C051deAd6CAB9c5699e4E25549e9"
+    Alias DaiHolder "0x9Bffd1579bd6760a186fFf1A720f2a5dB35dE0f4"
+    Alias DaiAddress "0xc27a24e60a89a03bd2f1ffb4ea59076fd8385fe6"
+    Alias DaiJoinAddress "0x3a3cc501d46b84f310067ef7c5df4ae1f05810ea"
+    Alias PotAddress "0x1c11810b1f8551d543f33a48ba88dcb0e8002b0f"
+    Alias VatAddress "0x2d9fad7795f0658f5931b75845d14250aecc81ee"
+    Web3Fork "https://kovan.infura.io/v3/e1a5d4d2c06a4e81945fca56d0d5d8ea@14760012" (CTokenAdmin DaiHolder)
+    Erc20 Deploy Existing DAI DaiAddress DAI
+    Assert Equal (EtherBalance CTokenAdmin) 1.680448935e18 -- Ensure the fork works as expected
+
+Macro DeployCDAI
+    ForkMCD
+    NewComptroller
+    InterestRateModel Deploy Fixed StdInterest 0.000005
+    CTokenDelegate Deploy CErc20Delegate cErc20Delegate
+    From CTokenAdmin (CToken Deploy CErc20Delegator cDAI cDAI (Erc20 DAI Address) (Comptroller Address) (InterestRateModel StdInterest Address) 1e9 8 CTokenAdmin (CTokenDelegate cErc20Delegate Address) "0x0")
+    Comptroller SupportMarket cDAI
+
+Macro CheckBasicMintRedeem
+    From DaiHolder (Erc20 DAI Transfer Jared 2e18)
+    From Jared (Erc20 DAI Approve (CToken cDAI Address) 2e18)
+    Mint Jared 1e18 cDAI
+    Assert Equal (Erc20 cDAI TokenBalance Jared) (Exactly 1e9)
+    Expect Changes (Erc20 cDAI TokenBalance Jared) -1e9
+    Redeem Jared 1e9 cDAI
+
+Macro CheckBasicMintRedeemWithDSR
+    -- Note: we cannot tightly control time for evm calls in ganache, so we approximate time-based values
+    -- Approve and mint cDAI from DAI
+    From DaiHolder (Erc20 DAI Approve (CToken cDAI Address) 1e30)
+    Mint DaiHolder 1e18 cDAI
+    Assert Equal (Erc20 cDAI TokenBalance DaiHolder) (Exactly 1e9)
+    -- Sanity check the DSR
+    Assert Equal (MCD PotAt PotAddress "dsr") (Exactly 1000000000627937192491029810)
+    -- Check that the funds are in the pot and not the vat
+    Assert Approx (MCD PotAt PotAddress "pie" (CToken cDAI Address)) 999784970332262855  -- pot is a wad (1e18), check for ~ 1 DAI
+    Assert (MCD VatAt VatAddress "dai" (CToken cDAI Address)) LessThan 1e27              -- vat is a rad (1e45), check for ~ dust
+    -- Time passes
+    IncreaseTime 100000
+    -- Check that holder earns the DSR on 1 DAI after redeeming (1 DAI * (dsr ** seconds))
+    Expect Changes (Erc20 DAI TokenBalance DaiHolder) 1000006279390070400 0.0001
+    Redeem DaiHolder 1e9 cDAI
+    -- Check that the funds are not in the pot nor the vat
+    -- Note: we always move a little too much into vat on transfer out, so it might be extra dusty
+    Assert Equal (MCD PotAt PotAddress "pie" (CToken cDAI Address)) 0                    -- pot is a wad (1e18), check for ~ dust
+    Assert (MCD VatAt VatAddress "dai" (CToken cDAI Address)) LessThan 2e27              -- vat is a rad (1e45), check for ~ dust
+
+Macro CheckBasicBorrowRepayWithDSR repayAmount=1000015000000000000
+    -- Note: we cannot tightly control time for evm calls in ganache, so we approximate time-based values
+    NewCToken BAT cBAT
+    Support cBAT collateralFactor:0.5
+    -- Add some DAI to borrow
+    From DaiHolder (Erc20 DAI Approve (CToken cDAI Address) 1e30)
+    Mint DaiHolder 1e18 cDAI
+    -- Get some collateral and borrow
+    EnterMarkets Geoff cBAT
+    Prep Geoff Some BAT cBAT
+    Mint Geoff 100e18 cBAT
+    Expect Changes (Erc20 DAI TokenBalance Geoff) (Exactly 1e18)
+    Borrow Geoff 1e18 cDAI
+    -- Check that the funds are not in the pot nor the vat
+    -- Note: we always move a little too much into vat on transfer out, so it might be extra dusty
+    Assert (MCD PotAt PotAddress "pie" (CToken cDAI Address)) LessThan 5e10              -- pot is a wad (1e18), check for ~ dust + DSR
+    Assert (MCD VatAt VatAddress "dai" (CToken cDAI Address)) LessThan 2e27              -- vat is a rad (1e45), check for ~ dust
+    -- Repay the principal + interest after 3 blocks (i.e. 3 transactions since)
+    From DaiHolder (Erc20 DAI Transfer Geoff 1e18)
+    From Geoff (Erc20 DAI Approve (CToken cDAI Address) 1e30)
+    RepayBorrow Geoff repayAmount cDAI
+    Assert Equal (cToken cDAI BorrowBalance Geoff) 0
+    -- Check that the funds are in the pot and not the vat
+    -- Note: we always move a little too much into vat on transfer out, so it might be extra dusty
+    Assert Approx (MCD PotAt PotAddress "pie" (CToken cDAI Address)) repayAmount         -- pot is a wad (1e18), check for ~ 1 DAI + interest
+    Assert (MCD VatAt VatAddress "dai" (CToken cDAI Address)) LessThan 2e27              -- vat is a rad (1e45), check for ~ dust

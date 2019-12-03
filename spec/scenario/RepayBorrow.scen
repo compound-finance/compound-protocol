@@ -68,7 +68,7 @@ Test "Borrow, hold a few blocks, and repay too much"
     Expect Changes (Erc20 BAT TokenBalance Geoff) Zero
     Expect Changes (Erc20 BAT TokenBalance cBAT) Zero
     RepayBorrow Geoff 10e18 cBAT
-    Assert Failure MATH_ERROR REPAY_BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED "3"
+    Assert Revert "revert REPAY_BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED"
     -- Let's check the overall numbers
     Assert Equal (CToken cBAT BorrowBalance Geoff) 2.5e18
     Assert Equal (CToken cBAT TotalBorrowsCurrent) 2.5e18

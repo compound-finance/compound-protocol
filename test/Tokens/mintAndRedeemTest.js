@@ -120,20 +120,17 @@ contract('CToken', function ([root, minter, redeemer, ...accounts]) {
 
     it("fails if exchange calculation fails", async () => {
       assert.success(await send(cToken, 'harnessSetExchangeRate', [0]));
-      assert.hasTokenFailure(
-        await mintFresh(cToken, minter, mintAmount),
-        'MATH_ERROR',
-        'MINT_EXCHANGE_CALCULATION_FAILED'
+      await assert.revert(
+        mintFresh(cToken, minter, mintAmount),
+        'revert MINT_EXCHANGE_CALCULATION_FAILED'
       );
     });
 
     it("fails if transferring in fails", async () => {
       await send(cToken.underlying, 'harnessSetFailTransferFromAddress', [minter, true]);
-      const result = await mintFresh(cToken, minter, mintAmount);
-      assert.hasTokenFailure(
-        result,
-        'TOKEN_TRANSFER_IN_FAILED',
-        'MINT_TRANSFER_IN_FAILED'
+      await assert.revert(
+        mintFresh(cToken, minter, mintAmount),
+        'revert TOKEN_TRANSFER_IN_FAILED'
       );
     });
 
@@ -168,11 +165,7 @@ contract('CToken', function ([root, minter, redeemer, ...accounts]) {
 
     it("emits a mint failure if interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
-      assert.hasTokenFailure(
-        await quickMint(cToken, minter, mintAmount),
-        'INTEREST_RATE_MODEL_ERROR',
-        'MINT_ACCRUE_INTEREST_FAILED'
-      );
+      await assert.revert(quickMint(cToken, minter, mintAmount), "revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it("returns error from mintFresh without emitting any extra logs", async () => {
@@ -252,7 +245,7 @@ contract('CToken', function ([root, minter, redeemer, ...accounts]) {
 
       it("fails if transferring out fails", async () => {
         await send(cToken.underlying, 'harnessSetFailTransferToAddress', [redeemer, true]);
-        await assert.revert(redeemFresh(cToken, redeemer, redeemTokens, redeemAmount), "revert redeem transfer out failed");
+        await assert.revert(redeemFresh(cToken, redeemer, redeemTokens, redeemAmount), "revert TOKEN_TRANSFER_OUT_FAILED");
       });
 
       it("fails if total supply < redemption amount", async () => {
@@ -305,11 +298,7 @@ contract('CToken', function ([root, minter, redeemer, ...accounts]) {
 
     it("emits a redeem failure if interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
-      assert.hasTokenFailure(
-        await quickRedeem(cToken, redeemer, redeemTokens),
-        'INTEREST_RATE_MODEL_ERROR',
-        'REDEEM_ACCRUE_INTEREST_FAILED'
-      );
+      await assert.revert(quickRedeem(cToken, redeemer, redeemTokens), "revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it("returns error from redeemFresh without emitting any extra logs", async () => {

@@ -230,17 +230,24 @@ export async function invoke<T>(world: World, fn: Sendable<T>, from: string, err
     ...trxInvokationOpts
   };
 
-  try{
-    const gas = await fn.estimateGas({...invokationOpts});
+  try {
+    try {
+      const gas = await fn.estimateGas({ ...invokationOpts });
     invokationOpts = {
       ...invokationOpts,
       gas: gas * 2
     };
+    } catch (e) {
+      invokationOpts = {
+        ...invokationOpts,
+        gas: 2000000
+      };
+    }
 
     let error: null | Error = null;
 
     try {
-      value = await fn.call({...invokationOpts});
+      value = await fn.call({ ...invokationOpts });
     } catch (err) {
       error = new InvokationError(err);
     }
@@ -249,12 +256,21 @@ export async function invoke<T>(world: World, fn: Sendable<T>, from: string, err
       world.printer.printLine(`Dry run: invoking \`${fn._method.name}\``);
       result = {
         blockNumber: -1,
-        transactionHash: "0x",
+        transactionHash: '0x',
         gasUsed: 0,
         events: {}
       };
     } else {
-      result = await fn.send({...invokationOpts});
+      result = await fn.send({ ...invokationOpts });
+    }
+
+    if (world.settings.printTxLogs) {
+      const eventLogs = Object.values(result.events).map((event: any) => {
+        const eventLog = event.raw;
+
+        return world.eventDecoder[eventLog.topics[0]](eventLog);
+      });
+      console.log('EMITTED EVENTS:   ', eventLogs);
     }
 
     return new Invokation<T>(value, result, null, fn, errorReporter);
