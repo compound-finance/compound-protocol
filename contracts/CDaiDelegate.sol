@@ -157,18 +157,13 @@ contract CDaiDelegate is CErc20Delegate {
     function doTransferOut(address payable to, uint amount) internal {
         DaiJoinLike daiJoin = DaiJoinLike(daiJoinAddress);
         PotLike pot = PotLike(potAddress);
-        VatLike vat = VatLike(vatAddress);
 
         // Calculate the percentage decrease from the pot, and move that much out
         // Note: Use a slightly larger pie size to ensure that we get at least amount in the vat
-        uint pie = mul(add(amount, 1), RAY) / pot.chi();
+        uint pie = add(mul(amount, RAY) / pot.chi(), 1);
         pot.exit(pie);
 
-        // Checks the actual balance of DAI in the vat after the pot exit
-        uint bal = vat.dai(address(this));
-
-        // Remove our whole balance if rounding would lead us to remove more than we have
-        daiJoin.exit(to, bal >= mul(amount, RAY) ? amount : bal / RAY);
+        daiJoin.exit(to, amount);
     }
 
     /*** Maker Internals ***/

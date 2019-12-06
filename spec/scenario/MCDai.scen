@@ -101,7 +101,6 @@ Test "Basic mint and redeem cDAI2 (upgrade to swept DSR)"
     UpgradeToDSR
     CheckBasicMintRedeemWithDSR
 
-
 Test "Basic borrow and repay cDAI2 (upgrade to swept DSR)"
     DeployCDAI
     CheckBasicMintRedeem

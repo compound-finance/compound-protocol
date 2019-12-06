@@ -11,19 +11,29 @@ import "./SafeMath.sol";
 contract DAIInterestRateModel is JumpRateModel {
     using SafeMath for uint;
 
+    /**
+     * @notice The additional margin per block separating the base borrow rate from the roof (0.05% / block)
+     */
+    uint public constant gapPerBlock = 0.05e16 / blocksPerYear;
+
+    /**
+     * @notice The assumed (1 - reserve factor) used to calculate the minimum borrow rate (reserve factor = 0.05)
+     */
+    uint public constant assumedOneMinusReserveFactorMantissa = 0.95e18;
+
     PotLike pot;
     JugLike jug;
 
     /**
      * @notice Construct an interest rate model
-     * @param _pot The approximate target base APR, as a mantissa (scaled by 1e18)
-     * @param _jug The rate of increase in interest rate wrt utilization (scaled by 1e18)
-     * @param _kink The utilization point at which an additional multiplier is applied
-     * @param _jump The additional multiplier to be applied to multiplierPerBlock after hitting a specified utilization point
+     * @param jumpMultiplierPerYear The multiplierPerBlock after hitting a specified utilization point
+     * @param kink_ The utilization point at which the jump multiplier is applied
+     * @param pot_ The address of the Dai pot (where DSR is earned)
+     * @param jug_ The address of the Dai jug (where SF is kept)
      */
-    constructor(address _pot, address _jug, uint _kink, uint _jump) JumpRateModel(0, 0, _kink, _jump) public {
-        pot = PotLike(_pot);
-        jug = JugLike(_jug);
+    constructor(uint jumpMultiplierPerYear, uint kink_, address pot_, address jug_) JumpRateModel(0, 0, jumpMultiplierPerYear, kink_) public {
+        pot = PotLike(pot_);
+        jug = JugLike(jug_);
         poke();
     }
 
@@ -58,18 +68,24 @@ contract DAIInterestRateModel is JumpRateModel {
             .mul(15); // 15 seconds per block
     }
 
-
     /**
      * @notice Resets the baseRate and multiplier per block based on the stability fee and Dai savings rate
      */
     function poke() public {
         (uint duty, ) = jug.ilks("ETH-A");
-        uint stabilityFee = duty.add(jug.base()).sub(1e27).mul(1e18).div(1e27).mul(15);
+        uint stabilityFeePerBlock = duty.add(jug.base()).sub(1e27).mul(1e18).div(1e27).mul(15);
 
-        baseRatePerBlock = dsrPerBlock().mul(1e18).div(0.9e18); // ensure borrow rate is higher than savings rate
-        multiplierPerBlock = stabilityFee.sub(baseRatePerBlock).mul(1e18).div(kink);
+        // We ensure the minimum borrow rate >= DSR / (1 - reserve factor)
+        baseRatePerBlock = dsrPerBlock().mul(1e18).div(assumedOneMinusReserveFactorMantissa);
 
-        emit NewInterestParams(baseRatePerBlock, multiplierPerBlock, kink, jump);
+        // The roof borrow rate is max(base rate, stability fee) + gap, from which we derive the slope
+        if (baseRatePerBlock < stabilityFeePerBlock) {
+            multiplierPerBlock = stabilityFeePerBlock.sub(baseRatePerBlock).add(gapPerBlock).mul(1e18).div(kink);
+        } else {
+            multiplierPerBlock = gapPerBlock.mul(1e18).div(kink);
+        }
+
+        emit NewInterestParams(baseRatePerBlock, multiplierPerBlock, jumpMultiplierPerBlock, kink);
     }
 }
 

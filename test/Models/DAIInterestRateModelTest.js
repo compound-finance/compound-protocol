@@ -5,33 +5,41 @@ const BigNum = require('bignumber.js')
 const { call, etherUnsigned, getContract, getContractDefaults, getTestContract } = require('../Utils/MochaTruffle');
 const { getBorrowRate, getSupplyRate } = require('../Utils/Compound');
 
+const blocksPerYear = 2102400;
 const secondsPerYear = 60 * 60 * 24 * 365;
 
 function utilizationRate(cash, borrows, reserves) {
   return borrows ? borrows / (cash + borrows - reserves) : 0;
 }
 
-function baseRoofRateFn(dsr, duty, mkrBase, kink, jump, cash, borrows, reserves) {
-  const stabilityFee = (duty + mkrBase - 1) * 15;
+function baseRoofRateFn(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves) {
+  const assumedOneMinusReserveFactor = 0.95;
+  const stabilityFeePerBlock = (duty + mkrBase - 1) * 15;
   const dsrPerBlock = (dsr - 1) * 15;
-  const base = dsrPerBlock / 0.9;
-  const slope = (stabilityFee - base) / kink;
+  const gapPerBlock = 0.0005 / blocksPerYear;
+  const jumpPerBlock = jump / blocksPerYear;
+
+  let baseRatePerBlock = dsrPerBlock / assumedOneMinusReserveFactor, multiplierPerBlock;
+  if (baseRatePerBlock < stabilityFeePerBlock) {
+    multiplierPerBlock = (stabilityFeePerBlock - baseRatePerBlock + gapPerBlock) / kink;
+  } else {
+    multiplierPerBlock = gapPerBlock / kink;
+  }
 
   const ur = utilizationRate(cash, borrows, reserves);
 
   if (ur <= kink) {
-    return ur * slope + base;
+    return ur * multiplierPerBlock + baseRatePerBlock;
   } else {
     const excessUtil = ur - kink;
-    const jumpMultiplier = jump * slope;
-    return (excessUtil * jumpMultiplier) + (kink * slope) + base;
+    return (excessUtil * jumpPerBlock) + (kink * multiplierPerBlock) + baseRatePerBlock;
   }
 }
 
-function daiSupplyRate(dsr, duty, mkrBase, kink, jump, cash, borrows, reserves, reserveFactor = 0.1) {
+function daiSupplyRate(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves, reserveFactor = 0.1) {
   const dsrPerBlock = (dsr - 1) * 15;
   const ur = utilizationRate(cash, borrows, reserves);
-  const borrowRate = baseRoofRateFn(dsr, duty, mkrBase, kink, jump, cash, borrows, reserves);
+  const borrowRate = baseRoofRateFn(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves);
   const underlying = cash + borrows - reserves;
   const lendingSupplyRate = borrowRate * (1 - reserveFactor) * ur;
 
@@ -66,10 +74,10 @@ contract('DAIInterestRateModel', async function (_accounts) {
 
       let model = await contract.deploy({
         arguments: [
-          "0xea190dbdc7adf265260ec4da6e9675fd4f5a78bb",
-          "0xcbb7718c9f39d05aeede1c472ca8bf804b2f1ead",
+          etherUnsigned(0.8e18),
           etherUnsigned(0.9e18),
-          etherUnsigned(5)
+          "0xea190dbdc7adf265260ec4da6e9675fd4f5a78bb",
+          "0xcbb7718c9f39d05aeede1c472ca8bf804b2f1ead"
         ]
       })
         .send({ from: root });
@@ -129,8 +137,8 @@ contract('DAIInterestRateModel', async function (_accounts) {
       [0e27, 0.1e27, 0.005e27, 3e18, 500],
 
     ].map(vs => vs.map(Number))
-      .forEach(([dsr, duty, base, cash, borrows, reserves = 0, kink = 0.9e18, jump = 5]) => {
-        it(`calculates correct borrow value for dsr=${(dsr / 1e25)}%, duty=${(duty / 1e25)}%, base=${(base / 1e25)}%, cash=${cash}, borrows=${borrows}, reserves=${reserves}`, async () => {
+      .forEach(([dsr, duty, base, cash, borrows, reserves = 0, jump = 0.8e18, kink = 0.9e18]) => {
+        it(`calculates correct borrow value for dsr=${(dsr / 1e25)}%, duty=${(duty / 1e25)}%, base=${(base / 1e25)}%, jump=${jump / 1e18}, cash=${cash}, borrows=${borrows}, reserves=${reserves}`, async () => {
           const [root] = _accounts;
 
           const onePlusPerSecondDsr = 1e27 + (dsr / secondsPerYear);
@@ -156,14 +164,14 @@ contract('DAIInterestRateModel', async function (_accounts) {
 
           const daiIRM = await DAIInterestRateModel.deploy({
             arguments: [
-              pot.options.address,
-              jug.options.address,
+              etherUnsigned(jump),
               etherUnsigned(kink),
-              etherUnsigned(jump)
+              pot.options.address,
+              jug.options.address
             ]
           }).send({ from: root });
 
-          const expected = baseRoofRateFn(onePlusPerSecondDsr / 1e27, onePlusPerSecondDuty / 1e27, perSecondBase / 1e27, kink / 1e18, jump, cash, borrows, reserves);
+          const expected = baseRoofRateFn(onePlusPerSecondDsr / 1e27, onePlusPerSecondDuty / 1e27, perSecondBase / 1e27, jump / 1e18, kink / 1e18, cash, borrows, reserves);
           assert.like(
             await getBorrowRate(daiIRM, cash, borrows, reserves),
             (x) => assert.approximately(Number(x) / 1e18, expected, 1e-8)
@@ -221,7 +229,7 @@ contract('DAIInterestRateModel', async function (_accounts) {
       [0e27, 0.1e27, 0.005e27, 3e18, 500],
 
     ].map(vs => vs.map(Number))
-      .forEach(([dsr, duty, base, cash, borrows, reserves = 0, kink = 0.9e18, jump = 5, reserveFactor = 0.1e18]) => {
+      .forEach(([dsr, duty, base, cash, borrows, reserves = 0, jump = 0.8e18, kink = 0.9e18, reserveFactor = 0.1e18]) => {
         it(`calculates correct supply value for dsr=${(dsr / 1e25)}%, duty=${(duty / 1e25)}%, base=${(base / 1e25)}%, cash=${cash}, borrows=${borrows}, reserves=${reserves}`, async () => {
           const [root] = _accounts;
 
@@ -248,14 +256,14 @@ contract('DAIInterestRateModel', async function (_accounts) {
 
           const daiIRM = await DAIInterestRateModel.deploy({
             arguments: [
-              pot.options.address,
-              jug.options.address,
+              etherUnsigned(jump),
               etherUnsigned(kink),
-              etherUnsigned(jump)
+              pot.options.address,
+              jug.options.address
             ]
           }).send({ from: root });
 
-          const expected = daiSupplyRate(onePlusPerSecondDsr / 1e27, onePlusPerSecondDuty / 1e27, perSecondBase / 1e27, kink / 1e18, jump, cash, borrows, reserves, reserveFactor / 1e18);
+          const expected = daiSupplyRate(onePlusPerSecondDsr / 1e27, onePlusPerSecondDuty / 1e27, perSecondBase / 1e27, jump / 1e18, kink / 1e18, cash, borrows, reserves, reserveFactor / 1e18);
           assert.like(
             await getSupplyRate(daiIRM, cash, borrows, reserves, reserveFactor),
             (x) => assert.approximately(Number(x) / 1e18, expected, 1e-8)
