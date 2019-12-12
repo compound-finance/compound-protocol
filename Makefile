@@ -24,6 +24,19 @@ spec/certora/Math/%.cvl:
 	--verify \
 	 MathCertora:$@
 
+spec/certora/Comp/%.cvl:
+	$(CERTORA_RUN) \
+	spec/certora/contracts/CompCertora.sol \
+	--settings -b=4,-graphDrawLimit=0 \
+	--verify \
+	 CompCertora:$@
+
+spec/certora/Governor/%.cvl:
+	$(CERTORA_RUN) \
+	 spec/certora/contracts/GovernorAlphaCertora.sol \
+	--verify \
+	 GovernorAlphaCertora:$@
+
 spec/certora/Comptroller/%.cvl:
 	$(CERTORA_RUN) \
 	 spec/certora/contracts/ComptrollerCertora.sol \
@@ -41,7 +54,7 @@ spec/certora/cDAI/%.cvl:
 	 spec/certora/contracts/mcd/pot.sol:Pot \
 	 spec/certora/contracts/mcd/vat.sol:Vat \
 	 spec/certora/contracts/mcd/join.sol:DaiJoin \
-	 contracts/test/BoolComptroller.sol \
+	 tests/Contracts/BoolComptroller.sol \
 	--link \
 	 CDaiDelegateCertora:comptroller=BoolComptroller \
 	 CDaiDelegateCertora:underlying=Dai \

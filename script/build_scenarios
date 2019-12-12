@@ -5,9 +5,9 @@ set -eo pipefail
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 root_dir="$(cd $dir/.. && pwd)"
 tests_dir="$(cd $root_dir/tests && pwd)"
-scenario_dir="$tests_dir/scenarios"
+scenario_dir="$tests_dir/Scenarios"
 cache_file="$root_dir/.scencache"
-checksum="$(echo $root_dir/spec/scenario/*.scen | xargs shasum -p | shasum -p | cut -d' ' -f 1)"
+checksum="$(echo $root_dir/spec/scenario{,/**}/*.scen | xargs shasum -p | shasum -p | cut -d' ' -f 1)"
 
 if [ -z "$rebuild" -a -f "$cache_file" ]; then
   cached="$(cat $cache_file)"
@@ -22,17 +22,21 @@ echo "Build scenario stubs..."
 rm -rf "$scenario_dir" && mkdir "$scenario_dir"
 
 scenario_test="$(cat <<-EOF
-const scenario = require('../Scenario');
+const scenario = require('REL_PATHScenario');
 
 scenario.run('SCEN_FILE');
 EOF
 )"
 
-for scenario in $root_dir/spec/scenario/*.scen; do
-  base="$(basename -- $scenario)"
+cd $root_dir/spec/scenario
+
+for scenario in .{,/**}/*.scen; do
+  base="${scenario#.\/}"
   filename="${base%.*}ScenTest.js"
   final="$scenario_dir/$filename"
-  echo "$scenario_test" | sed "s^SCEN_FILE^$base^g" > "$final"
+  mkdir -p "$(dirname "$final")"
+  rel_path="$(echo "$scenario" | sed 's$[^/]$$g' | sed 's$/$../$g')"
+  echo "$scenario_test" | sed "s^SCEN_FILE^$base^g" | sed "s^REL_PATH^$rel_path^g" > "$final"
 done
 
 echo "$checksum" > "$cache_file"

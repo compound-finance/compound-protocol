@@ -13,6 +13,7 @@
       "error",
       200
     ],
+    "security/no-block-members": "off",
     "security/no-inline-assembly": "off",
     "security/no-low-level-calls": "off"
   }

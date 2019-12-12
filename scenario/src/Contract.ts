@@ -1,10 +1,9 @@
 import * as path from 'path';
 import * as crypto from 'crypto';
-import {World} from './World';
-import {Invokation} from './Invokation';
-import {ErrorReporter, NoErrorReporter} from './ErrorReporter';
-import {getNetworkPath, readFile} from './File';
-import { ABIItem } from 'web3-utils';
+import { World } from './World';
+import { Invokation } from './Invokation';
+import { readFile } from './File';
+import { AbiItem } from 'web3-utils';
 
 export interface Raw {
   data: string
@@ -24,10 +23,11 @@ export interface Event {
 }
 
 export interface Contract {
+  address: string
   _address: string
   name: string
   methods: any
-  _jsonInterface: ABIItem[]
+  _jsonInterface: AbiItem[]
   constructorAbi?: string
   getPastEvents: (event: string, options: { filter: object, fromBlock: number, toBlock: number | string }) => Event[]
 }
@@ -62,8 +62,6 @@ class ContractStub {
       inputs = [];
     }
 
-    const abi = world.web3.eth.abi.encodeParameters(inputs, args);
-
     try {
       let contract;
       let receipt;
@@ -78,8 +76,8 @@ class ContractStub {
           events: {}
         };
       } else {
-        ({contract, receipt} = await world.saddle.deployFull(this.name, args, invokationOpts, world.web3));
-        contract.constructorAbi = abi;
+        ({ contract, receipt } = await world.saddle.deployFull(this.name, args, invokationOpts, world.web3));
+        contract.constructorAbi = world.web3.eth.abi.encodeParameters(inputs, args);;
       }
 
       return new Invokation<T>(contract, receipt, null, null);
@@ -110,7 +108,7 @@ export function setContractName(name: string, contract: Contract): Contract {
   return contract;
 }
 
-export async function getPastEvents(world: World, contract: Contract, name: string, event: string, filter: object={}): Promise<Event[]> {
+export async function getPastEvents(world: World, contract: Contract, name: string, event: string, filter: object = {}): Promise<Event[]> {
   const block = world.getIn(['contractData', 'Blocks', name]);
   if (!block) {
     throw new Error(`Cannot get events when missing deploy block for ${name}`);
@@ -129,7 +127,7 @@ export async function decodeCall(world: World, contract: Contract, input: string
 
   let funsMapped = contract._jsonInterface.reduce((acc, fun) => {
     if (fun.type === 'function') {
-      let functionAbi = `${fun.name}(${fun.inputs.map((i) => i.type).join(',')})`;
+      let functionAbi = `${fun.name}(${(fun.inputs || []).map((i) => i.type).join(',')})`;
       let sig = world.web3.utils.sha3(functionAbi).slice(2, 10);
 
       return {
@@ -158,18 +156,18 @@ export async function decodeCall(world: World, contract: Contract, input: string
 }
 
 // XXXS Handle
-async function getNetworkContract(world: World, name: string): Promise<{abi: any[], bin: string}> {
+async function getNetworkContract(world: World, name: string): Promise<{ abi: any[], bin: string }> {
   let basePath = world.basePath || ""
   let network = world.network || ""
 
   let pizath = (name, ext) => path.join(basePath, '.build', `contracts.json`);
   let abi, bin;
-  if ( network == 'coverage' ) {
+  if (network == 'coverage') {
     let json = await readFile(world, pizath(name, 'json'), null, JSON.parse);
     abi = json.abi;
     bin = json.bytecode.substr(2);
   } else {
-    let {networkContracts} = await getNetworkContracts(world);
+    let { networkContracts } = await getNetworkContracts(world);
     let networkContract = networkContracts[name];
     abi = JSON.parse(networkContract.abi);
     bin = networkContract.bin;
@@ -183,7 +181,7 @@ async function getNetworkContract(world: World, name: string): Promise<{abi: any
   }
 }
 
-export async function getNetworkContracts(world: World): Promise<{networkContracts: object, version: string}> {
+export async function getNetworkContracts(world: World): Promise<{ networkContracts: object, version: string }> {
   let basePath = world.basePath || ""
   let network = world.network || ""
 

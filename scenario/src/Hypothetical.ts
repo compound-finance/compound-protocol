@@ -1,4 +1,4 @@
-import { Accounts, loadAccounts } from './Accounts';
+import {Accounts, loadAccounts} from './Accounts';
 import {
   addAction,
   checkExpectations,
@@ -9,7 +9,7 @@ import {
   setEvent,
   World
 } from './World';
-import Ganache from 'ganache-core';
+import {Ganache} from 'eth-saddle/dist/config';
 import Web3 from 'web3';
 
 export async function forkWeb3(web3: Web3, url: string, accounts: string[]): Promise<Web3> {

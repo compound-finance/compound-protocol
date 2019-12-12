@@ -1,10 +1,10 @@
-import {Event} from '../Event';
-import {fail, World} from '../World';
-import {mustArray} from '../Utils';
-import {getCoreValue} from '../CoreValue';
-import {formatError} from '../Formatter';
-import {Failure, Invokation, InvokationRevertFailure} from '../Invokation';
-import {formatEvent} from '../Formatter';
+import { Event } from '../Event';
+import { fail, World } from '../World';
+import { mustArray } from '../Utils';
+import { getCoreValue } from '../CoreValue';
+import { formatError } from '../Formatter';
+import { Failure, Invokation, InvokationRevertFailure } from '../Invokation';
+import { formatEvent } from '../Formatter';
 import {
   getAddressV,
   getBoolV,
@@ -23,7 +23,7 @@ import {
   StringV,
   Value
 } from '../Value';
-import {Arg, View, processCommandEvent} from '../Command';
+import { Arg, View, processCommandEvent } from '../Command';
 
 async function assertApprox(world: World, given: NumberV, expected: NumberV, tolerance: NumberV): Promise<World> {
   if (Math.abs(Number(expected.sub(given).div(expected).val)) > Number(tolerance.val)) {
@@ -175,6 +175,18 @@ async function assertReadError(world: World, event: Event, message: string, isRe
   return world;
 }
 
+function getLogValue(value: any): Value {
+  if (typeof value === 'number' || (typeof value === 'string' && value.match(/^[0-9]+$/))) {
+    return new NumberV(Number(value));
+  } else if (typeof value === 'string') {
+    return new StringV(value);
+  } else if (typeof value === 'boolean') {
+    return new BoolV(value);
+  } else {
+    throw new Error('Unknown type of log parameter: ${value}');
+  }
+}
+
 async function assertLog(world: World, event: string, keyValues: MapV): Promise<World> {
   if (!world.lastInvokation) {
     return fail(world, `Expected log message "${event}" from contract execution, but world missing any invokations.`);
@@ -185,21 +197,51 @@ async function assertLog(world: World, event: string, keyValues: MapV): Promise<
 
     if (!log) {
       const events = Object.keys(world.lastInvokation.receipt.events || {}).join(', ');
-
       return fail(world, `Expected log with event \`${event}\`, found logs with events: [${events}]`);
     }
 
-    Object.entries(keyValues.val).forEach(([key, value]) => {
-      if (log.returnValues[key] === undefined) {
-        fail(world, `Expected log to have param for \`${key}\``);
-      } else {
-        let logValue = new StringV(log.returnValues[key]);
+    if (Array.isArray(log)) {
+      const found = log.find(_log => {
+        return Object.entries(keyValues.val).reduce((previousValue, currentValue) => {
+          const [key, value] = currentValue;
+          if (previousValue) {
+            if (_log.returnValues[key] === undefined) {
+              return false;
+            } else {
+              let logValue = getLogValue(_log.returnValues[key]);
 
-        if (!value.compareTo(world, logValue)) {
-          fail(world, `Expected log to have param \`${key}\` to match ${value.toString()}, but got ${logValue.toString()}`);
-        }
+              if (!logValue.compareTo(world, value)) {
+                return false;
+              }
+
+              return true;
+            }
+          }
+          return previousValue;
+        }, true as boolean);
+      });
+
+      if (!found) {
+        const eventExpected = Object.entries(keyValues.val).join(', ');
+        const eventDetailsFound = log.map(_log => {
+          return Object.entries(_log.returnValues);
+        });
+        return fail(world, `Expected log with event \`${eventExpected}\`, found logs for this event with: [${eventDetailsFound}]`);
       }
-    });
+
+    } else {
+      Object.entries(keyValues.val).forEach(([key, value]) => {
+        if (log.returnValues[key] === undefined) {
+          fail(world, `Expected log to have param for \`${key}\``);
+        } else {
+          let logValue = getLogValue(log.returnValues[key]);
+
+          if (!logValue.compareTo(world, value)) {
+            fail(world, `Expected log to have param \`${key}\` to match ${value.toString()}, but got ${logValue.toString()}`);
+          }
+        }
+      });
+    }
 
     return world;
   }
@@ -207,7 +249,7 @@ async function assertLog(world: World, event: string, keyValues: MapV): Promise<
 
 export function assertionCommands() {
   return [
-    new View<{given: NumberV, expected: NumberV, tolerance: NumberV}>(`
+    new View<{ given: NumberV, expected: NumberV, tolerance: NumberV }>(`
         #### Approx
 
         * "Approx given:<Value> expected:<Value> tolerance:<Value>" - Asserts that given approximately matches expected.
@@ -219,12 +261,12 @@ export function assertionCommands() {
       [
         new Arg("given", getNumberV),
         new Arg("expected", getNumberV),
-        new Arg("tolerance", getNumberV, {default: new NumberV(0.001)})
+        new Arg("tolerance", getNumberV, { default: new NumberV(0.001) })
       ],
-      (world, {given, expected, tolerance}) => assertApprox(world, given, expected, tolerance)
+      (world, { given, expected, tolerance }) => assertApprox(world, given, expected, tolerance)
     ),
 
-    new View<{given: Value, expected: Value}>(`
+    new View<{ given: Value, expected: Value }>(`
         #### Equal
 
         * "Equal given:<Value> expected:<Value>" - Asserts that given matches expected.
@@ -237,10 +279,10 @@ export function assertionCommands() {
         new Arg("given", getCoreValue),
         new Arg("expected", getCoreValue)
       ],
-      (world, {given, expected}) => assertEqual(world, given, expected)
+      (world, { given, expected }) => assertEqual(world, given, expected)
     ),
 
-    new View<{given: Value, expected: Value}>(`
+    new View<{ given: Value, expected: Value }>(`
         #### LessThan
 
         * "given:<Value> LessThan expected:<Value>" - Asserts that given matches expected.
@@ -251,11 +293,11 @@ export function assertionCommands() {
         new Arg("given", getCoreValue),
         new Arg("expected", getCoreValue)
       ],
-      (world, {given, expected}) => assertLessThan(world, given, expected),
-      {namePos: 1}
+      (world, { given, expected }) => assertLessThan(world, given, expected),
+      { namePos: 1 }
     ),
 
-    new View<{given: Value}>(`
+    new View<{ given: Value }>(`
         #### True
 
         * "True given:<Value>" - Asserts that given is true.
@@ -265,10 +307,10 @@ export function assertionCommands() {
       [
         new Arg("given", getCoreValue)
       ],
-      (world, {given}) => assertEqual(world, given, new BoolV(true))
+      (world, { given }) => assertEqual(world, given, new BoolV(true))
     ),
 
-    new View<{given: Value}>(`
+    new View<{ given: Value }>(`
         #### False
 
         * "False given:<Value>" - Asserts that given is false.
@@ -278,9 +320,9 @@ export function assertionCommands() {
       [
         new Arg("given", getCoreValue)
       ],
-      (world, {given}) => assertEqual(world, given, new BoolV(false))
+      (world, { given }) => assertEqual(world, given, new BoolV(false))
     ),
-    new View<{event: EventV, message: StringV}>(`
+    new View<{ event: EventV, message: StringV }>(`
         #### ReadRevert
 
         * "ReadRevert event:<Event> message:<String>" - Asserts that reading the given value reverts with given message.
@@ -291,10 +333,10 @@ export function assertionCommands() {
         new Arg("event", getEventV),
         new Arg("message", getStringV)
       ],
-      (world, {event, message}) => assertReadError(world, event.val, message.val, true)
+      (world, { event, message }) => assertReadError(world, event.val, message.val, true)
     ),
 
-    new View<{event: EventV, message: StringV}>(`
+    new View<{ event: EventV, message: StringV }>(`
         #### ReadError
 
         * "ReadError event:<Event> message:<String>" - Asserts that reading the given value throws given error
@@ -305,10 +347,10 @@ export function assertionCommands() {
         new Arg("event", getEventV),
         new Arg("message", getStringV)
       ],
-      (world, {event, message}) => assertReadError(world, event.val, message.val, false)
+      (world, { event, message }) => assertReadError(world, event.val, message.val, false)
     ),
 
-    new View<{error: StringV, info: StringV, detail: StringV}>(`
+    new View<{ error: StringV, info: StringV, detail: StringV }>(`
         #### Failure
 
         * "Failure error:<String> info:<String> detail:<Number?>" - Asserts that last transaction had a graceful failure with given error, info and detail.
@@ -319,12 +361,12 @@ export function assertionCommands() {
       [
         new Arg("error", getStringV),
         new Arg("info", getStringV),
-        new Arg("detail", getStringV, {default: new StringV("0")}),
+        new Arg("detail", getStringV, { default: new StringV("0") }),
       ],
-      (world, {error, info, detail}) => assertFailure(world, new Failure(error.val, info.val, detail.val))
+      (world, { error, info, detail }) => assertFailure(world, new Failure(error.val, info.val, detail.val))
     ),
 
-    new View<{error: StringV, message: StringV}>(`
+    new View<{ error: StringV, message: StringV }>(`
         #### RevertFailure
 
         * "RevertFailure error:<String> message:<String>" - Assert last transaction reverted with a message beginning with an error code
@@ -335,22 +377,22 @@ export function assertionCommands() {
         new Arg("error", getStringV),
         new Arg("message", getStringV),
       ],
-      (world, {error, message}) => assertRevertFailure(world, error.val, message.val)
+      (world, { error, message }) => assertRevertFailure(world, error.val, message.val)
     ),
 
-    new View<{message: StringV}>(`
+    new View<{ message: StringV }>(`
         #### Revert
 
         * "Revert message:<String>" - Asserts that the last transaction reverted.
       `,
       "Revert",
       [
-        new Arg("message", getStringV, {default: new StringV("revert")}),
+        new Arg("message", getStringV, { default: new StringV("revert") }),
       ],
-      (world, {message}) => assertRevert(world, message.val)
+      (world, { message }) => assertRevert(world, message.val)
     ),
 
-    new View<{message: StringV}>(`
+    new View<{ message: StringV }>(`
         #### Error
 
         * "Error message:<String>" - Asserts that the last transaction had the given error.
@@ -359,20 +401,20 @@ export function assertionCommands() {
       [
         new Arg("message", getStringV),
       ],
-      (world, {message}) => assertError(world, message.val)
+      (world, { message }) => assertError(world, message.val)
     ),
 
-    new View<{given: Value}>(`
+    new View<{ given: Value }>(`
         #### Success
 
         * "Success" - Asserts that the last transaction completed successfully (that is, did not revert nor emit graceful failure).
       `,
       "Success",
       [],
-      (world, {given}) => assertSuccess(world)
+      (world, { given }) => assertSuccess(world)
     ),
 
-    new View<{name: StringV, params: MapV}>(`
+    new View<{ name: StringV, params: MapV }>(`
         #### Log
 
         * "Log name:<String> (key:<String> value:<Value>) ..." - Asserts that last transaction emitted log with given name and key-value pairs.
@@ -381,9 +423,9 @@ export function assertionCommands() {
       "Log",
       [
         new Arg("name", getStringV),
-        new Arg("params", getMapV, {variadic: true}),
+        new Arg("params", getMapV, { variadic: true }),
       ],
-      (world, {name, params}) => assertLog(world, name.val, params)
+      (world, { name, params }) => assertLog(world, name.val, params)
     )
   ];
 }

@@ -40,6 +40,19 @@ async function setPendingAdmin(
   );
 }
 
+async function setAdmin(
+  world: World,
+  from: string,
+  timeLock: Timelock,
+  admin: string
+): Promise<World> {
+  return addAction(
+    world,
+    `Set Timelock admin to ${admin}`,
+    await invoke(world, timeLock.methods.harnessSetAdmin(admin), from)
+  );
+}
+
 async function setDelay(world: World, from: string, timeLock: Timelock, delay: NumberV): Promise<World> {
   return addAction(
     world,
@@ -231,6 +244,17 @@ export function timelockCommands() {
       'SetPendingAdmin',
       [new Arg('timelock', getTimelock, { implicit: true }), new Arg('admin', getAddressV)],
       (world, from, { timelock, admin }) => setPendingAdmin(world, from, timelock, admin.val)
+    ),
+    new Command<{ timelock: Timelock; admin: AddressV }>(
+      `
+        #### SetAdmin
+
+        * "SetAdmin <Address>" - Sets the admin for the Timelock through the harness
+        * E.g. "Timelock SetAdmin \"0x0000000000000000000000000000000000000000\""
+    `,
+      'SetAdmin',
+      [new Arg('timelock', getTimelock, { implicit: true }), new Arg('admin', getAddressV)],
+      (world, from, { timelock, admin }) => setAdmin(world, from, timelock, admin.val)
     ),
     new Command<{
       timelock: Timelock;

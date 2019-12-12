@@ -259,7 +259,13 @@ function hasErrorTuple(result, tuple, reporter, cmp=undefined) {
 function revert(actual, msg) {
   return {
     pass: !!actual['message'] && actual.message === `VM Exception while processing transaction: ${msg}`,
-    message: () => `expected revert, got: ${JSON.stringify(actual)}`
+    message: () => {
+      if (actual["message"]) {
+        return `expected VM Exception while processing transaction: ${msg}, got ${actual["message"]}`
+      } else {
+        return `expected revert, but transaction succeeded: ${JSON.stringify(actual)}`
+      }
+    }
   }
 }
 
@@ -332,6 +338,10 @@ expect.extend({
     return match.call(this, actual, expected, etherUnsigned(actual).eq(etherUnsigned(expected)), opts('toEqualNumber'));
   },
 
+  toPartEqual(actual, expected) {
+    return match.call(this, actual, expected, objectEqual(actual, expected, true), opts('toPartEqual'));
+  },
+
   toSucceed(actual) {
     return success.call(this, actual, 'success');
   },
@@ -348,7 +358,7 @@ expect.extend({
     return revert.call(this, trx, `${reason} (${reporter.Error[expectedErrorName].padStart(2, '0')})`);
   },
 
-  fail(msg) {
-    return fail.call(this, msg);
+  fail(received, msg) {
+    return fail.call(this, msg, received);
   }
 });

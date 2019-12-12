@@ -27,9 +27,9 @@ async function makeComptroller(opts = {}) {
     const closeFactor = etherMantissa(dfn(opts.closeFactor, .051));
     const maxAssets = etherUnsigned(dfn(opts.maxAssets, 10));
 
-    await send(comptroller.methods._setCloseFactor(closeFactor));
-    await send(comptroller.methods._setMaxAssets(maxAssets));
-    await send(comptroller.methods._setPriceOracle(priceOracle._address));
+    await send(comptroller, '_setCloseFactor', [closeFactor]);
+    await send(comptroller, '_setMaxAssets', [maxAssets]);
+    await send(comptroller, '_setPriceOracle', [priceOracle._address]);
 
     comptroller.options.address = comptroller._address;
 
@@ -44,13 +44,13 @@ async function makeComptroller(opts = {}) {
     const maxAssets = etherUnsigned(dfn(opts.maxAssets, 10));
     const liquidationIncentive = etherMantissa(1);
 
-    await send(unitroller.methods._setPendingImplementation(comptroller._address));
-    await send(comptroller.methods._become(unitroller._address));
+    await send(unitroller, '_setPendingImplementation', [comptroller._address]);
+    await send(comptroller, '_become', [unitroller._address]);
     comptroller.options.address = unitroller._address;
-    await send(comptroller.methods._setLiquidationIncentive(liquidationIncentive));
-    await send(comptroller.methods._setCloseFactor(closeFactor));
-    await send(comptroller.methods._setMaxAssets(maxAssets));
-    await send(comptroller.methods._setPriceOracle(priceOracle._address));
+    await send(comptroller, '_setLiquidationIncentive', [liquidationIncentive]);
+    await send(comptroller, '_setCloseFactor', [closeFactor]);
+    await send(comptroller, '_setMaxAssets', [maxAssets]);
+    await send(comptroller, '_setPriceOracle', [priceOracle._address]);
 
     return Object.assign(comptroller, { priceOracle });
   }
@@ -109,17 +109,17 @@ async function makeCToken(opts = {}) {
   }
 
   if (opts.supportMarket) {
-    await send(comptroller.methods._supportMarket(cToken._address));
+    await send(comptroller, '_supportMarket', [cToken._address]);
   }
 
   if (opts.underlyingPrice) {
     const price = etherMantissa(opts.underlyingPrice);
-    await send(comptroller.priceOracle.methods.setUnderlyingPrice(cToken._address, price));
+    await send(comptroller.priceOracle, 'setUnderlyingPrice', [cToken._address, price]);
   }
 
   if (opts.collateralFactor) {
     const factor = etherMantissa(opts.collateralFactor);
-    await send(comptroller.methods._setCollateralFactor(cToken._address, factor));
+    await send(comptroller, '_setCollateralFactor', [cToken._address, factor]);
   }
 
   return Object.assign(cToken, { name, symbol, underlying, comptroller, interestRateModel });

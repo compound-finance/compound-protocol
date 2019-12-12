@@ -9,13 +9,13 @@ command -v z3 >/dev/null 2>&1 || { echo "Error: z3 is not installed." >&2; exit 
 
 function verify_spec {
     [ -e "$1" ] || (echo "spec file not found: $1" && exit 1)
-    echo "Not verifying $1"
+    make -B "$1"
 }
 
 if [ "$CI" ]; then
-    all_specs=($(echo spec/certora/*/*.cvl | circleci tests split --split-by=timings))
+    all_specs=($(echo "" | circleci tests split --split-by=timings))
 elif [[ $# -eq 0 ]] ; then
-    all_specs=(spec/certora/*/*.cvl)
+    all_specs=(spec/certora/{Comp,Governor}/*.cvl)
 else
     all_specs=($@)
 fi

@@ -7,10 +7,12 @@ tsc_root="$dir/.."
 proj_root="$dir/../.."
 networks_root="$dir/../../networks"
 network=${NETWORK:-development}
-script="$SCRIPT"
+script=()
 verbose="$VERBOSE"
 dry_run="$DRY_RUN"
 no_tsc="$NO_TSC"
+
+[ -n "$SCRIPT" ] && script+=("$SCRIPT")
 
 usage() { echo "$0 usage:" && grep ".)\ #" $0; exit 0; }
 while getopts ":hdn:e:s:vt" arg; do
@@ -54,4 +56,4 @@ done
 [[ -z $no_tsc ]] && "$dir/tsc"
 [[ -z $no_compile ]] && "$proj_root/script/compile"
 
-proj_root="$proj_root" env_vars="$env_vars" dry_run="$dry_run" script="$script" network="$network" verbose="$verbose" node "$tsc_root/.tsbuilt/repl.js"
+proj_root="$proj_root" env_vars="$env_vars" dry_run="$dry_run" script="$(IFS=, ; echo "${script[*]}")" network="$network" verbose="$verbose" node "$tsc_root/.tsbuilt/repl.js"

@@ -1,7 +1,10 @@
 
 module.exports = {
   // solc: "solc",                                          // Solc command to run
-  solc_args: ['--allow-paths','contracts,tests/Contracts'], // Extra solc args
+  solc_args: [                                              // Extra solc args
+    '--allow-paths','contracts,tests/Contracts',
+    '--evm-version', 'istanbul'
+  ],
   solc_shell_args: {                                        // Args passed to `exec`, see:
     maxBuffer: 1024 * 500000,                               // https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options
     shell: '/bin/bash'
@@ -9,14 +12,22 @@ module.exports = {
   // build_dir: ".build",                                   // Directory to place built contracts
   // coverage_dir: "coverage",                              // Directory to place coverage files
   // coverage_ignore: [],                                   // List of files to ignore for coverage
-  contracts: "{contracts,tests/Contracts}/*.sol",           // Glob to match contract files
+  contracts: "{contracts,contracts/**,tests/Contracts}/*.sol",
+                                                            // Glob to match contract files
+  trace: false,                                             // Compile with debug artifacts
   // TODO: Separate contracts for test?
-  tests: ['**/tests/{,**/}*Test.js'],                             // Glob to match test files
+  tests: ['**/tests/{,**/}*Test.js'],                       // Glob to match test files
   networks: {                                               // Define configuration for each network
     development: {
-      providers: [                                          // How to load provider (processed in order)
-        {env: "PROVIDER"},                                  // Try to load Http provider from `PROVIDER` env variable (e.g. env PROVIDER=http://...)
-        {http: "http://127.0.0.1:8545"}                     // Fallback to localhost provider
+      providers: [
+      {env: "PROVIDER"},
+        {ganache: {
+          gasLimit: 20000000,
+          gasPrice: 20000,
+          defaultBalanceEther: 1000000000,
+          allowUnlimitedContractSize: true,
+          hardfork: 'istanbul'
+        }}
       ],
       web3: {                                               // Web3 options for immediate confirmation in development mode
         gas: [
@@ -39,12 +50,15 @@ module.exports = {
     },
     test: {
       providers: [
-        {ganache: {
-          gasLimit: 20000000,
-          gasPrice: 20000,
-          defaultBalanceEther: 1000000000,
-          allowUnlimitedContractSize: true
-        }}
+        {
+          ganache: {
+            gasLimit: 200000000,
+            gasPrice: 20000,
+            defaultBalanceEther: 1000000000,
+            allowUnlimitedContractSize: true,
+            hardfork: 'istanbul'
+          }
+        }
       ],
       web3: {
         gas: [
@@ -64,31 +78,55 @@ module.exports = {
         {env: "ACCOUNT"},
         {unlocked: 0}
       ]
-    }
-  },
-  rinkeby: {
-    providers: [
-      {env: "PROVIDER"},
-      {file: "~/.ethereum/rinkeby-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
-      {http: "https://rinkeby.infura.io"}
-    ],
-    web3: {
-      gas: [
-        {env: "GAS"},
-        {default: "4600000"}
-      ],
-      gas_price: [
-        {env: "GAS_PRICE"},
-        {default: "12000000000"}
-      ],
-      options: {
-        transactionConfirmationBlocks: 1,
-        transactionBlockTimeout: 5
-      }
     },
-    accounts: [
-      {env: "ACCOUNT"},
-      {file: "~/.ethereum/rinkeby"}                         // Load from given file with contents as the private key (e.g. 0x...)
-    ]
+    goerli: {
+      providers: [
+        {env: "PROVIDER"},
+        {file: "~/.ethereum/goerli-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
+      ],
+      web3: {
+        gas: [
+          {env: "GAS"},
+          {default: "6700000"}
+        ],
+        gas_price: [
+          {env: "GAS_PRICE"},
+          {default: "12000000000"}
+        ],
+        options: {
+          transactionConfirmationBlocks: 1,
+          transactionBlockTimeout: 5
+        }
+      },
+      accounts: [
+        {env: "ACCOUNT"},
+        {file: "~/.ethereum/goerli"}                         // Load from given file with contents as the private key (e.g. 0x...)
+      ]
+    },
+    rinkeby: {
+      providers: [
+        {env: "PROVIDER"},
+        {file: "~/.ethereum/rinkeby-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
+        {http: "https://rinkeby.infura.io"}
+      ],
+      web3: {
+        gas: [
+          {env: "GAS"},
+          {default: "4600000"}
+        ],
+        gas_price: [
+          {env: "GAS_PRICE"},
+          {default: "12000000000"}
+        ],
+        options: {
+          transactionConfirmationBlocks: 1,
+          transactionBlockTimeout: 5
+        }
+      },
+      accounts: [
+        {env: "ACCOUNT"},
+        {file: "~/.ethereum/rinkeby"}                         // Load from given file with contents as the private key (e.g. 0x...)
+      ]
+    },
   }
 }

@@ -7,9 +7,11 @@ import { Contract } from './Contract';
 import { mustString } from './Utils';
 
 import { CErc20Delegate } from './Contract/CErc20Delegate';
+import { Comp } from './Contract/Comp';
 import { Comptroller } from './Contract/Comptroller';
 import { ComptrollerImpl } from './Contract/ComptrollerImpl';
 import { CToken } from './Contract/CToken';
+import { Governor } from './Contract/Governor';
 import { Erc20 } from './Contract/Erc20';
 import { InterestRateModel } from './Contract/InterestRateModel';
 import { PriceOracle } from './Contract/PriceOracle';
@@ -103,12 +105,43 @@ export function getErc20Address(world: World, erc20Arg: string): string {
   return getContractDataString(world, [['Tokens', erc20Arg, 'address']]);
 }
 
+export function getGovernorAddress(world: World, governorArg: string): string {
+  return getContractDataString(world, [['Governor', governorArg, 'address']]);
+}
+
 export async function getPriceOracleProxy(world: World): Promise<PriceOracle> {
   return getWorldContract(world, [['Contracts', 'PriceOracleProxy']]);
 }
 
 export async function getPriceOracle(world: World): Promise<PriceOracle> {
   return getWorldContract(world, [['Contracts', 'PriceOracle']]);
+}
+
+export async function getComp(
+  world: World,
+  compArg: Event
+): Promise<Comp> {
+  return getWorldContract(world, [['Comp', 'address']]);
+}
+
+export async function getCompData(
+  world: World,
+  compArg: string
+): Promise<[Comp, string, Map<string, string>]> {
+  let contract = await getComp(world, <Event>(<any>compArg));
+  let data = getContractData(world, [['Comp', compArg]]);
+
+  return [contract, compArg, <Map<string, string>>(<any>data)];
+}
+
+export async function getGovernorData(
+  world: World,
+  governorArg: string
+): Promise<[Governor, string, Map<string, string>]> {
+  let contract = getWorldContract<Governor>(world, [['Governor', governorArg, 'address']]);
+  let data = getContractData(world, [['Governor', governorArg]]);
+
+  return [contract, governorArg, <Map<string, string>>(<any>data)];
 }
 
 export async function getInterestRateModel(

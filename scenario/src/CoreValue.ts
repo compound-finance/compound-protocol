@@ -3,6 +3,7 @@ import { World } from './World';
 import {
   AddressV,
   AnythingV,
+  ArrayV,
   BoolV,
   EventV,
   ExpNumberV,
@@ -29,10 +30,13 @@ import { getPriceOracleValue, priceOracleFetchers } from './Value/PriceOracleVal
 import { getPriceOracleProxyValue, priceOracleProxyFetchers } from './Value/PriceOracleProxyValue';
 import { getTimelockValue, timelockFetchers, getTimelockAddress } from './Value/TimelockValue';
 import { getMaximillionValue, maximillionFetchers } from './Value/MaximillionValue';
+import { getCompValue, compFetchers } from './Value/CompValue';
+import { getGovernorValue, governorFetchers } from './Value/GovernorValue';
 import { getAddress } from './ContractLookup';
-import { mustArray } from './Utils';
+import { mustArray, sendRPC } from './Utils';
 import { toEncodableNum } from './Encoding';
 import { BigNumber } from 'bignumber.js';
+import { buildContractFetcher } from './EventBuilder';
 
 const expMantissa = new BigNumber('1000000000000000000');
 
@@ -83,7 +87,7 @@ export async function mapValue<T>(
   }
 
   if (!(val instanceof type)) {
-    throw new Error(`Expected ${type.name} from ${event.toString()}, got: ${val.toString()}`);
+    throw new Error(`Expected "${type.name}" from event "${event.toString()}", was: "${val.toString()}"`);
   }
 
   // We just did a typecheck above...
@@ -183,6 +187,15 @@ export async function getMapV(world: World, event: Event): Promise<MapV> {
   return new MapV(res);
 }
 
+export function getArrayV<T extends Value>(fetcher: (World, Event) => Promise<T>): (World, Event) => Promise<ArrayV<T>> {
+  return async (world: World, event: Event): Promise<ArrayV<T>> => {
+    const res = await Promise.all(
+      mustArray(event).filter((x) => x !== 'List').map(e => fetcher(world, e))
+    );
+    return new ArrayV(res);
+  }
+}
+
 export async function getStringV(world: World, event: Event): Promise<StringV> {
   return mapValue<StringV>(world, event, str => new StringV(str), getCoreValue, StringV);
 }
@@ -193,7 +206,7 @@ async function getEtherBalance(world: World, address: string): Promise<NumberV> 
   return new NumberV(balance);
 }
 
-export const fetchers = [
+const fetchers = [
   new Fetcher<{}, BoolV>(
     `
       #### True
@@ -368,7 +381,7 @@ export const fetchers = [
 
   new Fetcher<
     { addr: AddressV; slot: NumberV; start: NumberV; valType: StringV },
-    BoolV | AddressV | ExpNumberV | undefined
+    BoolV | AddressV | ExpNumberV | NothingV
   >(
     `
     #### StorageAt
@@ -414,13 +427,15 @@ export const fetchers = [
           } else {
             return new ExpNumberV(parsed.toString(), 1);
           }
+        default:
+          return new NothingV();
       }
     }
   ),
 
   new Fetcher<
     { addr: AddressV; slot: NumberV; key: AddressV; nestedKey: AddressV; valType: StringV },
-    ListV | undefined
+    ListV | NothingV
   >(
     `
     #### StorageAtNestedMapping
@@ -472,13 +487,15 @@ export const fetchers = [
             new ExpNumberV(collateralFactor.toString(), 1e18),
             new BoolV(userInMarket == '0x01')
           ]);
+        default:
+          return new NothingV();
       }
     }
   ),
 
   new Fetcher<
     { addr: AddressV; slot: NumberV; key: AddressV; valType: StringV },
-    AddressV | BoolV | ExpNumberV | ListV | undefined
+    AddressV | BoolV | ExpNumberV | ListV | NothingV
   >(
     `
     #### StorageAtMapping
@@ -534,10 +551,23 @@ export const fetchers = [
           } else {
             return new ExpNumberV(parsed.toString(), 1);
           }
+        default:
+          return new NothingV();
       }
     }
   ),
-
+  new Fetcher<{}, NumberV>(
+    `
+    #### GetBlockNumber
+    * GetBlockNumber
+    `,
+    'GetBlockNumber',
+    [],
+    async (world, {}) => {
+      let { result: num }: any = await sendRPC(world, 'eth_blockNumber', []);
+      return new NumberV(parseInt(num));
+    }
+  ),
   new Fetcher<{}, AddressV>(
     `
       #### LastContract
@@ -546,7 +576,28 @@ export const fetchers = [
     `,
     'LastContract',
     [],
-    async (world, {}) => new AddressV(world.get('lastContract'))
+    async (world, { }) => new AddressV(world.get('lastContract'))
+  ),
+  new Fetcher<{}, NumberV>(
+    `
+      #### LastBlock
+
+      * "LastBlock" - The block of the last transaction
+    `,
+    'LastBlock',
+    [],
+    async (world, { }) => {
+      let invokation = world.get('lastInvokation');
+      if (!invokation) {
+        throw new Error(`Expected last invokation for "lastBlock" but none found.`);
+      }
+
+      if (!invokation.receipt) {
+        throw new Error(`Expected last invokation to have receipt for "lastBlock" but none found.`);
+      }
+
+      return new NumberV(invokation.receipt.blockNumber);
+    }
   ),
   new Fetcher<{}, NumberV>(
     `
@@ -672,6 +723,18 @@ export const fetchers = [
       const secondsBn = new BigNumber(seconds.val);
       const now = Math.floor(Date.now() / 1000);
       return new NumberV(secondsBn.plus(now).toFixed(0));
+    }
+  ),
+    new Fetcher<{}, NumberV>(
+    `
+      #### Now
+
+      * "Now seconds:<NumberV>" - Returns current timestamp
+    `,
+    'Now',
+    [],
+    async (world, {}) => {
+      return new NumberV(Math.floor(Date.now() / 1000));
     }
   ),
   new Fetcher<{}, StringV>(
@@ -876,9 +939,48 @@ export const fetchers = [
     [new Arg('res', getMCDValue, { variadic: true })],
     async (world, { res }) => res,
     { subExpressions: mcdFetchers() }
-  )
+  ),
+  new Fetcher<{ res: Value }, Value>(
+    `
+      #### Comp
+
+      * "Comp ...compArgs" - Returns Comp value
+    `,
+    'Comp',
+    [new Arg('res', getCompValue, { variadic: true })],
+    async (world, { res }) => res,
+    { subExpressions: compFetchers() }
+  ),
+  new Fetcher<{ res: Value }, Value>(
+    `
+      #### Governor
+
+      * "Governor ...governorArgs" - Returns Governor value
+    `,
+    'Governor',
+    [new Arg('res', getGovernorValue, { variadic: true })],
+    async (world, { res }) => res,
+    { subExpressions: governorFetchers() }
+  ),
 ];
 
+let contractFetchers = [
+  "Counter"
+];
+
+export async function getFetchers(world: World) {
+  if (world.fetchers) {
+    return { world, fetchers: world.fetchers };
+  }
+
+  let allFetchers = fetchers.concat(await Promise.all(contractFetchers.map((contractName) => {
+    return buildContractFetcher(world, contractName);
+  })));
+
+  return { world: world.set('fetchers', allFetchers), fetchers: allFetchers };
+}
+
 export async function getCoreValue(world: World, event: Event): Promise<Value> {
-  return await getFetcherValue<any, any>('Core', fetchers, world, event);
+  let {world: nextWorld, fetchers} = await getFetchers(world);
+  return await getFetcherValue<any, any>('Core', fetchers, nextWorld, event);
 }

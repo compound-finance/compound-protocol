@@ -1,6 +1,6 @@
 import { Event } from './Event';
 import { World } from './World';
-import { ABIItem } from 'web3-utils';
+import { AbiItem } from 'web3-utils';
 
 // Wraps the element in an array, if it was not already an array
 // If array is null or undefined, return the empty array
@@ -52,7 +52,7 @@ export function encodeABI(world: World, fnABI: string, fnParams: string[]): stri
     inputs: fnInputs.split(',').map(i => ({ name: '', type: i }))
   };
   // XXXS
-  return world.web3.eth.abi.encodeFunctionCall(<ABIItem>jsonInterface, fnParams);
+  return world.web3.eth.abi.encodeFunctionCall(<AbiItem>jsonInterface, fnParams);
 }
 
 export function encodeParameters(world: World, fnABI: string, fnParams: string[]): string {
@@ -88,7 +88,7 @@ export function sleep(timeout: number): Promise<void> {
 
 export function sendRPC(world: World, method: string, params: any[]) {
   return new Promise((resolve, reject) => {
-    if (!world.web3.currentProvider || typeof(world.web3.currentProvider) === 'string') {
+    if (!world.web3.currentProvider || typeof (world.web3.currentProvider) === 'string') {
       return reject(`cannot send from currentProvider=${world.web3.currentProvider}`);
     }
 

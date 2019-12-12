@@ -11,7 +11,7 @@ jobs:
     steps:
       - run:
         |
-          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.12/solc-static-linux -O /usr/local/bin/solc
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.13/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
       - checkout
       - restore_cache:
@@ -61,7 +61,7 @@ jobs:
       - store_artifacts:
           path: ~/junit
     parallelism: 3
-    resource_class: large
+    resource_class: xlarge
 
   verify:
     docker:
@@ -81,7 +81,7 @@ jobs:
     steps:
       - run:
         |
-          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.12/solc-static-linux -O /usr/local/bin/solc
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.13/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
       - checkout
       - restore_cache:
@@ -137,7 +137,7 @@ jobs:
       - codecov/upload:
           file: ~/repo/coverage/coverage-final.json
     parallelism: 10
-    resource_class: large
+    resource_class: xlarge
 
   lint:
     docker:

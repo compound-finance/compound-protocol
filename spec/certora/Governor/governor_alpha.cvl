@@ -1,0 +1,10 @@
+year(uint yearRes)
+description "Returns correct year [yearRes=$yearRes]"
+{
+    // Free Variables
+    env e0;
+
+    require yearRes == sinvoke year(e0);
+    
+    assert yearRes == 1791;
+}

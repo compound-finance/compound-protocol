@@ -37,3 +37,4 @@ scenario/.tscache
 tests/scenarios/
 junit.xml
 .build
+.last_confs

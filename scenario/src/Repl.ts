@@ -127,10 +127,6 @@ async function repl(): Promise<void> {
     saddle.web3 = await forkWeb3(saddle.web3, forkJson.url, forkJson.unlocked);
     saddle.accounts = forkJson.unlocked;
     console.log(`Running on fork ${forkJson.url} with unlocked accounts ${forkJson.unlocked.join(', ')}`)
-  } else {
-    // Uck, we have to load accounts first..let's just see if we have any unlocked accounts
-    // XXX does this break something with wallet addresses?
-    saddle.accounts = await (new Web3(saddle.web3.currentProvider)).eth.personal.getAccounts();
   }
 
   if (saddle.accounts.length > 0) {

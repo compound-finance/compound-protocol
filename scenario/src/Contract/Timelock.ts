@@ -35,6 +35,7 @@ interface TimelockMethods {
   blockTimestamp(): Callable<number>;
   harnessFastForward(seconds: encodedNumber): Sendable<void>;
   harnessSetBlockTimestamp(seconds: encodedNumber): Sendable<void>;
+  harnessSetAdmin(admin: string): Sendable<void>;
 }
 
 export interface Timelock extends Contract {

@@ -30,6 +30,16 @@ We detail a few of the core contracts in the Compound protocol.
 </dl>
 
 <dl>
+  <dt>Comp</dt>
+  <dd>The Compound Governance Token (COMP). Holders of this token have the ability to govern the protocol via the governor contract.</dd>
+</dl>
+
+<dl>
+  <dt>Governor Alpha</dt>
+  <dd>The administrator of the Compound timelock contract. Holders of Comp token may create and vote on proposals which will be queued into the Compound timelock and then have effects on Compound cToken and Copmtroller contracts. This contract may be replaced in the future with a beta version.</dd>
+</dl>
+
+<dl>
   <dt>InterestRateModel</dt>
   <dd>Contracts which define interest rate models. These models algorithmically determine interest rates based on the current utilization of a given market (that is, how much of the supplied assets are liquid versus borrowed).</dd>
 </dl>
@@ -73,28 +83,12 @@ You can then compile and deploy the contracts with:
 
 Note: this project does not use truffle migrations. The command above is the best way to deploy contracts. To view the addresses of contracts, please inspect the `networks/development.json` file that is produced as an artifact of that command.
 
-Console
--------
-
-After you deploy, as above, you can run a truffle console with the following command:
-
-    yarn run console
-
-This command will create a truffle-like build directory and start a truffle console, thus you can then run:
-
-    truffle(rinkeby)> cDAI.deployed().then((cdai) => cdai.borrowRatePerBlock.call())
-    <BN: 7699bf9dd>
-
-You can also specify a network (rinkeby, ropsten, kovan, goerli or mainnet):
-
-    yarn run console rinkeby
-
 REPL
 ----
 
 The Compound Protocol has a simple scenario evaluation tool to test and evaluate scenarios which could occur on the blockchain. This is primarily used for constructing high-level integration tests. The tool also has a REPL to interact with local the Compound Protocol (similar to `truffle console`).
 
-    yarn run repl
+    yarn repl
 
     > Read CToken cBAT Address
     Command: Read CToken cBAT Address
@@ -113,12 +107,6 @@ Mocha contract tests are defined under the [test directory](https://github.com/c
 
     yarn run test
 
-or with inspection (visit chrome://inspect) and look for a remote target after running:
-
-    node --inspect node_modules/truffle-core/cli.js test
-
-Assertions used in our tests are provided by [ChaiJS](http://chaijs.com).
-
 Integration Specs
 -----------------
 
@@ -133,7 +121,6 @@ Code Coverage
 -------------
 To run code coverage, run:
 
-    scripts/ganache-coverage # run ganache in coverage mode
     yarn run coverage
 
 Linting
@@ -153,18 +140,9 @@ To run in docker:
     # Run a shell to the built image
     docker run -it compound-protocol /bin/sh
 
-From within a docker shell, you can interact locally with the protocol via ganache and truffle:
-
-    > ganache-cli &
-    > yarn run deploy
-    > yarn run console
-    truffle(development)> cDAI.deployed().then((contract) => cdai = contract);
-    truffle(development)> cdai.borrowRatePerBlock.call().then((rate) => rate.toNumber())
-    20
-
 Discussion
 ----------
 
 For any concerns with the protocol, visit us on [Discord](https://compound.finance/discord) to discuss.
 
-_© Copyright 2019, Compound Labs, Inc._
+_© Copyright 2020, Compound Labs, Inc._

@@ -1,7 +1,5 @@
-const Ganache = require('ganache-core');
-const Web3 = require('web3');
-const BigNum = require('bignumber.js')
-
+const BigNum = require('bignumber.js');
+const {Ganache} = require('eth-saddle/dist/config');
 const {etherUnsigned} = require('../Utils/Ethereum');
 const {
   makeInterestRateModel,
@@ -57,14 +55,14 @@ function daiSupplyRate(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves, 
 let fork = "https://kovan.infura.io/v3/e1a5d4d2c06a4e81945fca56d0d5d8ea@14764778";
 
 async function getKovanFork() {
-  const kovan = new Web3(
+  const kovan = new web3.constructor(
     Ganache.provider({
-    allowUnlimitedContractSize: true,
-    fork: fork,
-    gasLimit: 20000000,
-    gasPrice: '20000',
-    port: 8546
-  }));
+      allowUnlimitedContractSize: true,
+      fork: fork,
+      gasLimit: 20000000,
+      gasPrice: '20000',
+      port: 8546
+    }));
   const [root, ...accounts] = await kovan.eth.getAccounts();
 
   return {kovan, root, accounts};

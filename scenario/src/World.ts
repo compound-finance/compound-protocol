@@ -17,6 +17,8 @@ import { Settings } from './Settings';
 import { Accounts, loadAccounts } from './Accounts';
 import Web3 from 'web3';
 import { Saddle } from 'eth-saddle';
+import { Command, Fetcher } from './Command';
+import { Value} from './Value';
 
 const startingBlockNumber = 1000;
 
@@ -48,6 +50,8 @@ export interface WorldProps {
   basePath: string | null;
   eventDecoder: EventDecoder;
   fs: object | null;
+  commands: Command<any>[] | undefined;
+  fetchers: Fetcher<any, Value>[] | undefined;
 }
 
 const defaultWorldProps: WorldProps = {
@@ -74,7 +78,9 @@ const defaultWorldProps: WorldProps = {
   trxInvokationOpts: Map({}),
   basePath: null,
   eventDecoder: {},
-  fs: null
+  fs: null,
+  commands: undefined,
+  fetchers: undefined,
 };
 
 export class World extends Record(defaultWorldProps) {
@@ -178,8 +184,6 @@ export async function initWorld(
   accounts: string[],
   basePath: string | null
 ): Promise<World> {
-  let web3 = new Web3(iweb3.currentProvider);
-
   return new World({
     actions: [],
     event: null,
@@ -192,7 +196,7 @@ export async function initWorld(
     contractIndex: {},
     contractData: Map({}),
     expect: expect,
-    web3: web3,
+    web3: iweb3,
     saddle: saddle,
     printer: printer,
     network: network,
@@ -313,18 +317,18 @@ export function describeUser(world: World, address: string): string {
   // Look up by alias
   let alias = Object.entries(world.settings.aliases).find(([name, aliasAddr]) => aliasAddr === address);
   if (alias) {
-    return alias[0];
+    return `${alias[0]} (${address.slice(0,6)}...)`;
   }
 
   // Look up by `from`
   if (world.settings.from === address) {
-    return 'root';
+    return `root (${address.slice(0,6)}...)`;
   }
 
   // Look up by unlocked accounts
   let account = world.accounts.find(account => account.address === address);
   if (account) {
-    return account.name;
+    return `${account.name} (${address.slice(0,6)}...)`;
   }
 
   // Otherwise, just return the address itself

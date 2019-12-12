@@ -221,7 +221,7 @@ export async function invoke<T>(world: World, fn: Sendable<T>, from: string, err
     ...worldInvokationOpts,
     ...trxInvokationOpts
   };
-
+  
   try {
     try {
       const gas = await fn.estimateGas({ ...invokationOpts });

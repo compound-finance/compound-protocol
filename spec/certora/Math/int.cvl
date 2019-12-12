@@ -1,4 +1,15 @@
 
+basicDiv(uint a, uint b) {
+    require b > 0;
+
+    uint c = a + 1;
+    uint d = a / b;
+    uint e = c / b;
+
+    assert c >= a, "Failed to prove ${c} >= ${a}";
+    assert e >= d, "Failed to prove: ${e} >= ${d}";
+}
+
 atLeastEnough(uint256 chi, uint256 amount) {
     uint256 WAD = 1000000000000000000;
     uint256 RAY = 1000000000000000000000000000;

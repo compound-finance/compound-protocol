@@ -3,7 +3,7 @@ import { World } from './World';
 import { Invokation } from './Invokation';
 import { Contract, setContractName } from './Contract';
 import { getNetworkPath, readFile, writeFile } from './File';
-import { ABIItem } from 'web3-utils';
+import { AbiItem } from 'web3-utils';
 
 type Networks = Map<string, any>;
 
@@ -159,7 +159,7 @@ export async function loadContractData(
   let contracts = networks.get('Contracts') || Map({});
 
   world = contracts.reduce((world: World, address: string, name: string) => {
-    let abi: ABIItem[] = networksABI.has(name) ? networksABI.get(name).toJS() : [];
+    let abi: AbiItem[] = networksABI.has(name) ? networksABI.get(name).toJS() : [];
     let contract = new world.web3.eth.Contract(abi, address, {});
 
     world = updateEventDecoder(world, contract);

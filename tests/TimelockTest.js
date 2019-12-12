@@ -1,7 +1,7 @@
 const {
   encodeParameters,
-  etherMantissa,
   bigNumberify,
+  freezeTime,
   keccak256
 } = require('./Utils/Ethereum');
 
@@ -27,7 +27,8 @@ describe('Timelock', () => {
     [root, notAdmin, newAdmin] = accounts;
     timelock = await deploy('TimelockHarness', [root, delay]);
 
-    blockTimestamp = bigNumberify(await call(timelock.methods.blockTimestamp()));
+    blockTimestamp = bigNumberify(100);
+    await freezeTime(blockTimestamp.toNumber())
     target = timelock.options.address;
     eta = blockTimestamp.add(delay);
 
@@ -41,26 +42,26 @@ describe('Timelock', () => {
 
   describe('constructor', () => {
     it('sets address of admin', async () => {
-      let configuredAdmin = await call(timelock.methods.admin());
+      let configuredAdmin = await call(timelock, 'admin');
       expect(configuredAdmin).toEqual(root);
     });
 
     it('sets delay', async () => {
-      let configuredDelay = await call(timelock.methods.delay());
+      let configuredDelay = await call(timelock, 'delay');
       expect(configuredDelay).toEqual(delay.toString());
     });
   });
 
   describe('setDelay', () => {
     it('requires msg.sender to be Timelock', async () => {
-      await expect(send(timelock.methods.setDelay(delay), { from: root })).rejects.toRevert('revert Timelock::setDelay: Call must come from Timelock.');
+      await expect(send(timelock, 'setDelay', [delay], { from: root })).rejects.toRevert('revert Timelock::setDelay: Call must come from Timelock.');
     });
   });
 
   describe('setPendingAdmin', () => {
     it('requires msg.sender to be Timelock', async () => {
       await expect(
-        send(timelock.methods.setPendingAdmin(newAdmin), { from: root })
+        send(timelock, 'setPendingAdmin', [newAdmin], { from: root })
       ).rejects.toRevert('revert Timelock::setPendingAdmin: Call must come from Timelock.');
     });
   });
@@ -72,20 +73,20 @@ describe('Timelock', () => {
 
     it('requires msg.sender to be pendingAdmin', async () => {
       await expect(
-        send(timelock.methods.acceptAdmin(), { from: notAdmin })
+        send(timelock, 'acceptAdmin', { from: notAdmin })
       ).rejects.toRevert('revert Timelock::acceptAdmin: Call must come from pendingAdmin.');
     });
 
     it('sets pendingAdmin to address 0 and changes admin', async () => {
-      await send(timelock.methods.harnessSetPendingAdmin(newAdmin), { from: root });
-      const pendingAdminBefore = await call(timelock.methods.pendingAdmin());
+      await send(timelock, 'harnessSetPendingAdmin', [newAdmin], { from: root });
+      const pendingAdminBefore = await call(timelock, 'pendingAdmin');
       expect(pendingAdminBefore).toEqual(newAdmin);
 
-      const result = await send(timelock.methods.acceptAdmin(), { from: newAdmin });
-      const pendingAdminAfter = await call(timelock.methods.pendingAdmin());
+      const result = await send(timelock, 'acceptAdmin', { from: newAdmin });
+      const pendingAdminAfter = await call(timelock, 'pendingAdmin');
       expect(pendingAdminAfter).toEqual('0x0000000000000000000000000000000000000000');
 
-      const timelockAdmin = await call(timelock.methods.admin());
+      const timelockAdmin = await call(timelock, 'admin');
       expect(timelockAdmin).toEqual(newAdmin);
 
       expect(result).toHaveLog('NewAdmin', {
@@ -97,7 +98,7 @@ describe('Timelock', () => {
   describe('queueTransaction', () => {
     it('requires admin to be msg.sender', async () => {
       await expect(
-        send(timelock.methods.queueTransaction(target, value, signature, data, eta), { from: notAdmin })
+        send(timelock, 'queueTransaction', [target, value, signature, data, eta], { from: notAdmin })
       ).rejects.toRevert('revert Timelock::queueTransaction: Call must come from admin.');
     });
 
@@ -105,24 +106,24 @@ describe('Timelock', () => {
       const etaLessThanDelay = blockTimestamp.add(delay).sub(1);
 
       await expect(
-        send(timelock.methods.queueTransaction(target, value, signature, data, etaLessThanDelay), {
+        send(timelock, 'queueTransaction', [target, value, signature, data, etaLessThanDelay], {
           from: root
         })
       ).rejects.toRevert('revert Timelock::queueTransaction: Estimated execution block must satisfy delay.');
     });
 
     it('sets hash as true in queuedTransactions mapping', async () => {
-      const queueTransactionsHashValueBefore = await call(timelock.methods.queuedTransactions(queuedTxHash));
+      const queueTransactionsHashValueBefore = await call(timelock, 'queuedTransactions', [queuedTxHash]);
       expect(queueTransactionsHashValueBefore).toEqual(false);
 
-      await send(timelock.methods.queueTransaction(target, value, signature, data, eta), { from: root });
+      await send(timelock, 'queueTransaction', [target, value, signature, data, eta], { from: root });
 
-      const queueTransactionsHashValueAfter = await call(timelock.methods.queuedTransactions(queuedTxHash));
+      const queueTransactionsHashValueAfter = await call(timelock, 'queuedTransactions', [queuedTxHash]);
       expect(queueTransactionsHashValueAfter).toEqual(true);
     });
 
     it('should emit QueueTransaction event', async () => {
-      const result = await send(timelock.methods.queueTransaction(target, value, signature, data, eta), {
+      const result = await send(timelock, 'queueTransaction', [target, value, signature, data, eta], {
         from: root
       });
 
@@ -183,9 +184,9 @@ describe('Timelock', () => {
         )
       );
       expect(await call(timelock, 'queuedTransactions', [txHash])).toBeFalsy();
-      await send(timelock, 'queueTransaction', [target, value, '', '0x', eta], {from: root});
+      await send(timelock, 'queueTransaction', [target, value, '', '0x', eta], { from: root });
       expect(await call(timelock, 'queuedTransactions', [txHash])).toBeTruthy();
-      await send(timelock, 'cancelTransaction', [target, value, '', '0x', eta], {from: root});
+      await send(timelock, 'cancelTransaction', [target, value, '', '0x', eta], { from: root });
       expect(await call(timelock, 'queuedTransactions', [txHash])).toBeFalsy();
     });
   });
@@ -227,8 +228,7 @@ describe('Timelock', () => {
     });
 
     it('requires timestamp to be less than eta plus gracePeriod', async () => {
-      const blockFastForward = delay.add(gracePeriod).add(1);
-      await send(timelock, 'harnessFastForward', [blockFastForward]);
+      await freezeTime(blockTimestamp.add(delay).add(gracePeriod).add(1).toNumber());
 
       await expect(
         send(timelock, 'executeTransaction', [target, value, signature, data, eta], {
@@ -238,8 +238,7 @@ describe('Timelock', () => {
     });
 
     it('requires target.call transaction to succeed', async () => {
-      const newBlockTimestamp = blockTimestamp.add(delay).add(1);
-      await send(timelock, 'harnessSetBlockTimestamp', [newBlockTimestamp]);
+      await freezeTime(eta.toNumber());
 
       await expect(
         send(timelock, 'executeTransaction', [target, value, signature, revertData, eta], {
@@ -256,7 +255,7 @@ describe('Timelock', () => {
       expect(queueTransactionsHashValueBefore).toEqual(true);
 
       const newBlockTimestamp = blockTimestamp.add(delay).add(1);
-      await send(timelock, 'harnessSetBlockTimestamp', [newBlockTimestamp]);
+      await freezeTime(newBlockTimestamp.toNumber());
 
       const result = await send(timelock, 'executeTransaction', [target, value, signature, data, eta], {
         from: root
@@ -299,7 +298,6 @@ describe('Timelock', () => {
         )
       );
 
-      await send(timelock, 'harnessSetBlockTimestamp', [blockTimestamp]);
       await send(timelock, 'queueTransaction', [target, value, signature, data, eta], {
         from: root
       });
@@ -329,8 +327,7 @@ describe('Timelock', () => {
     });
 
     it('requires timestamp to be less than eta plus gracePeriod', async () => {
-      const blockFastForward = delay.add(gracePeriod).add(1);
-      await send(timelock, 'harnessFastForward', [blockFastForward]);
+      await freezeTime(blockTimestamp.add(delay).add(gracePeriod).add(1).toNumber());
 
       await expect(
         send(timelock, 'executeTransaction', [target, value, signature, data, eta], {
@@ -347,7 +344,7 @@ describe('Timelock', () => {
       expect(queueTransactionsHashValueBefore).toEqual(true);
 
       const newBlockTimestamp = blockTimestamp.add(delay).add(1);
-      await send(timelock, 'harnessSetBlockTimestamp', [newBlockTimestamp]);
+      await freezeTime(newBlockTimestamp.toNumber())
 
       const result = await send(timelock, 'executeTransaction', [target, value, signature, data, eta], {
         from: root
