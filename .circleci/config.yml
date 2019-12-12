@@ -72,7 +72,7 @@ jobs:
       - attach_workspace:
           at: ~/repo
       - run: script/verify
-    parallelism: 2
+    parallelism: 4
 
   coverage:
     docker:

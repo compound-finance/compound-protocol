@@ -1,32 +1,23 @@
 #!/usr/bin/env bash
 
-set -eo
+set -exo pipefail
 
-dir=`dirname $0`
-proj_root="$dir/.."
-contracts="`(cd $proj_root && pwd)`/contracts"
-emv_jar="$proj_root/scripts/certora/emv.jar"
+cd `dirname $0`/..
 
 command -v java >/dev/null 2>&1 || { echo "Error: java is not installed." >&2; exit 1; }
 command -v z3 >/dev/null 2>&1 || { echo "Error: z3 is not installed." >&2; exit 1; }
 
 function verify_spec {
     [ -e "$1" ] || (echo "spec file not found: $1" && exit 1)
-
-    set -x
-    java -jar "$emv_jar" -spec "$1" -theory INT -s z3 -graphDrawLimit 0 -path $contracts
-    set +x
+    echo "Not verifying $1"
 }
 
 if [ "$CI" ]; then
-    all_specs=($(circleci tests glob "$proj_root/spec/formal/*.spclnk" | circleci tests split --split-by=timings))
-    echo XXX disabled in CI for now... && exit 0
+    all_specs=($(echo spec/certora/*/*.cvl | circleci tests split --split-by=timings))
+elif [[ $# -eq 0 ]] ; then
+    all_specs=(spec/certora/*/*.cvl)
 else
-    if [[ $# -eq 0 ]] ; then
-	all_specs=($proj_root/spec/formal/*.spclnk)
-    else
-	all_specs=($@)
-    fi
+    all_specs=($@)
 fi
 
 echo "running specs ${all_specs[@]}"

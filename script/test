@@ -4,8 +4,6 @@ set -eo pipefail
 
 dir=`dirname $0`
 proj_root="$dir/.."
-test_root="$dir/../tests"
-contracts_root="$dir/../contracts"
 network=${NETWORK:-test}
 verbose=${verbose:-}
 
