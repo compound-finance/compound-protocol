@@ -1,38 +1,10 @@
 import * as path from 'path';
 import * as crypto from 'crypto';
 import {World} from './World';
-import {Artifact} from './Artifact';
 import {Invokation} from './Invokation';
 import {ErrorReporter, NoErrorReporter} from './ErrorReporter';
 import {getNetworkPath, readFile} from './File';
-
-export interface ABIInput {
-  name: string
-  type: string
-}
-
-export interface ABIOutput {
-  name: string
-  type: string
-}
-
-export interface ABI {
-  type: string
-  name: string
-  constant: boolean
-  payable: boolean
-  stateMutability: string
-  inputs: ABIInput[]
-  outputs: ABIOutput[]
-}
-
-export interface ABIEvent {
-  anonymous: boolean;
-  inputs: ABIInput[];
-  name: string;
-  type: string;
-  signature: string;
-}
+import { ABIItem } from 'web3-utils';
 
 export interface Raw {
   data: string
@@ -55,7 +27,7 @@ export interface Contract {
   _address: string
   name: string
   methods: any
-  _jsonInterface: ABI[]
+  _jsonInterface: ABIItem[]
   constructorAbi?: string
   getPastEvents: (event: string, options: { filter: object, fromBlock: number, toBlock: number | string }) => Event[]
 }
@@ -66,28 +38,22 @@ function randomAddress(): string {
 
 class ContractStub {
   name: string;
-  cache: Artifact | null;
   test: boolean
 
   constructor(name: string, test: boolean) {
     this.name = name;
-    this.cache = null;
     this.test = test;
   }
 
   async deploy<T>(world: World, from: string, args: any[]): Promise<Invokation<T>> {
-    const opts = world.web3.currentProvider.opts || {};
-    opts.from = from;
-
-    let networkContract = await getNetworkContract(world, this.name);
-    if (!networkContract) {
-      throw new Error(`Cannot find contract ${this.name}, found: ${Object.keys(networkContract)}`)
-    }
+    // XXXS Consider opts
+    // ( world.web3.currentProvider && typeof(world.web3.currentProvider) !== 'string' && world.web3.currentProvider.opts ) || 
+    const opts = { from: from };
 
     let invokationOpts = world.getInvokationOpts(opts);
 
-    const contract = new world.web3.eth.Contract(networkContract.abi);
-    const constructorAbi = networkContract.abi.find((x) => x.type === 'constructor');
+    const networkContractABI = await world.saddle.abi(this.name);
+    const constructorAbi = networkContractABI.find((x) => x.type === 'constructor');
     let inputs;
 
     if (constructorAbi) {
@@ -99,48 +65,34 @@ class ContractStub {
     const abi = world.web3.eth.abi.encodeParameters(inputs, args);
 
     try {
-      let deployed;
-      let deployReceipt;
+      let contract;
+      let receipt;
 
       if (world.dryRun) {
         let addr = randomAddress();
         console.log(`Dry run: Deploying ${this.name} at fake address ${addr}`);
-        deployed = {
-          ...contract,
-          _address: addr
-        };
-        deployed.options.address = addr;
-        deployReceipt = {
+        contract = new world.web3.eth.Contract(<any>networkContractABI, addr)
+        receipt = {
           blockNumber: -1,
           transactionHash: "0x",
           events: {}
         };
       } else {
-        deployed = await (contract.deploy({data: '0x' + networkContract.bin, arguments: args}).send(invokationOpts).on('receipt', (receipt) => (deployReceipt = receipt)));
-        deployed.constructorAbi = abi;
+        ({contract, receipt} = await world.saddle.deployFull(this.name, args, invokationOpts, world.web3));
+        contract.constructorAbi = abi;
       }
 
-      return new Invokation<T>(deployed, deployReceipt, null, null);
+      return new Invokation<T>(contract, receipt, null, null);
     } catch (err) {
       return new Invokation<T>(null, null, err, null);
     }
   }
 
-  at<T>(world: World, address: string): T {
-    let artifact;
+  async at<T>(world: World, address: string): Promise<T> {
+    const networkContractABI = await world.saddle.abi(this.name);
 
-    if (!world.artifacts) {
-      throw new Error(`Cannot deploy contracts with missing artifacts`);
-    }
-
-    if (this.cache) {
-      artifact = this.cache;
-    } else {
-      artifact = world.artifacts.require(this.name);
-      this.cache = artifact;
-    }
-
-    return new world.web3.eth.Contract(artifact._json.abi, address);
+    // XXXS unknown?
+    return <T><unknown>(new world.web3.eth.Contract(<any>networkContractABI, address));
   }
 }
 
@@ -205,14 +157,15 @@ export async function decodeCall(world: World, contract: Contract, input: string
   return world;
 }
 
+// XXXS Handle
 async function getNetworkContract(world: World, name: string): Promise<{abi: any[], bin: string}> {
   let basePath = world.basePath || ""
   let network = world.network || ""
 
-  let pizath = (name, ext) => path.join(basePath, 'networks', `${network}-contracts`, `${name}.${ext}`);
+  let pizath = (name, ext) => path.join(basePath, '.build', `contracts.json`);
   let abi, bin;
   if ( network == 'coverage' ) {
-    let json = await readFile(pizath(name, 'json'), null, JSON.parse);
+    let json = await readFile(world, pizath(name, 'json'), null, JSON.parse);
     abi = json.abi;
     bin = json.bytecode.substr(2);
   } else {
@@ -231,7 +184,11 @@ async function getNetworkContract(world: World, name: string): Promise<{abi: any
 }
 
 export async function getNetworkContracts(world: World): Promise<{networkContracts: object, version: string}> {
-  let fullContracts = await readFile(getNetworkPath(world.basePath, world.network, '-contracts', 'json'), null, JSON.parse);
+  let basePath = world.basePath || ""
+  let network = world.network || ""
+
+  let contractsPath = path.join(basePath, '.build', `contracts.json`)
+  let fullContracts = await readFile(world, contractsPath, null, JSON.parse);
   let version = fullContracts.version;
   let networkContracts = Object.entries(fullContracts.contracts).reduce((acc, [k, v]) => {
     let [path, contractName] = k.split(':');
@@ -239,7 +196,7 @@ export async function getNetworkContracts(world: World): Promise<{networkContrac
     return {
       ...acc,
       [contractName]: {
-        ...v,
+        ...<object>v, /// XXXS TODO
         path: path
       }
     };

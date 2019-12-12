@@ -1,9 +1,11 @@
 import { parse } from './Parser';
-import { IWeb3, World, initWorld } from './World';
-import { throwAssert } from './Assert';
+import { World, initWorld } from './World';
+import { throwExpect } from './Assert';
 import { CallbackPrinter } from './Printer';
 import { runCommand } from './Runner';
 import { loadContractData, parseNetworkFile } from './Networks';
+import Web3 from 'web3';
+import { Saddle } from 'eth-saddle';
 
 function networkFromId(id: number) {
   switch (id) {
@@ -46,18 +48,27 @@ function networkFromId(id: number) {
 }
 
 export async function webWorld(
-  web3: IWeb3,
+  web3: Web3,
   networksData: string,
   networksABIData: string,
   printerCallback: (message: any) => void
 ): Promise<World> {
   let printer = new CallbackPrinter(printerCallback);
-  let accounts = [web3.currentProvider.address];
+  let accounts;
+  if (web3.currentProvider && typeof(web3.currentProvider) !== 'string') {
+    // XXXS
+    accounts = [(<any>web3.currentProvider).address];
+  }
 
   const networkId = await (web3 as any).net.getId();
   const network: string = networkFromId(networkId);
 
-  let world = await initWorld(throwAssert, printer, web3, null, network, accounts, null);
+  // XXXS
+  const saddle = <Saddle><unknown>{
+    web3: web3
+  };
+
+  let world = await initWorld(throwExpect, printer, web3, saddle, network, accounts, null);
 
   let networks = parseNetworkFile(networksData);
   let networksABI = parseNetworkFile(networksABIData);

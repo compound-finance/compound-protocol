@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-dir=`dirname $0`
-proj_root="$dir/.."
-verbose=${verbose:-}
-
-# Combine any params as simple regex (a|b|c)
-IFS='|'
-verbose="$verbose" SCENARIOS="$*" "$dir/test" "test/ScenarioTest.js"

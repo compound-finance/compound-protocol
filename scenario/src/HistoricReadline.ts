@@ -5,7 +5,7 @@ import {readFile} from './File';
 let readlineAny = <any>readline;
 
 export async function createInterface(options): Promise<readline.ReadLine> {
-	let history: string[] = await readFile(options['path'], [], (x) => x.split("\n"));
+	let history: string[] = await readFile(null, options['path'], [], (x) => x.split("\n"));
 	let cleanHistory = history.filter((x) => !!x).reverse();
 
 	readlineAny.kHistorySize = Math.max(readlineAny.kHistorySize, options['maxLength']);

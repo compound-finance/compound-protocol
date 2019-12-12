@@ -384,7 +384,7 @@ export const fetchers = [
     ],
     async (world, { addr, slot, start, valType }) => {
       let stored = await world.web3.eth.getStorageAt(addr.val, slot.val);
-      const startVal = start.val;
+      const startVal = Number(start.val);
       let reverse = s =>
         s
           .split('')
@@ -392,12 +392,12 @@ export const fetchers = [
           .join('');
       let val;
       stored = stored
-        .slice(2) //drop leading 0x and reverse since items are packed from the back of the slot
+        .slice(2) // drop leading 0x and reverse since items are packed from the back of the slot
         .split('')
         .reverse()
         .join('');
 
-      //dont forget to re-reverse
+      // Don't forget to re-reverse
       switch (valType.val) {
         case 'bool':
           val = '0x' + reverse(stored.slice(startVal, (startVal as number) + 2));
@@ -410,9 +410,9 @@ export const fetchers = [
 
           // if the numbers are big, they are big...
           if (parsed.gt(world.web3.utils.toBN(1000))) {
-            return new ExpNumberV(parsed, 1e18);
+            return new ExpNumberV(parsed.toString(), 1e18);
           } else {
-            return new ExpNumberV(parsed, 1);
+            return new ExpNumberV(parsed.toString(), 1);
           }
       }
     }
@@ -438,7 +438,7 @@ export const fetchers = [
     async (world, { addr, slot, key, nestedKey, valType }) => {
       let paddedSlot = world.web3.utils.padLeft(slot.val, 64);
       let paddedKey = world.web3.utils.padLeft(key.val, 64);
-      let newKey = world.web3.utils.sha3(paddedKey + paddedSlot, { encoding: 'hex' });
+      let newKey = world.web3.utils.sha3(paddedKey + paddedSlot);
 
       let val = await world.web3.eth.getStorageAt(addr.val, newKey);
 
@@ -452,8 +452,8 @@ export const fetchers = [
               .add(world.web3.utils.toBN(1))
               .toString(16);
 
-          let collateralFactor = await world.web3.eth.getStorageAt(addr.val, collateralFactorKey);
-          collateralFactor = world.web3.utils.toBN(collateralFactor);
+          let collateralFactorStr = await world.web3.eth.getStorageAt(addr.val, collateralFactorKey);
+          let collateralFactor = world.web3.utils.toBN(collateralFactorStr);
 
           let userMarketBaseKey = world.web3.utils
             .toBN(newKey)
@@ -463,13 +463,13 @@ export const fetchers = [
 
           let paddedSlot = world.web3.utils.padLeft(userMarketBaseKey, 64);
           let paddedKey = world.web3.utils.padLeft(nestedKey.val, 64);
-          let newKeyToo = world.web3.utils.sha3(paddedKey + paddedSlot, { encoding: 'hex' });
+          let newKeyToo = world.web3.utils.sha3(paddedKey + paddedSlot);
 
           let userInMarket = await world.web3.eth.getStorageAt(addr.val, newKeyToo);
 
           return new ListV([
             new BoolV(isListed),
-            new ExpNumberV(collateralFactor, 1e18),
+            new ExpNumberV(collateralFactor.toString(), 1e18),
             new BoolV(userInMarket == '0x01')
           ]);
       }
@@ -495,7 +495,7 @@ export const fetchers = [
     async (world, { addr, slot, key, valType }) => {
       let paddedSlot = world.web3.utils.padLeft(slot.val, 64);
       let paddedKey = world.web3.utils.padLeft(key.val, 64);
-      let newKey = world.web3.utils.sha3(paddedKey + paddedSlot, { encoding: 'hex' });
+      let newKey = world.web3.utils.sha3(paddedKey + paddedSlot);
 
       let val = await world.web3.eth.getStorageAt(addr.val, newKey);
 
@@ -503,9 +503,9 @@ export const fetchers = [
         case 'list(address)':
           let num = world.web3.utils.toBN(val);
 
-          let p = new Array(num, 'n').map(async (_v, index) => {
+          let p = new Array(num, undefined).map(async (_v, index) => {
             let itemKey;
-            itemKey = world.web3.utils.sha3(newKey, { encoding: 'hex' });
+            itemKey = world.web3.utils.sha3(newKey);
             itemKey =
               '0x' +
               world.web3.utils
@@ -530,9 +530,9 @@ export const fetchers = [
 
           // if the numbers are big, they are big...
           if (parsed.gt(world.web3.utils.toBN(1000))) {
-            return new ExpNumberV(parsed, 1e18);
+            return new ExpNumberV(parsed.toString(), 1e18);
           } else {
-            return new ExpNumberV(parsed, 1);
+            return new ExpNumberV(parsed.toString(), 1);
           }
       }
     }

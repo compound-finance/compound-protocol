@@ -1,21 +1,19 @@
-export interface Assert {
-  fail(x: any, y: any, reason: string)
-  equal(x: any, y: any, reason: string)
-  deepEqual(x: any, y: any, reason: string)
+export type Expect = (actual: any) => {
+  toEqual: (expected: any) => any
+  fail: (message: string) => any
 }
 
-export const throwAssert: Assert = {
-  fail: (x, y, reason) => {
-    throw new Error(reason)
-  },
-  equal: (x, y, reason) => {
-    if (x != y) {
-      throw new Error(reason);
-    }
-  },
-  deepEqual: (x, y, reason) => {
-    if (JSON.stringify(x) != JSON.stringify(y)) {
-      throw new Error(reason);
+export const throwExpect: Expect = (x) => {
+  return {
+    toEqual: (y) => {
+      let xEnc = JSON.stringify(x);
+      let yEnc = JSON.stringify(y);
+      if (xEnc !== yEnc) {
+        throw new Error(`expected ${x} to equal ${y}`);
+      }
+    },
+    fail: (reason) => {
+      throw new Error(reason)
     }
   }
 };

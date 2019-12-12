@@ -40,14 +40,14 @@ export class Settings {
   }
 
   static load(basePath: string, network: string): Promise<Settings> {
-    return readFile(Settings.getFilePath(basePath, network), Settings.default(basePath, network), data =>
+    return readFile(null, Settings.getFilePath(basePath, network), Settings.default(basePath, network), data =>
       Settings.deserialize(basePath, network, data)
     );
   }
 
   async save(): Promise<void> {
     if (this.network) {
-      return await writeFile(Settings.getFilePath(this.basePath, this.network), this.serialize());
+      await writeFile(null, Settings.getFilePath(this.basePath, this.network), this.serialize());
     }
   }
 

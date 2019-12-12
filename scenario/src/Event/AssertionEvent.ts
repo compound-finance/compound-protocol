@@ -73,7 +73,20 @@ async function assertFailure(world: World, failure: Failure): Promise<World> {
   return world;
 }
 
+// coverage tests don't currently support checking full message given with a revert
+function coverageSafeRevertMessage(world: World, message: string): string {
+  if (world.network === 'coverage') {
+    return "revert";
+  } else {
+    return message;
+  }
+}
+
 async function assertRevertFailure(world: World, err: string, message: string): Promise<World> {
+  if (world.network === 'coverage') { // coverage doesn't have detailed message, thus no revert failures
+    return await assertRevert(world, message);
+  }
+
   if (!world.lastInvokation) {
     return fail(world, `Expected revert failure, but missing any invokations.`);
   }
@@ -94,7 +107,7 @@ async function assertRevertFailure(world: World, err: string, message: string): 
     throw new Error(`Invokation error mismatch, expected revert failure: "${err}, ${message}", got: "${world.lastInvokation.error.toString()}"`);
   }
 
-  const expectedMessage = `Returned error: VM Exception while processing transaction: ${message}`;
+  const expectedMessage = `VM Exception while processing transaction: ${coverageSafeRevertMessage(world, message)}`;
 
   if (world.lastInvokation.error.error !== err || world.lastInvokation.error.errMessage !== expectedMessage) {
     throw new Error(`Invokation error mismatch, expected revert failure: err=${err}, message="${expectedMessage}", got: "${world.lastInvokation.error.toString()}"`);
@@ -128,7 +141,7 @@ async function assertError(world: World, message: string): Promise<World> {
 }
 
 function buildRevertMessage(world: World, message: string): string {
-  return `Returned error: VM Exception while processing transaction: ${message}`
+  return `VM Exception while processing transaction: ${coverageSafeRevertMessage(world, message)}`
 }
 
 async function assertRevert(world: World, message: string): Promise<World> {
@@ -156,7 +169,7 @@ async function assertReadError(world: World, event: Event, message: string, isRe
       expectedMessage = message;
     }
 
-    world.assert.equal(expectedMessage, err.message, "expected read revert");
+    world.expect(expectedMessage).toEqual(err.message); // XXXS "expected read revert"
   }
 
   return world;
@@ -168,12 +181,12 @@ async function assertLog(world: World, event: string, keyValues: MapV): Promise<
   } else if (!world.lastInvokation.receipt) {
     return fail(world, `Expected log message "${event}" from contract execution, but world invokation transaction.`);
   } else {
-    const log = world.lastInvokation.receipt.events[event];
+    const log = world.lastInvokation.receipt.events && world.lastInvokation.receipt.events[event];
 
     if (!log) {
-      const events = Object.keys(world.lastInvokation.receipt.events).join(', ');
+      const events = Object.keys(world.lastInvokation.receipt.events || {}).join(', ');
 
-      fail(world, `Expected log with event \`${event}\`, found logs with events: [${events}]`);
+      return fail(world, `Expected log with event \`${event}\`, found logs with events: [${events}]`);
     }
 
     Object.entries(keyValues.val).forEach(([key, value]) => {

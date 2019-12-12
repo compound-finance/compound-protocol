@@ -156,9 +156,7 @@ export function erc20Commands() {
         new Arg("apiKey", getStringV)
       ],
       async (world, {erc20Arg, apiKey}) => {
-        console.log([erc20Arg, apiKey]);
         let [erc20, name, data] = await getErc20Data(world, erc20Arg.val);
-        console.log([erc20, name, data.toJS()]);
 
         return await verifyErc20(world, erc20, name, data.get('contract')!, apiKey.val);
       },

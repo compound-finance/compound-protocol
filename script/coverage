@@ -1,22 +1,31 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 dir=`dirname $0`
 proj_root="$dir/.."
+test_root="$dir/../tests"
+contracts_root="$dir/../contracts"
+coverage_root="$dir/../coverage"
+network=${NETWORK:-test}
+verbose=${verbose:-}
 
-export NETWORK="coverage"
-case $1 in
-    "mocha")
-        export SCENARIOS="skipall"
-        export NO_TSC="true"
-        export no_compile="true" # mocha doesnt need contracts written to by solc
-        source $dir/test
-        ;;
-    "scenario")
-        # dont instrument unitroller, slows everything down bigly
-        export SKIP_UNITROLLER="true"
-        source $dir/test --file="test/ScenarioTest.js"
-	      ;;
-	  *)
-        echo "must provide mocha/scenario option to coverage script"
-	      ;;
-esac
+# Compile scenario runner
+[[ -z $NO_TSC ]] && "$proj_root/scenario/script/tsc"
+
+# Build scenario stubs
+[[ -z $NO_BUILD_STUB ]] && "$proj_root/script/compile" --coverage
+
+# Build scenario stubs
+[[ -z $NO_BUILD_SCEN ]] && "$proj_root/script/build_scenarios"
+
+# rm -rf "$coverage_root"
+
+proj_root="$proj_root" verbose="$verbose" node --max_old_space_size=4096 "./node_modules/.bin/saddle" coverage $@
+coverage_code=$?
+
+npx istanbul report --root="$coverage_root" lcov json
+
+echo "Coverage generated. Report at $(cd $coverage_root && pwd)/lcov-report/index.html"
+
+exit $coverage_code

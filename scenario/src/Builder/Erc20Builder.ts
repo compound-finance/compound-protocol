@@ -55,7 +55,7 @@ export async function buildErc20(world: World, from: string, event: Event): Prom
         new Arg("name", getStringV, { default: undefined }),
       ],
       async (world, { symbol, name, address }) => {
-        const existingToken = ExistingToken.at<Erc20>(world, address.val);
+        const existingToken = await ExistingToken.at<Erc20>(world, address.val);
                                                                    const tokenName = name.val === undefined ? symbol.val : name.val;
         const decimals = await existingToken.methods.decimals().call();
 
@@ -83,7 +83,7 @@ export async function buildErc20(world: World, from: string, event: Event): Prom
       ],
       async (world, {symbol, address}) => {
         return {
-          invokation: new Invokation<Erc20>(TetherInterface.at<Erc20>(world, address.val), null, null, null),
+          invokation: new Invokation<Erc20>(await TetherInterface.at<Erc20>(world, address.val), null, null, null),
           description: "ExistingTether",
           name: symbol.val,
           symbol: symbol.val,

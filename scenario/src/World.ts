@@ -1,8 +1,7 @@
-import { Assert, throwAssert } from './Assert';
+import { Expect, throwExpect } from './Assert';
 import { Action } from './Action';
 import { Contract } from './Contract';
 import { Record } from 'immutable';
-import { Artifacts } from './Artifact';
 import { Printer } from './Printer';
 import { Invariant } from './Invariant';
 import { SuccessInvariant } from './Invariant/SuccessInvariant';
@@ -17,10 +16,7 @@ import { Map } from 'immutable';
 import { Settings } from './Settings';
 import { Accounts, loadAccounts } from './Accounts';
 import Web3 from 'web3';
-
-export interface IWeb3 {
-  currentProvider: any;
-}
+import { Saddle } from 'eth-saddle';
 
 const startingBlockNumber = 1000;
 
@@ -38,9 +34,9 @@ export interface WorldProps {
   expectations: Expectation[];
   contractIndex: ContractIndex;
   contractData: Map<string, object>;
-  assert: Assert;
+  expect: Expect;
   web3: Web3 | null;
-  artifacts: Artifacts | null;
+  saddle: Saddle | null;
   printer: Printer | null;
   network: string | null;
   dryRun: boolean;
@@ -51,6 +47,7 @@ export interface WorldProps {
   trxInvokationOpts: Map<string, any>;
   basePath: string | null;
   eventDecoder: EventDecoder;
+  fs: object | null;
 }
 
 const defaultWorldProps: WorldProps = {
@@ -64,9 +61,9 @@ const defaultWorldProps: WorldProps = {
   expectations: [],
   contractIndex: {},
   contractData: Map({}),
-  assert: throwAssert,
+  expect: throwExpect,
   web3: null,
-  artifacts: null,
+  saddle: null,
   printer: null,
   network: null,
   dryRun: false,
@@ -76,7 +73,8 @@ const defaultWorldProps: WorldProps = {
   invokationOpts: {},
   trxInvokationOpts: Map({}),
   basePath: null,
-  eventDecoder: {}
+  eventDecoder: {},
+  fs: null
 };
 
 export class World extends Record(defaultWorldProps) {
@@ -91,9 +89,9 @@ export class World extends Record(defaultWorldProps) {
   public readonly expectations!: Expectation[];
   public readonly contractIndex!: ContractIndex;
   public readonly contractData!: Map<string, object>;
-  public readonly assert!: Assert;
+  public readonly expect!: Expect;
   public readonly web3!: Web3;
-  public readonly artifacts!: Artifacts | null;
+  public readonly saddle!: Saddle;
   public readonly printer!: Printer;
   public readonly network!: string;
   public readonly dryRun!: boolean;
@@ -172,10 +170,10 @@ export async function loadSettings(world: World): Promise<World> {
 }
 
 export async function initWorld(
-  assert: Assert,
+  expect: Expect,
   printer: Printer,
-  iweb3: IWeb3,
-  artifacts: Artifacts | null,
+  iweb3: Web3,
+  saddle: Saddle,
   network: string,
   accounts: string[],
   basePath: string | null
@@ -193,16 +191,17 @@ export async function initWorld(
     expectations: [],
     contractIndex: {},
     contractData: Map({}),
-    assert: assert,
+    expect: expect,
     web3: web3,
-    artifacts: artifacts,
+    saddle: saddle,
     printer: printer,
     network: network,
     settings: Settings.default(basePath, null),
     accounts: loadAccounts(accounts),
     trxInvokationOpts: Map({}),
     basePath: basePath,
-    eventDecoder: {}
+    eventDecoder: {},
+    fs: network === 'test' ? {} : null
   });
 }
 
@@ -335,9 +334,9 @@ export function describeUser(world: World, address: string): string {
 // Fails an assertion with reason
 export function fail(world: World, reason: string): World {
   if (world.event) {
-    world.assert.fail(0, 1, `${reason} processing ${formatEvent(world.event)}`);
+    world.expect(undefined).fail(`${reason} processing ${formatEvent(world.event)}`);
   } else {
-    world.assert.fail(0, 1, reason);
+    world.expect(undefined).fail(reason);
   }
 
   return world;

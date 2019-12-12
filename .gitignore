@@ -27,3 +27,10 @@ test-results.xml
 .tsbuilt
 yarn-error.log
 scenario/build/webpack.js
+.scencache
+.solcache
+.solcachecov
+scenario/.tscache
+tests/scenarios/
+junit.xml
+.build

@@ -5,14 +5,12 @@
   "main": "index.js",
   "scripts": {
     "chain": "./script/ganache",
-    "compile": "truffle compile",
-    "console": "./script/console",
+    "compile": "./script/compile",
     "coverage": "./script/coverage",
     "deploy": "./scenario/script/repl -s ./script/scen/deploy.scen",
     "lint": "./script/lint",
     "ganache": "./script/ganache",
     "repl": "./scenario/script/repl",
-    "scenario": "./script/scenario",
     "test": "./script/test"
   },
   "repository": "git@github.com:compound-finance/compound-protocol.git",
@@ -20,22 +18,21 @@
   "license": "UNLICENSED",
   "devDependencies": {
     "bignumber.js": "8.0.1",
-    "ganache-cli": "^6.7.0",
-    "ganache-core": "https://github.com/trufflesuite/ganache-core.git",
+    "ganache-core": "^2.9.0-istanbul.0",
     "immutable": "^4.0.0-rc.12",
-    "mocha-junit-reporter": "^1.18.0",
-    "mocha-multi-reporters": "^1.1.7",
-    "request": "^2.88.0",
-    "solidity-coverage": "^0.7.0-beta.2",
-    "solparse": "^2.2.8", 
-    "truffle-config": "^1.1.17",
-    "truffle-flattener": "^1.3.0",
-    "truffle-resolver": "^5.0.0",
-    "web3": "^1.2.0"
+    "jest": "^24.9.0",
+    "jest-cli": "^24.9.0",
+    "jest-codemods": "^0.22.0",
+    "jest-junit": "^9.0.0",
+    "solium": "^1.2.5",
+    "solparse": "^2.2.8"
   },
   "dependencies": {
-    "ethlint": "^1.2.2",
-    "truffle": "^5.0.30",
-    "truffle-hdwallet-provider": "1.0.5"
+    "eth-saddle": "^0.0.25",
+    "truffle-hdwallet-provider": "^1.0.17",
+    "web3": "^1.2.4"
+  },
+  "resolutions": {
+    "scrypt.js": "https://registry.npmjs.org/@compound-finance/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz"
   }
 }

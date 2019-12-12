@@ -107,18 +107,6 @@ Deployment
 
 The easiest way to deploy some Erc20 tokens, cTokens and a Comptroller is through scenario scripts.
 
-    # run ganache locally
-    script/ganache # or `ganache-cli`
-
-    # ensure development files don't exist as
-    # new ganache instances invalidate old deployed contracts
-    rm networks/development*
-
-    # run deployment script
-    yarn run deploy -v
-
-After that, you'll have a full set of contracts deployed locally. Look in `networks/development.json` for the addresses for those deployed contracts. You can use the `yarn run console` command above to interact with the contracts (or the scenario REPL, if you prefer).
-
 Testing
 -------
 Mocha contract tests are defined under the [test directory](https://github.com/compound-finance/compound-protocol/tree/master/test). To run the tests run:
