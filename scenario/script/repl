@@ -23,6 +23,9 @@ while getopts ":hdn:e:s:vt" arg; do
 		d) # Dry run
 			dry_run="true"
 			;;
+		h) # Hypothetical
+			hypothetical="true"
+			;;
 		e) # Add variables for script (key=value,key2=value2)
 			env_vars="$OPTARG"
 			;;
@@ -32,14 +35,15 @@ while getopts ":hdn:e:s:vt" arg; do
 		s) # Specify a script to run
 			if [[ "$OSTYPE" == "darwin"* ]]; then
 				# Darwin doesn't support readlink -f to get absolute path...
-				script=$OPTARG
+				script_file=$OPTARG
 			else
-				script=$(readlink -f "$OPTARG")
+				script_file="$(readlink -f "$OPTARG")"
 			fi
 
-			[ ! -f "$script" ] \
-				&& echo "Cannot find script $script" \
+			[ ! -f "$script_file" ] \
+				&& echo "Cannot find script $script_file" \
 				&& exit 1
+			script+=("$OPTARG")
 			;;
 		t) # Don't build TSC
 			no_tsc="true"
@@ -50,11 +54,14 @@ while getopts ":hdn:e:s:vt" arg; do
 			;;
 
 		h | *) # Display help.
-			usage
+			usa te
 			exit 0
 			;;
 	esac
 done
+
+script=$(printf ",%s" "${script[@]}")
+script=${script:2}
 
 if [ ! $network = "mainnet" ]; then
 	function cleanup {
@@ -76,4 +83,4 @@ fi
 
 [[ -z $no_compile ]] && node --stack_size=10000 "$proj_root/node_modules/truffle/build/cli.bundled.js" compile
 
-proj_root="$proj_root" env_vars="$env_vars" dry_run="$dry_run" script="$script" network="$network" verbose="$verbose" npx truffle exec --network "$network" "$tsc_root/.tsbuilt/Repl.js"
+proj_root="$proj_root" env_vars="$env_vars" dry_run="$dry_run" hypothetical="$hypothetical" script="$script" network="$network" verbose="$verbose" npx truffle exec --network "$network" "$tsc_root/.tsbuilt/Repl.js"

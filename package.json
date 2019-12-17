@@ -21,7 +21,7 @@
   "devDependencies": {
     "bignumber.js": "8.0.1",
     "ganache-cli": "^6.7.0",
-    "ganache-core": "^2.8.0",
+    "ganache-core": "https://github.com/trufflesuite/ganache-core.git",
     "immutable": "^4.0.0-rc.12",
     "mocha-junit-reporter": "^1.18.0",
     "mocha-multi-reporters": "^1.1.7",

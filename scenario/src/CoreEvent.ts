@@ -1,4 +1,3 @@
-import { loadAccounts } from './Accounts';
 import {
   addAction,
   checkExpectations,
@@ -36,8 +35,7 @@ import { Map } from 'immutable';
 import { encodedNumber } from './Encoding';
 import { printHelp } from './Help';
 import { loadContracts } from './Networks';
-import Ganache from 'ganache-core';
-import Web3 from 'web3';
+import { fork } from './Hypothetical';
 
 export class EventProcessingError extends Error {
   error: Error;
@@ -202,32 +200,19 @@ export const commands = [
       });
     }
   ),
-  new View<{ fork: StringV; unlockedAccounts: AddressV[] }>(
+  new View<{ url: StringV; unlockedAccounts: AddressV[] }>(
     `
       #### Web3Fork
 
-      * "Web3Fork fork:<String> unlockedAccounts:<String>[]" - Creates an in-memory ganache
+      * "Web3Fork url:<String> unlockedAccounts:<String>[]" - Creates an in-memory ganache
         * E.g. "Web3Fork \"https://mainnet.infura.io/v3/e1a5d4d2c06a4e81945fca56d0d5d8ea\" (\"0x8b8592e9570e96166336603a1b4bd1e8db20fa20\")"
     `,
     'Web3Fork',
-    [new Arg('fork', getStringV), new Arg('unlockedAccounts', getAddressV, { mapped: true })],
-    async (world, { fork, unlockedAccounts }) => {
-      let lastBlock = await world.web3.eth.getBlock("latest")
-      const newWeb3 = new Web3(
-        Ganache.provider({
-          allowUnlimitedContractSize: true,
-          fork: fork.val,
-          gasLimit: lastBlock.gasLimit, // maintain configured gas limit
-          gasPrice: '20000',
-          port: 8546,
-          unlocked_accounts: unlockedAccounts.map(v => v.val)
-        })
-      );
-      const newAccounts = loadAccounts(await newWeb3.eth.getAccounts())
-      return world
-        .set('web3', newWeb3)
-        .set('accounts', newAccounts);
-    }
+    [
+      new Arg('url', getStringV),
+      new Arg('unlockedAccounts', getAddressV, { mapped: true })
+    ],
+    (world, { url, unlockedAccounts }) => fork(world, url.val, unlockedAccounts.map(v => v.val))
   ),
 
   new View<{ networkVal: StringV; }>(
