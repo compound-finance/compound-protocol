@@ -1,4 +1,3 @@
-import { loadAccounts } from './Accounts';
 import {
   addAction,
   checkExpectations,
@@ -35,8 +34,8 @@ import { sendRPC, sleep } from './Utils';
 import { Map } from 'immutable';
 import { encodedNumber } from './Encoding';
 import { printHelp } from './Help';
-import Ganache from 'ganache-core';
-import Web3 from 'web3';
+import { loadContracts } from './Networks';
+import { fork } from './Hypothetical';
 
 export class EventProcessingError extends Error {
   error: Error;
@@ -201,33 +200,48 @@ export const commands = [
       });
     }
   ),
-  new View<{ fork: StringV; unlockedAccounts: AddressV[] }>(
+  new View<{ url: StringV; unlockedAccounts: AddressV[] }>(
     `
       #### Web3Fork
 
-      * "Web3Fork fork:<String> unlockedAccounts:<String>[]" - Creates an in-memory ganache
+      * "Web3Fork url:<String> unlockedAccounts:<String>[]" - Creates an in-memory ganache
         * E.g. "Web3Fork \"https://mainnet.infura.io/v3/e1a5d4d2c06a4e81945fca56d0d5d8ea\" (\"0x8b8592e9570e96166336603a1b4bd1e8db20fa20\")"
     `,
     'Web3Fork',
-    [new Arg('fork', getStringV), new Arg('unlockedAccounts', getAddressV, { mapped: true })],
-    async (world, { fork, unlockedAccounts }) => {
-      let lastBlock = await world.web3.eth.getBlock("latest")
-      const newWeb3 = new Web3(
-        Ganache.provider({
-          allowUnlimitedContractSize: true,
-          fork: fork.val,
-          gasLimit: lastBlock.gasLimit, // maintain configured gas limit
-          gasPrice: '20000',
-          port: 8546,
-          unlocked_accounts: unlockedAccounts.map(v => v.val)
-        })
-      );
-      const newAccounts = loadAccounts(await newWeb3.eth.getAccounts())
-      return world
-        .set('web3', newWeb3)
-        .set('accounts', newAccounts);
+    [
+      new Arg('url', getStringV),
+      new Arg('unlockedAccounts', getAddressV, { mapped: true })
+    ],
+    (world, { url, unlockedAccounts }) => fork(world, url.val, unlockedAccounts.map(v => v.val))
+  ),
+
+  new View<{ networkVal: StringV; }>(
+    `
+      #### UseConfigs
+
+      * "UseConfigs networkVal:<String>" - Updates world to use the configs for specified network
+        * E.g. "UseConfigs mainnet"
+    `,
+    'UseConfigs',
+    [new Arg('networkVal', getStringV)],
+    async (world, { networkVal }) => {
+      const network = networkVal.val;
+      if (world.basePath && (network === 'mainnet' || network === 'kovan' || network === 'goerli' || network === 'rinkeby')) {
+        let newWorld = world.set('network', network);
+        let contractInfo;
+        [newWorld, contractInfo] = await loadContracts(newWorld);
+        if (contractInfo.length > 0) {
+          world.printer.printLine(`Contracts:`);
+          contractInfo.forEach((info) => world.printer.printLine(`\t${info}`));
+        }
+
+        return newWorld;
+      }
+
+      return world;
     }
   ),
+
   new View<{ address: AddressV }>(
     `
       #### MyAddress
@@ -308,6 +322,21 @@ export const commands = [
     [new Arg('timestamp', getNumberV)],
     async (world, { timestamp }) => {
       await sendRPC(world, 'evm_mine', [timestamp.val]);
+      return world;
+    }
+  ),
+
+  new View<{}>(
+    `
+      #### MineBlock
+
+      * "MineBlock" - Increase Ganache evm block number
+        * E.g. "MineBlock"
+    `,
+    'MineBlock',
+    [],
+    async (world, { }) => {
+      await sendRPC(world, 'evm_mine', []);
       return world;
     }
   ),

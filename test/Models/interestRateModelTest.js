@@ -10,7 +10,7 @@ function utilizationRate(cash, borrows, reserves) {
   return borrows ? borrows / (cash + borrows - reserves) : 0;
 }
 
-function whitePaperRateFn(base, slope, kink = 0.9, jump = 5) {
+function whitePaperRateFn(base, slope, jump = 0.8, kink = 0.9) {
   return (cash, borrows, reserves) => {
     const ur = utilizationRate(cash, borrows, reserves);
 
@@ -18,15 +18,14 @@ function whitePaperRateFn(base, slope, kink = 0.9, jump = 5) {
       return (ur * slope + base) / blocksPerYear;
     } else {
       const excessUtil = ur - kink;
-      const jumpMultiplier = jump * slope;
-      return ((excessUtil * jumpMultiplier) + (kink * slope) + base) / blocksPerYear;
+      return ((excessUtil * jump) + (kink * slope) + base) / blocksPerYear;
     }
   }
 }
 
-function supplyRateFn(base, slope, kink, jump, cash, borrows, reserves, reserveFactor = 0.1) {
+function supplyRateFn(base, slope, jump, kink, cash, borrows, reserves, reserveFactor = 0.1) {
   const ur = utilizationRate(cash, borrows, reserves);
-  const borrowRate = whitePaperRateFn(base, slope, kink, jump)(cash, borrows, reserves);
+  const borrowRate = whitePaperRateFn(base, slope, jump, kink)(cash, borrows, reserves);
 
   return borrowRate * (1 - reserveFactor) * ur;
 }
@@ -116,13 +115,100 @@ contract('InterestRateModel', async function ([root, ...accounts]) {
         });
 
         it('handles overflow utilization rate times slope', async () => {
-          const badModel = await makeInterestRateModel({ kind, baseRate: 0, multiplier: -1 });
+          const badModel = await makeInterestRateModel({ kind, baseRate: 0, multiplier: -1, jump: -1 });
           await assert.revert(getBorrowRate(badModel, 1, 1, 0), "revert SafeMath: multiplication overflow");
         });
 
         it('handles overflow utilization rate times slope + base', async () => {
-          const badModel = await makeInterestRateModel({ kind, baseRate: -1, multiplier: 1e48 });
+          const badModel = await makeInterestRateModel({ kind, baseRate: -1, multiplier: 1e48, jump: 1e48 });
           await assert.revert(getBorrowRate(badModel, 0, 1, 0), "revert SafeMath: multiplication overflow");
+        });
+
+        describe('chosen points', () => {
+          const tests = [
+            {
+              jump: 100,
+              kink: 90,
+              base: 10,
+              slope: 20,
+              points: [
+                [0, 10],
+                [10, 12],
+                [89, 27.8],
+                [90, 28],
+                [91, 29],
+                [100, 38]
+              ]
+            },
+            {
+              jump: 20,
+              kink: 90,
+              base: 10,
+              slope: 20,
+              points: [
+                [0, 10],
+                [10, 12],
+                [100, 30]
+              ]
+            },
+            {
+              jump: 0,
+              kink: 90,
+              base: 10,
+              slope: 20,
+              points: [
+                [0, 10],
+                [10, 12],
+                [100, 28]
+              ]
+            },
+            {
+              jump: 0,
+              kink: 110,
+              base: 10,
+              slope: 20,
+              points: [
+                [0, 10],
+                [10, 12],
+                [100, 30]
+              ]
+            },
+            {
+              jump: 2000,
+              kink: 0,
+              base: 10,
+              slope: 20,
+              points: [
+                [0, 10],
+                [10, 210],
+                [100, 2010]
+              ]
+            }
+          ].forEach(({jump, kink, base, slope, points}) => {
+            describe(`for jump=${jump}, kink=${kink}, base=${base}, slope=${slope}`, async () => {
+              let jumpModel;
+
+              before(async () => {
+                jumpModel = await makeInterestRateModel({
+                  kind: 'jump-rate',
+                  baseRate: base / 100,
+                  multiplier: slope / 100,
+                  jump: jump / 100,
+                  kink: kink / 100,
+                });
+              });
+
+              points.forEach(([util, expected]) => {
+                it(`and util=${util}%`, async () => {
+                  const {borrows, cash, reserves} = makeUtilization(util * 1e16);
+                  const result = await getBorrowRate(jumpModel, cash, borrows, reserves);
+                  const actual = Number(result) / 1e16 * blocksPerYear;
+
+                  assert.approximately(actual, expected, 1e-2);
+                });
+              });
+            });
+          });
         });
 
         describe('ranges', () => {
@@ -131,10 +217,10 @@ contract('InterestRateModel', async function ([root, ...accounts]) {
 
           let jumps = [
             0,
-            2,
-            3,
-            10,
-            1000
+            0.02e18,
+            0.03e18,
+            0.10e18,
+            10.0e18
           ];
 
           let kinks = [
@@ -165,18 +251,18 @@ contract('InterestRateModel', async function ([root, ...accounts]) {
             utils.forEach(async (util) => {
               it(`has correct curve for kink=${kink/1e16}%, util=${util/1e16}%`, async () => {
                 let {borrows, cash, reserves} = makeUtilization(util);
-                
+
                 let calculated = borrows / (cash + borrows - reserves);
 
                 const altModel = await makeInterestRateModel({
                   kind: 'jump-rate',
                   baseRate: base / 1e18,
                   multiplier: slope / 1e18,
-                  kink: kink,
-                  jump: jump
+                  jump: jump / 1e18,
+                  kink: kink
                 });
 
-                const expected = whitePaperRateFn(base / 1e18, slope / 1e18, kink / 1e18, jump)(cash, borrows, reserves);
+                const expected = whitePaperRateFn(base / 1e18, slope / 1e18, jump / 1e18, kink / 1e18)(cash, borrows, reserves);
                 const result = await getBorrowRate(altModel, cash, borrows, reserves);
 
                 assert.like(
@@ -226,10 +312,10 @@ contract('InterestRateModel', async function ([root, ...accounts]) {
             [20.0e18, 40.0e18, 0, 0],
             [20.0e18, 40.0e18, 3e18, 500],
           ].map(vs => vs.map(Number))
-            .forEach(([base, slope, cash, borrows, reserves = 0, kink = 0.9e18, jump = 5]) => { // XXX add reserves
+            .forEach(([base, slope, cash, borrows, reserves = 0, jump = 0.8e18, kink = 0.9e18]) => { // XXX add reserves
               it(`calculates correct borrow value for base=${base / 1e16}%,slope=${slope / 1e16}%, cash=${cash}, borrows=${borrows}`, async () => {
-                const altModel = await makeInterestRateModel({ kind: 'jump-rate', baseRate: base / 1e18, multiplier: slope / 1e18, kink: kink / 1e18, jump: jump });
-                const expected = whitePaperRateFn(base / 1e18, slope / 1e18, kink / 1e18, jump)(cash, borrows, reserves);
+                const altModel = await makeInterestRateModel({kind: 'jump-rate', baseRate: base / 1e18, multiplier: slope / 1e18, jump: jump / 1e18, kink: kink / 1e18});
+                const expected = whitePaperRateFn(base / 1e18, slope / 1e18, jump / 1e18, kink / 1e18)(cash, borrows, reserves);
                 assert.like(
                   await getBorrowRate(altModel, cash, borrows, reserves),
                   (x) => assert.approximately(Number(x) / 1e18, expected, 1e-8)
@@ -276,10 +362,10 @@ contract('InterestRateModel', async function ([root, ...accounts]) {
             [20.0e18, 40.0e18, 0, 0],
             [20.0e18, 40.0e18, 3e18, 500],
           ].map(vs => vs.map(Number))
-            .forEach(([base, slope, cash, borrows, reserves = 0, kink = 0.9e18, jump = 5, reserveFactor = 0.1e18]) => { // XXX add reserves
-              it(`calculates correct supply value for base=${base / 1e16}%,slope=${slope / 1e16}%, cash=${cash}, borrows=${borrows}`, async () => {
-                const altModel = await makeInterestRateModel({ kind: 'jump-rate', baseRate: base / 1e18, multiplier: slope / 1e18, kink: kink / 1e18, jump: jump });
-                const expected = supplyRateFn(base / 1e18, slope / 1e18, kink / 1e18, jump, cash, borrows, reserves, reserveFactor / 1e18);
+            .forEach(([base, slope, cash, borrows, reserves = 0, jump = slope * 5, kink = 0.9e18, reserveFactor = 0.1e18]) => { // XXX add reserves
+              it(`calculates correct supply value for base=${base / 1e16}%, slope=${slope / 1e16}%, jump=${jump / 1e16}, cash=${cash}, borrows=${borrows}`, async () => {
+                const altModel = await makeInterestRateModel({kind: 'jump-rate', baseRate: base / 1e18, multiplier: slope / 1e18, jump: jump / 1e18, kink: kink / 1e18});
+                const expected = supplyRateFn(base / 1e18, slope / 1e18, jump / 1e18, kink / 1e18, cash, borrows, reserves, reserveFactor / 1e18);
                 assert.like(
                   await getSupplyRate(altModel, cash, borrows, reserves, reserveFactor),
                   (x) => assert.approximately(Number(x) / 1e18, expected, 1e-8)

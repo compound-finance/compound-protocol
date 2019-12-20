@@ -29,7 +29,7 @@ import { buildCToken } from '../Builder/CTokenBuilder';
 import { verify } from '../Verify';
 import { getLiquidity } from '../Value/ComptrollerValue';
 import { encodedNumber } from '../Encoding';
-import { getCTokenV } from '../Value/CTokenValue';
+import { getCTokenV, getCErc20DelegatorV } from '../Value/CTokenValue';
 
 function showTrxValue(world: World): string {
   return new NumberV(world.trxInvokationOpts.get('value')).show();
@@ -318,14 +318,14 @@ async function becomImplementation(
 async function setImplementation(
   world: World,
   from: string,
-  cToken: CToken,
+  cToken: CErc20Delegator,
   implementation: string,
   allowResign: boolean,
   becomeImplementationData: string
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    (cToken as CErc20Delegator).methods._setImplementation(
+    cToken.methods._setImplementation(
       implementation,
       allowResign,
       becomeImplementationData
@@ -744,7 +744,7 @@ export function cTokenCommands() {
       { namePos: 1 }
     ),
     new Command<{
-      cToken: CToken;
+      cToken: CErc20Delegator;
       implementation: AddressV;
       allowResign: BoolV;
       becomeImplementationData: StringV;
@@ -757,7 +757,7 @@ export function cTokenCommands() {
       `,
       'SetImplementation',
       [
-        new Arg('cToken', getCTokenV),
+        new Arg('cToken', getCErc20DelegatorV),
         new Arg('implementation', getAddressV),
         new Arg('allowResign', getBoolV),
         new Arg('becomeImplementationData', getStringV)

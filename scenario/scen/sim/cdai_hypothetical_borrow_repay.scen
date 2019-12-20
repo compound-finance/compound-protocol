@@ -1,0 +1,28 @@
+#!/usr/bin/env yarn repl -s
+
+PrintTransactionLogs
+Alias RedKey "0x8b8592e9570e96166336603a1b4bd1e8db20fa20"
+Alias DaiHolder "0x447a9652221f46471a2323B98B73911cda58FD8A"
+Alias CEthHolder "0x5d76a92b7cb9e1a81b8eb8c16468f1155b2f64f4"
+Web3Fork "https://mainnet.infura.io/v3/e1a5d4d2c06a4e81945fca56d0d5d8ea@8998553" (RedKey DaiHolder CEthHolder)
+UseConfigs mainnet
+Assert True (Timelock QueuedTransaction (Timelock TxHash (Comptroller Address) 0 1574806914 "_supportMarket(address)" (CToken cDAI Address)))
+Assert True (Timelock QueuedTransaction (Timelock TxHash (Comptroller Address) 0 1574806855 "_setPriceOracle(address)" (PriceOracleProxy Address)))
+Assert True (Timelock QueuedTransaction (Timelock TxHash (CToken cDAI Address) 0 1574806586 "_setReserveFactor(uint256)" 100000000000000000))
+SetTime 1574807000
+From RedKey (Timelock ExecuteTransaction (CToken cDAI Address) 0 1574806586 "_setReserveFactor(uint256)" 100000000000000000)
+From RedKey (Timelock ExecuteTransaction (Comptroller Address) 0 1574806855 "_setPriceOracle(address)" (PriceOracleProxy Address))
+From RedKey (Timelock ExecuteTransaction (Comptroller Address) 0 1574806914 "_supportMarket(address)" (CToken cDAI Address))
+Assert True (Comptroller CheckListed cDAI)
+Assert Equal (CToken cDAI ReserveFactor) 0.1
+Assert Equal (PriceOracleProxy Address) (Comptroller PriceOracle)
+From DaiHolder (Erc20 DAI Approve (CToken cDAI Address) 1e30)
+Mint DaiHolder 1e18 cDAI
+Borrow CEthHolder 1e18 cDAI
+MineBlock
+-- Repay the principal + interest after 3 blocks (i.e. 3 transactions since)
+From DaiHolder (Erc20 DAI Transfer CEthHolder 1e18)
+From CEthHolder (Erc20 DAI Approve (CToken cDAI Address) 1e30)
+RepayBorrow CEthHolder 1000000245222391331 cDAI
+Assert Equal (cToken cDAI BorrowBalance CEthHolder) 0
+Print "Borrow and Repay all good for cDAI."

@@ -79,14 +79,13 @@ contract('CToken', function ([root, admin, ...accounts]) {
       const baseRate = 0.05;
       const multiplier = 0.45;
       const kink = 0.95;
-      const jump = 5;
+      const jump = 5 * multiplier;
       const cToken = await makeCToken({ supportMarket: true, interestRateModelOpts: { kind: 'jump-rate', baseRate, multiplier, kink, jump } });
       await send(cToken, 'harnessSetReserveFactorFresh', [etherMantissa(.01)]);
       await send(cToken, 'harnessExchangeRateDetails', [1, 1, 0]);
       await send(cToken, 'harnessSetExchangeRate', [etherMantissa(1)]);
       // Full utilization (Over the kink so jump is included), 1% reserves
-      const additionalJump = multiplier * jump * .05;
-      const borrowRate = (kink * multiplier) + baseRate + additionalJump;
+      const borrowRate = baseRate + multiplier * kink + jump * .05;
       const expectedSuplyRate = borrowRate * .99;
 
       const perBlock = await call(cToken, 'supplyRatePerBlock');

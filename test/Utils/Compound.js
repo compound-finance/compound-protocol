@@ -173,9 +173,9 @@ async function makeInterestRateModel(opts = {}) {
     const InterestRateModel = getTestContract('JumpRateModel');
     const baseRate = etherMantissa(dfn(opts.baseRate, 0));
     const multiplier = etherMantissa(dfn(opts.multiplier, 1e-18));
-    const kink = etherMantissa(dfn(opts.kink, 0.95e18));
-    const jump = etherUnsigned(dfn(opts.jump, 5));
-    const interestRateModel = await InterestRateModel.deploy({ arguments: [baseRate, multiplier, kink, jump] }).send({ from: root });
+    const jump = etherMantissa(dfn(opts.jump, 0));
+    const kink = etherMantissa(dfn(opts.kink, 0));
+    const interestRateModel = await InterestRateModel.deploy({ arguments: [baseRate, multiplier, jump, kink] }).send({ from: root });
     return interestRateModel;
   }
 }

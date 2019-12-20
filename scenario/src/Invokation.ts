@@ -1,7 +1,7 @@
-import {ErrorReporter, NoErrorReporter, ComptrollerErrorReporter} from './ErrorReporter';
-import {mustArray} from './Utils';
-import {World} from './World';
-import {encodedNumber} from './Encoding';
+import { ErrorReporter, NoErrorReporter, ComptrollerErrorReporter } from './ErrorReporter';
+import { mustArray } from './Utils';
+import { World } from './World';
+import { encodedNumber } from './Encoding';
 
 const errorRegex = /^(.*) \((\d+)\)$/
 
@@ -22,7 +22,7 @@ export interface InvokationOpts {
 }
 
 export class InvokationError extends Error {
-  err : Error
+  err: Error
   // function : string
   // arguments : {[]}
 
@@ -38,8 +38,8 @@ export class InvokationError extends Error {
 
 export class InvokationRevertFailure extends InvokationError {
   errCode: number
-  error : string | null
-  errMessage : string
+  error: string | null
+  errMessage: string
 
   constructor(err: Error, errMessage: string, errCode: number, error: string | null) {
     super(err);
@@ -81,7 +81,7 @@ export interface Receipt {
   transactionHash: string
   gasUsed: number
 
-  events: {[event: string]: {returnValues: {[key: string]: any}}}
+  events: { [event: string]: { returnValues: { [key: string]: any } } }
 }
 
 export class Failure {
@@ -114,10 +114,10 @@ export class Invokation<T> {
   error: Error | null
   failures: Failure[]
   method: string | null
-  args: {arg: string, val: any}[]
+  args: { arg: string, val: any }[]
   errorReporter: ErrorReporter
 
-  constructor(value: T | null, receipt: Receipt | null, error: Error | null, fn: Callable<T> | null, errorReporter: ErrorReporter=NoErrorReporter) {
+  constructor(value: T | null, receipt: Receipt | null, error: Error | null, fn: Callable<T> | null, errorReporter: ErrorReporter = NoErrorReporter) {
     this.value = value;
     this.receipt = receipt;
     this.error = error;
@@ -125,7 +125,7 @@ export class Invokation<T> {
 
     if (fn !== null) {
       this.method = fn._method.name;
-      this.args = fn.arguments.map((argument, i) => ({arg: fn._method.inputs[i].name, val: argument}));
+      this.args = fn.arguments.map((argument, i) => ({ arg: fn._method.inputs[i].name, val: argument }));
     } else {
       this.method = null;
       this.args = [];
@@ -135,7 +135,7 @@ export class Invokation<T> {
       const failures = mustArray(receipt.events["Failure"]);
 
       this.failures = failures.map((failure) => {
-        const {'error': errorVal, 'info': infoVal, 'detail': detailVal} = failure.returnValues;
+        const { 'error': errorVal, 'info': infoVal, 'detail': detailVal } = failure.returnValues;
 
         return new Failure(
           errorReporter.getError(errorVal) || `unknown error=${errorVal}`,
@@ -156,7 +156,7 @@ export class Invokation<T> {
 
   invokation(): string {
     if (this.method) {
-      let argStr = this.args.map(({arg, val}) => `${arg}=${val.toString()}`).join(',');
+      let argStr = this.args.map(({ arg, val }) => `${arg}=${val.toString()}`).join(',');
       return `"${this.method}(${argStr})"`;
     } else {
       return `unknown method`;
@@ -219,10 +219,10 @@ export async function fallback(world: World, from: string, to: string, value: en
   return invoke<string>(world, fn, from, NoErrorReporter);
 }
 
-export async function invoke<T>(world: World, fn: Sendable<T>, from: string, errorReporter: ErrorReporter=NoErrorReporter): Promise<Invokation<T>> {
+export async function invoke<T>(world: World, fn: Sendable<T>, from: string, errorReporter: ErrorReporter = NoErrorReporter): Promise<Invokation<T>> {
   let value: T | null = null;
   let result: Receipt | null = null;
-  let worldInvokationOpts = world.getInvokationOpts({from: from});
+  let worldInvokationOpts = world.getInvokationOpts({ from: from });
   let trxInvokationOpts = world.trxInvokationOpts.toJS();
 
   let invokationOpts = {
@@ -233,10 +233,10 @@ export async function invoke<T>(world: World, fn: Sendable<T>, from: string, err
   try {
     try {
       const gas = await fn.estimateGas({ ...invokationOpts });
-    invokationOpts = {
-      ...invokationOpts,
-      gas: gas * 2
-    };
+      invokationOpts = {
+        ...invokationOpts,
+        gas: gas * 2
+      };
     } catch (e) {
       invokationOpts = {
         ...invokationOpts,
@@ -268,7 +268,9 @@ export async function invoke<T>(world: World, fn: Sendable<T>, from: string, err
       const eventLogs = Object.values(result.events).map((event: any) => {
         const eventLog = event.raw;
 
-        return world.eventDecoder[eventLog.topics[0]](eventLog);
+        if (eventLog) {
+          return world.eventDecoder[eventLog.topics[0]](eventLog);
+        }
       });
       console.log('EMITTED EVENTS:   ', eventLogs);
     }

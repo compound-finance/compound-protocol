@@ -39,21 +39,7 @@ export function storeContract(world: World, contract: Contract, name: string, ex
 
   world = world.set('lastContract', contract);
   world = world.setIn(['contractIndex', contract._address.toLowerCase()], contract);
-
-  const updatedEventDecoder = contract._jsonInterface
-    .filter(i => i.type == 'event')
-    .reduce((accum, event) => {
-      const { anonymous, inputs, signature } = (event as any) as ABIEvent;
-      return {
-        ...accum,
-        [signature]: log => {
-          let argTopics = anonymous ? log.topics : log.topics.slice(1);
-          return world.web3.eth.abi.decodeLog(inputs, log.data, argTopics);
-        }
-      };
-    }, world.eventDecoder);
-
-  world = world.set('eventDecoder', updatedEventDecoder);
+  world = updateEventDecoder(world, contract);
 
   world = world.update('contractData', contractData => {
     return extraData.reduce((acc, { index, data }) => {
@@ -140,6 +126,23 @@ export async function loadContracts(world: World): Promise<[World, string[]]> {
   return loadContractData(world, networks, networksABI);
 }
 
+function updateEventDecoder(world: World, contract: any) {
+  const updatedEventDecoder = contract._jsonInterface
+    .filter(i => i.type == 'event')
+    .reduce((accum, event) => {
+      const { anonymous, inputs, signature } = (event as any) as ABIEvent;
+      return {
+        ...accum,
+        [signature]: log => {
+          let argTopics = anonymous ? log.topics : log.topics.slice(1);
+          return world.web3.eth.abi.decodeLog(inputs, log.data, argTopics);
+        }
+      };
+    }, world.eventDecoder);
+
+  return world.set('eventDecoder', updatedEventDecoder)
+}
+
 export async function loadContractData(
   world: World,
   networks: Networks,
@@ -152,6 +155,8 @@ export async function loadContractData(
   world = contracts.reduce((world: World, address: string, name: string) => {
     let abi: ABI[] = networksABI.has(name) ? networksABI.get(name).toJS() : [];
     let contract = new world.web3.eth.Contract(abi, address, {});
+
+    world = updateEventDecoder(world, contract);
 
     contractInfo.push(`${name}: ${address}`);
 

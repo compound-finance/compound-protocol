@@ -10,7 +10,7 @@ import "./SafeMath.sol";
 contract JumpRateModel is InterestRateModel {
     using SafeMath for uint;
 
-    event NewInterestParams(uint baseRatePerBlock, uint multiplierPerBlock, uint kink, uint jump);
+    event NewInterestParams(uint baseRatePerBlock, uint multiplierPerBlock, uint jumpMultiplierPerBlock, uint kink);
 
     /**
      * @notice Indicator that this is an InterestRateModel contract (for inspection)
@@ -33,29 +33,29 @@ contract JumpRateModel is InterestRateModel {
     uint public baseRatePerBlock;
 
     /**
-     * @notice the utilization point at which an additional multiplier is applied
-    */
-    uint public kink;
+     * @notice The multiplierPerBlock after hitting a specified utilization point
+     */
+    uint public jumpMultiplierPerBlock;
 
     /**
-     * @notice the additional multiplier to be applied to multiplierPerBlock after hitting a specified utilization point
-    */
-    uint public jump;
+     * @notice The utilization point at which the jump multiplier is applied
+     */
+    uint public kink;
 
     /**
      * @notice Construct an interest rate model
      * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by 1e18)
      * @param multiplierPerYear The rate of increase in interest rate wrt utilization (scaled by 1e18)
-     * @param kink_ The utilization point at which an additional multiplier is applied
-     * @param jump_ The additional multiplier to be applied to multiplierPerBlock after hitting a specified utilization point
+     * @param jumpMultiplierPerYear The multiplierPerBlock after hitting a specified utilization point
+     * @param kink_ The utilization point at which the jump multiplier is applied
      */
-    constructor(uint baseRatePerYear, uint multiplierPerYear, uint kink_, uint jump_) public {
+    constructor(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) public {
         baseRatePerBlock = baseRatePerYear.div(blocksPerYear);
         multiplierPerBlock = multiplierPerYear.div(blocksPerYear);
+        jumpMultiplierPerBlock = jumpMultiplierPerYear.div(blocksPerYear);
         kink = kink_;
-        jump = jump_;
 
-        emit NewInterestParams(baseRatePerBlock, multiplierPerBlock, kink, jump);
+        emit NewInterestParams(baseRatePerBlock, multiplierPerBlock, jumpMultiplierPerBlock, kink);
     }
 
     /**
@@ -89,8 +89,7 @@ contract JumpRateModel is InterestRateModel {
         } else {
             uint normalRate = kink.mul(multiplierPerBlock).div(1e18).add(baseRatePerBlock);
             uint excessUtil = util.sub(kink);
-            uint jumpMultiplier = multiplierPerBlock.mul(jump);
-            return excessUtil.mul(jumpMultiplier).div(1e18).add(normalRate);
+            return excessUtil.mul(jumpMultiplierPerBlock).div(1e18).add(normalRate);
         }
     }
 
