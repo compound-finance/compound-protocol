@@ -18,7 +18,8 @@
   "license": "UNLICENSED",
   "devDependencies": {
     "bignumber.js": "8.0.1",
-    "ganache-core": "^2.9.0-istanbul.0",
+    "ganache-cli": "^6.7.0",
+    "ganache-core": "^2.8.0",
     "immutable": "^4.0.0-rc.12",
     "jest": "^24.9.0",
     "jest-cli": "^24.9.0",
@@ -28,7 +29,7 @@
     "solparse": "^2.2.8"
   },
   "dependencies": {
-    "eth-saddle": "^0.0.25",
+    "eth-saddle": "^0.0.30",
     "truffle-hdwallet-provider": "^1.0.17",
     "web3": "^1.2.4"
   },

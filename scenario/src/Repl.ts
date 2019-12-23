@@ -14,18 +14,21 @@ import {formatEvent} from './Formatter';
 import {complete} from './Completer';
 import {loadContracts} from './Networks';
 import {accountAliases, loadAccounts} from './Accounts';
-import {getNetworkPath} from './File';
+import {getNetworkPath, readFile} from './File';
 import {SuccessInvariant} from './Invariant/SuccessInvariant';
 import {createInterface} from './HistoricReadline';
 import {runCommand} from './Runner';
 import {parse} from './Parser';
-import { getSaddle } from 'eth-saddle';
+import {forkWeb3} from './Hypothetical';
+import {getSaddle} from 'eth-saddle';
+import Web3 from 'web3';
 
 import * as fs from 'fs';
 import * as path from 'path';
 
 const basePath = process.env.proj_root || process.cwd();
 const baseScenarioPath = path.join(basePath, 'spec', 'scenario');
+const baseNetworksPath = path.join(basePath, 'networks');
 
 function questionPromise(rl): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -87,12 +90,12 @@ async function repl(): Promise<void> {
   });
 
   const verbose: boolean = !!process.env['verbose'];
+  const hypothetical: boolean = !!process.env['hypothetical'];
+
   let printer = new ReplPrinter(rl, verbose);
-
-  const saddle = await getSaddle(network);
-
   let contractInfo: string[];
 
+  let saddle = await getSaddle(network);
   let accounts: string[] = [saddle.account].concat(saddle.accounts).filter((x) => !!x);
 
   world = await initWorld(throwExpect, printer, saddle.web3, saddle, network, accounts, basePath);
@@ -103,6 +106,32 @@ async function repl(): Promise<void> {
   world = await loadSettings(world);
 
   printer.printLine(`Network: ${network}`);
+
+  if (hypothetical) {
+    const forkJsonPath = path.join(baseNetworksPath, `${network}-fork.json`);
+    let forkJson;
+
+    try {
+      let forkJsonString = fs.readFileSync(forkJsonPath, 'utf8');
+      forkJson = JSON.parse(forkJsonString);
+    } catch (err) {
+      throw new Error(`Cannot read fork configuration from \`${forkJsonPath}\`, ${err}`);
+    }
+    if (!forkJson['url']) {
+      throw new Error(`Missing url in fork json`);
+    }
+    if (!forkJson['unlocked'] || !Array.isArray(forkJson.unlocked)) {
+      throw new Error(`Missing unlocked in fork json`);
+    }
+
+    saddle.web3 = await forkWeb3(saddle.web3, forkJson.url, forkJson.unlocked);
+    saddle.accounts = forkJson.unlocked;
+    console.log(`Running on fork ${forkJson.url} with unlocked accounts ${forkJson.unlocked.join(', ')}`)
+  } else {
+    // Uck, we have to load accounts first..let's just see if we have any unlocked accounts
+    // XXX does this break something with wallet addresses?
+    saddle.accounts = await (new Web3(saddle.web3.currentProvider)).eth.personal.getAccounts();
+  }
 
   if (saddle.accounts.length > 0) {
     printer.printLine(`Accounts:`);
@@ -123,23 +152,30 @@ async function repl(): Promise<void> {
   printer.printLine(``);
 
   if (script) {
-    printer.printLine(`Running script: ${script}...`);
-    const envVars = loadEnvVars();
-    const scriptData: string = fs.readFileSync(script).toString();
+    const combined = script.split(',').reduce((acc, script) => {
+      printer.printLine(`Running script: ${script}...`);
+      const envVars = loadEnvVars();
+      if (hypothetical) {
+        envVars['hypo'] = true;
+      }
+      const scriptData: string = fs.readFileSync(script).toString();
 
-    if (Object.keys(envVars).length > 0) {
-      printer.printLine(`Env Vars:`);
-    }
+      if (Object.keys(envVars).length > 0) {
+        printer.printLine(`Env Vars:`);
+      }
 
-    const replacedScript = Object.entries(envVars).reduce((data, [key, val]) => {
-      printer.printLine(`\t${key}: ${val}`);
+      const replacedScript = Object.entries(envVars).reduce((data, [key, val]) => {
+        printer.printLine(`\t${key}: ${val}`);
 
-      return data.split(`$${key}`).join(val);
-    }, scriptData);
+        return data.split(`$${key}`).join(val);
+      }, scriptData);
 
-    const finalScript = replacedScript.replace(new RegExp(/\$[\w_]+/, 'g'), 'Nothing');
+      const finalScript = replacedScript.replace(new RegExp(/\$[\w_]+/, 'g'), 'Nothing');
 
-    return await finalScript.split("\n").reduce(async (acc, command) => {
+      return [...acc, ...finalScript.split("\n")];
+    }, <string[]>[]);
+
+    return await combined.reduce(async (acc, command) => {
       return await runCommand(await acc, command, macros);
     }, Promise.resolve(world));
     printer.printLine(`Script complete.`);

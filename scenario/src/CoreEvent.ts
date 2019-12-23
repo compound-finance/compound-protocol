@@ -212,7 +212,7 @@ export const commands = [
       new Arg('url', getStringV),
       new Arg('unlockedAccounts', getAddressV, { mapped: true })
     ],
-    (world, { url, unlockedAccounts }) => fork(world, url.val, unlockedAccounts.map(v => v.val))
+    async (world, { url, unlockedAccounts }) => fork(world, url.val, unlockedAccounts.map(v => v.val))
   ),
 
   new View<{ networkVal: StringV; }>(

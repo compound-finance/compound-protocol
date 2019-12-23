@@ -3,12 +3,14 @@ import {addAction, World} from '../World';
 import {InterestRateModel} from '../Contract/InterestRateModel';
 import {Invokation, invoke} from '../Invokation';
 import {
+  getAddressV,
   getExpNumberV,
   getNumberV,
   getPercentV,
   getStringV,
 } from '../CoreValue';
 import {
+  AddressV,
   EventV,
   NumberV,
   StringV,
@@ -20,6 +22,7 @@ import {getContract, getTestContract} from '../Contract';
 const FixedInterestRateModel = getTestContract('InterestRateModelHarness');
 const WhitePaperInterestRateModel = getContract('WhitePaperInterestRateModel');
 const JumpRateModel = getContract('JumpRateModel');
+const DAIInterestRateModel = getContract('DAIInterestRateModel');
 
 export interface InterestRateModelData {
   invokation: Invokation<InterestRateModel>
@@ -47,7 +50,7 @@ export async function buildInterestRateModel(world: World, from: string, event: 
         new Arg("rate", getPercentV),
       ],
       async (world, {name, rate}) => ({
-        invokation: await FixedInterestRateModel.deploy<InterestRateModel>(world, from, [rate.val]),
+        invokation: await FixedInterestRateModel.deploy<InterestRateModel>(world, from, [rate.encode()]),
         name: name.val,
         contract: "InterestRateModelHarness",
         description: `Fixed rate ${rate.show()} per block`
@@ -67,39 +70,66 @@ export async function buildInterestRateModel(world: World, from: string, event: 
         new Arg("multiplier", getExpNumberV)
       ],
       async (world, {name, baseRate, multiplier}) => ({
-        invokation: await WhitePaperInterestRateModel.deploy<InterestRateModel>(world, from, [baseRate.val, multiplier.val]),
+        invokation: await WhitePaperInterestRateModel.deploy<InterestRateModel>(world, from, [baseRate.encode(), multiplier.encode()]),
         name: name.val,
         contract: "WhitePaperInterestRateModel",
-        description: `WhitePaper baseRate=${baseRate.val} multiplier=${multiplier.val}`,
+        description: `WhitePaper baseRate=${baseRate.encode().toString()} multiplier=${multiplier.encode().toString()}`,
         base: baseRate.encode().toString(),
         slope: multiplier.encode().toString()
       })
     ),
-    new Fetcher<{name: StringV, baseRate: NumberV, multiplier: NumberV, kink: NumberV, jump: NumberV}, InterestRateModelData>(`
-        #### JumpRateModel
 
-        * "JumpRateModel name:<String> baseRate:<Number> multiplier:<Number> kink:<Number> jump:<Number>" - The Jump interest rate
-        * E.g. "InterestRateModel Deploy JumpRateModel MyInterestRateModel 0.05 0.2 0.90 5" - 5% base rate and 20% utilization multiplier and 5x jump at 90% utilization
-      `,
-      "JumpRateModel",
-      [
-        new Arg("name", getStringV),
-        new Arg("baseRate", getExpNumberV),
-        new Arg("multiplier", getExpNumberV),
-        new Arg("kink", getExpNumberV),
-        new Arg("jump", getNumberV)
-      ],
-      async (world, {name, baseRate, multiplier, kink, jump}) => ({
-        invokation: await JumpRateModel.deploy<InterestRateModel>(world, from, [baseRate.val, multiplier.val, kink.val, jump.val]),
-        name: name.val,
-        contract: "JumpRateModel",
-        description: `JumpRate model baseRate=${baseRate.val} multiplier=${multiplier.val} kink=${kink.val} jump=${jump.val}`,
-        base: baseRate.encode().toString(),
-        slope: multiplier.encode().toString(),
-        kink: kink.encode().toString(),
-        jump: jump.encode().toString()
-      })
-    )
+    new Fetcher<{name: StringV, baseRate: NumberV, multiplier: NumberV, jump: NumberV, kink: NumberV}, InterestRateModelData>(`
+         #### JumpRateModel
+
+         * "JumpRateModel name:<String> baseRate:<Number> multiplier:<Number> jump:<Number> kink:<Number>" - The Jump interest rate
+           * E.g. "InterestRateModel Deploy JumpRateModel MyInterestRateModel 0.05 0.2 200 0.90" - 5% base rate and 20% utilization multiplier and 200% multiplier at 90% utilization
+       `,
+       "JumpRateModel",
+       [
+         new Arg("name", getStringV),
+         new Arg("baseRate", getExpNumberV),
+         new Arg("multiplier", getExpNumberV),
+         new Arg("jump", getExpNumberV),
+         new Arg("kink", getExpNumberV)
+       ],
+       async (world, {name, baseRate, multiplier, jump, kink}) => ({
+         invokation: await JumpRateModel.deploy<InterestRateModel>(world, from, [baseRate.encode(), multiplier.encode(), jump.encode(), kink.val]),
+         name: name.val,
+         contract: "JumpRateModel",
+         description: `JumpRateModel baseRate=${baseRate.encode().toString()} multiplier=${multiplier.encode().toString()} jump=${jump.encode().toString()} kink=${kink.encode().toString()}`,
+         base: baseRate.encode().toString(),
+         slope: multiplier.encode().toString(),
+         jump: jump.encode().toString(),
+         kink: kink.encode().toString()
+       })
+    ),
+
+    new Fetcher<{name: StringV, jump: NumberV, kink: NumberV, pot: AddressV, jug: AddressV}, InterestRateModelData>(`
+         #### DAIInterestRateModel
+
+         * "DAIInterestRateModel name:<String> jump:<Number> kink:<Number> pot:<Address> jug:<Address>" - The DAI interest rate model
+           * E.g. "InterestRateModel Deploy DAIInterestRateModel MyInterestRateModel 200 0.90 0xPotAddress 0xJugAddress" - 200% multiplier at 90% utilization
+       `,
+       "DAIInterestRateModel",
+       [
+         new Arg("name", getStringV),
+         new Arg("jump", getExpNumberV),
+         new Arg("kink", getExpNumberV),
+         new Arg("pot", getAddressV),
+         new Arg("jug", getAddressV)
+       ],
+       async (world, {name, jump, kink, pot, jug}) => ({
+         invokation: await DAIInterestRateModel.deploy<InterestRateModel>(world, from, [jump.encode(), kink.encode(), pot.val, jug.val]),
+         name: name.val,
+         contract: "DAIInterestRateModel",
+         description: `DAIInterestRateModel jump=${jump.encode().toString()} kink=${kink.encode().toString()} pot=${pot.val} jug=${jug.val}`,
+         jump: jump.encode().toString(),
+         kink: kink.encode().toString(),
+         pot: pot.val,
+         jug: jug.val
+       })
+     )
   ];
 
   let interestRateModelData = await getFetcherValue<any, InterestRateModelData>("DeployInterestRateModel", fetchers, world, event);

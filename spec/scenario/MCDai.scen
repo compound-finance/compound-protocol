@@ -1,6 +1,8 @@
 -- Multi-collateral DAI tests
+-- These fork tests are very slow and highly dependent on ganache version, so we mark them pending
 
 Macro ForkMCD
+    -- Uses MakerDAO 0.2.16 Release https://changelog.makerdao.com/releases/kovan/0.2.16/index.html
     Alias CTokenAdmin "0x9C1856636d78C051deAd6CAB9c5699e4E25549e9"
     Alias DaiHolder "0x9Bffd1579bd6760a186fFf1A720f2a5dB35dE0f4"
     Alias DaiAddress "0xc27a24e60a89a03bd2f1ffb4ea59076fd8385fe6"
@@ -10,6 +12,16 @@ Macro ForkMCD
     Web3Fork "https://kovan.infura.io/v3/e1a5d4d2c06a4e81945fca56d0d5d8ea@14760012" (CTokenAdmin DaiHolder)
     Erc20 Deploy Existing DAI DaiAddress DAI
     Assert Equal (EtherBalance CTokenAdmin) 1.680448935e18 -- Ensure the fork works as expected
+
+Macro ForkMCD101
+    -- Uses MakerDAO 1.0.1 Release https://changelog.makerdao.com/releases/kovan/1.0.1/index.html
+    Alias CTokenAdmin "0xA776184Fd6F545DAe5f51361dBcC9018549a9749"
+    Alias DaiHolder "0x72776bb917751225d24c07d0663b3780b2ada67c"
+    Alias DaiJoinAddress "0x5aa71a3ae1c0bd6ac27a1f28e1415fffb6f15b8c"
+    Alias PotAddress "0xea190dbdc7adf265260ec4da6e9675fd4f5a78bb"
+    Alias VatAddress "0xba987bdb501d131f766fee8180da5d81b34b69d9"
+    Alias JugAddress "0xcbb7718c9f39d05aeede1c472ca8bf804b2f1ead"
+    Web3Fork "https://kovan.infura.io/v3/e1a5d4d2c06a4e81945fca56d0d5d8ea@15090204" (CTokenAdmin DaiHolder)
 
 Macro DeployCDAIWithDSR
     ForkMCD
@@ -87,22 +99,70 @@ Macro CheckBasicBorrowRepayWithDSR repayAmount=1000015000000000000
     Assert Approx (MCD PotAt PotAddress "pie" (CToken cDAI Address)) repayAmount         -- pot is a wad (1e18), check for ~ 1 DAI + interest
     Assert (MCD VatAt VatAddress "dai" (CToken cDAI Address)) LessThan 2e27              -- vat is a rad (1e45), check for ~ dust
 
-Test "Basic mint and redeem cDAI2 (directly to swept DSR)"
+Pending "Basic mint and redeem cDAI2 (directly to swept DSR)"
     DeployCDAIWithDSR
     CheckBasicMintRedeemWithDSR
 
-Test "Basic borrow and repay cDAI2 (directly to swept DSR)"
+Pending "Basic borrow and repay cDAI2 (directly to swept DSR)"
     DeployCDAIWithDSR
     CheckBasicBorrowRepayWithDSR
 
-Test "Basic mint and redeem cDAI2 (upgrade to swept DSR)"
+Pending "Basic mint and redeem cDAI2 (upgrade to swept DSR)"
     DeployCDAI
     CheckBasicMintRedeem
     UpgradeToDSR
     CheckBasicMintRedeemWithDSR
 
-Test "Basic borrow and repay cDAI2 (upgrade to swept DSR)"
+Pending "Basic borrow and repay cDAI2 (upgrade to swept DSR)"
     DeployCDAI
     CheckBasicMintRedeem
     UpgradeToDSR
     CheckBasicBorrowRepayWithDSR repayAmount:1000014999999999999 -- real block numbers can get nasty
+
+Pending "Mint, upgrade to DSR and then downgrade to vanilla delegate"
+    DeployCDAI
+    From DaiHolder (Erc20 DAI Approve (CToken cDAI Address) 1e18)
+    Mint DaiHolder 1e18 cDAI
+    Assert Equal (Erc20 DAI TokenBalance cDAI) 1e18
+    Assert Equal (CToken cDAI Cash) 1e18
+    -- Upgrade
+    UpgradeToDSR
+    Assert Equal (Erc20 DAI TokenBalance cDAI) 0
+    Assert Approx (CToken cDAI Cash) 1e18
+    Assert Approx (MCD PotAt PotAddress "pie" (CToken cDAI Address)) 1e18
+    -- Downgrade
+    From CTokenAdmin (CToken cDAI SetImplementation (CTokenDelegate cErc20Delegate Address) True "0x0")
+    Assert Approx (Erc20 DAI TokenBalance cDAI) 1e18
+    Assert Approx (CToken cDAI Cash) 1e18
+
+Pending "Mint, upgrade to DSR, mint, and then reupgrade to a new cdai delegate"
+    DeployCDAI
+    From DaiHolder (Erc20 DAI Approve (CToken cDAI Address) 2e18)
+    Mint DaiHolder 1e18 cDAI
+    Assert Equal (Erc20 DAI TokenBalance cDAI) 1e18
+    Assert Equal (CToken cDAI Cash) 1e18
+    -- Upgrade
+    UpgradeToDSR
+    Mint DaiHolder 1e18 cDAI
+    Assert Equal (Erc20 DAI TokenBalance cDAI) 0
+    Assert Approx (CToken cDAI Cash) 2e18
+    Assert Approx (MCD PotAt PotAddress "pie" (CToken cDAI Address)) 2e18
+    -- Reupgrade to a new cDaiDelegate
+    CTokenDelegate Deploy CDaiDelegate cDaiDelegate2
+    From CTokenAdmin (CToken cDAI SetImplementation (CTokenDelegate cDaiDelegate2 Address) True (EncodeParameters ("address" "address") (DaiJoinAddress PotAddress)))
+    Assert Equal (Erc20 DAI TokenBalance cDAI) 0
+    Assert Approx (CToken cDAI Cash) 2e18
+    Assert Approx (MCD PotAt PotAddress "pie" (CToken cDAI Address)) 2e18
+
+Pending "Test resigning implementation"
+    ForkMCD101
+    UseConfigs kovan
+    Assert Approx (Erc20 DAI TokenBalance cDAI) 0
+    Assert Equal (MCD PotAt PotAddress "pie" (CToken cDAI Address)) 137889496810499277888
+    From CTokenAdmin (CToken cDAI ResignImplementation)
+    Assert Approx (Erc20 DAI TokenBalance cDAI) 137889496810499277888
+    Assert Approx (MCD PotAt PotAddress "pie" (CToken cDAI Address)) 0
+
+Pending "DAI interest rate model"
+    ForkMCD101
+    InterestRateModel Deploy DAIInterestRateModel DSR_Kink_9000bps_Jump_12000bps_AssumedRF_500bps 120e16 90e16 PotAddress JugAddress

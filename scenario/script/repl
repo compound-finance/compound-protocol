@@ -21,6 +21,9 @@ while getopts ":hdn:e:s:vt" arg; do
 		d) # Dry run
 			dry_run="true"
 			;;
+		h) # Hypothetical
+			hypothetical="true"
+			;;
 		e) # Add variables for script (key=value,key2=value2)
 			env_vars="$OPTARG"
 			;;
@@ -28,10 +31,10 @@ while getopts ":hdn:e:s:vt" arg; do
 			network=$OPTARG
 			;;
 		s) # Specify a script to run
-			script=$OPTARG
-			[ ! -f "$script" ] \
-				&& echo "Cannot find script $script" \
+			[ ! -f "$OPTARG" ] \
+				&& echo "Cannot find script $OPTARG" \
 				&& exit 1
+			script+=("$OPTARG")
 			;;
 		t) # Don't build TSC
 			no_tsc="true"

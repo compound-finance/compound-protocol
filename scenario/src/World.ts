@@ -110,7 +110,7 @@ export class World extends Record(defaultWorldProps) {
     return {
       ...baseOpts,
       ...this.invokationOpts,
-      ...{ value: this.value ? this.value.toString() : undefined }
+      ...this.value ? {value: this.value.toString()} : {}
     };
   }
 
