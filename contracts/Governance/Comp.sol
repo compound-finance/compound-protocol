@@ -2,7 +2,6 @@ pragma solidity ^0.5.12;
 pragma experimental ABIEncoderV2;
 
 import "../EIP20Interface.sol";
-import "../SafeMath.sol";
 
 /**
  * @title Compound's Governance Token Contract
@@ -10,8 +9,6 @@ import "../SafeMath.sol";
  * @author Compound
  */
 contract Comp is EIP20Interface {
-    using SafeMath for uint;
-
     /// @notice EIP-20 token name for this token
     string public constant name = "Compound Governance Token";
 
@@ -24,11 +21,11 @@ contract Comp is EIP20Interface {
     /// @notice Total number of tokens in circulation
     uint public constant totalSupply = 10000000e18; // 10 million Comp
 
-    /// @notice Official record of token balances for each account
-    mapping (address => uint) public balanceOf;
-
     /// @notice Allowance amounts on behalf of others
-    mapping (address => mapping (address => uint)) public allowance;
+    mapping (address => mapping (address => uint96)) internal allowances;
+
+    /// @notice Official record of token balances for each account
+    mapping (address => uint96) internal balances;
 
     /// @notice A record of each accounts delegate
     mapping (address => address) public delegates;
@@ -65,8 +62,18 @@ contract Comp is EIP20Interface {
      * @param account The initial account to grant all the tokens
      */
     constructor(address account) public {
-        balanceOf[account] = totalSupply;
+        balances[account] = uint96(totalSupply);
         emit Transfer(address(0), account, totalSupply);
+    }
+
+    /**
+     * @notice Get the number of tokens `spender` is approved to spend on behalf of `account`
+     * @param account The address of the account holding the funds
+     * @param spender The address of the account spending the funds
+     * @return The number of tokens approved
+     */
+    function allowance(address account, address spender) external view returns (uint) {
+        return allowances[account][spender];
     }
 
     /**
@@ -74,23 +81,40 @@ contract Comp is EIP20Interface {
      * @dev This will overwrite the approval amount for `spender`
      *  and is subject to issues noted [here](https://eips.ethereum.org/EIPS/eip-20#approve)
      * @param spender The address of the account which may transfer tokens
-     * @param amount The number of tokens that are approved (2^256-1 means infinite)
+     * @param rawAmount The number of tokens that are approved (2^256-1 means infinite)
      * @return Whether or not the approval succeeded
      */
-    function approve(address spender, uint amount) external returns (bool) {
-        allowance[msg.sender][spender] = amount;
+    function approve(address spender, uint rawAmount) external returns (bool) {
+        uint96 amount;
+        if (rawAmount == uint(-1)) {
+            amount = uint96(-1);
+        } else {
+            amount = safe96(rawAmount, "Comp::approve: amount exceeds 96 bits");
+        }
+
+        allowances[msg.sender][spender] = amount;
 
         emit Approval(msg.sender, spender, amount);
         return true;
     }
 
     /**
+     * @notice Get the number of tokens held by the `account`
+     * @param account The address of the account to get the balance of
+     * @return The number of tokens held
+     */
+    function balanceOf(address account) external view returns (uint) {
+        return balances[account];
+    }
+
+    /**
      * @notice Transfer `amount` tokens from `msg.sender` to `dst`
      * @param dst The address of the destination account
-     * @param amount The number of tokens to transfer
+     * @param rawAmount The number of tokens to transfer
      * @return Whether or not the transfer succeeded
      */
-    function transfer(address dst, uint amount) external returns (bool) {
+    function transfer(address dst, uint rawAmount) external returns (bool) {
+        uint96 amount = safe96(rawAmount, "Comp::transfer: amount exceeds 96 bits");
         _transferTokens(msg.sender, dst, amount);
         return true;
     }
@@ -99,16 +123,17 @@ contract Comp is EIP20Interface {
      * @notice Transfer `amount` tokens from `src` to `dst`
      * @param src The address of the source account
      * @param dst The address of the destination account
-     * @param amount The number of tokens to transfer
+     * @param rawAmount The number of tokens to transfer
      * @return Whether or not the transfer succeeded
      */
-    function transferFrom(address src, address dst, uint amount) external returns (bool) {
+    function transferFrom(address src, address dst, uint rawAmount) external returns (bool) {
         address spender = msg.sender;
-        uint spenderAllowance = allowance[src][spender];
+        uint96 spenderAllowance = allowances[src][spender];
+        uint96 amount = safe96(rawAmount, "Comp::approve: amount exceeds 96 bits");
 
-        if (spender != src && spenderAllowance != uint(-1)) {
-            uint newAllowance = spenderAllowance.sub(amount, "Comp::transferFrom: transfer amount exceeds spender allowance");
-            allowance[src][spender] = newAllowance;
+        if (spender != src && spenderAllowance != uint96(-1)) {
+            uint96 newAllowance = sub96(spenderAllowance, amount, "Comp::transferFrom: transfer amount exceeds spender allowance");
+            allowances[src][spender] = newAllowance;
 
             emit Approval(src, spender, newAllowance);
         }
@@ -151,8 +176,8 @@ contract Comp is EIP20Interface {
      * @return The number of current votes for `account`
      */
     function getCurrentVotes(address account) external view returns (uint96) {
-        uint32 length = numCheckpoints[account];
-        return length == 0 ? 0 : checkpoints[account][length - 1].votes;
+        uint32 nCheckpoints = numCheckpoints[account];
+        return nCheckpoints > 0 ? checkpoints[account][nCheckpoints - 1].votes : 0;
     }
 
     /**
@@ -165,14 +190,14 @@ contract Comp is EIP20Interface {
     function getPriorVotes(address account, uint blockNumber) public view returns (uint96) {
         require(blockNumber < block.number, "Comp::getPriorVotes: not yet determined");
 
-        uint32 length = numCheckpoints[account];
-        if (length == 0) {
+        uint32 nCheckpoints = numCheckpoints[account];
+        if (nCheckpoints == 0) {
             return 0;
         }
 
         // First check most recent balance
-        if (checkpoints[account][length - 1].fromBlock <= blockNumber) {
-            return checkpoints[account][length - 1].votes;
+        if (checkpoints[account][nCheckpoints - 1].fromBlock <= blockNumber) {
+            return checkpoints[account][nCheckpoints - 1].votes;
         }
 
         // Next check implicit zero balance
@@ -181,7 +206,7 @@ contract Comp is EIP20Interface {
         }
 
         uint32 lower = 0;
-        uint32 upper = length - 1;
+        uint32 upper = nCheckpoints - 1;
         while (upper > lower) {
             uint32 center = upper - (upper - lower) / 2; // ceil, avoiding overflow
             Checkpoint memory cp = checkpoints[account][center];
@@ -198,83 +223,76 @@ contract Comp is EIP20Interface {
 
     function _delegate(address delegator, address delegatee) internal {
         address currentDelegate = delegates[delegator];
-        uint delegatorBalance = balanceOf[delegator];
+        uint96 delegatorBalance = balances[delegator];
         delegates[delegator] = delegatee;
 
         emit DelegateChanged(delegator, currentDelegate, delegatee);
 
-        if (currentDelegate != delegatee && delegatorBalance > 0) {
-            _decreaseVotes(currentDelegate, delegatorBalance);
-            _increaseVotes(delegatee, delegatorBalance);
-        }
+        _moveDelegates(currentDelegate, delegatee, delegatorBalance);
     }
 
-    function _pushCheckpoint(address delegatee, uint fromBlock, uint96 votes) internal {
-        require(fromBlock < 2**32, "Comp::_pushCheckpoint: block number exceeds 32 bits");
-        checkpoints[delegatee][numCheckpoints[delegatee]++] = Checkpoint(uint32(fromBlock), votes);
-    }
-
-    function _transferTokens(address src, address dst, uint amount) internal {
+    function _transferTokens(address src, address dst, uint96 amount) internal {
         require(src != address(0), "Comp::_transferTokens: cannot transfer from the zero address");
         require(dst != address(0), "Comp::_transferTokens: cannot transfer to the zero address");
 
-        balanceOf[src] = balanceOf[src].sub(amount, "Comp::_transferTokens: transfer amount exceeds balance");
-        balanceOf[dst] = balanceOf[dst].add(amount, "Comp::_transferTokens: transfer amount overflows");
+        balances[src] = sub96(balances[src], amount, "Comp::_transferTokens: transfer amount exceeds balance");
+        balances[dst] = add96(balances[dst], amount, "Comp::_transferTokens: transfer amount overflows");
         emit Transfer(src, dst, amount);
 
-        address srcDelegate = delegates[src];
-        address dstDelegate = delegates[dst];
-        if (srcDelegate != dstDelegate) {
-            _decreaseVotes(srcDelegate, amount);
-            _increaseVotes(dstDelegate, amount);
+        _moveDelegates(delegates[src], delegates[dst], amount);
+    }
+
+    function _moveDelegates(address srcRep, address dstRep, uint96 amount) internal {
+        if (srcRep != dstRep && amount > 0) {
+            if (srcRep != address(0)) {
+                uint32 srcRepNum = numCheckpoints[srcRep];
+                uint96 srcRepOld = srcRepNum > 0 ? checkpoints[srcRep][srcRepNum - 1].votes : 0;
+                uint96 srcRepNew = sub96(srcRepOld, amount, "Comp::_moveVotes: vote amount underflows");
+                _writeCheckpoint(srcRep, srcRepNum, srcRepOld, srcRepNew);
+            }
+
+            if (dstRep != address(0)) {
+                uint32 dstRepNum = numCheckpoints[dstRep];
+                uint96 dstRepOld = dstRepNum > 0 ? checkpoints[dstRep][dstRepNum - 1].votes : 0;
+                uint96 dstRepNew = add96(dstRepOld, amount, "Comp::_moveVotes: vote amount overflows");
+                _writeCheckpoint(dstRep, dstRepNum, dstRepOld, dstRepNew);
+            }
         }
     }
 
-    function _decreaseVotes(address delegatee, uint amount) internal {
-        if (delegatee == address(0)) {
-            return;
-        }
+    function _writeCheckpoint(address delegatee, uint32 nCheckpoints, uint96 oldVotes, uint96 newVotes) internal {
+      uint32 blockNumber = safe32(block.number, "Comp::_writeCheckpoint: block number exceeds 32 bits");
 
-        uint32 length = numCheckpoints[delegatee];
+      if (nCheckpoints > 0 && checkpoints[delegatee][nCheckpoints - 1].fromBlock == blockNumber) {
+          checkpoints[delegatee][nCheckpoints - 1].votes = newVotes;
+      } else {
+          checkpoints[delegatee][nCheckpoints] = Checkpoint(blockNumber, newVotes);
+          numCheckpoints[delegatee] = nCheckpoints + 1;
+      }
 
-        Checkpoint storage currentCheckpoint = checkpoints[delegatee][length - 1];
-        uint96 currentVotes = currentCheckpoint.votes;
-        uint96 newVotesAmount = uint96(uint(currentVotes).sub(amount, "Comp::_decreaseVotes: vote amount exceeds previous vote balance"));
-
-        if (currentCheckpoint.fromBlock < block.number) {
-            _pushCheckpoint(delegatee, block.number, newVotesAmount);
-        } else {
-            currentCheckpoint.votes = newVotesAmount;
-        }
-
-        emit DelegateVotesChanged(delegatee, uint(currentVotes), uint(newVotesAmount));
+      emit DelegateVotesChanged(delegatee, oldVotes, newVotes);
     }
 
-    function _increaseVotes(address delegatee, uint amount) internal {
-        if (delegatee == address(0)) {
-            return;
-        }
+    function safe32(uint n, string memory errorMessage) internal pure returns (uint32) {
+        require(n < 2**32, errorMessage);
+        return uint32(n);
+    }
 
-        uint32 length = numCheckpoints[delegatee];
+    function safe96(uint n, string memory errorMessage) internal pure returns (uint96) {
+        require(n < 2**96, errorMessage);
+        return uint96(n);
+    }
 
-        uint96 currentVotesAmount;
-        uint96 newVotesAmount;
+    function add96(uint96 a, uint96 b, string memory errorMessage) internal pure returns (uint96) {
+        uint96 c = a + b;
+        require(c >= a, errorMessage);
+        return c;
+    }
 
-        if (length == 0) {
-            currentVotesAmount = 0;
-            newVotesAmount = uint96(amount);
-            _pushCheckpoint(delegatee, block.number, newVotesAmount);
-        } else if (checkpoints[delegatee][length - 1].fromBlock < block.number) {
-            currentVotesAmount = checkpoints[delegatee][length - 1].votes;
-            newVotesAmount = uint96(uint(currentVotesAmount).add(amount, "Comp::_increaseVotes: vote amount overflows"));
-            _pushCheckpoint(delegatee, block.number, newVotesAmount);
-        } else {
-            currentVotesAmount = checkpoints[delegatee][length - 1].votes;
-            newVotesAmount = uint96(uint(currentVotesAmount).add(amount, "Comp::_increaseVotes: vote amount overflows"));
-            checkpoints[delegatee][length - 1].votes = newVotesAmount;
-        }
-
-        emit DelegateVotesChanged(delegatee, currentVotesAmount, newVotesAmount);
+    function sub96(uint96 a, uint96 b, string memory errorMessage) internal pure returns (uint96) {
+        require(b <= a, errorMessage);
+        uint96 c = a - b;
+        return c;
     }
 
     function getChainId() internal pure returns (uint) {

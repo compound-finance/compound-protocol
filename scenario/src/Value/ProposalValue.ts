@@ -57,19 +57,19 @@ export function proposalFetchers(governor: Governor) {
     eta: getNumberV,
     targets: {
       constructor: getArrayV(getStringV),
-      getter: async (governor, proposalId) => (await governor.methods.getProposalFunctionData(proposalId).call())[0]
+      getter: async (governor, proposalId) => (await governor.methods.getActions(proposalId).call())[0]
     },
     values: {
       constructor: getArrayV(getNumberV),
-      getter: async (governor, proposalId) => (await governor.methods.getProposalFunctionData(proposalId).call())[1]
+      getter: async (governor, proposalId) => (await governor.methods.getActions(proposalId).call())[1]
     },
     signatures: {
       constructor: getArrayV(getStringV),
-      getter: async (governor, proposalId) => (await governor.methods.getProposalFunctionData(proposalId).call())[2]
+      getter: async (governor, proposalId) => (await governor.methods.getActions(proposalId).call())[2]
     },
     calldatas: {
       constructor: getArrayV(getStringV),
-      getter: async (governor, proposalId) => (await governor.methods.getProposalFunctionData(proposalId).call())[3]
+      getter: async (governor, proposalId) => (await governor.methods.getActions(proposalId).call())[3]
     },
     startBlock: getNumberV,
     endBlock: getNumberV,

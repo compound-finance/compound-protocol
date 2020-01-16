@@ -75,8 +75,8 @@ async function freezeTime(seconds) {
 }
 
 async function advanceBlocks(blocks) {
-  let { result: num } = await rpc({ method: 'eth_blockNumber' })
-  await rpc({ method: 'evm_mineBlockNumber', params: [blocks + parseInt(num)] })
+  let { result: num } = await rpc({ method: 'eth_blockNumber' });
+  await rpc({ method: 'evm_mineBlockNumber', params: [blocks + parseInt(num)] });
 }
 
 async function minerStart() {

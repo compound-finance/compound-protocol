@@ -218,7 +218,7 @@ contract GovernorAlpha {
         emit ProposalCanceled(proposalId);
     }
 
-    function getProposalFunctionData(uint proposalId) public view returns (address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas) {
+    function getActions(uint proposalId) public view returns (address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas) {
         Proposal memory p = proposals[proposalId];
         return (p.targets, p.values, p.signatures, p.calldatas);
     }
@@ -231,7 +231,7 @@ contract GovernorAlpha {
         require(proposalCount >= proposalId && proposalId > 0, "GovernorAlpha::state: invalid proposal id");
         Proposal memory proposal = proposals[proposalId];
 
-        if (proposal.canceled == true) return ProposalState.Canceled;
+        if (proposal.canceled == true) { return ProposalState.Canceled; }
         if (block.number <= proposal.startBlock) { return ProposalState.Pending; }
         if (block.number <= proposal.endBlock) { return ProposalState.Active; }
         if (proposal.forVotes <= proposal.againstVotes || proposal.forVotes < quorumVotes()) { return ProposalState.Defeated; }

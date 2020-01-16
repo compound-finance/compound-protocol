@@ -26,6 +26,12 @@ Test "Check approve sets correct approval and emits Approval event"
     Assert Equal (Comp Allowance Geoff Jared) 10
     Assert Log Approval (owner (Address Geoff)) (spender (Address Jared)) (amount "10")
 
+Test "Check approve with bad allowance reverts"
+    Comp Deploy Geoff
+    AllowFailures
+    From Geoff (Comp Approve Jared 1e70)
+    Assert Revert "revert Comp::approve: amount exceeds 96 bits"
+
 Test "Check transfer updates balances correctly, emits Transfer event, and returns true"
     Comp Deploy Geoff
     From Geoff (Comp Transfer Jared 10)
@@ -35,11 +41,20 @@ Test "Check transfer updates balances correctly, emits Transfer event, and retur
 
 Test "Check transferFrom with unlimited allowance updates balances correctly, emits Transfer event, and returns true"
     Comp Deploy Geoff
-    From Geoff (Comp Approve Jared Max)
+    From Geoff (Comp Approve Jared UInt256Max)
     From Jared (Comp TransferFrom Geoff Jared 10)
     Assert Equal (Comp TokenBalance Geoff) 9999999999999999999999990
     Assert Equal (Comp TokenBalance Jared) 10
-    Assert Equal (Comp Allowance Geoff Jared) Max
+    Assert Equal (Comp Allowance Geoff Jared) UInt96Max
+    Assert Log Transfer (from (Address Geoff)) (to (Address Jared)) (amount "10")
+
+Test "Check transferFrom with unlimited allowance updates balances correctly, emits Transfer event, and returns true"
+    Comp Deploy Geoff
+    From Geoff (Comp Approve Jared UInt96Max)
+    From Jared (Comp TransferFrom Geoff Jared 10)
+    Assert Equal (Comp TokenBalance Geoff) 9999999999999999999999990
+    Assert Equal (Comp TokenBalance Jared) 10
+    Assert Equal (Comp Allowance Geoff Jared) UInt96Max
     Assert Log Transfer (from (Address Geoff)) (to (Address Jared)) (amount "10")
 
 Test "Check transferFrom with allowance updates balances correctly, emits Transfer event, and returns true"
@@ -271,4 +286,4 @@ Test "Check transfer reverts when block number exceeds 32 bits"
     AllowFailures
     SetBlockNumber 5000000000
     From Geoff (Comp Transfer Jared 10000000e18)
-    Assert Revert "revert Comp::_pushCheckpoint: block number exceeds 32 bits"
+    Assert Revert "revert Comp::_writeCheckpoint: block number exceeds 32 bits"

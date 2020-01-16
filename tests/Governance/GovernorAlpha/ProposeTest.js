@@ -68,7 +68,7 @@ describe('GovernorAlpha#propose/5', () => {
     })
 
     it("Targets, Values, Signatures, Calldatas are set according to parameters", async () => {
-      let dynamicFields = await call(gov, 'getProposalFunctionData', [trivialProposal.id]);
+      let dynamicFields = await call(gov, 'getActions', [trivialProposal.id]);
       expect(dynamicFields.targets).toEqual(targets)
       expect(dynamicFields.values).toEqual(values)
       expect(dynamicFields.signatures).toEqual(signatures)

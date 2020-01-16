@@ -24,16 +24,31 @@ spec/certora/Math/%.cvl:
 	--verify \
 	 MathCertora:$@
 
-spec/certora/Comp/%.cvl:
+spec/certora/Comp/search.cvl:
 	$(CERTORA_RUN) \
 	spec/certora/contracts/CompCertora.sol \
-	--settings -b=4,-graphDrawLimit=0 \
+	--settings -b=4,-graphDrawLimit=0,-assumeUnwindCond,-depth=100 \
+	--solc_args "'--evm-version istanbul'" \
+	--verify \
+	 CompCertora:$@
+
+spec/certora/Comp/transfer.cvl:
+	$(CERTORA_RUN) \
+	spec/certora/contracts/CompCertora.sol \
+	--settings -graphDrawLimit=0,-assumeUnwindCond,-depth=100 \
+	--solc_args "'--evm-version istanbul'" \
 	--verify \
 	 CompCertora:$@
 
 spec/certora/Governor/%.cvl:
 	$(CERTORA_RUN) \
 	 spec/certora/contracts/GovernorAlphaCertora.sol \
+	 spec/certora/contracts/TimelockCertora.sol \
+	 spec/certora/contracts/CompCertora.sol \
+	 --solc_args "'--evm-version istanbul'" \
+	 --link \
+	 GovernorAlphaCertora:timelock=TimelockCertora \
+	 GovernorAlphaCertora:comp=CompCertora \
 	--verify \
 	 GovernorAlphaCertora:$@
 

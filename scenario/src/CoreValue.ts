@@ -242,11 +242,23 @@ const fetchers = [
 
   new Fetcher<{}, NumberV>(
     `
-      #### Max
+      #### UInt96Max
 
-      * "Max" - Returns 2^256 - 1
+      * "UInt96Max" - Returns 2^96 - 1
     `,
-    'Max',
+    'UInt96Max',
+    [],
+    async (world, {}) =>
+      new NumberV('79228162514264337593543950335')
+  ),
+
+  new Fetcher<{}, NumberV>(
+    `
+      #### UInt256Max
+
+      * "UInt256Max" - Returns 2^256 - 1
+    `,
+    'UInt256Max',
     [],
     async (world, {}) =>
       new NumberV('115792089237316195423570985008687907853269984665640564039457584007913129639935')
