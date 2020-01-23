@@ -70,7 +70,7 @@ async function getKovanFork() {
 
 describe('DAIInterestRateModel', () => {
   describe("constructor", () => {
-    it("sets jug and ilk address and pokes", async () => {
+    it.skip("sets jug and ilk address and pokes", async () => {
       const {kovan, root, accounts} = await getKovanFork();
 
       // TODO: Get contract craz
