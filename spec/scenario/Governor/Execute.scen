@@ -69,16 +69,6 @@ Test "Revert when executing a proposal that reverts"
     Governor LegitGov Proposal LastProposal Execute
     Assert Revert "revert Timelock::executeTransaction: Transaction execution reverted."
 
-Test "Repeated proposal items"
-    DeployGov
-    Governor LegitGov Propose "Add 1 and Add 1" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256)" "increment(uint256)"] [["1"] ["1"]]
-    SucceedProposal
-    Governor LegitGov Proposal LastProposal Queue
-    IncreaseTime 604905
-    AllowFailures
-    Governor LegitGov Proposal LastProposal Execute
-    Assert Revert "revert Timelock::executeTransaction: Transaction hasn't been queued."
-
 Test "Revert when executing an expired proposal"
     GivenQueuedProposal
     -- eta + grace period (2 weeks) + 1

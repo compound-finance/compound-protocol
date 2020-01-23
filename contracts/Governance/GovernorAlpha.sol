@@ -7,6 +7,7 @@ interface TimelockInterface {
     function delay() external view returns (uint);
     function GRACE_PERIOD() external view returns (uint);
     function acceptAdmin() external;
+    function queuedTransactions(bytes32 hash) external view returns (bool);
     function queueTransaction(address target, uint value, string calldata signature, bytes calldata data, uint eta) external returns (bytes32);
     function cancelTransaction(address target, uint value, string calldata signature, bytes calldata data, uint eta) external;
     function executeTransaction(address target, uint value, string calldata signature, bytes calldata data, uint eta) external payable returns (bytes memory);
@@ -186,11 +187,17 @@ contract GovernorAlpha {
     function queue(uint proposalId) public {
         require(state(proposalId) == ProposalState.Succeeded, "GovernorAlpha::queue: proposal can only be queued if it is succeeded");
         Proposal storage proposal = proposals[proposalId];
-        proposal.eta = block.timestamp.add(timelock.delay());
+        uint eta = block.timestamp.add(timelock.delay());
         for (uint i = 0; i < proposal.targets.length; i++) {
-            timelock.queueTransaction(proposal.targets[i], proposal.values[i], proposal.signatures[i], proposal.calldatas[i], proposal.eta);
+            _queueOrRevert(proposal.targets[i], proposal.values[i], proposal.signatures[i], proposal.calldatas[i], eta);
         }
-        emit ProposalQueued(proposalId, proposal.eta);
+        proposal.eta = eta;
+        emit ProposalQueued(proposalId, eta);
+    }
+
+    function _queueOrRevert(address target, uint value, string memory signature, bytes memory data, uint eta) internal {
+        require(!timelock.queuedTransactions(keccak256(abi.encode(target, value, signature, data, eta))), "GovernorAlpha::_queueOrRevert: proposal action already queued at eta");
+        timelock.queueTransaction(target, value, signature, data, eta);
     }
 
     function execute(uint proposalId) public payable {
@@ -230,15 +237,23 @@ contract GovernorAlpha {
     function state(uint proposalId) public view returns (ProposalState) {
         require(proposalCount >= proposalId && proposalId > 0, "GovernorAlpha::state: invalid proposal id");
         Proposal memory proposal = proposals[proposalId];
-
-        if (proposal.canceled == true) { return ProposalState.Canceled; }
-        if (block.number <= proposal.startBlock) { return ProposalState.Pending; }
-        if (block.number <= proposal.endBlock) { return ProposalState.Active; }
-        if (proposal.forVotes <= proposal.againstVotes || proposal.forVotes < quorumVotes()) { return ProposalState.Defeated; }
-        if (proposal.eta == 0) { return ProposalState.Succeeded; }
-        if (proposal.executed) { return ProposalState.Executed; }
-        if (block.timestamp >= proposal.eta.add(timelock.GRACE_PERIOD())) { return ProposalState.Expired; }
-        return ProposalState.Queued;
+        if (proposal.canceled == true) {
+            return ProposalState.Canceled;
+        } else if (block.number <= proposal.startBlock) {
+            return ProposalState.Pending;
+        } else if (block.number <= proposal.endBlock) {
+            return ProposalState.Active;
+        } else if (proposal.forVotes <= proposal.againstVotes || proposal.forVotes < quorumVotes()) {
+            return ProposalState.Defeated;
+        } else if (proposal.eta == 0) {
+            return ProposalState.Succeeded;
+        } else if (proposal.executed) {
+            return ProposalState.Executed;
+        } else if (block.timestamp >= proposal.eta.add(timelock.GRACE_PERIOD())) {
+            return ProposalState.Expired;
+        } else {
+            return ProposalState.Queued;
+        }
     }
 
     function castVote(uint proposalId, bool support) public {

@@ -5,7 +5,8 @@ const {
   encodeParameters,
   etherMantissa,
   mineBlock,
-  freezeTime
+  freezeTime,
+  increaseTime
 } = require('../../Utils/Ethereum');
 
 const path = require('path');
@@ -113,6 +114,7 @@ describe('GovernorAlpha#state/1', () => {
     await send(gov, 'castVote', [newProposalId, true])
     await advanceBlocks(20000)
 
+    await increaseTime(1)
     await send(gov, 'queue', [newProposalId], { from: acct })
 
     let gracePeriod = await call(timelock, 'GRACE_PERIOD')
@@ -135,6 +137,7 @@ describe('GovernorAlpha#state/1', () => {
     await send(gov, 'castVote', [newProposalId, true])
     await advanceBlocks(20000)
 
+    await increaseTime(1)
     await send(gov, 'queue', [newProposalId], { from: acct })
 
     let gracePeriod = await call(timelock, 'GRACE_PERIOD')

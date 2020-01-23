@@ -61,6 +61,15 @@ Test "Queue 2 actions with multiple params"
     Assert True (Timelock QueuedTransaction (Timelock TxHash (Address CNT1) 0 (Governor LegitGov Proposal LastProposal Eta) "increment(uint256,uint256)" 7 4))
     Assert True (Timelock QueuedTransaction (Timelock TxHash (Address CNT1) 0 (Governor LegitGov Proposal LastProposal Eta) "decrement(uint256)" 2))
 
+Test "Revert on repeated proposal items"
+    DeployGov
+    Governor LegitGov Propose "Add 1 and Add 1" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256)" "increment(uint256)"] [["1"] ["1"]]
+    MineBlock
+    SucceedProposal
+    AllowFailures
+    Governor LegitGov Proposal LastProposal Queue
+    Assert Revert "revert GovernorAlpha::_queueOrRevert: proposal action already queued at eta"
+
 Test "Revert queue when proposal Id is Invalid"
     DeployGov
     AllowFailures

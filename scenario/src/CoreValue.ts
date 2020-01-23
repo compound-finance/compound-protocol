@@ -530,9 +530,9 @@ const fetchers = [
 
       switch (valType.val) {
         case 'list(address)':
-          let num = world.web3.utils.toBN(val);
+          let num = world.web3.utils.hexToNumber(val);
 
-          let p = new Array(num, undefined).map(async (_v, index) => {
+          let p = new Array(num).fill(undefined).map(async (_v, index) => {
             let itemKey;
             itemKey = world.web3.utils.sha3(newKey);
             itemKey =
@@ -540,7 +540,7 @@ const fetchers = [
               world.web3.utils
                 .toBN(itemKey)
                 .add(world.web3.utils.toBN(index))
-                .toString(16);
+               .toString(16).padStart(40, '0');
 
             let x = await world.web3.eth.getStorageAt(addr.val, itemKey);
 
