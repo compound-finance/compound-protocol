@@ -83,7 +83,7 @@ export async function buildInterestRateModel(world: World, from: string, event: 
          #### JumpRateModel
 
          * "JumpRateModel name:<String> baseRate:<Number> multiplier:<Number> jump:<Number> kink:<Number>" - The Jump interest rate
-           * E.g. "InterestRateModel Deploy JumpRateModel MyInterestRateModel 0.05 0.2 200 0.90" - 5% base rate and 20% utilization multiplier and 200% multiplier at 90% utilization
+           * E.g. "InterestRateModel Deploy JumpRateModel MyInterestRateModel 0.05 0.2 2 0.90" - 5% base rate and 20% utilization multiplier and 200% multiplier at 90% utilization
        `,
        "JumpRateModel",
        [

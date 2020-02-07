@@ -12,7 +12,7 @@ const {
 
 describe('PriceOracleProxy', () => {
   let root, accounts;
-  let oracle, backingOracle, cEth, cUsdc, cSai, cDai, cOther;
+  let oracle, backingOracle, cEth, cUsdc, cSai, cDai, cUsdt, cOther;
   let daiOracleKey = address(2);
 
   beforeEach(async () => {
@@ -21,6 +21,7 @@ describe('PriceOracleProxy', () => {
     cUsdc = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
     cSai = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
     cDai = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
+    cUsdt = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
     cOther = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
 
     backingOracle = await makePriceOracle();
@@ -31,7 +32,8 @@ describe('PriceOracleProxy', () => {
         cEth._address,
         cUsdc._address,
         cSai._address,
-        cDai._address
+        cDai._address,
+        cUsdt._address
       ]
      );
   });
@@ -66,6 +68,11 @@ describe('PriceOracleProxy', () => {
       let configuredCDAI = await call(oracle, "cDaiAddress");
       expect(configuredCDAI).toEqual(cDai._address);
     });
+
+    it("sets address of cUSDT", async () => {
+      let configuredCUSDT = await call(oracle, "cUsdtAddress");
+      expect(configuredCUSDT).toEqual(cUsdt._address);
+    });
   });
 
   describe("getUnderlyingPrice", () => {
@@ -97,6 +104,7 @@ describe('PriceOracleProxy', () => {
       await send(backingOracle, "setDirectPrice", [address(2), etherMantissa(8)]);
       await readAndVerifyProxyPrice(cDai, 8);
       await readAndVerifyProxyPrice(cUsdc, 5e12);
+      await readAndVerifyProxyPrice(cUsdt, 5e12);
     });
 
     it("proxies for whitelisted tokens", async () => {

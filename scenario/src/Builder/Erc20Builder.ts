@@ -20,7 +20,7 @@ import {storeAndSaveContract} from '../Networks';
 import {getContract, getTestContract} from '../Contract';
 import {encodeABI} from '../Utils';
 
-const ExistingToken = getContract("FullErc20Interface");
+const ExistingToken = getContract("EIP20Interface");
 const TetherInterface = getContract("TetherInterface");
 
 const FaucetTokenHarness = getContract("FaucetToken");

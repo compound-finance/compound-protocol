@@ -11,10 +11,11 @@ Test "Mint 1 cWBTC"
 Test "Mint WBTC with insufficient allowance"
     NewComptroller
     ListedCToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
-    Prep Geoff 4.9e8 WBTC cWBTC
+    Prep Geoff 5e8 WBTC cWBTC allowanceAmount:4.9e8
     AllowFailures
     Mint Geoff 5e8 cWBTC
-    Assert Failure TOKEN_INSUFFICIENT_ALLOWANCE MINT_TRANSFER_IN_NOT_POSSIBLE
+    --wbtc does not revert with reason in transfer from
+    Assert Revert "revert"
     Assert Equal (Erc20 cWBTC TokenBalance Geoff) (Exactly 0e8)
 
 Test "Mint WBTC with insufficient balance"
@@ -23,7 +24,8 @@ Test "Mint WBTC with insufficient balance"
     Prep Geoff 4.9e8 WBTC cWBTC allowanceAmount:5e8
     AllowFailures
     Mint Geoff 5e8 cWBTC
-    Assert Failure TOKEN_INSUFFICIENT_BALANCE MINT_TRANSFER_IN_NOT_POSSIBLE
+    --wbtc does not revert with reason in transfer from
+    Assert Revert "revert"
     Assert Equal (Erc20 cWBTC TokenBalance Geoff) (Exactly 0e8)
 
 Test "Mint two WBTC after minting two WBTC, and then I mint two more"

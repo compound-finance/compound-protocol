@@ -285,7 +285,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
     [new Arg('networkVal', getStringV)],
     async (world, { networkVal }) => {
       const network = networkVal.val;
-      if (world.basePath && (network === 'mainnet' || network === 'kovan' || network === 'goerli' || network === 'rinkeby')) {
+      if (world.basePath && (network === 'mainnet' || network === 'kovan' || network === 'goerli' || network === 'rinkeby' || network == 'ropsten')) {
         let newWorld = world.set('network', network);
         let contractInfo;
         [newWorld, contractInfo] = await loadContracts(newWorld);

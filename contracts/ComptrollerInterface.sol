@@ -1,12 +1,8 @@
 pragma solidity ^0.5.16;
 
-interface ComptrollerInterface {
-    /**
-     * @notice Marker function used for light validation when updating the comptroller of a market
-     * @dev Implementations should simply return true.
-     * @return true
-     */
-    function isComptroller() external view returns (bool);
+contract ComptrollerInterface {
+    /// @notice Indicator that this is a Comptroller contract (for inspection)
+    bool public constant isComptroller = true;
 
     /*** Assets You Are In ***/
 

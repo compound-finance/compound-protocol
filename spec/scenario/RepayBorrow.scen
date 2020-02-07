@@ -149,7 +149,7 @@ Test "Repay fails with insufficient allowance"
     Expect Changes (Erc20 BAT TokenBalance Geoff) Zero
     Expect Changes (Erc20 BAT TokenBalance cBAT) Zero
     RepayBorrow Geoff 2.5e18 cBAT
-    Assert Failure TOKEN_INSUFFICIENT_ALLOWANCE REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE
+    Assert Revert "revert Insufficient allowance"
     -- Let's check the overall numbers
     Assert Equal (CToken cBAT BorrowBalance Geoff) 2.5e18
     Assert Equal (CToken cBAT TotalBorrowsCurrent) 2.5e18
@@ -167,7 +167,7 @@ Test "Repay fails with insufficient balance"
     Expect Changes (Erc20 BAT TokenBalance Geoff) Zero
     Expect Changes (Erc20 BAT TokenBalance cBAT) Zero
     RepayBorrow Geoff 2.5e18 cBAT
-    Assert Failure TOKEN_INSUFFICIENT_BALANCE REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE
+    Assert Revert "revert Insufficient balance"
     -- Let's check the overall numbers
     Assert Equal (CToken cBAT BorrowBalance Geoff) 2.5e18
     Assert Equal (CToken cBAT TotalBorrowsCurrent) 2.5e18

@@ -38,6 +38,7 @@ async function borrowFresh(cToken, borrower, borrowAmount) {
 }
 
 async function borrow(cToken, borrower, borrowAmount, opts = {}) {
+  await send(cToken, 'harnessFastForward', [1]);
   return send(cToken, 'borrow', [borrowAmount], {from: borrower});
 }
 
@@ -54,10 +55,12 @@ async function repayBorrowFresh(cToken, payer, borrower, repayAmount) {
 }
 
 async function repayBorrow(cToken, borrower, repayAmount) {
+  await send(cToken, 'harnessFastForward', [1]);
   return send(cToken, 'repayBorrow', [], {from: borrower, value: repayAmount});
 }
 
 async function repayBorrowBehalf(cToken, payer, borrower, repayAmount) {
+  await send(cToken, 'harnessFastForward', [1]);
   return send(cToken, 'repayBorrowBehalf', [borrower], {from: payer, value: repayAmount});
 }
 
@@ -155,6 +158,7 @@ describe('CEther', function () {
 
     it("emits a borrow failure if interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
+      await send(cToken, 'harnessFastForward', [1]);
       await expect(borrow(cToken, borrower, borrowAmount)).rejects.toRevert("revert INTEREST_RATE_MODEL_ERROR");
     });
 

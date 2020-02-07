@@ -732,6 +732,21 @@ const fetchers = [
       return new NumberV(getCurrentTimestamp());
     }
   ),
+  new Fetcher<{}, NumberV>(
+    `
+      #### BlockTimestamp
+
+      * "BlockTimestamp" - Returns the current block's timestamp
+        * E.g. "BlockTimestamp"
+    `,
+    'BlockTimestamp',
+    [],
+    async (world, {}) => {
+      const {result: blockNumber}: any = await sendRPC(world, 'eth_blockNumber', []);
+      const {result: block}: any = await sendRPC(world, 'eth_getBlockByNumber', [blockNumber, false]);
+      return new NumberV(parseInt(block.timestamp, 16));
+    }
+  ),
   new Fetcher<{}, StringV>(
     `
       #### Network

@@ -10,6 +10,7 @@
     "deploy": "./scenario/script/repl -s ./scenario/scen/deploy.scen",
     "lint": "./script/lint",
     "repl": "./scenario/script/repl",
+    "profile": "yarn test tests/gasProfiler.js",
     "test": "./script/test",
     "test:prepare": "NO_RUN=true ./script/test"
   },
@@ -24,7 +25,7 @@
     "solparse": "^2.2.8"
   },
   "dependencies": {
-    "eth-saddle": "0.1.17"
+    "eth-saddle": "^0.1.17"
   },
   "resolutions": {
     "scrypt.js": "https://registry.npmjs.org/@compound-finance/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz",

@@ -30,7 +30,7 @@ const basePath = process.env.proj_root || process.cwd();
 const baseScenarioPath = path.join(basePath, 'spec', 'scenario');
 const baseNetworksPath = path.join(basePath, 'networks');
 
-const TOTAL_GAS = 5000000;
+const TOTAL_GAS = 8000000;
 
 function questionPromise(rl): Promise<string> {
   return new Promise((resolve, reject) => {

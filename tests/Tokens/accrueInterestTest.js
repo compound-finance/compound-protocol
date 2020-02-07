@@ -18,7 +18,6 @@ async function pretendBlock(cToken, accrualBlock = blockNumber, deltaBlocks = 1)
 }
 
 async function preAccrue(cToken) {
-  await pretendBlock(cToken, blockNumber, 0);
   await setBorrowRate(cToken, borrowRate);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cToken, 'harnessExchangeRateDetails', [0, 0, 0]);
@@ -38,12 +37,14 @@ describe('CToken', () => {
 
   describe('accrueInterest', () => {
     it('reverts if the interest rate is absurdly high', async () => {
+      await pretendBlock(cToken, blockNumber, 1);
       expect(await call(cToken, 'getBorrowRateMaxMantissa')).toEqualNumber(etherMantissa(0.000005)); // 0.0005% per block
       await setBorrowRate(cToken, 0.001e-2); // 0.0010% per block
       await expect(send(cToken, 'accrueInterest')).rejects.toRevert("revert borrow rate is absurdly high");
     });
 
     it('fails if new borrow rate calculation fails', async () => {
+      await pretendBlock(cToken, blockNumber, 1);
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
       await expect(send(cToken, 'accrueInterest')).rejects.toRevert("revert INTEREST_RATE_MODEL_ERROR");
     });

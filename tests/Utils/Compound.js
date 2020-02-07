@@ -2,6 +2,7 @@
 
 const { dfn } = require('./JS');
 const {
+  encodeParameters,
   etherBalance,
   etherMantissa,
   etherUnsigned
@@ -71,6 +72,7 @@ async function makeCToken(opts = {}) {
   const admin = opts.admin || root;
 
   let cToken, underlying;
+  let cDelegator, cDelegatee, cDaiMaker;
 
   switch (kind) {
     case 'cether':
@@ -85,12 +87,33 @@ async function makeCToken(opts = {}) {
           admin
         ])
       break;
+
+    case 'cdai':
+      cDaiMaker  = await deploy('CDaiDelegateMakerHarness');
+      underlying = cDaiMaker;
+      cDelegatee = await deploy('CDaiDelegateHarness');
+      cDelegator = await deploy('CErc20Delegator',
+        [
+          underlying._address,
+          comptroller._address,
+          interestRateModel._address,
+          exchangeRate,
+          name,
+          symbol,
+          decimals,
+          admin,
+          cDelegatee._address,
+          encodeParameters(['address', 'address'], [cDaiMaker._address, cDaiMaker._address])
+        ]
+      );
+      cToken = await saddle.getContractAt('CDaiDelegateHarness', cDelegator._address); // XXXS at
+      break;
+
     case 'cerc20':
     default:
       underlying = opts.underlying || await makeToken(opts.underlyingOpts);
-      let cDelegatee = await deploy('CErc20DelegateHarness');
-
-      let cDelegator = await deploy('CErc20Delegator',
+      cDelegatee = await deploy('CErc20DelegateHarness');
+      cDelegator = await deploy('CErc20Delegator',
         [
           underlying._address,
           comptroller._address,
@@ -103,7 +126,7 @@ async function makeCToken(opts = {}) {
           cDelegatee._address,
           "0x0"
         ]
-      );
+                                   );
       cToken = await saddle.getContractAt('CErc20DelegateHarness', cDelegator._address); // XXXS at
       break;
   }
@@ -178,7 +201,7 @@ async function makeToken(opts = {}) {
     const decimals = etherUnsigned(dfn(opts.decimals, 18));
     const symbol = opts.symbol || 'OMG';
     const name = opts.name || `Erc20 ${symbol}`;
-    return await deploy('EIP20Harness', [quantity, name, decimals, symbol]);
+    return await deploy('ERC20Harness', [quantity, name, decimals, symbol]);
   }
 }
 
@@ -269,6 +292,9 @@ async function preApprove(cToken, from, amount, opts = {}) {
 }
 
 async function quickMint(cToken, minter, mintAmount, opts = {}) {
+  // make sure to accrue interest
+  await fastForward(cToken, 1);
+
   if (dfn(opts.approve, true)) {
     expect(await preApprove(cToken, minter, mintAmount, opts)).toSucceed();
   }
@@ -287,6 +313,8 @@ async function preSupply(cToken, account, tokens, opts = {}) {
 }
 
 async function quickRedeem(cToken, redeemer, redeemTokens, opts = {}) {
+  await fastForward(cToken, 1);
+
   if (dfn(opts.supply, true)) {
     expect(await preSupply(cToken, redeemer, redeemTokens, opts)).toSucceed();
   }
@@ -297,6 +325,8 @@ async function quickRedeem(cToken, redeemer, redeemTokens, opts = {}) {
 }
 
 async function quickRedeemUnderlying(cToken, redeemer, redeemAmount, opts = {}) {
+  await fastForward(cToken, 1);
+
   if (dfn(opts.exchangeRate)) {
     expect(await send(cToken, 'harnessSetExchangeRate', [etherMantissa(opts.exchangeRate)])).toSucceed();
   }

@@ -56,6 +56,10 @@ function unlockedAccount(a) {
   return unlockedAccounts()[a.toLowerCase()];
 }
 
+async function mineBlockNumber(blockNumber) {
+  return rpc({method: 'evm_mineBlockNumber', params: [blockNumber]});
+}
+
 async function mineBlock() {
   return rpc({ method: 'evm_mine' });
 }
@@ -77,6 +81,11 @@ async function freezeTime(seconds) {
 async function advanceBlocks(blocks) {
   let { result: num } = await rpc({ method: 'eth_blockNumber' });
   await rpc({ method: 'evm_mineBlockNumber', params: [blocks + parseInt(num)] });
+}
+
+async function blockNumber() {
+  let { result: num } = await rpc({ method: 'eth_blockNumber' });
+  return parseInt(num);
 }
 
 async function minerStart() {
@@ -115,9 +124,11 @@ module.exports = {
   unlockedAccount,
 
   advanceBlocks,
+  blockNumber,
   freezeTime,
   increaseTime,
   mineBlock,
+  mineBlockNumber,
   minerStart,
   minerStop,
   rpc,

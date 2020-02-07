@@ -1,10 +1,9 @@
-pragma solidity ^0.5.12;
+pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Governance/Comp.sol";
 
 contract CompScenario is Comp {
-
     constructor(address account) Comp(account) public {}
 
     function transferScenario(address[] calldata destinations, uint256 amount) external returns (bool) {
