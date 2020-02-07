@@ -7,12 +7,12 @@ module.exports = {
   ],
   solc_shell_args: {                                        // Args passed to `exec`, see:
     maxBuffer: 1024 * 500000,                               // https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options
-    shell: '/bin/bash'
+    shell: process.env['SADDLE_SHELL'] || '/bin/bash'
   },
   // build_dir: ".build",                                   // Directory to place built contracts
   // coverage_dir: "coverage",                              // Directory to place coverage files
   // coverage_ignore: [],                                   // List of files to ignore for coverage
-  contracts: "{contracts,contracts/**,tests/Contracts}/*.sol",
+  contracts: process.env['SADDLE_CONTRACTS'] || "{contracts,contracts/**,tests/Contracts}/*.sol",
                                                             // Glob to match contract files
   trace: false,                                             // Compile with debug artifacts
   // TODO: Separate contracts for test?
@@ -83,6 +83,7 @@ module.exports = {
       providers: [
         {env: "PROVIDER"},
         {file: "~/.ethereum/goerli-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
+        {http: "https://goerli-eth.compound.finance"}
       ],
       web3: {
         gas: [
@@ -100,14 +101,39 @@ module.exports = {
       },
       accounts: [
         {env: "ACCOUNT"},
-        {file: "~/.ethereum/goerli"}                         // Load from given file with contents as the private key (e.g. 0x...)
+        {file: "~/.ethereum/goerli"},                         // Load from given file with contents as the private key (e.g. 0x...)
+        {unlocked: 0}
+      ]
+    },
+    ropsten: {
+      providers: [
+        {env: "PROVIDER"},
+        {file: "~/.ethereum/ropsten-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
+      ],
+      web3: {
+        gas: [
+          {env: "GAS"},
+          {default: "6700000"}
+        ],
+        gas_price: [
+          {env: "GAS_PRICE"},
+          {default: "12000000000"}
+        ],
+        options: {
+          transactionConfirmationBlocks: 1,
+          transactionBlockTimeout: 5
+        }
+      },
+      accounts: [
+        {env: "ACCOUNT"},
+        {file: "~/.ethereum/ropsten"}                         // Load from given file with contents as the private key (e.g. 0x...)
       ]
     },
     rinkeby: {
       providers: [
         {env: "PROVIDER"},
         {file: "~/.ethereum/rinkeby-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
-        {http: "https://rinkeby.infura.io"}
+        {http: "https://rinkeby-eth.compound.finance"}
       ],
       web3: {
         gas: [
@@ -125,8 +151,25 @@ module.exports = {
       },
       accounts: [
         {env: "ACCOUNT"},
-        {file: "~/.ethereum/rinkeby"}                         // Load from given file with contents as the private key (e.g. 0x...)
+        {file: "~/.ethereum/rinkeby"},                        // Load from given file with contents as the private key (e.g. 0x...)
+        {unlocked: 0}
       ]
     },
+  },
+  get_network_file: (network) => {
+    return null;
+  },
+  read_network_file: (network) => {
+    const fs = require('fs');
+    const path = require('path');
+    const util = require('util');
+
+    const networkFile = path.join(process.cwd(), 'networks', `${network}.json`);
+    return util.promisify(fs.readFile)(networkFile).then((json) => {
+      return JSON.parse(json)['Contracts'] || {};
+    });
+  },
+  write_network_file: (network, value) => {
+    // Do nothing
   }
 }

@@ -4,7 +4,7 @@ Macro DeployGov
     SetTime 10
     Counter Deploy CNT1
     Comp Deploy Bank
-    Enfranchise Root 600001e18
+    Enfranchise Root 400001e18
     Timelock Deploy Jared 604800
     Governor Deploy Alpha Alpha (Address Timelock) (Address Comp) Guardian
     Timelock SetAdmin (Address Alpha)
@@ -38,7 +38,7 @@ Test "Governor can switch to a new governor"
     Assert Equal (Timelock PendingAdmin) (Address Zero)
     Governor Beta Propose "Add 2" [(Address CNT1)] [0] ["increment(uint256)"] [["2"]]
     SucceedQueueExecuteLastProposal Beta
-    Assert Log ProposalExecuted (id 1) (eta (Governor Beta Proposal LastProposal Eta))
+    Assert Log ProposalExecuted (id 1)
     Assert Equal (Counter CNT1 Count) 2
 
 Test "Guardian can switch to a new governor"
@@ -59,5 +59,5 @@ Test "Guardian can switch to a new governor"
     IncreaseTime 604901
     Governor Beta Proposal LastProposal Execute
     Assert Equal ("Executed") (Governor Beta Proposal LastProposal State)
-    Assert Log ProposalExecuted (id 1) (eta (Governor Beta Proposal LastProposal Eta))
+    Assert Log ProposalExecuted (id 1)
     Assert Equal (Counter CNT1 Count) 2

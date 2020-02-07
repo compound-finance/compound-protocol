@@ -23,6 +23,7 @@ import { Value} from './Value';
 const startingBlockNumber = 1000;
 
 type ContractIndex = { [address: string]: Contract };
+type Counter = { value: number };
 type EventDecoder = { [eventSignature: string]: (log: any) => any };
 
 export interface WorldProps {
@@ -31,6 +32,7 @@ export interface WorldProps {
   lastInvokation: Invokation<any> | null;
   newInvokation: boolean;
   blockNumber: number;
+  gasCounter: Counter;
   lastContract: Contract | null;
   invariants: Invariant[];
   expectations: Expectation[];
@@ -60,6 +62,7 @@ const defaultWorldProps: WorldProps = {
   lastInvokation: null,
   newInvokation: false,
   blockNumber: 0,
+  gasCounter: {value: 0},
   lastContract: null,
   invariants: [],
   expectations: [],
@@ -90,6 +93,7 @@ export class World extends Record(defaultWorldProps) {
   public readonly lastInvokation!: Invokation<any> | null;
   public readonly newInvokation!: boolean;
   public readonly blockNumber!: number;
+  public readonly gasCounter!: Counter;
   public readonly lastContract!: Contract | null;
   public readonly invariants!: Invariant[];
   public readonly expectations!: Expectation[];
@@ -190,6 +194,7 @@ export async function initWorld(
     lastInvokation: null,
     newInvokation: true,
     blockNumber: startingBlockNumber,
+    gasCounter: {value: 0},
     lastContract: null,
     invariants: [new SuccessInvariant()], // Start with invariant success,
     expectations: [],

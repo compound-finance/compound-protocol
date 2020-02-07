@@ -78,6 +78,16 @@ export function decodeParameters(world: World, fnABI: string, data: string): str
   return inputTypes.map((_, index) => parameters[index]);
 }
 
+export async function getCurrentBlockNumber(world: World): Promise<number> {
+  const { result: currentBlockNumber }: any = await sendRPC(world, 'eth_blockNumber', []);
+  return parseInt(currentBlockNumber);
+}
+
+export function getCurrentTimestamp(): number {
+  return Math.floor(Date.now() / 1000);
+}
+
+
 export function sleep(timeout: number): Promise<void> {
   return new Promise((resolve, reject) => {
     setTimeout(() => {

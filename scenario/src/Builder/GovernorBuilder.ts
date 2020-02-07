@@ -2,14 +2,14 @@ import { Event } from "../Event";
 import { World } from "../World";
 import { Governor } from "../Contract/Governor";
 import { Invokation } from "../Invokation";
-import { getAddressV, getStringV } from "../CoreValue";
-import { AddressV, StringV } from "../Value";
+import { getAddressV, getNumberV, getStringV } from "../CoreValue";
+import { AddressV, NumberV, StringV } from "../Value";
 import { Arg, Fetcher, getFetcherValue } from "../Command";
 import { storeAndSaveContract } from "../Networks";
 import { getContract } from "../Contract";
 
 const GovernorAlphaContract = getContract("GovernorAlpha");
-const GovernorAlphaScenarioContract = getContract("GovernorAlphaScenario");
+const GovernorAlphaHarnessContract = getContract("GovernorAlphaHarness");
 
 export interface GovernorData {
   invokation: Invokation<Governor>;
@@ -32,7 +32,7 @@ export async function buildGovernor(
       #### GovernorAlpha
 
       * "Governor Deploy Alpha name:<String> timelock:<Address> comp:<Address> guardian:<Address>" - Deploys Compound Governor Alpha
-        * E.g. "Governor Deploy Alpha GovernorScenario (Address Timelock) (Address Comp) Guardian"
+        * E.g. "Governor Deploy Alpha GovernorAlpha (Address Timelock) (Address Comp) Guardian"
     `,
       "Alpha",
       [
@@ -52,7 +52,37 @@ export async function buildGovernor(
           contract: "GovernorAlpha"
         };
       }
+    ),
+    new Fetcher<
+      { name: StringV, timelock: AddressV, comp: AddressV, guardian: AddressV},
+      GovernorData
+    >(
+      `
+      #### GovernorAlphaHarness
+
+      * "Governor Deploy AlphaHarness name:<String> timelock:<Address> comp:<Address> guardian:<Address>" - Deploys Compound Governor Alpha with a mocked voting period
+        * E.g. "Governor Deploy AlphaHarness GovernorAlphaHarness (Address Timelock) (Address Comp) Guardian"
+    `,
+      "AlphaHarness",
+      [
+        new Arg("name", getStringV),
+        new Arg("timelock", getAddressV),
+        new Arg("comp", getAddressV),
+        new Arg("guardian", getAddressV)
+      ],
+      async (world, { name, timelock, comp, guardian }) => {
+        return {
+          invokation: await GovernorAlphaHarnessContract.deploy<Governor>(
+            world,
+            from,
+            [timelock.val, comp.val, guardian.val]
+          ),
+          name: name.val,
+          contract: "GovernorAlphaHarness"
+        };
+      }
     )
+
   ];
 
   let govData = await getFetcherValue<any, GovernorData>(

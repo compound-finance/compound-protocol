@@ -32,7 +32,7 @@ import { processTrxEvent, trxCommands } from './Event/TrxEvent';
 import { getFetchers, getCoreValue } from './CoreValue';
 import { formatEvent } from './Formatter';
 import { fallback } from './Invokation';
-import { sendRPC, sleep } from './Utils';
+import { getCurrentBlockNumber, getCurrentTimestamp, sendRPC, sleep } from './Utils';
 import { Map } from 'immutable';
 import { encodedNumber } from './Encoding';
 import { printHelp } from './Help';
@@ -134,17 +134,68 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       return world;
     }
   ),
-  new View<{ ms: NumberV }>(
+  new View<{ seconds: NumberV }>(
     `
-      #### Sleep
+      #### SleepSeconds
 
-      * "Sleep ms:<Number>" - Sleeps for given amount of time.
-        * E.g. "Sleep 1000" - Sleeps for one second
+      * "SleepSeconds s:<Number>" - Sleeps for given amount of time.
+        * E.g. "SleepSeconds 1" - Sleeps for one second
     `,
-    'Sleep',
-    [new Arg('ms', getNumberV)],
-    async (world, { ms }) => {
-      await sleep(ms.toNumber());
+    'SleepSeconds',
+    [new Arg('seconds', getNumberV)],
+    async (world, { seconds }) => {
+      await sleep(seconds.toNumber() * 1000);
+      return world;
+    }
+  ),
+  new View<{ timestamp: NumberV }>(
+    `
+      #### SleepUntilTimestamp
+
+      * "SleepUntil timestamp:<Number>" - Sleeps until the given timestamp
+        * E.g. "SleepUntil 1579123423" - Sleeps from now until 1579123423
+    `,
+    'SleepUntilTimestamp',
+    [new Arg('timestamp', getNumberV)],
+    async (world, { timestamp }) => {
+      const delay = timestamp.toNumber() - getCurrentTimestamp();
+      if (delay > 0) {
+        await sleep(delay * 1000);
+      }
+      return world;
+    }
+  ),
+  new View<{ blocks: NumberV }>(
+    `
+      #### SleepBlocks
+
+      * "SleepForBlocks blocks:<Number>" - Sleeps for a given number of blocks
+        * E.g. "SleepBlocks 20" - Sleeps for 20 blocks
+    `,
+    'SleepBlocks',
+    [new Arg('blocks', getNumberV)],
+    async (world, { blocks }) => {
+      const targetBlockNumber = blocks.toNumber() + await getCurrentBlockNumber(world);
+      while (await getCurrentBlockNumber(world) < targetBlockNumber) {
+        await sleep(1000);
+      }
+      return world;
+    }
+  ),
+  new View<{ blockNumber: NumberV }>(
+    `
+      #### SleepUntilBlock
+
+      * "SleepUntilBlock blockNumber:<Number>" - Sleeps until the given blockNumber
+        * E.g. "SleepUntilBlock 2006868" - Sleeps from now until block 2006868.
+    `,
+    'SleepUntilBlock',
+    [new Arg('blockNumber', getNumberV)],
+    async (world, { blockNumber }) => {
+      const delay = blockNumber.toNumber() - await getCurrentBlockNumber(world);
+      while (blockNumber.toNumber() > await getCurrentBlockNumber(world)) {
+        await sleep(1000);
+      }
       return world;
     }
   ),
@@ -389,9 +440,8 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
     'AdvanceBlocks',
     [new Arg('blockNumber', getNumberV)],
     async (world, { blockNumber }) => {
-
-      let { result: num }: any = await sendRPC(world, 'eth_blockNumber', [])
-      await sendRPC(world, 'evm_mineBlockNumber', [Number(blockNumber.val) + parseInt(num)])
+      const currentBlockNumber = await getCurrentBlockNumber(world);
+      await sendRPC(world, 'evm_mineBlockNumber', [Number(blockNumber.val) + currentBlockNumber]);
       return world;
     }
   ),

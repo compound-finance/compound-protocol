@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "compile": "./script/compile",
+    "console": "if node -v | grep -E \"v(12|13)\" > /dev/null; then flags=\"-n --experimental-repl-await\"; fi; npx $flags saddle console",
     "coverage": "./script/coverage",
     "deploy": "./scenario/script/repl -s ./script/scen/deploy.scen",
     "lint": "./script/lint",
@@ -23,7 +24,7 @@
     "solparse": "^2.2.8"
   },
   "dependencies": {
-    "eth-saddle": "0.1.3"
+    "eth-saddle": "0.1.9"
   },
   "resolutions": {
     "scrypt.js": "https://registry.npmjs.org/@compound-finance/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz",

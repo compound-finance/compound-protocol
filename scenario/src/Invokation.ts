@@ -221,7 +221,7 @@ export async function invoke<T>(world: World, fn: Sendable<T>, from: string, err
     ...worldInvokationOpts,
     ...trxInvokationOpts
   };
-  
+
   try {
     try {
       const gas = await fn.estimateGas({ ...invokationOpts });
@@ -255,6 +255,7 @@ export async function invoke<T>(world: World, fn: Sendable<T>, from: string, err
       };
     } else {
       result = await fn.send({ ...invokationOpts });
+      world.gasCounter.value += result.gasUsed;
     }
 
     if (world.settings.printTxLogs) {

@@ -1,30 +1,22 @@
-FROM mhart/alpine-node:11.10.1
+FROM mhart/alpine-node:13.8.0
 
 RUN apk update && apk add --no-cache --virtual build-dependencies git python g++ make
-RUN yarn global add truffle@5.0.30
-RUN yarn global add ganache-cli@6.5.1
-RUN yarn global add typescript
+RUN wget https://github.com/ethereum/solidity/releases/download/v0.5.13/solc-static-linux -O /bin/solc && chmod +x /bin/solc
 
-RUN wget https://github.com/ethereum/solidity/releases/download/v0.5.8/solc-static-linux -O /usr/local/bin/solc && \
-	chmod +x /usr/local/bin/solc
-
-RUN mkdir -p /deploy/compound-protocol/scenario
-WORKDIR /deploy/compound-protocol
+RUN mkdir -p /compound-protocol
+WORKDIR /compound-protocol
 
 # First add deps
-ADD ./package.json /deploy/compound-protocol/
-ADD ./yarn.lock /deploy/compound-protocol/
-RUN yarn install
-ADD scenario/package.json /deploy/compound-protocol/scenario
-ADD scenario/yarn.lock /deploy/compound-protocol/scenario
-RUN ls -la /deploy/compound-protocol
-RUN ls -la /deploy/compound-protocol/scenario
-RUN cd /deploy/compound-protocol/scenario && yarn install
+ADD ./package.json /compound-protocol
+ADD ./yarn.lock /compound-protocol
+RUN yarn install --lock-file
 
 # Then rest of code and build
-ADD . /deploy/compound-protocol
+ADD . /compound-protocol
 
-RUN truffle compile
+ENV SADDLE_SHELL=/bin/sh
+ENV SADDLE_CONTRACTS="contracts/*.sol contracts/**/*.sol"
+RUN npx saddle compile
 
 RUN apk del build-dependencies
 RUN yarn cache clean

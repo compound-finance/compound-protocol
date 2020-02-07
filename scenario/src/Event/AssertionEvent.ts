@@ -1,13 +1,8 @@
 import { Event } from '../Event';
 import { fail, World } from '../World';
-import { mustArray } from '../Utils';
 import { getCoreValue } from '../CoreValue';
-import { formatError } from '../Formatter';
-import { Failure, Invokation, InvokationRevertFailure } from '../Invokation';
-import { formatEvent } from '../Formatter';
+import { Failure, InvokationRevertFailure } from '../Invokation';
 import {
-  getAddressV,
-  getBoolV,
   getEventV,
   getMapV,
   getNumberV,
@@ -17,6 +12,7 @@ import {
   AddressV,
   BoolV,
   EventV,
+  ListV,
   MapV,
   NumberV,
   Order,
@@ -44,6 +40,14 @@ async function assertEqual(world: World, given: Value, expected: Value): Promise
 async function assertLessThan(world: World, given: Value, expected: Value): Promise<World> {
   if (given.compareOrder(world, expected) !== Order.LESS_THAN) {
     return fail(world, `Expected ${given.toString()} to be less than ${expected.toString()}`);
+  }
+
+  return world;
+}
+
+async function assertGreaterThan(world: World, given: Value, expected: Value): Promise<World> {
+  if (given.compareOrder(world, expected) !== Order.GREATER_THAN) {
+    return fail(world, `Expected ${given.toString()} to be greater than ${expected.toString()}`);
   }
 
   return world;
@@ -182,6 +186,8 @@ function getLogValue(value: any): Value {
     return new StringV(value);
   } else if (typeof value === 'boolean') {
     return new BoolV(value);
+  } else if (Array.isArray(value)) {
+    return new ListV(value.map(getLogValue));
   } else {
     throw new Error('Unknown type of log parameter: ${value}');
   }
@@ -285,7 +291,7 @@ export function assertionCommands() {
     new View<{ given: Value, expected: Value }>(`
         #### LessThan
 
-        * "given:<Value> LessThan expected:<Value>" - Asserts that given matches expected.
+        * "given:<Value> LessThan expected:<Value>" - Asserts that given is less than expected.
           * E.g. "Assert (Exactly 0) LessThan (Exactly 1)"
       `,
       "LessThan",
@@ -294,6 +300,21 @@ export function assertionCommands() {
         new Arg("expected", getCoreValue)
       ],
       (world, { given, expected }) => assertLessThan(world, given, expected),
+      { namePos: 1 }
+    ),
+
+    new View<{ given: Value, expected: Value }>(`
+        #### GreaterThan
+
+        * "given:<Value> GreaterThan expected:<Value>" - Asserts that given is greater than the expected.
+          * E.g. "Assert (Exactly 0) GreaterThan (Exactly 1)"
+      `,
+      "GreaterThan",
+      [
+        new Arg("given", getCoreValue),
+        new Arg("expected", getCoreValue)
+      ],
+      (world, { given, expected }) => assertGreaterThan(world, given, expected),
       { namePos: 1 }
     ),
 

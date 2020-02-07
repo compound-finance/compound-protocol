@@ -5,7 +5,7 @@ Macro DeployGov
     Comp Deploy Bank
     Governor Deploy Alpha LegitGov (Address Timelock) (Address Comp) Guardian
     Timelock SetAdmin (Address LegitGov)
-    Enfranchise Root 400001e18
+    Enfranchise Root 200001e18
     Enfranchise Jared 200000e18
 
 Macro Enfranchise user amount

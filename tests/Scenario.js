@@ -98,12 +98,11 @@ function run(file) {
         if (events.length === 0) {
           fn("scenario: " + name);
         } else {
+          let finalWorld;
           let runner = async () => {
             let world = await initWorld(expect, new ConsolePrinter(verbose), web3, saddle, network, accounts, basePath);
             world = loadVerbose(world);
             world = loadInvokationOpts(world);
-
-            let finalWorld;
 
             // console.log(["Scenario", name, "Events", events, world]);
 
@@ -114,7 +113,11 @@ function run(file) {
             return finalWorld;
           }
 
-          fn("scenario: " + name, runner);
+          const spec = fn("scenario: " + name, runner);
+          afterEach(() => {
+            if (finalWorld)
+              spec.result.description += ` [${finalWorld.gasCounter.value} wei]`;
+          })
         }
       } else {
         it.skip("scenario: " + name, async () => {});

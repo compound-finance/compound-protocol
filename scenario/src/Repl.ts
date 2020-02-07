@@ -96,7 +96,7 @@ async function repl(): Promise<void> {
   let contractInfo: string[];
 
   let saddle = await getSaddle(network);
-  let accounts: string[] = [saddle.account].concat(saddle.accounts).filter((x) => !!x);
+  let accounts: string[] = saddle.wallet_accounts.concat(saddle.accounts).filter((x) => !!x);
 
   world = await initWorld(throwExpect, printer, saddle.web3, saddle, network, accounts, basePath);
   [world, contractInfo] = await loadContracts(world);
@@ -129,9 +129,9 @@ async function repl(): Promise<void> {
     console.log(`Running on fork ${forkJson.url} with unlocked accounts ${forkJson.unlocked.join(', ')}`)
   }
 
-  if (saddle.accounts.length > 0) {
+  if (accounts.length > 0) {
     printer.printLine(`Accounts:`);
-    saddle.accounts.forEach((account, i) => {
+    accounts.forEach((account, i) => {
       let aliases = world.settings.lookupAliases(account);
       aliases = aliases.concat(accountAliases(i));
 

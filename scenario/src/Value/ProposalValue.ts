@@ -134,6 +134,42 @@ export function proposalFetchers(governor: Governor) {
       },
       { namePos: 1 }
     ),
+    new Fetcher<{ proposalIdent: EventV, voter: AddressV }, BoolV>(`
+        #### Supported
+
+        * "Governor <Governor> Proposal <Proposal> Supported <voter>" - Returns true if the given address has voted on given proposal
+          * E.g. "Governor GovernorScenario Proposal 5 Supported Geoff"
+          * E.g. "Governor GovernorScenario Proposal LastProposal Supported Geoff"
+      `,
+      "Supported",
+      [
+        new Arg("proposalIdent", getEventV),
+        new Arg("voter", getAddressV)
+      ],
+      async (world, { proposalIdent, voter }) => {
+        const receipt = await governor.methods.getReceipt(await getProposalId(world, governor, proposalIdent.val), voter.val).call();
+        return new BoolV(receipt.support);
+      },
+      { namePos: 1 }
+    ),
+    new Fetcher<{ proposalIdent: EventV, voter: AddressV }, NumberV>(`
+        #### VotesCast
+
+        * "Governor <Governor> Proposal <Proposal> VotesCast <voter>" - Returns true if the given address has voted on given proposal
+          * E.g. "Governor GovernorScenario Proposal 5 VotesCast Geoff"
+          * E.g. "Governor GovernorScenario Proposal LastProposal VotesCast Geoff"
+      `,
+      "VotesCast",
+      [
+        new Arg("proposalIdent", getEventV),
+        new Arg("voter", getAddressV)
+      ],
+      async (world, { proposalIdent, voter }) => {
+        const receipt = await governor.methods.getReceipt(await getProposalId(world, governor, proposalIdent.val), voter.val).call();
+        return new NumberV(receipt.votes);
+      },
+      { namePos: 1 }
+    ),
     new Fetcher<{ proposalIdent: EventV }, StringV>(`
         #### State
 

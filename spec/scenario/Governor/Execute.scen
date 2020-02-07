@@ -4,8 +4,8 @@ Macro DeployGov
     Counter Deploy CNT1
     Timelock Deploy Jared 604800
     Comp Deploy Bank
-    Enfranchise Root 400001e18
-    Enfranchise Jared 200001e18
+    Enfranchise Root 200001e18
+    Enfranchise Jared 200000e18
     Governor Deploy Alpha LegitGov (Address Timelock) (Address Comp) Guardian
     Timelock SetAdmin (Address LegitGov)
 
@@ -35,7 +35,7 @@ Test "Execute a simple queued proposal with value"
     IncreaseTime 605000
     Governor LegitGov Proposal LastProposal Execute
     Assert Equal ("Executed") (Governor LegitGov Proposal LastProposal State)
-    Assert Log ProposalExecuted (id 1) (eta (Governor LegitGov Proposal LastProposal Eta))
+    Assert Log ProposalExecuted (id 1)
     Assert Equal (Counter CNT1 Count) 2
 
 Test "Execute a complex queued proposal with value"

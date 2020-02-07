@@ -33,7 +33,7 @@ import { getMaximillionValue, maximillionFetchers } from './Value/MaximillionVal
 import { getCompValue, compFetchers } from './Value/CompValue';
 import { getGovernorValue, governorFetchers } from './Value/GovernorValue';
 import { getAddress } from './ContractLookup';
-import { mustArray, sendRPC } from './Utils';
+import { getCurrentBlockNumber, getCurrentTimestamp, mustArray, sendRPC } from './Utils';
 import { toEncodableNum } from './Encoding';
 import { BigNumber } from 'bignumber.js';
 import { buildContractFetcher } from './EventBuilder';
@@ -525,7 +525,6 @@ const fetchers = [
       let paddedSlot = world.web3.utils.padLeft(slot.val, 64);
       let paddedKey = world.web3.utils.padLeft(key.val, 64);
       let newKey = world.web3.utils.sha3(paddedKey + paddedSlot);
-
       let val = await world.web3.eth.getStorageAt(addr.val, newKey);
 
       switch (valType.val) {
@@ -533,17 +532,10 @@ const fetchers = [
           let num = world.web3.utils.hexToNumber(val);
 
           let p = new Array(num).fill(undefined).map(async (_v, index) => {
-            let itemKey;
-            itemKey = world.web3.utils.sha3(newKey);
-            itemKey =
-              '0x' +
-              world.web3.utils
-                .toBN(itemKey)
-                .add(world.web3.utils.toBN(index))
-               .toString(16).padStart(40, '0');
-
-            let x = await world.web3.eth.getStorageAt(addr.val, itemKey);
-
+            let newKeySha = world.web3.utils.sha3(newKey);
+            let itemKey = world.web3.utils.toBN(newKeySha).add(world.web3.utils.toBN(index));
+            let paddedKey = world.web3.utils.padLeft(itemKey.toString(16), 40);
+            let x = await world.web3.eth.getStorageAt(addr.val, `0x${paddedKey}`);
             return new AddressV(x);
           });
 
@@ -568,18 +560,29 @@ const fetchers = [
       }
     }
   ),
+
   new Fetcher<{}, NumberV>(
     `
-    #### GetBlockNumber
-    * GetBlockNumber
+    #### BlockNumber
+    * BlockNumber
     `,
-    'GetBlockNumber',
+    'BlockNumber',
     [],
     async (world, {}) => {
-      let { result: num }: any = await sendRPC(world, 'eth_blockNumber', []);
-      return new NumberV(parseInt(num));
+      return new NumberV(await getCurrentBlockNumber(world));
     }
   ),
+
+  new Fetcher<{}, NumberV>(
+    `
+    #### GasCounter
+    * GasCounter
+    `,
+    'GasCounter',
+    [],
+    async (world, {}) => new NumberV(world.gasCounter.value)
+  ),
+
   new Fetcher<{}, AddressV>(
     `
       #### LastContract
@@ -590,6 +593,7 @@ const fetchers = [
     [],
     async (world, { }) => new AddressV(world.get('lastContract'))
   ),
+
   new Fetcher<{}, NumberV>(
     `
       #### LastBlock
@@ -611,6 +615,7 @@ const fetchers = [
       return new NumberV(invokation.receipt.blockNumber);
     }
   ),
+
   new Fetcher<{}, NumberV>(
     `
       #### LastGas
@@ -632,6 +637,7 @@ const fetchers = [
       return new NumberV(invokation.receipt.gasUsed);
     }
   ),
+
   new Fetcher<{ els: Value[] }, AnythingV>(
     `
       #### List
@@ -733,8 +739,7 @@ const fetchers = [
     [new Arg('seconds', getNumberV)],
     async (world, { seconds }) => {
       const secondsBn = new BigNumber(seconds.val);
-      const now = Math.floor(Date.now() / 1000);
-      return new NumberV(secondsBn.plus(now).toFixed(0));
+      return new NumberV(secondsBn.plus(getCurrentTimestamp()).toFixed(0));
     }
   ),
     new Fetcher<{}, NumberV>(
@@ -746,7 +751,7 @@ const fetchers = [
     'Now',
     [],
     async (world, {}) => {
-      return new NumberV(Math.floor(Date.now() / 1000));
+      return new NumberV(getCurrentTimestamp());
     }
   ),
   new Fetcher<{}, StringV>(

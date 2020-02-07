@@ -51,7 +51,7 @@ contract Comp is EIP20Interface {
     /// @notice A record of states for signing / validating signatures
     mapping (address => uint) public nonces;
 
-    /// @notice An event thats emitted when an account changes their delegate
+    /// @notice An event thats emitted when an account changes its delegate
     event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);
 
     /// @notice An event thats emitted when a delegate account's vote balance changes

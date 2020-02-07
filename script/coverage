@@ -21,7 +21,7 @@ verbose=${verbose:-}
 
 rm -rf "$coverage_root"
 
-proj_root="$proj_root" verbose="$verbose" node --max_old_space_size=4096 "./node_modules/.bin/saddle" coverage $@
+npx saddle coverage $@
 coverage_code=$?
 
 npx istanbul report --root="$coverage_root" lcov json
