@@ -68,11 +68,6 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      */
     event ActionPaused(CToken cToken, string action, bool pauseState);
 
-    /**
-     * @notice Indicator that this is a Comptroller contract (for inspection)
-     */
-    bool public constant isComptroller = true;
-
     // closeFactorMantissa must be strictly greater than this value
     uint internal constant closeFactorMinMantissa = 0.05e18; // 0.05
 
@@ -663,6 +658,25 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      */
     function getAccountLiquidityInternal(address account) internal view returns (Error, uint, uint) {
         return getHypotheticalAccountLiquidityInternal(account, CToken(0), 0, 0);
+    }
+
+    /**
+     * @notice Determine what the account liquidity would be if the given amounts were redeemed/borrowed
+     * @param cTokenModify The market to hypothetically redeem/borrow in
+     * @param account The account to determine liquidity for
+     * @param redeemTokens The number of tokens to hypothetically redeem
+     * @param borrowAmount The amount of underlying to hypothetically borrow
+     * @return (possible error code (semi-opaque),
+                hypothetical account liquidity in excess of collateral requirements,
+     *          hypothetical account shortfall below collateral requirements)
+     */
+    function getHypotheticalAccountLiquidity(
+        address account,
+        address cTokenModify,
+        uint redeemTokens,
+        uint borrowAmount) public view returns (uint, uint, uint) {
+        (Error err, uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(account, CToken(cTokenModify), redeemTokens, borrowAmount);
+        return (uint(err), liquidity, shortfall);
     }
 
     /**

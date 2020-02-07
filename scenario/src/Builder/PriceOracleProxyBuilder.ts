@@ -22,11 +22,11 @@ export interface PriceOracleProxyData {
 
 export async function buildPriceOracleProxy(world: World, from: string, event: Event): Promise<{world: World, priceOracleProxy: PriceOracleProxy, invokation: Invokation<PriceOracleProxy>}> {
   const fetchers = [
-    new Fetcher<{guardian: AddressV, priceOracle: AddressV, cETH: AddressV, cUSDC: AddressV, cSAI: AddressV, cDAI: AddressV}, PriceOracleProxyData>(`
+    new Fetcher<{guardian: AddressV, priceOracle: AddressV, cETH: AddressV, cUSDC: AddressV, cSAI: AddressV, cDAI: AddressV, cUSDT: AddressV}, PriceOracleProxyData>(`
         #### Price Oracle Proxy
 
-        * "Deploy <Guardian:Address> <PriceOracle:Address> <cETH:Address> <cUSDC:Address> <cSAI:Address> <cDAI:Address>" - The Price Oracle which proxies to a backing oracle
-        * E.g. "PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) cETH cUSDC cSAI cDAI"
+        * "Deploy <Guardian:Address> <PriceOracle:Address> <cETH:Address> <cUSDC:Address> <cSAI:Address> <cDAI:Address> <cUSDT:Address>" - The Price Oracle which proxies to a backing oracle
+        * E.g. "PriceOracleProxy Deploy Admin (PriceOracle Address) cETH cUSDC cSAI cDAI cUSDT"
       `,
       "PriceOracleProxy",
       [
@@ -35,16 +35,18 @@ export async function buildPriceOracleProxy(world: World, from: string, event: E
         new Arg("cETH", getAddressV),
         new Arg("cUSDC", getAddressV),
         new Arg("cSAI", getAddressV),
-        new Arg("cDAI", getAddressV)
+        new Arg("cDAI", getAddressV),
+        new Arg("cUSDT", getAddressV)
       ],
-      async (world, {guardian, priceOracle, cETH, cUSDC, cSAI, cDAI}) => {
+      async (world, {guardian, priceOracle, cETH, cUSDC, cSAI, cDAI, cUSDT}) => {
         return {
-          invokation: await PriceOracleProxyContract.deploy<PriceOracleProxy>(world, from, [guardian.val, priceOracle.val, cETH.val, cUSDC.val, cSAI.val, cDAI.val]),
+          invokation: await PriceOracleProxyContract.deploy<PriceOracleProxy>(world, from, [guardian.val, priceOracle.val, cETH.val, cUSDC.val, cSAI.val, cDAI.val, cUSDT.val]),
           description: "Price Oracle Proxy",
           cETH: cETH.val,
           cUSDC: cUSDC.val,
           cSAI: cSAI.val,
-          cDAI: cDAI.val
+          cDAI: cDAI.val,
+          cUSDT: cUSDT.val
         };
       },
       {catchall: true}

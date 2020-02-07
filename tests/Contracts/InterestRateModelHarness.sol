@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity ^0.5.16;
 
 import "../../contracts/InterestRateModel.sol";
 
@@ -7,7 +7,6 @@ import "../../contracts/InterestRateModel.sol";
   * @author Compound
   */
 contract InterestRateModelHarness is InterestRateModel {
-    bool public constant isInterestRateModel = true;
     uint public constant opaqueBorrowFailureCode = 20;
     bool public failBorrowRate;
     uint public borrowRate;

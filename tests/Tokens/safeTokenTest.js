@@ -48,19 +48,5 @@ describe('CEther', function () {
         await expect(call(cToken, 'harnessDoTransferOut', [root, 77], {value: 0})).rejects.toRevert();
       });
     });
-
-    describe("checkTransferIn", () => {
-      it("succeeds", async () => {
-        expect(await call(cToken, 'harnessCheckTransferIn', [root, 100], {value: 100})).toHaveTokenError('NO_ERROR');
-      });
-
-      it("reverts if sender is not from", async () => {
-        await expect(call(cToken, 'harnessCheckTransferIn', [nonRoot, 100], {value: 100})).rejects.toRevert("revert sender mismatch");
-      });
-
-      it("reverts if amount is not msg.value", async () => {
-        await expect(call(cToken, 'harnessCheckTransferIn', [root, 77], {value: 100})).rejects.toRevert("revert value mismatch");
-      });
-    });
   });
 });

@@ -181,38 +181,28 @@ contract CDaiDelegate is CErc20Delegate {
 
 /*** Maker Interfaces ***/
 
-contract PotLike {
-    function chi() public view returns (uint);
-    function dsr() public view returns (uint);
-    function rho() public view returns (uint);
-    function pie(address) public view returns (uint);
-    function drip() public returns (uint);
-    function join(uint) public;
-    function exit(uint) public;
+interface PotLike {
+    function chi() external view returns (uint);
+    function pie(address) external view returns (uint);
+    function drip() external returns (uint);
+    function join(uint) external;
+    function exit(uint) external;
 }
 
-contract GemLike {
-    function approve(address, uint) public;
-    function balanceOf(address) public view returns (uint);
-    function transfer(address, uint) public;
-    function transferFrom(address, address, uint) public;
-    function deposit() public payable;
-    function withdraw(uint) public;
+interface GemLike {
+    function approve(address, uint) external;
+    function balanceOf(address) external view returns (uint);
+    function transferFrom(address, address, uint) external returns (bool);
 }
 
-contract VatLike {
-    function can(address, address) public view returns (uint);
-    function ilks(bytes32) public view returns (uint, uint, uint, uint, uint);
-    function dai(address) public view returns (uint);
-    function urns(bytes32, address) public view returns (uint, uint);
-    function frob(bytes32, address, address, address, int, int) public;
-    function hope(address) public;
-    function move(address, address, uint) public;
+interface VatLike {
+    function dai(address) external view returns (uint);
+    function hope(address) external;
 }
 
-contract DaiJoinLike {
-    function vat() public returns (VatLike);
-    function dai() public returns (GemLike);
-    function join(address, uint) public payable;
-    function exit(address, uint) public;
+interface DaiJoinLike {
+    function vat() external returns (VatLike);
+    function dai() external returns (GemLike);
+    function join(address, uint) external payable;
+    function exit(address, uint) external;
 }

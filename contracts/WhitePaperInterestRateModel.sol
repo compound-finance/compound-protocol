@@ -14,11 +14,6 @@ contract WhitePaperInterestRateModel is InterestRateModel {
     event NewInterestParams(uint baseRatePerBlock, uint multiplierPerBlock);
 
     /**
-     * @notice Indicator that this is an InterestRateModel contract (for inspection)
-     */
-    bool public constant isInterestRateModel = true;
-
-    /**
      * @notice The approximate number of blocks per year that is assumed by the interest rate model
      */
     uint public constant blocksPerYear = 2102400;

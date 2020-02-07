@@ -1,7 +1,10 @@
-pragma solidity ^0.5.12;
+pragma solidity ^0.5.16;
 
 import "../../contracts/ComptrollerG1.sol";
 import "../../contracts/PriceOracle.sol";
+
+// XXX we should delete G1 everything...
+//  requires fork/deploy bytecode tests
 
 contract ComptrollerScenarioG1 is ComptrollerG1 {
     uint public blockNumber;
@@ -22,7 +25,12 @@ contract ComptrollerScenarioG1 is ComptrollerG1 {
         blockNumber = number;
     }
 
-    function _become(Unitroller unitroller, PriceOracle _oracle, uint _closeFactorMantissa, uint _maxAssets, bool reinitializing) public {
+    function _become(
+        Unitroller unitroller,
+        PriceOracle _oracle,
+        uint _closeFactorMantissa,
+        uint _maxAssets,
+        bool reinitializing) public {
         super._become(unitroller, _oracle, _closeFactorMantissa, _maxAssets, reinitializing);
     }
 

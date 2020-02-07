@@ -131,28 +131,9 @@ contract CErc20 is CToken, CErc20Interface {
     }
 
     /**
-     * @dev Checks whether or not there is sufficient allowance for this contract to move amount from `from` and
-     *      whether or not `from` has a balance of at least `amount`. Does NOT do a transfer.
-     */
-    function checkTransferIn(address from, uint amount) internal view returns (Error) {
-        EIP20Interface token = EIP20Interface(underlying);
-
-        if (token.allowance(from, address(this)) < amount) {
-            return Error.TOKEN_INSUFFICIENT_ALLOWANCE;
-        }
-
-        if (token.balanceOf(from) < amount) {
-            return Error.TOKEN_INSUFFICIENT_BALANCE;
-        }
-
-        return Error.NO_ERROR;
-    }
-
-    /**
      * @dev Similar to EIP20 transfer, except it handles a False result from `transferFrom` and reverts in that case.
-     *      If caller has not called `checkTransferIn`, this may revert due to insufficient balance or insufficient
-     *      allowance. If caller has called `checkTransferIn` prior to this call, and it returned Error.NO_ERROR,
-     *      this should not revert in normal conditions. This function returns the actual amount received,
+     *      This will revert due to insufficient balance or insufficient allowance.
+     *      This function returns the actual amount received,
      *      which may be less than `amount` if there is a fee attached to the transfer.
      *
      *      Note: This wrapper safely handles non-standard ERC-20 tokens that do not return a value.

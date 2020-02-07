@@ -1,10 +1,9 @@
-pragma solidity ^0.5.12;
+pragma solidity ^0.5.16;
 
 import "../../contracts/PriceOracle.sol";
 
 contract FixedPriceOracle is PriceOracle {
     uint public price;
-    bool public constant isPriceOracle = true;
 
     constructor(uint _price) public {
         price = _price;

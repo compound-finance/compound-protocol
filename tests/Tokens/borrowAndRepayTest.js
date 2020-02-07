@@ -32,6 +32,8 @@ async function borrowFresh(cToken, borrower, borrowAmount) {
 }
 
 async function borrow(cToken, borrower, borrowAmount, opts = {}) {
+  // make sure to have a block delta so we accrue interest
+  await send(cToken, 'harnessFastForward', [1]);
   return send(cToken, 'borrow', [borrowAmount], {from: borrower});
 }
 
@@ -52,10 +54,14 @@ async function repayBorrowFresh(cToken, payer, borrower, repayAmount) {
 }
 
 async function repayBorrow(cToken, borrower, repayAmount) {
+  // make sure to have a block delta so we accrue interest
+  await send(cToken, 'harnessFastForward', [1]);
   return send(cToken, 'repayBorrow', [repayAmount], {from: borrower});
 }
 
 async function repayBorrowBehalf(cToken, payer, borrower, repayAmount) {
+  // make sure to have a block delta so we accrue interest
+  await send(cToken, 'harnessFastForward', [1]);
   return send(cToken, 'repayBorrowBehalf', [borrower, repayAmount], {from: payer});
 }
 
@@ -192,12 +198,12 @@ describe('CToken', function () {
 
         it("fails if insufficient approval", async() => {
           await preApprove(cToken, payer, 1);
-          expect(await repayBorrowFresh(cToken, payer, borrower, repayAmount)).toHaveTokenFailure('TOKEN_INSUFFICIENT_ALLOWANCE', 'REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE');
+          await expect(repayBorrowFresh(cToken, payer, borrower, repayAmount)).rejects.toRevert('revert Insufficient allowance');
         });
 
         it("fails if insufficient balance", async() => {
           await setBalance(cToken.underlying, payer, 1);
-          expect(await repayBorrowFresh(cToken, payer, borrower, repayAmount)).toHaveTokenFailure('TOKEN_INSUFFICIENT_BALANCE', 'REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE');
+          await expect(repayBorrowFresh(cToken, payer, borrower, repayAmount)).rejects.toRevert('revert Insufficient balance');
         });
 
 
@@ -265,7 +271,7 @@ describe('CToken', function () {
 
     it("returns error from repayBorrowFresh without emitting any extra logs", async () => {
       await setBalance(cToken.underlying, borrower, 1);
-      expect(await repayBorrow(cToken, borrower, repayAmount)).toHaveTokenFailure('TOKEN_INSUFFICIENT_BALANCE', 'REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE');
+      await expect(repayBorrow(cToken, borrower, repayAmount)).rejects.toRevert('revert Insufficient balance');
     });
 
     it("returns success from repayBorrowFresh and repays the right amount", async () => {
@@ -286,7 +292,7 @@ describe('CToken', function () {
     it("fails gracefully if payer does not have enough", async () => {
       await setBalance(cToken.underlying, borrower, 3);
       await fastForward(cToken);
-      expect(await repayBorrow(cToken, borrower, -1)).toHaveTokenFailure('TOKEN_INSUFFICIENT_BALANCE', 'REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE');
+      await expect(repayBorrow(cToken, borrower, -1)).rejects.toRevert('revert Insufficient balance');
     });
   });
 
@@ -305,7 +311,7 @@ describe('CToken', function () {
 
     it("returns error from repayBorrowFresh without emitting any extra logs", async () => {
       await setBalance(cToken.underlying, payer, 1);
-      expect(await repayBorrowBehalf(cToken, payer, borrower, repayAmount)).toHaveTokenFailure('TOKEN_INSUFFICIENT_BALANCE', 'REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE');
+      await expect(repayBorrowBehalf(cToken, payer, borrower, repayAmount)).rejects.toRevert('revert Insufficient balance');
     });
 
     it("returns success from repayBorrowFresh and repays the right amount", async () => {

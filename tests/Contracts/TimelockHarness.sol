@@ -1,13 +1,10 @@
-pragma solidity ^0.5.12;
+pragma solidity ^0.5.16;
 
 import "../../contracts/Timelock.sol";
 
 contract TimelockHarness is Timelock {
-
     constructor(address admin_, uint delay_)
-        Timelock(admin_, delay_)
-        public
-    {
+        Timelock(admin_, delay_) public {
     }
 
     function harnessSetPendingAdmin(address pendingAdmin_) public {
@@ -17,5 +14,10 @@ contract TimelockHarness is Timelock {
     function harnessSetAdmin(address admin_) public {
         admin = admin_;
     }
+}
 
+contract TimelockTest is Timelock {
+    constructor(address admin_, uint delay_) Timelock(admin_, 2 days) public {
+        delay = delay_;
+    }
 }

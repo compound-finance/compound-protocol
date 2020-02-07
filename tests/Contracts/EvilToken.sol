@@ -1,59 +1,42 @@
-pragma solidity ^0.5.12;
+pragma solidity ^0.5.16;
 
-import "./StandardToken.sol";
+import "./FaucetToken.sol";
 
 /**
   * @title The Compound Evil Test Token
   * @author Compound
   * @notice A simple test token that fails certain operations
   */
-contract EvilToken is StandardToken {
-    string public name;
-    string public symbol;
-    uint8 public decimals;
+contract EvilToken is FaucetToken {
     bool public fail;
 
-    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol) public {
-        totalSupply_ = _initialAmount;
-        balances[msg.sender] = _initialAmount;
-        name = _tokenName;
-        symbol = _tokenSymbol;
-        decimals = _decimalUnits;
+    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol) public
+        FaucetToken(_initialAmount, _tokenName, _decimalUnits, _tokenSymbol) {
         fail = true;
     }
 
-    function setFail(bool _fail) public {
+    function setFail(bool _fail) external {
         fail = _fail;
     }
 
-    /**
-      * @dev Arbitrarily adds tokens to any account
-      */
-    function allocateTo(address _owner, uint256 value) public {
-        balances[_owner] += value;
-        totalSupply_ += value;
-        emit Transfer(address(this), _owner, value);
-    }
-
-    /**
-      * @dev Fail to transfer
-      */
-    function transfer(address to, uint256 value) public returns (bool) {
+    function transfer(address dst, uint256 amount) external returns (bool) {
         if (fail) {
             return false;
         }
-
-        return super.transfer(to, value);
+        balanceOf[msg.sender] = balanceOf[msg.sender].sub(amount);
+        balanceOf[dst] = balanceOf[dst].add(amount);
+        emit Transfer(msg.sender, dst, amount);
+        return true;
     }
 
-    /**
-      * @dev Fail to transfer from
-      */
-    function transferFrom(address from, address to, uint256 value) public returns (bool) {
+    function transferFrom(address src, address dst, uint256 amount) external returns (bool) {
         if (fail) {
             return false;
         }
-
-        return super.transferFrom(from, to, value);
+        balanceOf[src] = balanceOf[src].sub(amount);
+        balanceOf[dst] = balanceOf[dst].add(amount);
+        allowance[src][msg.sender] = allowance[src][msg.sender].sub(amount);
+        emit Transfer(src, dst, amount);
+        return true;
     }
 }

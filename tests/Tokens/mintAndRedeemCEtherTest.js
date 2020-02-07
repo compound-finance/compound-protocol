@@ -61,6 +61,7 @@ describe('CEther', () => {
   beforeEach(async () => {
     [root, minter, redeemer, ...accounts] = saddle.accounts;
     cToken = await makeCToken({kind: 'cether', comptrollerOpts: {kind: 'bool'}});
+    await fastForward(cToken, 1);
   });
 
   [mintExplicit, mintFallback].forEach((mint) => {

@@ -11,10 +11,10 @@ Test "Mint 1 cZRX"
 Test "Mint with insufficient allowance"
     NewComptroller
     ListedCToken ZRX cZRX initialExchangeRate:1e9
-    Prep Geoff 49e18 ZRX cZRX
+    Prep Geoff 50e18 ZRX cZRX allowanceAmount:49e18
     AllowFailures
     Mint Geoff 50e18 cZRX
-    Assert Failure TOKEN_INSUFFICIENT_ALLOWANCE MINT_TRANSFER_IN_NOT_POSSIBLE
+    Assert Revert "revert Insufficient allowance"
     Assert Equal (Erc20 cZRX TokenBalance Geoff) (Exactly 0e9)
 
 Test "Mint with insufficient balance"
@@ -23,7 +23,7 @@ Test "Mint with insufficient balance"
     Prep Geoff 49e18 ZRX cZRX allowanceAmount:50e18
     AllowFailures
     Mint Geoff 50e18 cZRX
-    Assert Failure TOKEN_INSUFFICIENT_BALANCE MINT_TRANSFER_IN_NOT_POSSIBLE
+    Assert Revert "revert Insufficient balance"
     Assert Equal (Erc20 cZRX TokenBalance Geoff) (Exactly 0e9)
 
 Test "Mint two ZRX after minting two ZRX, and then I mint two more"
