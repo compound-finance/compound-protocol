@@ -1,7 +1,6 @@
 pragma solidity ^0.5.16;
 
 import "./FaucetToken.sol";
-import "./SafeMath.sol";
 
 /**
   * @title Fee Token
@@ -9,37 +8,39 @@ import "./SafeMath.sol";
   * @notice A simple test token that charges fees on transfer. Used to mock USDT.
   */
 contract FeeToken is FaucetToken {
-    using SafeMath for uint256;
-
     uint public basisPointFee;
     address public owner;
 
     constructor(
-        uint256 _initialAmount, 
-        string memory _tokenName, 
-        uint8 _decimalUnits, 
-        string memory _tokenSymbol, 
+        uint256 _initialAmount,
+        string memory _tokenName,
+        uint8 _decimalUnits,
+        string memory _tokenSymbol,
         uint _basisPointFee,
         address _owner
-    ) 
-        FaucetToken(_initialAmount, _tokenName, _decimalUnits, _tokenSymbol)
-        public 
-    {
+    ) FaucetToken(_initialAmount, _tokenName, _decimalUnits, _tokenSymbol) public {
         basisPointFee = _basisPointFee;
         owner = _owner;
     }
 
-    function transfer(address _to, uint _value) public returns (bool) {
-        uint fee = (_value.mul(basisPointFee)).div(10000);
-        balances[owner] = balances[owner].add(fee);
-        balances[msg.sender] = balances[msg.sender].sub(fee);
-        return super.transfer(_to, _value.sub(fee));
+    function transfer(address dst, uint amount) public returns (bool) {
+        uint fee = amount.mul(basisPointFee).div(10000);
+        uint net = amount.sub(fee);
+        balanceOf[owner] = balanceOf[owner].add(fee);
+        balanceOf[msg.sender] = balanceOf[msg.sender].sub(amount);
+        balanceOf[dst] = balanceOf[dst].add(net);
+        emit Transfer(msg.sender, dst, amount);
+        return true;
     }
 
-    function transferFrom(address _from, address _to, uint _value) public returns (bool) {
-        uint fee = (_value.mul(basisPointFee)).div(10000);
-        balances[owner] = balances[owner].add(fee);
-        balances[_from] = balances[_from].sub(fee);
-        return super.transferFrom(_from, _to, _value.sub(fee));
+    function transferFrom(address src, address dst, uint amount) public returns (bool) {
+        uint fee = amount.mul(basisPointFee).div(10000);
+        uint net = amount.sub(fee);
+        balanceOf[owner] = balanceOf[owner].add(fee);
+        balanceOf[src] = balanceOf[src].sub(amount);
+        balanceOf[dst] = balanceOf[dst].add(net);
+        allowance[src][msg.sender] = allowance[src][msg.sender].sub(amount);
+        emit Transfer(src, dst, amount);
+        return true;
     }
 }

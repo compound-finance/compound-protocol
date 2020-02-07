@@ -19,7 +19,6 @@ const repayAmount = etherUnsigned(10e2);
 
 async function preBorrow(cToken, borrower, borrowAmount) {
   await send(cToken.comptroller, 'setBorrowAllowed', [true]);
-  await send(cToken.comptroller, 'setBorrowVerify', [true]);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cToken.underlying, 'harnessSetBalance', [cToken._address, borrowAmount]);
   await send(cToken, 'harnessSetFailTransferToAddress', [borrower, false]);
@@ -32,13 +31,14 @@ async function borrowFresh(cToken, borrower, borrowAmount) {
 }
 
 async function borrow(cToken, borrower, borrowAmount, opts = {}) {
+  // make sure to have a block delta so we accrue interest
+  await send(cToken, 'harnessFastForward', [1]);
   return send(cToken, 'borrow', [borrowAmount], {from: borrower});
 }
 
 async function preRepay(cToken, benefactor, borrower, repayAmount) {
   // setup either benefactor OR borrower for success in repaying
   await send(cToken.comptroller, 'setRepayBorrowAllowed', [true]);
-  await send(cToken.comptroller, 'setRepayBorrowVerify', [true]);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cToken.underlying, 'harnessSetFailTransferFromAddress', [benefactor, false]);
   await send(cToken.underlying, 'harnessSetFailTransferFromAddress', [borrower, false]);
@@ -52,10 +52,14 @@ async function repayBorrowFresh(cToken, payer, borrower, repayAmount) {
 }
 
 async function repayBorrow(cToken, borrower, repayAmount) {
+  // make sure to have a block delta so we accrue interest
+  await send(cToken, 'harnessFastForward', [1]);
   return send(cToken, 'repayBorrow', [repayAmount], {from: borrower});
 }
 
 async function repayBorrowBehalf(cToken, payer, borrower, repayAmount) {
+  // make sure to have a block delta so we accrue interest
+  await send(cToken, 'harnessFastForward', [1]);
   return send(cToken, 'repayBorrowBehalf', [borrower, repayAmount], {from: payer});
 }
 
@@ -110,11 +114,6 @@ describe('CToken', function () {
     it("reverts if transfer out fails", async () => {
       await send(cToken, 'harnessSetFailTransferToAddress', [borrower, true]);
       await expect(borrowFresh(cToken, borrower, borrowAmount)).rejects.toRevert("revert TOKEN_TRANSFER_OUT_FAILED");
-    });
-
-    it("reverts if borrowVerify fails", async() => {
-      await send(cToken.comptroller, 'setBorrowVerify', [false]);
-      await expect(borrowFresh(cToken, borrower, borrowAmount)).rejects.toRevert("revert borrowVerify rejected borrow");
     });
 
     it("transfers the underlying cash, tokens, and emits Transfer, Borrow events", async () => {
@@ -192,12 +191,12 @@ describe('CToken', function () {
 
         it("fails if insufficient approval", async() => {
           await preApprove(cToken, payer, 1);
-          expect(await repayBorrowFresh(cToken, payer, borrower, repayAmount)).toHaveTokenFailure('TOKEN_INSUFFICIENT_ALLOWANCE', 'REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE');
+          await expect(repayBorrowFresh(cToken, payer, borrower, repayAmount)).rejects.toRevert('revert Insufficient allowance');
         });
 
         it("fails if insufficient balance", async() => {
           await setBalance(cToken.underlying, payer, 1);
-          expect(await repayBorrowFresh(cToken, payer, borrower, repayAmount)).toHaveTokenFailure('TOKEN_INSUFFICIENT_BALANCE', 'REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE');
+          await expect(repayBorrowFresh(cToken, payer, borrower, repayAmount)).rejects.toRevert('revert Insufficient balance');
         });
 
 
@@ -215,11 +214,6 @@ describe('CToken', function () {
         it("reverts if doTransferIn fails", async () => {
           await send(cToken.underlying, 'harnessSetFailTransferFromAddress', [payer, true]);
           await expect(repayBorrowFresh(cToken, payer, borrower, repayAmount)).rejects.toRevert("revert TOKEN_TRANSFER_IN_FAILED");
-        });
-
-        it("reverts if repayBorrowVerify fails", async() => {
-          await send(cToken.comptroller, 'setRepayBorrowVerify', [false]);
-          await expect(repayBorrowFresh(cToken, payer, borrower, repayAmount)).rejects.toRevert("revert repayBorrowVerify rejected repayBorrow");
         });
 
         it("transfers the underlying cash, and emits Transfer, RepayBorrow events", async () => {
@@ -265,7 +259,7 @@ describe('CToken', function () {
 
     it("returns error from repayBorrowFresh without emitting any extra logs", async () => {
       await setBalance(cToken.underlying, borrower, 1);
-      expect(await repayBorrow(cToken, borrower, repayAmount)).toHaveTokenFailure('TOKEN_INSUFFICIENT_BALANCE', 'REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE');
+      await expect(repayBorrow(cToken, borrower, repayAmount)).rejects.toRevert('revert Insufficient balance');
     });
 
     it("returns success from repayBorrowFresh and repays the right amount", async () => {
@@ -286,7 +280,7 @@ describe('CToken', function () {
     it("fails gracefully if payer does not have enough", async () => {
       await setBalance(cToken.underlying, borrower, 3);
       await fastForward(cToken);
-      expect(await repayBorrow(cToken, borrower, -1)).toHaveTokenFailure('TOKEN_INSUFFICIENT_BALANCE', 'REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE');
+      await expect(repayBorrow(cToken, borrower, -1)).rejects.toRevert('revert Insufficient balance');
     });
   });
 
@@ -305,7 +299,7 @@ describe('CToken', function () {
 
     it("returns error from repayBorrowFresh without emitting any extra logs", async () => {
       await setBalance(cToken.underlying, payer, 1);
-      expect(await repayBorrowBehalf(cToken, payer, borrower, repayAmount)).toHaveTokenFailure('TOKEN_INSUFFICIENT_BALANCE', 'REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE');
+      await expect(repayBorrowBehalf(cToken, payer, borrower, repayAmount)).rejects.toRevert('revert Insufficient balance');
     });
 
     it("returns success from repayBorrowFresh and repays the right amount", async () => {

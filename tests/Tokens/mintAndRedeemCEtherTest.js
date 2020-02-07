@@ -23,7 +23,6 @@ const redeemAmount = redeemTokens.mul(exchangeRate);
 
 async function preMint(cToken, minter, mintAmount, mintTokens, exchangeRate) {
   await send(cToken.comptroller, 'setMintAllowed', [true]);
-  await send(cToken.comptroller, 'setMintVerify', [true]);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cToken, 'harnessSetExchangeRate', [etherMantissa(exchangeRate)]);
 }
@@ -38,7 +37,6 @@ async function mintFallback(cToken, minter, mintAmount) {
 
 async function preRedeem(cToken, redeemer, redeemTokens, redeemAmount, exchangeRate) {
   await send(cToken.comptroller, 'setRedeemAllowed', [true]);
-  await send(cToken.comptroller, 'setRedeemVerify', [true]);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cToken, 'harnessSetExchangeRate', [etherMantissa(exchangeRate)]);
   await setEtherBalance(cToken, redeemAmount);
@@ -61,6 +59,7 @@ describe('CEther', () => {
   beforeEach(async () => {
     [root, minter, redeemer, ...accounts] = saddle.accounts;
     cToken = await makeCToken({kind: 'cether', comptrollerOpts: {kind: 'bool'}});
+    await fastForward(cToken, 1);
   });
 
   [mintExplicit, mintFallback].forEach((mint) => {

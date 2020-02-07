@@ -38,8 +38,6 @@ describe('CToken', function () {
       expect(await send(cToken, 'transfer', [root, 50])).toHaveTrollReject('TRANSFER_COMPTROLLER_REJECTION');
 
       await send(cToken.comptroller, 'setTransferAllowed', [true])
-      await send(cToken.comptroller, 'setTransferVerify', [false])
-      await expect(send(cToken, 'transfer', [accounts[0], 50])).rejects.toRevert("revert transferVerify rejected transfer");
     });
   });
 });

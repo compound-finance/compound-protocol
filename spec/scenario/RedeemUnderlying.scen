@@ -179,4 +179,4 @@ Test "Mint then Redeem 1 wei of underlying"
     -- Now redeem after some time
     FastForward 2 Blocks
     RedeemUnderlying Geoff 1 cZRX
-    Assert Revert "revert redeemTokens zero"
+    Assert Revert "revert REDEEM_TOKENS_ZERO"

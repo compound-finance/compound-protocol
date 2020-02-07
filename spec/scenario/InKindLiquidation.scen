@@ -269,7 +269,7 @@ Test "When repay borrow fails"
     Prep Torrey 10e18 BAT cBAT allowanceAmount:0.1e18
     AllowFailures
     Liquidate Torrey "->" Geoff 2e18 cBAT "Seizing" cBAT
-    Assert Failure TOKEN_INSUFFICIENT_ALLOWANCE REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE
+    Assert Revert "revert Insufficient allowance"
 
 Test "Proper liquidation of paused WBTC as collateral"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005 borrowTokenType:WBTC

@@ -92,24 +92,18 @@ contract DAIInterestRateModel is JumpRateModel {
 
 /*** Maker Interfaces ***/
 
-contract PotLike {
-    function chi() public view returns (uint);
-    function dsr() public view returns (uint);
-    function rho() public view returns (uint);
-    function pie(address) public view returns (uint);
-    function drip() public returns (uint);
-    function join(uint) public;
-    function exit(uint) public;
+interface PotLike {
+    function chi() external view returns (uint);
+    function dsr() external view returns (uint);
+    function rho() external view returns (uint);
+    function pie(address) external view returns (uint);
+    function drip() external returns (uint);
+    function join(uint) external;
+    function exit(uint) external;
 }
 
-contract JugLike {
-    // --- Data ---
-    struct Ilk {
-        uint256 duty;
-        uint256  rho;
-    }
-
-   mapping (bytes32 => Ilk) public ilks;
-   uint256 public base;
+interface JugLike {
+    function ilks(bytes32) external view returns (uint duty, uint rho);
+    function base() external view returns (uint);
 }
 

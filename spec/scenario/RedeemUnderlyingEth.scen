@@ -167,4 +167,4 @@ Test "Mint then redeem 1 wei"
     -- Now redeem after some time
     FastForward 2 Blocks
     RedeemUnderlyingEth Geoff 1 cETH
-    Assert Revert "revert redeemTokens zero"
+    Assert Revert "revert REDEEM_TOKENS_ZERO"

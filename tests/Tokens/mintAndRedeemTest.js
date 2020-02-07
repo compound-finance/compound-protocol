@@ -26,7 +26,6 @@ const redeemAmount = redeemTokens.mul(exchangeRate);
 async function preMint(cToken, minter, mintAmount, mintTokens, exchangeRate) {
   await preApprove(cToken, minter, mintAmount);
   await send(cToken.comptroller, 'setMintAllowed', [true]);
-  await send(cToken.comptroller, 'setMintVerify', [true]);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cToken.underlying, 'harnessSetFailTransferFromAddress', [minter, false]);
   await send(cToken, 'harnessSetBalance', [minter, 0]);
@@ -40,7 +39,6 @@ async function mintFresh(cToken, minter, mintAmount) {
 async function preRedeem(cToken, redeemer, redeemTokens, redeemAmount, exchangeRate) {
   await preSupply(cToken, redeemer, redeemTokens);
   await send(cToken.comptroller, 'setRedeemAllowed', [true]);
-  await send(cToken.comptroller, 'setRedeemVerify', [true]);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cToken.underlying, 'harnessSetBalance', [cToken._address, redeemAmount]);
   await send(cToken.underlying, 'harnessSetBalance', [redeemer, 0]);
@@ -92,12 +90,12 @@ describe('CToken', function () {
       expect(
         await send(cToken.underlying, 'approve', [cToken._address, 1], {from: minter})
       ).toSucceed();
-      expect(await mintFresh(cToken, minter, mintAmount)).toHaveTokenFailure('TOKEN_INSUFFICIENT_ALLOWANCE', 'MINT_TRANSFER_IN_NOT_POSSIBLE');
+      await expect(mintFresh(cToken, minter, mintAmount)).rejects.toRevert('revert Insufficient allowance');
     });
 
     it("fails if insufficient balance", async() => {
       await setBalance(cToken.underlying, minter, 1);
-      expect(await mintFresh(cToken, minter, mintAmount)).toHaveTokenFailure('TOKEN_INSUFFICIENT_BALANCE', 'MINT_TRANSFER_IN_NOT_POSSIBLE');
+      await expect(mintFresh(cToken, minter, mintAmount)).rejects.toRevert('revert Insufficient balance');
     });
 
     it("proceeds if sufficient approval and balance", async () =>{
@@ -150,7 +148,7 @@ describe('CToken', function () {
 
     it("returns error from mintFresh without emitting any extra logs", async () => {
       await send(cToken.underlying, 'harnessSetBalance', [minter, 1]);
-      expect(await quickMint(cToken, minter, mintAmount, {faucet: false})).toHaveTokenFailure('TOKEN_INSUFFICIENT_BALANCE', 'MINT_TRANSFER_IN_NOT_POSSIBLE');
+      await expect(mintFresh(cToken, minter, mintAmount)).rejects.toRevert('revert Insufficient balance');
     });
 
     it("returns success from mintFresh and mints the correct number of tokens", async () => {

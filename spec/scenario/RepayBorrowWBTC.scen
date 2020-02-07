@@ -165,7 +165,8 @@ Test "Repay fails with insufficient allowance"
     Expect Changes (Erc20 WBTC TokenBalance Geoff) Zero
     Expect Changes (Erc20 WBTC TokenBalance cWBTC) Zero
     RepayBorrow Geoff 2.5e8 cWBTC
-    Assert Failure TOKEN_INSUFFICIENT_ALLOWANCE REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE
+    --wbtc does not revert with reason in transfer from
+    Assert Revert "revert"
     -- Let's check the overall numbers
     Assert Equal (CToken cWBTC BorrowBalance Geoff) 2.5e8
     Assert Equal (CToken cWBTC TotalBorrowsCurrent) 2.5e8
@@ -183,7 +184,8 @@ Test "Repay fails with insufficient balance"
     Expect Changes (Erc20 WBTC TokenBalance Geoff) Zero
     Expect Changes (Erc20 WBTC TokenBalance cWBTC) Zero
     RepayBorrow Geoff 2.5e8 cWBTC
-    Assert Failure TOKEN_INSUFFICIENT_BALANCE REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE
+    --wbtc does not revert with reason in transfer from
+    Assert Revert "revert"
     -- Let's check the overall numbers
     Assert Equal (CToken cWBTC BorrowBalance Geoff) 2.5e8
     Assert Equal (CToken cWBTC TotalBorrowsCurrent) 2.5e8

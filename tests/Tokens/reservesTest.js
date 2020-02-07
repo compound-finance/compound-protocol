@@ -4,7 +4,7 @@ const {
   both
 } = require('../Utils/Ethereum');
 
-const {makeCToken} = require('../Utils/Compound');
+const {fastForward, makeCToken} = require('../Utils/Compound');
 
 const factor = etherMantissa(.02);
 
@@ -78,6 +78,7 @@ describe('CToken', function () {
 
     it("emits a reserve factor failure if interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
+      await fastForward(cToken, 1);
       await expect(send(cToken, '_setReserveFactor', [factor])).rejects.toRevert("revert INTEREST_RATE_MODEL_ERROR");
       expect(await call(cToken, 'reserveFactorMantissa')).toEqualNumber(0);
     });
@@ -162,6 +163,7 @@ describe('CToken', function () {
 
     it("emits a reserve-reduction failure if interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
+      await fastForward(cToken, 1);
       await expect(send(cToken, '_reduceReserves', [reduction])).rejects.toRevert("revert INTEREST_RATE_MODEL_ERROR");
     });
 

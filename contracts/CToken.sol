@@ -121,8 +121,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         /* We emit a Transfer event */
         emit Transfer(src, dst, tokens);
 
-        comptroller.transferVerify(address(this), src, dst, tokens);
-
         return uint(Error.NO_ERROR);
     }
 
@@ -337,7 +335,8 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @return (error code, calculated exchange rate scaled by 1e18)
      */
     function exchangeRateStoredInternal() internal view returns (MathError, uint) {
-        if (totalSupply == 0) {
+        uint _totalSupply = totalSupply;
+        if (_totalSupply == 0) {
             /*
              * If there are no tokens minted:
              *  exchangeRate = initialExchangeRate
@@ -358,7 +357,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
                 return (mathErr, 0);
             }
 
-            (mathErr, exchangeRate) = getExp(cashPlusBorrowsMinusReserves, totalSupply);
+            (mathErr, exchangeRate) = getExp(cashPlusBorrowsMinusReserves, _totalSupply);
             if (mathErr != MathError.NO_ERROR) {
                 return (mathErr, 0);
             }
@@ -375,40 +374,34 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         return getCashPrior();
     }
 
-    struct AccrueInterestLocalVars {
-        MathError mathErr;
-        uint opaqueErr;
-        uint borrowRateMantissa;
-        uint currentBlockNumber;
-        uint blockDelta;
-
-        Exp simpleInterestFactor;
-
-        uint interestAccumulated;
-        uint totalBorrowsNew;
-        uint totalReservesNew;
-        uint borrowIndexNew;
-    }
-
     /**
      * @notice Applies accrued interest to total borrows and reserves
      * @dev This calculates interest accrued from the last checkpointed block
      *   up to the current block and writes new checkpoint to storage.
      */
     function accrueInterest() public returns (uint) {
-        AccrueInterestLocalVars memory vars;
+        /* Remember the initial block number */
+        uint currentBlockNumber = getBlockNumber();
+        uint accrualBlockNumberPrior = accrualBlockNumber;
+
+        /* Short-circuit accumulating 0 interest */
+        if (accrualBlockNumberPrior == currentBlockNumber) {
+            return uint(Error.NO_ERROR);
+        }
+
+        /* Read the previous values out of storage */
         uint cashPrior = getCashPrior();
+        uint borrowsPrior = totalBorrows;
+        uint reservesPrior = totalReserves;
+        uint borrowIndexPrior = borrowIndex;
 
         /* Calculate the current borrow interest rate */
-        vars.borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, totalBorrows, totalReserves);
-        require(vars.borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
-
-        /* Remember the initial block number */
-        vars.currentBlockNumber = getBlockNumber();
+        uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
+        require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
 
         /* Calculate the number of blocks elapsed since the last accrual */
-        (vars.mathErr, vars.blockDelta) = subUInt(vars.currentBlockNumber, accrualBlockNumber);
-        require(vars.mathErr == MathError.NO_ERROR, "could not calculate block delta");
+        (MathError mathErr, uint blockDelta) = subUInt(currentBlockNumber, accrualBlockNumberPrior);
+        require(mathErr == MathError.NO_ERROR, "could not calculate block delta");
 
         /*
          * Calculate the interest accumulated into borrows and reserves and the new index:
@@ -418,29 +411,36 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
          *  totalReservesNew = interestAccumulated * reserveFactor + totalReserves
          *  borrowIndexNew = simpleInterestFactor * borrowIndex + borrowIndex
          */
-        (vars.mathErr, vars.simpleInterestFactor) = mulScalar(Exp({mantissa: vars.borrowRateMantissa}), vars.blockDelta);
-        if (vars.mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_SIMPLE_INTEREST_FACTOR_CALCULATION_FAILED, uint(vars.mathErr));
+
+        Exp memory simpleInterestFactor;
+        uint interestAccumulated;
+        uint totalBorrowsNew;
+        uint totalReservesNew;
+        uint borrowIndexNew;
+
+        (mathErr, simpleInterestFactor) = mulScalar(Exp({mantissa: borrowRateMantissa}), blockDelta);
+        if (mathErr != MathError.NO_ERROR) {
+            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_SIMPLE_INTEREST_FACTOR_CALCULATION_FAILED, uint(mathErr));
         }
 
-        (vars.mathErr, vars.interestAccumulated) = mulScalarTruncate(vars.simpleInterestFactor, totalBorrows);
-        if (vars.mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_ACCUMULATED_INTEREST_CALCULATION_FAILED, uint(vars.mathErr));
+        (mathErr, interestAccumulated) = mulScalarTruncate(simpleInterestFactor, totalBorrows);
+        if (mathErr != MathError.NO_ERROR) {
+            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_ACCUMULATED_INTEREST_CALCULATION_FAILED, uint(mathErr));
         }
 
-        (vars.mathErr, vars.totalBorrowsNew) = addUInt(vars.interestAccumulated, totalBorrows);
-        if (vars.mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_BORROWS_CALCULATION_FAILED, uint(vars.mathErr));
+        (mathErr, totalBorrowsNew) = addUInt(interestAccumulated, totalBorrows);
+        if (mathErr != MathError.NO_ERROR) {
+            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_BORROWS_CALCULATION_FAILED, uint(mathErr));
         }
 
-        (vars.mathErr, vars.totalReservesNew) = mulScalarTruncateAddUInt(Exp({mantissa: reserveFactorMantissa}), vars.interestAccumulated, totalReserves);
-        if (vars.mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_RESERVES_CALCULATION_FAILED, uint(vars.mathErr));
+        (mathErr, totalReservesNew) = mulScalarTruncateAddUInt(Exp({mantissa: reserveFactorMantissa}), interestAccumulated, totalReserves);
+        if (mathErr != MathError.NO_ERROR) {
+            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_RESERVES_CALCULATION_FAILED, uint(mathErr));
         }
 
-        (vars.mathErr, vars.borrowIndexNew) = mulScalarTruncateAddUInt(vars.simpleInterestFactor, borrowIndex, borrowIndex);
-        if (vars.mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_BORROW_INDEX_CALCULATION_FAILED, uint(vars.mathErr));
+        (mathErr, borrowIndexNew) = mulScalarTruncateAddUInt(simpleInterestFactor, borrowIndexPrior, borrowIndexPrior);
+        if (mathErr != MathError.NO_ERROR) {
+            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_BORROW_INDEX_CALCULATION_FAILED, uint(mathErr));
         }
 
         /////////////////////////
@@ -448,13 +448,13 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         // (No safe failures beyond this point)
 
         /* We write the previously calculated values into storage */
-        accrualBlockNumber = vars.currentBlockNumber;
-        borrowIndex = vars.borrowIndexNew;
-        totalBorrows = vars.totalBorrowsNew;
-        totalReserves = vars.totalReservesNew;
+        accrualBlockNumber = currentBlockNumber;
+        borrowIndex = borrowIndexNew;
+        totalBorrows = totalBorrowsNew;
+        totalReserves = totalReservesNew;
 
         /* We emit an AccrueInterest event */
-        emit AccrueInterest(cashPrior, vars.interestAccumulated, vars.borrowIndexNew, totalBorrows);
+        emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
 
         return uint(Error.NO_ERROR);
     }
@@ -506,12 +506,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
 
         MintLocalVars memory vars;
 
-        /* Fail if checkTransferIn fails */
-        vars.err = checkTransferIn(minter, mintAmount);
-        if (vars.err != Error.NO_ERROR) {
-            return (fail(vars.err, FailureInfo.MINT_TRANSFER_IN_NOT_POSSIBLE), 0);
-        }
-
         (vars.mathErr, vars.exchangeRateMantissa) = exchangeRateStoredInternal();
         if (vars.mathErr != MathError.NO_ERROR) {
             return (failOpaque(Error.MATH_ERROR, FailureInfo.MINT_EXCHANGE_RATE_READ_FAILED, uint(vars.mathErr)), 0);
@@ -557,9 +551,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         /* We emit a Mint event, and a Transfer event */
         emit Mint(minter, vars.actualMintAmount, vars.mintTokens);
         emit Transfer(address(this), minter, vars.mintTokens);
-
-        /* We call the defense hook */
-        comptroller.mintVerify(address(this), minter, vars.actualMintAmount, vars.mintTokens);
 
         return (uint(Error.NO_ERROR), vars.actualMintAmount);
     }
@@ -704,8 +695,8 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         emit Transfer(redeemer, address(this), vars.redeemTokens);
         emit Redeem(redeemer, vars.redeemAmount, vars.redeemTokens);
 
-        /* We call the defense hook */
-        comptroller.redeemVerify(address(this), redeemer, vars.redeemAmount, vars.redeemTokens);
+        /* Require tokens, or amount must be zero */
+        require(vars.redeemTokens > 0 || vars.redeemAmount == 0, "REDEEM_TOKENS_ZERO");
 
         return uint(Error.NO_ERROR);
     }
@@ -796,9 +787,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         /* We emit a Borrow event */
         emit Borrow(borrower, borrowAmount, vars.accountBorrowsNew, vars.totalBorrowsNew);
 
-        /* We call the defense hook */
-        comptroller.borrowVerify(address(this), borrower, borrowAmount);
-
         return uint(Error.NO_ERROR);
     }
 
@@ -837,7 +825,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         Error err;
         MathError mathErr;
         uint repayAmount;
-        uint borrowerIndex;
         uint accountBorrows;
         uint accountBorrowsNew;
         uint totalBorrowsNew;
@@ -865,9 +852,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
 
         RepayBorrowLocalVars memory vars;
 
-        /* We remember the original borrowerIndex for verification purposes */
-        vars.borrowerIndex = accountBorrows[borrower].interestIndex;
-
         /* We fetch the amount the borrower owes, with accumulated interest */
         (vars.mathErr, vars.accountBorrows) = borrowBalanceStoredInternal(borrower);
         if (vars.mathErr != MathError.NO_ERROR) {
@@ -879,12 +863,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
             vars.repayAmount = vars.accountBorrows;
         } else {
             vars.repayAmount = repayAmount;
-        }
-
-        /* Fail if checkTransferIn fails */
-        vars.err = checkTransferIn(payer, vars.repayAmount);
-        if (vars.err != Error.NO_ERROR) {
-            return (fail(vars.err, FailureInfo.REPAY_BORROW_TRANSFER_IN_NOT_POSSIBLE), 0);
         }
 
         /////////////////////////
@@ -918,9 +896,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
 
         /* We emit a RepayBorrow event */
         emit RepayBorrow(payer, borrower, vars.actualRepayAmount, vars.accountBorrowsNew, vars.totalBorrowsNew);
-
-        /* We call the defense hook */
-        comptroller.repayBorrowVerify(address(this), payer, borrower, vars.actualRepayAmount, vars.borrowerIndex);
 
         return (uint(Error.NO_ERROR), vars.actualRepayAmount);
     }
@@ -1094,9 +1069,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         /* Emit a Transfer event */
         emit Transfer(borrower, liquidator, seizeTokens);
 
-        /* We call the defense hook */
-        comptroller.seizeVerify(address(this), seizerToken, liquidator, borrower, seizeTokens);
-
         return uint(Error.NO_ERROR);
     }
 
@@ -1255,13 +1227,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
             return (fail(Error.MARKET_NOT_FRESH, FailureInfo.ADD_RESERVES_FRESH_CHECK), actualAddAmount);
         }
 
-        /* Fail if checkTransferIn fails */
-        Error err = checkTransferIn(msg.sender, addAmount);
-        if (err != Error.NO_ERROR) {
-            return (fail(err, FailureInfo.ADD_RESERVES_TRANSFER_IN_NOT_POSSIBLE), actualAddAmount);
-        }
-
-
         /////////////////////////
         // EFFECTS & INTERACTIONS
         // (No safe failures beyond this point)
@@ -1411,15 +1376,8 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
     function getCashPrior() internal view returns (uint);
 
     /**
-     * @dev Checks whether or not there is sufficient allowance for this contract to move amount from `from` and
-     *      whether or not `from` has a balance of at least `amount`. Does NOT do a transfer.
-     */
-    function checkTransferIn(address from, uint amount) internal view returns (Error);
-
-    /**
      * @dev Performs a transfer in, reverting upon failure. Returns the amount actually transferred to the protocol, in case of a fee.
-     *  If caller has not called `checkTransferIn`, this may revert due to insufficient balance or insufficient allowance.
-     *  If caller has called `checkTransferIn` successfully, this should not revert in normal conditions.
+     *  This may revert due to insufficient balance or insufficient allowance.
      */
     function doTransferIn(address from, uint amount) internal returns (uint);
 

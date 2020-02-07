@@ -80,11 +80,6 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      */
     event NewPriceOracle(PriceOracle oldPriceOracle, PriceOracle newPriceOracle);
 
-    /**
-     * @notice Indicator that this is a Comptroller contract (for inspection)
-     */
-    bool public constant isComptroller = true;
-
     // closeFactorMantissa must be strictly greater than this value
     uint constant closeFactorMinMantissa = 5e16; // 0.05
 

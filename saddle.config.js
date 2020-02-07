@@ -156,6 +156,32 @@ module.exports = {
         {unlocked: 0}
       ]
     },
+    mainnet: {
+      providers: [
+        {env: "PROVIDER"},
+        // {file: "~/.ethereum/rinkeby-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
+        {http: "https://cloudflare-eth.com/"}
+      ],
+      web3: {
+        gas: [
+          {env: "GAS"},
+          {default: "4600000"}
+        ],
+        gas_price: [
+          {env: "GAS_PRICE"},
+          {default: "12000000000"}
+        ],
+        options: {
+          transactionConfirmationBlocks: 1,
+          transactionBlockTimeout: 5
+        }
+      },
+      accounts: [
+        {env: "ACCOUNT"},
+        {file: "~/.ethereum/mainnet"},                        // Load from given file with contents as the private key (e.g. 0x...)
+        {unlocked: 0}
+      ]
+    }
   },
   get_network_file: (network) => {
     return null;

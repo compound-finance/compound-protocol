@@ -128,20 +128,6 @@ contract CEther is CToken {
     }
 
     /**
-     * @notice Checks whether the requested transfer matches the `msg`
-     * @dev Does NOT do a transfer
-     * @param from Address sending the Ether
-     * @param amount Amount of Ether being sent
-     * @return Whether or not the transfer checks out
-     */
-    function checkTransferIn(address from, uint amount) internal view returns (Error) {
-        // Sanity checks
-        require(msg.sender == from, "sender mismatch");
-        require(msg.value == amount, "value mismatch");
-        return Error.NO_ERROR;
-    }
-
-    /**
      * @notice Perform the actual transfer in, which is a no-op
      * @param from Address sending the Ether
      * @param amount Amount of Ether being sent

@@ -35,34 +35,34 @@ contract PriceOracleProxy is PriceOracle {
     address public cUsdcAddress;
 
     /**
-     * @notice address of the cSAI contract, which we hand pick a key for
+     * @notice address of the cSAI contract, which we peg to the DAI price
      */
     address public cSaiAddress;
 
     /**
-     * @notice address of the cDAI contract, which we peg to the SAI price
+     * @notice address of the cDAI contract, which we hand pick a key for
      */
     address public cDaiAddress;
 
     /**
-     * @notice address of the USDC contract, which we hand pick a key for
+     * @notice address of the cUsdt contract, which we hand pick a key for
+     */
+    address public cUsdtAddress;
+
+    /**
+     * @notice the key in the v1 Price Oracle that will contain the USDC/ETH price
      */
     address constant usdcOracleKey = address(1);
 
     /**
-     * @notice address of the SAI contract, which we hand pick a key for
+     * @notice the key in the v1 Price Oracle that will contain the DAI/ETH price
      */
-    address constant saiOracleKey = address(2);
+    address constant daiOracleKey = address(2);
 
     /**
-     * @notice address of the asset which contains the USD/ETH price from Maker
+     * @notice the key in the v1 Price Oracle that will contain the USD/ETH price
      */
     address public makerUsdOracleKey;
-
-    /**
-     * @notice Indicator that this is a PriceOracle contract (for inspection)
-     */
-    bool public constant isPriceOracle = true;
 
     /**
      * @param comptroller_ The address of the comptroller, which will be consulted for market listing status
@@ -77,7 +77,8 @@ contract PriceOracleProxy is PriceOracle {
                 address cEthAddress_,
                 address cUsdcAddress_,
                 address cSaiAddress_,
-                address cDaiAddress_) public {
+                address cDaiAddress_,
+                address cUsdtAddress_) public {
         comptroller = Comptroller(comptroller_);
         v1PriceOracle = V1PriceOracleInterface(v1PriceOracle_);
 
@@ -85,9 +86,10 @@ contract PriceOracleProxy is PriceOracle {
         cUsdcAddress = cUsdcAddress_;
         cSaiAddress = cSaiAddress_;
         cDaiAddress = cDaiAddress_;
+        cUsdtAddress = cUsdtAddress_;
 
-        if (cSaiAddress_ != address(0)) {
-            makerUsdOracleKey = CErc20(cSaiAddress_).underlying();
+        if (cDaiAddress_ != address(0)) {
+            makerUsdOracleKey = CErc20(cDaiAddress_).underlying();
         }
     }
 
@@ -111,18 +113,19 @@ contract PriceOracleProxy is PriceOracle {
             return 1e18;
         }
 
-        if (cTokenAddress == cUsdcAddress) {
-            // we assume USDC/USD = 1, and let DAI/ETH float based on the DAI/USDC ratio
+        if (cTokenAddress == cUsdcAddress || cTokenAddress == cUsdtAddress) {
+            // we assume USDC/USD and USDT/USD = 1
             //  use the maker usd price (for a token w/ 6 decimals)
             return v1PriceOracle.assetPrices(makerUsdOracleKey).mul(1e12); // 1e(18 - 6)
         }
 
         if (cTokenAddress == cSaiAddress || cTokenAddress == cDaiAddress) {
+            // and let DAI/ETH float based on the DAI/USDC ratio
             // check and bound the DAI/USDC posted price ratio
-            //  and use that to scale the maker price (for a token w/ 18 decimals)
+            //  and use that to scale the maker price (for a token w/ 18 decimals)]
             uint makerUsdPrice = v1PriceOracle.assetPrices(makerUsdOracleKey);
             uint postedUsdcPrice = v1PriceOracle.assetPrices(usdcOracleKey);
-            uint postedScaledDaiPrice = v1PriceOracle.assetPrices(saiOracleKey).mul(1e12);
+            uint postedScaledDaiPrice = v1PriceOracle.assetPrices(daiOracleKey).mul(1e12);
             uint daiUsdcRatio = postedScaledDaiPrice.mul(1e18).div(postedUsdcPrice);
 
             if (daiUsdcRatio < 0.95e18) {

@@ -25,7 +25,6 @@ const repayAmount = etherUnsigned(10e2);
 
 async function preBorrow(cToken, borrower, borrowAmount) {
   await send(cToken.comptroller, 'setBorrowAllowed', [true]);
-  await send(cToken.comptroller, 'setBorrowVerify', [true]);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cToken, 'harnessSetFailTransferToAddress', [borrower, false]);
   await send(cToken, 'harnessSetAccountBorrows', [borrower, 0, 0]);
@@ -38,13 +37,13 @@ async function borrowFresh(cToken, borrower, borrowAmount) {
 }
 
 async function borrow(cToken, borrower, borrowAmount, opts = {}) {
+  await send(cToken, 'harnessFastForward', [1]);
   return send(cToken, 'borrow', [borrowAmount], {from: borrower});
 }
 
 async function preRepay(cToken, benefactor, borrower, repayAmount) {
   // setup either benefactor OR borrower for success in repaying
   await send(cToken.comptroller, 'setRepayBorrowAllowed', [true]);
-  await send(cToken.comptroller, 'setRepayBorrowVerify', [true]);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await pretendBorrow(cToken, borrower, 1, 1, repayAmount);
 }
@@ -54,10 +53,12 @@ async function repayBorrowFresh(cToken, payer, borrower, repayAmount) {
 }
 
 async function repayBorrow(cToken, borrower, repayAmount) {
+  await send(cToken, 'harnessFastForward', [1]);
   return send(cToken, 'repayBorrow', [], {from: borrower, value: repayAmount});
 }
 
 async function repayBorrowBehalf(cToken, payer, borrower, repayAmount) {
+  await send(cToken, 'harnessFastForward', [1]);
   return send(cToken, 'repayBorrowBehalf', [borrower], {from: payer, value: repayAmount});
 }
 
@@ -114,11 +115,6 @@ describe('CEther', function () {
       await expect(borrowFresh(cToken, borrower, borrowAmount)).rejects.toRevert("revert TOKEN_TRANSFER_OUT_FAILED");
     });
 
-    it("reverts if borrowVerify fails", async() => {
-      await send(cToken.comptroller, 'setBorrowVerify', [false]);
-      await expect(borrowFresh(cToken, borrower, borrowAmount)).rejects.toRevert("revert borrowVerify rejected borrow");
-    });
-
     it("transfers the underlying cash, tokens, and emits Borrow event", async () => {
       const beforeBalances = await getBalances([cToken], [borrower]);
       const beforeProtocolBorrows = await totalBorrows(cToken);
@@ -155,6 +151,7 @@ describe('CEther', function () {
 
     it("emits a borrow failure if interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
+      await send(cToken, 'harnessFastForward', [1]);
       await expect(borrow(cToken, borrower, borrowAmount)).rejects.toRevert("revert INTEREST_RATE_MODEL_ERROR");
     });
 
@@ -215,11 +212,6 @@ describe('CEther', function () {
           await expect(
             send(cToken, 'harnessRepayBorrowFresh', [payer, borrower, repayAmount], {from: payer, value: 1})
           ).rejects.toRevert("revert value mismatch");
-        });
-
-        it("reverts if repayBorrowVerify fails", async() => {
-          await send(cToken.comptroller, 'setRepayBorrowVerify', [false]);
-          await expect(repayBorrowFresh(cToken, payer, borrower, repayAmount)).rejects.toRevert("revert repayBorrowVerify rejected repayBorrow");
         });
 
         it("transfers the underlying cash, and emits RepayBorrow event", async () => {

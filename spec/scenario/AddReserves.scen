@@ -93,12 +93,12 @@ Test "add reserves failures"
     ListedCToken ZRX cZRX initialExchangeRate:1e9
     Assert Equal (CToken cZRX ExchangeRate) (Exactly 1e9)
     Assert Equal (CToken cZRX Reserves) (Exactly 0e18)
-    Erc20 ZRX Faucet Root 1e18
+    Erc20 ZRX Faucet Root 2e18
     AllowFailures
     AddReserves 2e18 cZRX
-    Assert Failure TOKEN_INSUFFICIENT_ALLOWANCE ADD_RESERVES_TRANSFER_IN_NOT_POSSIBLE
+    Assert Revert "revert Insufficient allowance"
     Assert Equal (Erc20 ZRX TokenBalance cZRX) (Exactly 0e18)
-    Assert Equal (Erc20 ZRX TokenBalance Root) (Exactly 1e18)
+    Assert Equal (Erc20 ZRX TokenBalance Root) (Exactly 2e18)
     Assert Equal (CToken cZRX Reserves) (Exactly 0e18)
     -- unchanged
     Assert Equal (CToken cZRX ExchangeRate) (Exactly 1e9)

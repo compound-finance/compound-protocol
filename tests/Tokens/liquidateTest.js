@@ -42,6 +42,9 @@ async function liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenC
 }
 
 async function liquidate(cToken, liquidator, borrower, repayAmount, cTokenCollateral) {
+  // make sure to have a block delta so we accrue interest
+  await fastForward(cToken, 1);
+  await fastForward(cTokenCollateral, 1);
   return send(cToken, 'liquidateBorrow', [borrower, repayAmount, cTokenCollateral._address], {from: liquidator});
 }
 

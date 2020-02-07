@@ -1,5 +1,6 @@
 const {both} = require('../Utils/Ethereum');
 const {
+  fastForward,
   makeCToken,
   makeInterestRateModel
 } = require('../Utils/Compound');
@@ -79,6 +80,7 @@ describe('CToken', function () {
 
     it("emits a set market interest rate model failure if interest accrual fails", async () => {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
+      await fastForward(cToken, 1);
       await expect(send(cToken, '_setInterestRateModel', [newModel._address])).rejects.toRevert("revert INTEREST_RATE_MODEL_ERROR");
     });
 

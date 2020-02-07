@@ -12,7 +12,7 @@ const {
 
 describe('PriceOracleProxy', () => {
   let root, accounts;
-  let oracle, backingOracle, cEth, cUsdc, cSai, cDai, cOther;
+  let oracle, backingOracle, cEth, cUsdc, cSai, cDai, cUsdt, cOther;
 
   beforeEach(async () => {
     [root, ...accounts] = saddle.accounts;
@@ -20,6 +20,7 @@ describe('PriceOracleProxy', () => {
     cUsdc = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
     cSai = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
     cDai = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
+    cUsdt = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
     cOther = await makeCToken({comptroller: cEth.comptroller, supportMarket: true});
 
     backingOracle = await makePriceOracle();
@@ -30,7 +31,8 @@ describe('PriceOracleProxy', () => {
         cEth._address,
         cUsdc._address,
         cSai._address,
-        cDai._address
+        cDai._address,
+        cUsdt._address
       ]
      );
   });
@@ -66,6 +68,11 @@ describe('PriceOracleProxy', () => {
       let configuredCDAI = await call(oracle, "cDaiAddress");
       expect(configuredCDAI).toEqual(cDai._address);
     });
+
+    it("sets address of cUSDT", async () => {
+      let configuredCUSDT = await call(oracle, "cUsdtAddress");
+      expect(configuredCUSDT).toEqual(cUsdt._address);
+    });
   });
 
   describe("getUnderlyingPrice", () => {
@@ -93,12 +100,12 @@ describe('PriceOracleProxy', () => {
     });
 
     it("proxies to v1 oracle for cusdc", async () => {
-      await setAndVerifyBackingPrice(cSai, 50);
+      await setAndVerifyBackingPrice(cDai, 50);
       await readAndVerifyProxyPrice(cUsdc, 50e12);
     });
 
     it("computes address(2) / address(1) * maker usd price for csai and cdai", async () => {
-      await setAndVerifyBackingPrice(cSai, 5);
+      await setAndVerifyBackingPrice(cDai, 5);
 
       // 0.95 < ratio < 1.05
       await send(backingOracle, "setDirectPrice", [address(1), etherMantissa(1e12)]);
