@@ -1134,7 +1134,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
       */
     function _acceptAdmin() external returns (uint) {
         // Check caller is pendingAdmin and pendingAdmin ≠ address(0)
-        if (msg.sender != pendingAdmin || msg.sender == address(0)) {
+        if (msg.sender != pendingAdmin || pendingAdmin == address(0)) {
             return fail(Error.UNAUTHORIZED, FailureInfo.ACCEPT_ADMIN_PENDING_ADMIN_CHECK);
         }
 
