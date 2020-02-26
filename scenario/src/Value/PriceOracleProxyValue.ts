@@ -15,12 +15,27 @@ export async function getPriceOracleProxyAddress(world: World, priceOracleProxy:
   return new AddressV(priceOracleProxy._address);
 }
 
+export async function getV1PriceOracle(world: World, priceOracleProxy: PriceOracleProxy): Promise<AddressV> {
+  return new AddressV(await priceOracleProxy.methods.v1PriceOracle().call());
+}
+
 async function getPrice(world: World, priceOracleProxy: PriceOracleProxy, asset: string): Promise<NumberV> {
   return new NumberV(await priceOracleProxy.methods.getUnderlyingPrice(asset).call());
 }
 
 export function priceOracleProxyFetchers() {
   return [
+    new Fetcher<{priceOracleProxy: PriceOracleProxy}, AddressV>(`
+        #### V1PriceOracle
+
+        * "V1PriceOracle" - Gets the address of the v1 Price
+      `,
+      "V1PriceOracle",
+      [
+        new Arg("priceOracleProxy", getPriceOracleProxy, {implicit: true})
+      ],
+      (world, {priceOracleProxy}) => getV1PriceOracle(world, priceOracleProxy)
+    ),
     new Fetcher<{priceOracleProxy: PriceOracleProxy}, AddressV>(`
         #### Address
 

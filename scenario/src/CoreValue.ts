@@ -3,6 +3,7 @@ import { World } from './World';
 import {
   AddressV,
   AnythingV,
+  ArrayV,
   BoolV,
   EventV,
   ExpNumberV,
@@ -29,10 +30,13 @@ import { getPriceOracleValue, priceOracleFetchers } from './Value/PriceOracleVal
 import { getPriceOracleProxyValue, priceOracleProxyFetchers } from './Value/PriceOracleProxyValue';
 import { getTimelockValue, timelockFetchers, getTimelockAddress } from './Value/TimelockValue';
 import { getMaximillionValue, maximillionFetchers } from './Value/MaximillionValue';
+import { getCompValue, compFetchers } from './Value/CompValue';
+import { getGovernorValue, governorFetchers } from './Value/GovernorValue';
 import { getAddress } from './ContractLookup';
-import { mustArray } from './Utils';
+import { getCurrentBlockNumber, getCurrentTimestamp, mustArray, sendRPC } from './Utils';
 import { toEncodableNum } from './Encoding';
 import { BigNumber } from 'bignumber.js';
+import { buildContractFetcher } from './EventBuilder';
 
 const expMantissa = new BigNumber('1000000000000000000');
 
@@ -83,7 +87,7 @@ export async function mapValue<T>(
   }
 
   if (!(val instanceof type)) {
-    throw new Error(`Expected ${type.name} from ${event.toString()}, got: ${val.toString()}`);
+    throw new Error(`Expected "${type.name}" from event "${event.toString()}", was: "${val.toString()}"`);
   }
 
   // We just did a typecheck above...
@@ -183,6 +187,15 @@ export async function getMapV(world: World, event: Event): Promise<MapV> {
   return new MapV(res);
 }
 
+export function getArrayV<T extends Value>(fetcher: (World, Event) => Promise<T>): (World, Event) => Promise<ArrayV<T>> {
+  return async (world: World, event: Event): Promise<ArrayV<T>> => {
+    const res = await Promise.all(
+      mustArray(event).filter((x) => x !== 'List').map(e => fetcher(world, e))
+    );
+    return new ArrayV(res);
+  }
+}
+
 export async function getStringV(world: World, event: Event): Promise<StringV> {
   return mapValue<StringV>(world, event, str => new StringV(str), getCoreValue, StringV);
 }
@@ -193,7 +206,7 @@ async function getEtherBalance(world: World, address: string): Promise<NumberV> 
   return new NumberV(balance);
 }
 
-export const fetchers = [
+const fetchers = [
   new Fetcher<{}, BoolV>(
     `
       #### True
@@ -229,11 +242,23 @@ export const fetchers = [
 
   new Fetcher<{}, NumberV>(
     `
-      #### Max
+      #### UInt96Max
 
-      * "Max" - Returns 2^256 - 1
+      * "UInt96Max" - Returns 2^96 - 1
     `,
-    'Max',
+    'UInt96Max',
+    [],
+    async (world, {}) =>
+      new NumberV('79228162514264337593543950335')
+  ),
+
+  new Fetcher<{}, NumberV>(
+    `
+      #### UInt256Max
+
+      * "UInt256Max" - Returns 2^256 - 1
+    `,
+    'UInt256Max',
     [],
     async (world, {}) =>
       new NumberV('115792089237316195423570985008687907853269984665640564039457584007913129639935')
@@ -368,7 +393,7 @@ export const fetchers = [
 
   new Fetcher<
     { addr: AddressV; slot: NumberV; start: NumberV; valType: StringV },
-    BoolV | AddressV | ExpNumberV | undefined
+    BoolV | AddressV | ExpNumberV | NothingV
   >(
     `
     #### StorageAt
@@ -384,7 +409,7 @@ export const fetchers = [
     ],
     async (world, { addr, slot, start, valType }) => {
       let stored = await world.web3.eth.getStorageAt(addr.val, slot.val);
-      const startVal = start.val;
+      const startVal = Number(start.val);
       let reverse = s =>
         s
           .split('')
@@ -392,12 +417,12 @@ export const fetchers = [
           .join('');
       let val;
       stored = stored
-        .slice(2) //drop leading 0x and reverse since items are packed from the back of the slot
+        .slice(2) // drop leading 0x and reverse since items are packed from the back of the slot
         .split('')
         .reverse()
         .join('');
 
-      //dont forget to re-reverse
+      // Don't forget to re-reverse
       switch (valType.val) {
         case 'bool':
           val = '0x' + reverse(stored.slice(startVal, (startVal as number) + 2));
@@ -410,17 +435,19 @@ export const fetchers = [
 
           // if the numbers are big, they are big...
           if (parsed.gt(world.web3.utils.toBN(1000))) {
-            return new ExpNumberV(parsed, 1e18);
+            return new ExpNumberV(parsed.toString(), 1e18);
           } else {
-            return new ExpNumberV(parsed, 1);
+            return new ExpNumberV(parsed.toString(), 1);
           }
+        default:
+          return new NothingV();
       }
     }
   ),
 
   new Fetcher<
     { addr: AddressV; slot: NumberV; key: AddressV; nestedKey: AddressV; valType: StringV },
-    ListV | undefined
+    ListV | NothingV
   >(
     `
     #### StorageAtNestedMapping
@@ -438,7 +465,7 @@ export const fetchers = [
     async (world, { addr, slot, key, nestedKey, valType }) => {
       let paddedSlot = world.web3.utils.padLeft(slot.val, 64);
       let paddedKey = world.web3.utils.padLeft(key.val, 64);
-      let newKey = world.web3.utils.sha3(paddedKey + paddedSlot, { encoding: 'hex' });
+      let newKey = world.web3.utils.sha3(paddedKey + paddedSlot);
 
       let val = await world.web3.eth.getStorageAt(addr.val, newKey);
 
@@ -452,8 +479,8 @@ export const fetchers = [
               .add(world.web3.utils.toBN(1))
               .toString(16);
 
-          let collateralFactor = await world.web3.eth.getStorageAt(addr.val, collateralFactorKey);
-          collateralFactor = world.web3.utils.toBN(collateralFactor);
+          let collateralFactorStr = await world.web3.eth.getStorageAt(addr.val, collateralFactorKey);
+          let collateralFactor = world.web3.utils.toBN(collateralFactorStr);
 
           let userMarketBaseKey = world.web3.utils
             .toBN(newKey)
@@ -463,22 +490,24 @@ export const fetchers = [
 
           let paddedSlot = world.web3.utils.padLeft(userMarketBaseKey, 64);
           let paddedKey = world.web3.utils.padLeft(nestedKey.val, 64);
-          let newKeyToo = world.web3.utils.sha3(paddedKey + paddedSlot, { encoding: 'hex' });
+          let newKeyToo = world.web3.utils.sha3(paddedKey + paddedSlot);
 
           let userInMarket = await world.web3.eth.getStorageAt(addr.val, newKeyToo);
 
           return new ListV([
             new BoolV(isListed),
-            new ExpNumberV(collateralFactor, 1e18),
+            new ExpNumberV(collateralFactor.toString(), 1e18),
             new BoolV(userInMarket == '0x01')
           ]);
+        default:
+          return new NothingV();
       }
     }
   ),
 
   new Fetcher<
     { addr: AddressV; slot: NumberV; key: AddressV; valType: StringV },
-    AddressV | BoolV | ExpNumberV | ListV | undefined
+    AddressV | BoolV | ExpNumberV | ListV | NothingV
   >(
     `
     #### StorageAtMapping
@@ -495,26 +524,18 @@ export const fetchers = [
     async (world, { addr, slot, key, valType }) => {
       let paddedSlot = world.web3.utils.padLeft(slot.val, 64);
       let paddedKey = world.web3.utils.padLeft(key.val, 64);
-      let newKey = world.web3.utils.sha3(paddedKey + paddedSlot, { encoding: 'hex' });
-
+      let newKey = world.web3.utils.sha3(paddedKey + paddedSlot);
       let val = await world.web3.eth.getStorageAt(addr.val, newKey);
 
       switch (valType.val) {
         case 'list(address)':
-          let num = world.web3.utils.toBN(val);
+          let num = world.web3.utils.hexToNumber(val);
 
-          let p = new Array(num, 'n').map(async (_v, index) => {
-            let itemKey;
-            itemKey = world.web3.utils.sha3(newKey, { encoding: 'hex' });
-            itemKey =
-              '0x' +
-              world.web3.utils
-                .toBN(itemKey)
-                .add(world.web3.utils.toBN(index))
-                .toString(16);
-
-            let x = await world.web3.eth.getStorageAt(addr.val, itemKey);
-
+          let p = new Array(num).fill(undefined).map(async (_v, index) => {
+            let newKeySha = world.web3.utils.sha3(newKey);
+            let itemKey = world.web3.utils.toBN(newKeySha).add(world.web3.utils.toBN(index));
+            let paddedKey = world.web3.utils.padLeft(itemKey.toString(16), 40);
+            let x = await world.web3.eth.getStorageAt(addr.val, `0x${paddedKey}`);
             return new AddressV(x);
           });
 
@@ -530,12 +551,36 @@ export const fetchers = [
 
           // if the numbers are big, they are big...
           if (parsed.gt(world.web3.utils.toBN(1000))) {
-            return new ExpNumberV(parsed, 1e18);
+            return new ExpNumberV(parsed.toString(), 1e18);
           } else {
-            return new ExpNumberV(parsed, 1);
+            return new ExpNumberV(parsed.toString(), 1);
           }
+        default:
+          return new NothingV();
       }
     }
+  ),
+
+  new Fetcher<{}, NumberV>(
+    `
+    #### BlockNumber
+    * BlockNumber
+    `,
+    'BlockNumber',
+    [],
+    async (world, {}) => {
+      return new NumberV(await getCurrentBlockNumber(world));
+    }
+  ),
+
+  new Fetcher<{}, NumberV>(
+    `
+    #### GasCounter
+    * GasCounter
+    `,
+    'GasCounter',
+    [],
+    async (world, {}) => new NumberV(world.gasCounter.value)
   ),
 
   new Fetcher<{}, AddressV>(
@@ -546,8 +591,31 @@ export const fetchers = [
     `,
     'LastContract',
     [],
-    async (world, {}) => new AddressV(world.get('lastContract'))
+    async (world, { }) => new AddressV(world.get('lastContract'))
   ),
+
+  new Fetcher<{}, NumberV>(
+    `
+      #### LastBlock
+
+      * "LastBlock" - The block of the last transaction
+    `,
+    'LastBlock',
+    [],
+    async (world, { }) => {
+      let invokation = world.get('lastInvokation');
+      if (!invokation) {
+        throw new Error(`Expected last invokation for "lastBlock" but none found.`);
+      }
+
+      if (!invokation.receipt) {
+        throw new Error(`Expected last invokation to have receipt for "lastBlock" but none found.`);
+      }
+
+      return new NumberV(invokation.receipt.blockNumber);
+    }
+  ),
+
   new Fetcher<{}, NumberV>(
     `
       #### LastGas
@@ -569,6 +637,7 @@ export const fetchers = [
       return new NumberV(invokation.receipt.gasUsed);
     }
   ),
+
   new Fetcher<{ els: Value[] }, AnythingV>(
     `
       #### List
@@ -670,8 +739,19 @@ export const fetchers = [
     [new Arg('seconds', getNumberV)],
     async (world, { seconds }) => {
       const secondsBn = new BigNumber(seconds.val);
-      const now = Math.floor(Date.now() / 1000);
-      return new NumberV(secondsBn.plus(now).toFixed(0));
+      return new NumberV(secondsBn.plus(getCurrentTimestamp()).toFixed(0));
+    }
+  ),
+    new Fetcher<{}, NumberV>(
+    `
+      #### Now
+
+      * "Now seconds:<NumberV>" - Returns current timestamp
+    `,
+    'Now',
+    [],
+    async (world, {}) => {
+      return new NumberV(getCurrentTimestamp());
     }
   ),
   new Fetcher<{}, StringV>(
@@ -876,9 +956,48 @@ export const fetchers = [
     [new Arg('res', getMCDValue, { variadic: true })],
     async (world, { res }) => res,
     { subExpressions: mcdFetchers() }
-  )
+  ),
+  new Fetcher<{ res: Value }, Value>(
+    `
+      #### Comp
+
+      * "Comp ...compArgs" - Returns Comp value
+    `,
+    'Comp',
+    [new Arg('res', getCompValue, { variadic: true })],
+    async (world, { res }) => res,
+    { subExpressions: compFetchers() }
+  ),
+  new Fetcher<{ res: Value }, Value>(
+    `
+      #### Governor
+
+      * "Governor ...governorArgs" - Returns Governor value
+    `,
+    'Governor',
+    [new Arg('res', getGovernorValue, { variadic: true })],
+    async (world, { res }) => res,
+    { subExpressions: governorFetchers() }
+  ),
 ];
 
+let contractFetchers = [
+  "Counter"
+];
+
+export async function getFetchers(world: World) {
+  if (world.fetchers) {
+    return { world, fetchers: world.fetchers };
+  }
+
+  let allFetchers = fetchers.concat(await Promise.all(contractFetchers.map((contractName) => {
+    return buildContractFetcher(world, contractName);
+  })));
+
+  return { world: world.set('fetchers', allFetchers), fetchers: allFetchers };
+}
+
 export async function getCoreValue(world: World, event: Event): Promise<Value> {
-  return await getFetcherValue<any, any>('Core', fetchers, world, event);
+  let {world: nextWorld, fetchers} = await getFetchers(world);
+  return await getFetcherValue<any, any>('Core', fetchers, nextWorld, event);
 }

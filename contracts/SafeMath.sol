@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity ^0.5.16;
 
 // From https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/math/Math.sol
 // Subject to the MIT license.
@@ -18,8 +18,7 @@ pragma solidity ^0.5.12;
  */
 library SafeMath {
     /**
-     * @dev Returns the addition of two unsigned integers, reverting on
-     * overflow.
+     * @dev Returns the addition of two unsigned integers, reverting on overflow.
      *
      * Counterpart to Solidity's `+` operator.
      *
@@ -34,29 +33,39 @@ library SafeMath {
     }
 
     /**
-     * @dev Returns the subtraction of two unsigned integers, reverting on
-     * overflow (when the result is negative).
+     * @dev Returns the addition of two unsigned integers, reverting with custom message on overflow.
      *
-     * Counterpart to Solidity's `-` operator.
+     * Counterpart to Solidity's `+` operator.
      *
      * Requirements:
-     * - Subtraction cannot overflow.
+     * - Addition cannot overflow.
      */
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        return sub(a, b, "SafeMath: subtraction overflow");
+    function add(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        uint256 c = a + b;
+        require(c >= a, errorMessage);
+
+        return c;
     }
 
     /**
-     * @dev Returns the subtraction of two unsigned integers, reverting with custom message on
-     * overflow (when the result is negative).
+     * @dev Returns the subtraction of two unsigned integers, reverting on underflow (when the result is negative).
      *
      * Counterpart to Solidity's `-` operator.
      *
      * Requirements:
-     * - Subtraction cannot overflow.
+     * - Subtraction cannot underflow.
+     */
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        return sub(a, b, "SafeMath: subtraction underflow");
+    }
+
+    /**
+     * @dev Returns the subtraction of two unsigned integers, reverting with custom message on underflow (when the result is negative).
      *
-     * NOTE: This is a feature of the next version of OpenZeppelin Contracts.
-     * @dev Get it via `npm install @openzeppelin/contracts@next`.
+     * Counterpart to Solidity's `-` operator.
+     *
+     * Requirements:
+     * - Subtraction cannot underflow.
      */
     function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         require(b <= a, errorMessage);
@@ -66,8 +75,7 @@ library SafeMath {
     }
 
     /**
-     * @dev Returns the multiplication of two unsigned integers, reverting on
-     * overflow.
+     * @dev Returns the multiplication of two unsigned integers, reverting on overflow.
      *
      * Counterpart to Solidity's `*` operator.
      *
@@ -89,8 +97,8 @@ library SafeMath {
     }
 
     /**
-     * @dev Returns the integer division of two unsigned integers. Reverts on
-     * division by zero. The result is rounded towards zero.
+     * @dev Returns the integer division of two unsigned integers.
+     * Reverts on division by zero. The result is rounded towards zero.
      *
      * Counterpart to Solidity's `/` operator. Note: this function uses a
      * `revert` opcode (which leaves remaining gas untouched) while Solidity
@@ -104,8 +112,8 @@ library SafeMath {
     }
 
     /**
-     * @dev Returns the integer division of two unsigned integers. Reverts with custom message on
-     * division by zero. The result is rounded towards zero.
+     * @dev Returns the integer division of two unsigned integers.
+     * Reverts with custom message on division by zero. The result is rounded towards zero.
      *
      * Counterpart to Solidity's `/` operator. Note: this function uses a
      * `revert` opcode (which leaves remaining gas untouched) while Solidity
@@ -113,8 +121,6 @@ library SafeMath {
      *
      * Requirements:
      * - The divisor cannot be zero.
-     * NOTE: This is a feature of the next version of OpenZeppelin Contracts.
-     * @dev Get it via `npm install @openzeppelin/contracts@next`.
      */
     function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         // Solidity only automatically asserts when dividing by 0
@@ -150,9 +156,6 @@ library SafeMath {
      *
      * Requirements:
      * - The divisor cannot be zero.
-     *
-     * NOTE: This is a feature of the next version of OpenZeppelin Contracts.
-     * @dev Get it via `npm install @openzeppelin/contracts@next`.
      */
     function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         require(b != 0, errorMessage);

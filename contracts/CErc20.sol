@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity ^0.5.16;
 
 import "./CToken.sol";
 
@@ -149,11 +149,11 @@ contract CErc20 is CToken, CErc20Interface {
     }
 
     /**
-     * @dev Similar to EIP20 transfer, except it handles a False result from `transferFrom` reverts in that case.
+     * @dev Similar to EIP20 transfer, except it handles a False result from `transferFrom` and reverts in that case.
      *      If caller has not called `checkTransferIn`, this may revert due to insufficient balance or insufficient
      *      allowance. If caller has called `checkTransferIn` prior to this call, and it returned Error.NO_ERROR,
      *      this should not revert in normal conditions. This function returns the actual amount received,
-     *      with may be less than `amount` if there is a fee attached with the transfer.
+     *      which may be less than `amount` if there is a fee attached to the transfer.
      *
      *      Note: This wrapper safely handles non-standard ERC-20 tokens that do not return a value.
      *            See here: https://medium.com/coinmonks/missing-return-value-bug-at-least-130-tokens-affected-d67bf08521ca

@@ -119,6 +119,8 @@ export class BoolV implements Value {
       return this.val === given.val;
     } else if (given instanceof NumberV) {
       return this.compareTo(world, given.toBoolV());
+    } else if (given instanceof StringV && ( given.val === 'true' || given.val === 'false' )) {
+      return this.val || given.val !== 'true';
     } else {
       throw new Error(`Cannot compare ${typeof this} to ${typeof given} (${this.toString()}, ${given.toString()})`);
     }
@@ -250,6 +252,8 @@ export class NumberV implements Value {
       return thisBig === givenBig;
     } else if (given instanceof PreciseV) {
       return this.compareTo(world, given.toNumberV());
+    } else if (given instanceof StringV) {
+      return this.compareTo(world, new NumberV(Number(given.val)));
     } else {
       throw new Error(`Cannot compare ${typeof this} to ${typeof given} (${this.toString()}, ${given.toString()})`);
     }
@@ -371,7 +375,7 @@ export class ListV implements Value {
   }
 
   compareTo(world: World, given: Value): boolean {
-    if (given instanceof ListV) {
+    if (given instanceof ListV || given instanceof ArrayV) {
       return this.val.every((el, i) => el.compareTo(world, given.val[i]));
     } else {
       throw new Error(`Cannot compare ${typeof this} to ${typeof given} (${this.toString()}, ${given.toString()})`);
@@ -384,6 +388,34 @@ export class ListV implements Value {
 
   toString() {
     return `ListV<val=${this.val.map(el => el.toString()).join(',')}>`;
+  }
+
+  truthy() {
+    return this.val.length > 0;
+  }
+}
+
+export class ArrayV<T extends Value> implements Value {
+  val: T[]
+
+  constructor(els) {
+    this.val = els;
+  }
+
+  compareTo(world: World, given: Value): boolean {
+    if (given instanceof ListV || given instanceof ArrayV) {
+      return this.val.every((el, i) => el.compareTo(world, given.val[i]));
+    } else {
+      throw new Error(`Cannot compare ${typeof this} to ${typeof given} (${this.toString()}, ${given.toString()})`);
+    }
+  }
+
+  compareOrder(world: World, given: Value): Order {
+    throw new Error(`Cannot compare order of ${typeof this} to ${typeof given} (${this.toString()}, ${given.toString()})`);
+  }
+
+  toString() {
+    return `ArrayV<val=${this.val.map(el => el.toString()).join(',')}>`;
   }
 
   truthy() {

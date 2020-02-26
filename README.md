@@ -30,6 +30,16 @@ We detail a few of the core contracts in the Compound protocol.
 </dl>
 
 <dl>
+  <dt>Comp</dt>
+  <dd>The Compound Governance Token (COMP). Holders of this token have the ability to govern the protocol via the governor contract.</dd>
+</dl>
+
+<dl>
+  <dt>Governor Alpha</dt>
+  <dd>The administrator of the Compound timelock contract. Holders of Comp token may create and vote on proposals which will be queued into the Compound timelock and then have effects on Compound cToken and Copmtroller contracts. This contract may be replaced in the future with a beta version.</dd>
+</dl>
+
+<dl>
   <dt>InterestRateModel</dt>
   <dd>Contracts which define interest rate models. These models algorithmically determine interest rates based on the current utilization of a given market (that is, how much of the supplied assets are liquid versus borrowed).</dd>
 </dl>
@@ -65,36 +75,15 @@ To run compound, pull the repository from GitHub and install its dependencies. Y
 
     git clone https://github.com/compound-finance/compound-protocol
     cd compound-protocol
-    yarn # or `npm install`
-
-You can then compile and deploy the contracts with:
-
-    yarn run deploy
-
-Note: this project does not use truffle migrations. The command above is the best way to deploy contracts. To view the addresses of contracts, please inspect the `networks/development.json` file that is produced as an artifact of that command.
-
-Console
--------
-
-After you deploy, as above, you can run a truffle console with the following command:
-
-    yarn run console
-
-This command will create a truffle-like build directory and start a truffle console, thus you can then run:
-
-    truffle(rinkeby)> cDAI.deployed().then((cdai) => cdai.borrowRatePerBlock.call())
-    <BN: 7699bf9dd>
-
-You can also specify a network (rinkeby, ropsten, kovan, goerli or mainnet):
-
-    yarn run console rinkeby
+    yarn install --lock-file # or `npm install`
 
 REPL
 ----
 
 The Compound Protocol has a simple scenario evaluation tool to test and evaluate scenarios which could occur on the blockchain. This is primarily used for constructing high-level integration tests. The tool also has a REPL to interact with local the Compound Protocol (similar to `truffle console`).
 
-    yarn run repl
+    yarn repl -n development
+    yarn repl -n rinkeby
 
     > Read CToken cBAT Address
     Command: Read CToken cBAT Address
@@ -102,34 +91,11 @@ The Compound Protocol has a simple scenario evaluation tool to test and evaluate
 
 You can read more about the scenario runner in the [Scenario Docs](https://github.com/compound-finance/compound-protocol/tree/master/scenario/SCENARIO.md) on steps for using the repl.
 
-Deployment
-----------
-
-The easiest way to deploy some Erc20 tokens, cTokens and a Comptroller is through scenario scripts.
-
-    # run ganache locally
-    script/ganache # or `ganache-cli`
-
-    # ensure development files don't exist as
-    # new ganache instances invalidate old deployed contracts
-    rm networks/development*
-
-    # run deployment script
-    yarn run deploy -v
-
-After that, you'll have a full set of contracts deployed locally. Look in `networks/development.json` for the addresses for those deployed contracts. You can use the `yarn run console` command above to interact with the contracts (or the scenario REPL, if you prefer).
-
 Testing
 -------
-Mocha contract tests are defined under the [test directory](https://github.com/compound-finance/compound-protocol/tree/master/test). To run the tests run:
+Jest contract tests are defined under the [tests directory](https://github.com/compound-finance/compound-protocol/tree/master/tests). To run the tests run:
 
-    yarn run test
-
-or with inspection (visit chrome://inspect) and look for a remote target after running:
-
-    node --inspect node_modules/truffle-core/cli.js test
-
-Assertions used in our tests are provided by [ChaiJS](http://chaijs.com).
+    yarn test
 
 Integration Specs
 -----------------
@@ -140,19 +106,27 @@ Formal Verification Specs
 -------------------------
 
 The Compound Protocol has a number of formal verification specifications, powered by [Certora](https://www.certora.com/). You can find details in the [spec/formal](https://github.com/compound-finance/compound-protocol/tree/master/spec/formal) folder. The Certora Verification Language (CVL) files included are specifications, which when with the Certora CLI tool, produce formal proofs (or counter-examples) that the code of a given contract exactly matches that specification.
+=======
+See the [Scenario Docs](https://github.com/compound-finance/money-market/tree/master/scenario/SCENARIO.md) on steps for using the repl.
+
+Testing
+-------
+Contract tests are defined under the [tests directory](https://github.com/compound-finance/money-market/tree/master/tests). To run the tests run:
+
+    yarn test
+>>>>>>> Compound Token and Governance (#519)
 
 Code Coverage
 -------------
 To run code coverage, run:
 
-    scripts/ganache-coverage # run ganache in coverage mode
-    yarn run coverage
+    yarn coverage
 
 Linting
 -------
 To lint the code, run:
 
-    yarn run lint
+    yarn lint
 
 Docker
 ------
@@ -167,16 +141,54 @@ To run in docker:
 
 From within a docker shell, you can interact locally with the protocol via ganache and truffle:
 
-    > ganache-cli &
-    > yarn run deploy
-    > yarn run console
-    truffle(development)> cDAI.deployed().then((contract) => cdai = contract);
-    truffle(development)> cdai.borrowRatePerBlock.call().then((rate) => rate.toNumber())
-    20
+```bash
+    /compound-protocol # yarn console -n goerli
+    Using network goerli https://goerli-eth.compound.finance
+    Saddle console on network goerli https://goerli-eth.compound.finance
+    Deployed goerli contracts
+      comptroller: 0x627EA49279FD0dE89186A58b8758aD02B6Be2867
+      comp: 0xfa5E1B628EFB17C024ca76f65B45Faf6B3128CA5
+      governorAlpha: 0x8C3969Dd514B559D78135e9C210F2F773Feadf21
+      maximillion: 0x73d3F01b8aC5063f4601C7C45DA5Fdf1b5240C92
+      priceOracle: 0x9A536Ed5C97686988F93C9f7C2A390bF3B59c0ec
+      priceOracleProxy: 0xd0c84453b3945cd7e84BF7fc53BfFd6718913B71
+      timelock: 0x25e46957363e16C4e2D5F2854b062475F9f8d287
+      unitroller: 0x627EA49279FD0dE89186A58b8758aD02B6Be2867
+
+    > await comp.methods.totalSupply().call()
+    '10000000000000000000000000'
+```
+
+Console
+-------
+
+After you deploy, as above, you can run a truffle console with the following command:
+
+    yarn console -n goerli
+
+This command will start a saddle console conencted to Goerli testnet (see [Saddle README](https://github.com/compound-finance/saddle#cli)):
+
+```javascript
+    Using network goerli https://goerli.infura.io/v3/e1a5d4d2c06a4e81945fca56d0d5d8ea
+    Saddle console on network goerli https://goerli.infura.io/v3/e1a5d4d2c06a4e81945fca56d0d5d8ea
+    Deployed goerli contracts
+      comptroller: 0x627EA49279FD0dE89186A58b8758aD02B6Be2867
+      comp: 0xfa5E1B628EFB17C024ca76f65B45Faf6B3128CA5
+      governorAlpha: 0x8C3969Dd514B559D78135e9C210F2F773Feadf21
+      maximillion: 0x73d3F01b8aC5063f4601C7C45DA5Fdf1b5240C92
+      priceOracle: 0x9A536Ed5C97686988F93C9f7C2A390bF3B59c0ec
+      priceOracleProxy: 0xd0c84453b3945cd7e84BF7fc53BfFd6718913B71
+      timelock: 0x25e46957363e16C4e2D5F2854b062475F9f8d287
+      unitroller: 0x627EA49279FD0dE89186A58b8758aD02B6Be2867
+    > await comp.methods.totalSupply().call()
+    '10000000000000000000000000'
+```
 
 Discussion
 ----------
 
-For any concerns with the protocol, visit us on [Discord](https://compound.finance/discord) to discuss.
+For any concerns with the protocol, open an issue or visit us on [Discord](https://compound.finance/discord) to discuss.
 
-_© Copyright 2019, Compound Labs, Inc._
+For security concerns, please email [security@compound.finance](mailto:security@compound.finance).
+
+_© Copyright 2020, Compound Labs_

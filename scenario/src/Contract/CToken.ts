@@ -3,6 +3,7 @@ import { Callable, Sendable } from '../Invokation';
 import { encodedNumber } from '../Encoding';
 
 export interface CTokenMethods {
+  _resignImplementation(): Sendable<void>;
   balanceOfUnderlying(address: string): Callable<number>;
   borrowBalanceCurrent(address: string): Callable<string>;
   borrowBalanceStored(address: string): Callable<string>;

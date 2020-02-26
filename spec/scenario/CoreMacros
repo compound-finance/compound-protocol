@@ -83,7 +83,7 @@ Macro Prep user amount erc20 token allowanceAmount=Nothing
     From user (Erc20 erc20 Approve token (Default allowanceAmount amount))
 
 Macro Allow user token
-    From user (Erc20 (CToken token Underlying) Approve token Max)
+    From user (Erc20 (CToken token Underlying) Approve token UInt256Max)
 
 Macro AccrueInterest token
     CToken token AccrueInterest

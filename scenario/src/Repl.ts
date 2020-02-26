@@ -2,15 +2,13 @@ import {ReplPrinter} from './Printer';
 import {
   addInvariant,
   initWorld,
-  IWeb3,
   loadInvokationOpts,
   loadDryRun,
   loadSettings,
   loadVerbose,
   World
 } from './World';
-import {Artifacts} from './Artifact';
-import {throwAssert} from './Assert';
+import {throwExpect} from './Assert';
 import {Macros} from './Macro';
 import {formatEvent} from './Formatter';
 import {complete} from './Completer';
@@ -21,8 +19,9 @@ import {SuccessInvariant} from './Invariant/SuccessInvariant';
 import {createInterface} from './HistoricReadline';
 import {runCommand} from './Runner';
 import {parse} from './Parser';
-import Web3 from 'web3';
 import {forkWeb3} from './Hypothetical';
+import {getSaddle} from 'eth-saddle';
+import Web3 from 'web3';
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -30,9 +29,6 @@ import * as path from 'path';
 const basePath = process.env.proj_root || process.cwd();
 const baseScenarioPath = path.join(basePath, 'spec', 'scenario');
 const baseNetworksPath = path.join(basePath, 'networks');
-
-declare var web3: IWeb3;
-declare var artifacts: Artifacts;
 
 function questionPromise(rl): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -70,15 +66,13 @@ function loadEnvVars(): object {
   }, {});
 }
 
-async function repl(web3: IWeb3, artifacts: Artifacts): Promise<void> {
+async function repl(): Promise<void> {
   // Uck, we need to load core macros :(
   const coreMacros = fs.readFileSync(path.join(baseScenarioPath, 'CoreMacros'), 'utf8');
 
   const macros = <Macros>parse(coreMacros, {startRule: 'macros'});
 
   let script = process.env['script'];
-
-  let accounts: string[];
 
   let network = process.env['network'];
 
@@ -97,7 +91,21 @@ async function repl(web3: IWeb3, artifacts: Artifacts): Promise<void> {
 
   const verbose: boolean = !!process.env['verbose'];
   const hypothetical: boolean = !!process.env['hypothetical'];
+
   let printer = new ReplPrinter(rl, verbose);
+  let contractInfo: string[];
+
+  let saddle = await getSaddle(network);
+  let accounts: string[] = saddle.wallet_accounts.concat(saddle.accounts).filter((x) => !!x);
+
+  world = await initWorld(throwExpect, printer, saddle.web3, saddle, network, accounts, basePath);
+  [world, contractInfo] = await loadContracts(world);
+  world = loadInvokationOpts(world);
+  world = loadVerbose(world);
+  world = loadDryRun(world);
+  world = await loadSettings(world);
+
+  printer.printLine(`Network: ${network}`);
 
   if (hypothetical) {
     const forkJsonPath = path.join(baseNetworksPath, `${network}-fork.json`);
@@ -116,29 +124,10 @@ async function repl(web3: IWeb3, artifacts: Artifacts): Promise<void> {
       throw new Error(`Missing unlocked in fork json`);
     }
 
-    web3 = await forkWeb3(web3, forkJson.url, forkJson.unlocked);
-    accounts = forkJson.unlocked;
+    saddle.web3 = await forkWeb3(saddle.web3, forkJson.url, forkJson.unlocked);
+    saddle.accounts = forkJson.unlocked;
     console.log(`Running on fork ${forkJson.url} with unlocked accounts ${forkJson.unlocked.join(', ')}`)
-  } else {
-    // Uck, we have to load accounts first...
-    if (web3.currentProvider && web3.currentProvider.addresses && web3.currentProvider.addresses.length > 0) {
-      // We have a wallet provider
-      accounts = web3.currentProvider.addresses;
-    } else {
-      // Let's see if we have any unlocked accounts
-      accounts = await (new Web3(web3.currentProvider)).eth.personal.getAccounts();
-    }
   }
-
-  let contractInfo: string[];
-  world = await initWorld(throwAssert, printer, web3, artifacts, network, accounts, basePath);
-  [world, contractInfo] = await loadContracts(world);
-  world = loadInvokationOpts(world);
-  world = loadVerbose(world);
-  world = loadDryRun(world);
-  world = await loadSettings(world);
-
-  printer.printLine(`Network: ${network}`);
 
   if (accounts.length > 0) {
     printer.printLine(`Accounts:`);
@@ -191,10 +180,7 @@ async function repl(web3: IWeb3, artifacts: Artifacts): Promise<void> {
   }
 }
 
-export = function(callback) {
-  repl(web3, artifacts).catch((err) => {
-    console.error("Fatal error");
-    console.error(err);
-    callback();
-  }).then(() => callback());
-}
+repl().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

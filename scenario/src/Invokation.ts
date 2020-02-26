@@ -2,6 +2,7 @@ import { ErrorReporter, NoErrorReporter, ComptrollerErrorReporter } from './Erro
 import { mustArray } from './Utils';
 import { World } from './World';
 import { encodedNumber } from './Encoding';
+import { TransactionReceipt } from 'web3-eth';
 
 const errorRegex = /^(.*) \((\d+)\)$/
 
@@ -72,16 +73,7 @@ export interface Callable<T> {
 }
 
 export interface Sendable<T> extends Callable<T> {
-  send: (InvokationOpts) => Promise<Receipt>
-}
-
-export interface Receipt {
-  // TODO: Add more transaction details
-  blockNumber: number
-  transactionHash: string
-  gasUsed: number
-
-  events: { [event: string]: { returnValues: { [key: string]: any } } }
+  send: (InvokationOpts) => Promise<TransactionReceipt>
 }
 
 export class Failure {
@@ -110,14 +102,14 @@ export class Failure {
 
 export class Invokation<T> {
   value: T | null
-  receipt: Receipt | null
+  receipt: TransactionReceipt | null
   error: Error | null
   failures: Failure[]
   method: string | null
   args: { arg: string, val: any }[]
   errorReporter: ErrorReporter
 
-  constructor(value: T | null, receipt: Receipt | null, error: Error | null, fn: Callable<T> | null, errorReporter: ErrorReporter = NoErrorReporter) {
+  constructor(value: T | null, receipt: TransactionReceipt | null, error: Error | null, fn: Callable<T> | null, errorReporter: ErrorReporter=NoErrorReporter) {
     this.value = value;
     this.receipt = receipt;
     this.error = error;
@@ -131,7 +123,7 @@ export class Invokation<T> {
       this.args = [];
     }
 
-    if (receipt !== null && receipt.events["Failure"]) {
+    if (receipt !== null && receipt.events && receipt.events["Failure"]) {
       const failures = mustArray(receipt.events["Failure"]);
 
       this.failures = failures.map((failure) => {
@@ -164,7 +156,7 @@ export class Invokation<T> {
   }
 
   toString(): string {
-    return `Invokation<${this.invokation()}, tx=${this.receipt ? this.receipt.transactionHash : ''}, value=${this.value ? this.value.toString() : ''}, error=${this.error}, failures=${this.failures.toString()}>`;
+    return `Invokation<${this.invokation()}, tx=${this.receipt ? this.receipt.transactionHash : ''}, value=${this.value ? (<any>this.value).toString() : ''}, error=${this.error}, failures=${this.failures.toString()}>`;
   }
 }
 
@@ -172,7 +164,7 @@ export async function fallback(world: World, from: string, to: string, value: en
   let trxObj = {
     from: from,
     to: to,
-    value: value
+    value: value.toString()
   };
 
   let estimateGas = async (opts: InvokationOpts) => {
@@ -221,8 +213,8 @@ export async function fallback(world: World, from: string, to: string, value: en
 
 export async function invoke<T>(world: World, fn: Sendable<T>, from: string, errorReporter: ErrorReporter = NoErrorReporter): Promise<Invokation<T>> {
   let value: T | null = null;
-  let result: Receipt | null = null;
-  let worldInvokationOpts = world.getInvokationOpts({ from: from });
+  let result: TransactionReceipt | null = null;
+  let worldInvokationOpts = world.getInvokationOpts({from: from});
   let trxInvokationOpts = world.trxInvokationOpts.toJS();
 
   let invokationOpts = {
@@ -254,7 +246,8 @@ export async function invoke<T>(world: World, fn: Sendable<T>, from: string, err
 
     if (world.dryRun) {
       world.printer.printLine(`Dry run: invoking \`${fn._method.name}\``);
-      result = {
+      // XXXS
+      result = <TransactionReceipt><unknown>{
         blockNumber: -1,
         transactionHash: '0x',
         gasUsed: 0,
@@ -262,10 +255,11 @@ export async function invoke<T>(world: World, fn: Sendable<T>, from: string, err
       };
     } else {
       result = await fn.send({ ...invokationOpts });
+      world.gasCounter.value += result.gasUsed;
     }
 
     if (world.settings.printTxLogs) {
-      const eventLogs = Object.values(result.events).map((event: any) => {
+      const eventLogs = Object.values(result && result.events || {}).map((event: any) => {
         const eventLog = event.raw;
 
         if (eventLog) {

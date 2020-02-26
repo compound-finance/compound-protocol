@@ -11,7 +11,7 @@ jobs:
     steps:
       - run:
         |
-          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.12/solc-static-linux -O /usr/local/bin/solc
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
       - checkout
       - restore_cache:
@@ -22,16 +22,14 @@ jobs:
           keys:
           - v2-scenario/dependencies-{{ checksum "scenario/package.json" }}
           - v2-scenario/dependencies-
+      - restore_cache:
+          keys:
+          - v2-solcache
+      - restore_cache:
+          keys:
+          - v2-scencache
       - run: yarn install
       - run: cd scenario && yarn install
-      - run:
-          name: Ganache
-          command: script/ganache
-          background: true
-      - run: |
-          while ! nc -z localhost 8545; do
-            sleep 0.1 # wait for ganache to start
-          done
       - save_cache:
           paths:
             - node_modules
@@ -43,50 +41,47 @@ jobs:
       - attach_workspace:
           at: ~/repo
       - run: mkdir ~/junit
-      - run: MOCHA_FILE=~/junit/test-results.xml script/test
+      - run: ./script/build_scenarios
+      - run:
+          shell: /bin/bash -eox pipefail -O globstar
+          name: yarn test
+          command: JEST_JUNIT_OUTPUT_DIR=~/junit JEST_JUNIT_OUTPUT_NAME=test-results.xml yarn test $(circleci tests glob 'tests/**/**Test.js' | circleci tests split --split-by=timings)
+      - save_cache:
+          paths:
+            - .build
+            - .solcache
+          key: v2-solcache
+      - save_cache:
+          paths:
+            - scenario/.tsbuilt
+            - .scencache
+          key: v2-scencache
       - store_test_results:
           path: ~/junit
       - store_artifacts:
           path: ~/junit
-    parallelism: 4
+    parallelism: 3
+    resource_class: xlarge
 
-  mocha_coverage:
-    parallelism: 5
+  verify:
     docker:
-      - image: circleci/node:11
+      - image: compoundfinance/alpine-java-z3:latest
     working_directory: ~/repo
     steps:
       - checkout
-      - restore_cache:
-          keys:
-          - v2-dependencies-{{ checksum "package.json" }}
-          - v2-dependencies-
-      - run: yarn install
-      - save_cache:
-          paths:
-            - node_modules
-          key: v2-dependencies-{{ checksum "package.json" }}
       - attach_workspace:
           at: ~/repo
-      - run:
-          command: yarn run coverage mocha
-          no_output_timeout: 20m
-      - store_artifacts:
-          path: ~/repo/coverage.json
-          destination: coverage.json
-      - store_artifacts:
-          path: ~/repo/coverage
-          destination: coverage
-      - codecov/upload
+      - run: script/verify
+    parallelism: 4
 
-  scenario_coverage:
+  coverage:
     docker:
       - image: circleci/node:11
     working_directory: ~/repo
     steps:
       - run:
         |
-          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.8/solc-static-linux -O /usr/local/bin/solc
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
       - checkout
       - restore_cache:
@@ -97,10 +92,12 @@ jobs:
           keys:
           - v2-scenario/dependencies-{{ checksum "scenario/package.json" }}
           - v2-scenario/dependencies-
-      - run:
-        |
-          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.12/solc-static-linux -O /usr/local/bin/solc
-          sudo chmod +x /usr/local/bin/solc
+      - restore_cache:
+          keys:
+          - v2-solcache
+      - restore_cache:
+          keys:
+          - v2-scencache
       - run: yarn install
       - run: cd scenario && yarn install
       - save_cache:
@@ -113,21 +110,38 @@ jobs:
           key: v2-scenario-dependencies-{{ checksum "scenario/package.json" }}
       - attach_workspace:
           at: ~/repo
+      - run: mkdir ~/junit
+      - run: ./script/build_scenarios
       - run:
-          command: yarn run coverage scenario
-          no_output_timeout: 20m
+          shell: /bin/bash -eox pipefail -O globstar
+          name: yarn test
+          command: JEST_JUNIT_OUTPUT_DIR=~/junit JEST_JUNIT_OUTPUT_NAME=test-results.xml script/coverage $(circleci tests glob 'tests/**/**Test.js' | circleci tests split --split-by=timings) -- --maxWorkers=4
+      - save_cache:
+          paths:
+            - .build
+            - .solcachecov
+          key: v2-solcache
+      - save_cache:
+          paths:
+            - scenario/.tsbuilt
+            - .scencache
+          key: v2-scencache
+      - store_test_results:
+          path: ~/junit
       - store_artifacts:
-          path: ~/repo/coverage.json
-          destination: coverage.json
+          path: ~/repo/coverage/coverage-final.json
+          destination: coverage-final.json
       - store_artifacts:
-          path: ~/repo/coverage
+          path: ~/repo/coverage/lcov-report
           destination: coverage
-      - codecov/upload
+      - codecov/upload:
+          file: ~/repo/coverage/coverage-final.json
+    parallelism: 10
+    resource_class: xlarge
 
   lint:
     docker:
       - image: circleci/node:11
-      - image: trufflesuite/ganache-cli:v6.7.0
     working_directory: ~/repo
     steps:
       - checkout
@@ -149,12 +163,6 @@ workflows:
   build-test-and-deploy:
     jobs:
       - test
-      - mocha_coverage:
-          filters:
-            branches:
-              only: /^(master|(.*-cov(er(age)?)?))$/
-      - scenario_coverage:
-          filters:
-            branches:
-              only: /^(master|(.*-cov(er(age)?)?))$/
+      - coverage
       - lint
+      - verify

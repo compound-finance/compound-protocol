@@ -141,7 +141,7 @@ Test "Realistic Market Scenario"
 	HoldInvariants
 	ExitMarket Geoff cBAT
 	Assert Failure NONZERO_BORROW_BALANCE EXIT_MARKET_BALANCE_OWED
-	RepayBorrow Geoff Max cBAT
+	RepayBorrow Geoff UInt256Max cBAT
 	ExitMarket Geoff cBAT
 	Assert Equal (Comptroller AssetsIn Geoff) [(Address cZRX)]
 	Assert Equal (Comptroller Liquidity Geoff) 1.0e18 -- Back to just cZRX

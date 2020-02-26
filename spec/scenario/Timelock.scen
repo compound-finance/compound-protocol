@@ -18,7 +18,7 @@ Test "Reverts if calling acceptAdmin while not being pendingAdmin"
     Assert Revert "revert Timelock::acceptAdmin: Call must come from pendingAdmin."
 
 Test "Queuing and execute a transaction for setDelay"
-    -- The default blockTimestamp is 100
+    FreezeTime 90
     -- Admin:Geoff Delay:1 week
     Timelock Deploy Geoff 604800
     Assert Equal (Timelock Delay) 604800
@@ -27,13 +27,13 @@ Test "Queuing and execute a transaction for setDelay"
     From Geoff (Timelock QueueTransaction (Timelock Address) 0 604900 "setDelay(uint256)" "1209600")
     Assert True (Timelock QueuedTransaction (Timelock TxHash (Timelock Address) 0 604900 "setDelay(uint256)" "1209600"))
     --  Now execute after delay time
-    Timelock FastForward 604801
+    FreezeTime 604900
     From Geoff (Timelock ExecuteTransaction (Timelock Address) 0 604900 "setDelay(uint256)" "1209600")
     Assert False (Timelock QueuedTransaction (Timelock TxHash (Timelock Address) 0 604900 "setDelay(uint256)" "1209600"))
     Assert Equal (Timelock Delay) 1209600
 
 Test "Queuing and execute a transaction for setPendingAdmin"
-    -- The default blockTimestamp is 100
+    FreezeTime 90
     -- Admin:Geoff Delay:1 week
     Timelock Deploy Geoff 604800
     Assert Equal (Timelock Admin) (User Geoff Address)
@@ -43,7 +43,7 @@ Test "Queuing and execute a transaction for setPendingAdmin"
     From Geoff (Timelock QueueTransaction (Timelock Address) 0 604900 "setPendingAdmin(address)" (User Jared Address))
     Assert True (Timelock QueuedTransaction (Timelock TxHash (Timelock Address) 0 604900 "setPendingAdmin(address)" (User Jared Address)))
     --  Now execute after delay time
-    Timelock FastForward 604801
+    FreezeTime 604900
     From Geoff (Timelock ExecuteTransaction (Timelock Address) 0 604900 "setPendingAdmin(address)" (User Jared Address))
     Assert False (Timelock QueuedTransaction (Timelock TxHash (Timelock Address) 0 604900 "setPendingAdmin(address)" (User Jared Address)))
     Assert Equal (Timelock PendingAdmin) (User Jared Address)
@@ -52,7 +52,7 @@ Test "Queuing and execute a transaction for setPendingAdmin"
     Assert Equal (Timelock PendingAdmin) (Address Zero)
 
 Test "Accept cToken admin from Timelock"
-    -- The default blockTimestamp is 100
+    FreezeTime 90
     -- Admin:Geoff Delay:1 week
     Timelock Deploy Geoff 604800
     Assert Equal (Timelock Admin) (User Geoff Address)
@@ -62,19 +62,18 @@ Test "Accept cToken admin from Timelock"
     Assert Equal (CToken cZRX PendingAdmin) (Address Zero)
     From Root (CToken cZRX SetPendingAdmin (Timelock Address))
     Assert Equal (CToken cZRX PendingAdmin) (Timelock Address)
-    -- eta = 1 week (604800) + blockTimestamp (100) = 604900
+    -- eta = 1 week (604800) + blockTimestamp (~100) = 604900
     Assert False (Timelock QueuedTransaction (Timelock TxHash (CToken cZRX Address) 0 604900 "_acceptAdmin()" ""))
     From Geoff (Timelock QueueTransaction (CToken cZRX Address) 0 604900 "_acceptAdmin()" "")
     Assert True (Timelock QueuedTransaction (Timelock TxHash (CToken cZRX Address) 0 604900 "_acceptAdmin()" ""))
     --  Now execute after delay time
-    Timelock FastForward 604801
+    FreezeTime 604900
     From Geoff (Timelock ExecuteTransaction (CToken cZRX Address) 0 604900 "_acceptAdmin()" "")
     Assert False (Timelock QueuedTransaction (Timelock TxHash (CToken cZRX Address) 0 604900 "_acceptAdmin()" ""))
     Assert Equal (CToken cZRX Admin) (Timelock Address)
     Assert Equal (CToken cZRX PendingAdmin) (Address Zero)
 
 Test "Accept unitroller admin from Timelock"
-    -- The default blockTimestamp is 100
     -- Admin:Geoff Delay:1 week
     Timelock Deploy Geoff 604800
     Assert Equal (Timelock Admin) (User Geoff Address)
@@ -85,10 +84,11 @@ Test "Accept unitroller admin from Timelock"
     Assert Equal (Unitroller PendingAdmin) (Timelock Address)
     -- eta = 1 week (604800) + blockTimestamp (100) = 604900
     Assert False (Timelock QueuedTransaction (Timelock TxHash (Unitroller Address) 0 604900 "_acceptAdmin()" ""))
+    FreezeTime 90
     From Geoff (Timelock QueueTransaction (Unitroller Address) 0 604900 "_acceptAdmin()" "")
     Assert True (Timelock QueuedTransaction (Timelock TxHash (Unitroller Address) 0 604900 "_acceptAdmin()" ""))
     --  Now execute after delay time
-    Timelock FastForward 604801
+    FreezeTime 604900
     From Geoff (Timelock ExecuteTransaction (Unitroller Address) 0 604900 "_acceptAdmin()" "")
     Assert False (Timelock QueuedTransaction (Timelock TxHash (Unitroller Address) 0 604900 "_acceptAdmin()" ""))
     Assert Equal (Unitroller Admin) (Timelock Address)
@@ -120,10 +120,11 @@ Test "Reduce reserves for CErc20 from Timelock and send reserves to external add
     -- Set Timelock as admin
     From Root (CToken cZRX SetPendingAdmin (Timelock Address))
     -- Queue Transactions
+    FreezeTime 90
     From Jared (Timelock QueueTransaction (CToken cZRX Address) 0 604900 "_acceptAdmin()" "")
     From Jared (Timelock QueueTransaction (CToken cZRX Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
     From Jared (Timelock QueueTransaction (Erc20 ZRX Address) 0 604900 "transfer(address,uint256)" "0x0000000000000000000000000000000000000001" "1000000000000000000")
-    Timelock FastForward 604802
+    FreezeTime 604900
     From Jared (Timelock ExecuteTransaction (CToken cZRX Address) 0 604900 "_acceptAdmin()" "")
     -- Now, let's pull out all of our reserves (1e18)
     From Jared (Timelock ExecuteTransaction (CToken cZRX Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
@@ -152,6 +153,7 @@ Test "Reduce reserves for CEther from Timelock and send reserves to external add
     --   The reserves should get 20% of this, or 1e18, and the rest
     --   is due pro-rata to all holders. We just have one, so
     --   let's check that account is given correct new balance.
+    FreezeTime 90
     Timelock Deploy Jared 604800
     Assert Equal (EtherBalance cETH) (Exactly 55e18)
     Assert Equal (EtherBalance (Timelock Address)) (Exactly 0e18)
@@ -166,7 +168,7 @@ Test "Reduce reserves for CEther from Timelock and send reserves to external add
     From Jared (Timelock QueueTransaction (CToken cETH Address) 0 604900 "_acceptAdmin()" "")
     From Jared (Timelock QueueTransaction (CToken cETH Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
     From Jared (Timelock QueueTransaction Jared 1000000000000000000 604900 "" "")
-    Timelock FastForward 604802
+    FreezeTime 604900
     From Jared (Timelock ExecuteTransaction (CToken cETH Address) 0 604900 "_acceptAdmin()" "")
     -- Now, let's pull out all of our reserves (1e18)
     From Jared (Timelock ExecuteTransaction (CToken cETH Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
@@ -191,6 +193,7 @@ Test "Set Pending Comptroller implemention on Unitroller from Timelock"
     ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracleProxy Address) 0.1 20
     Assert Equal (Unitroller PendingImplementation) (Address Zero)
     Assert Equal (Unitroller Implementation) (Address ScenComptrollerG1)
+    FreezeTime 90
     Timelock Deploy Coburn 604800
     ComptrollerImpl Deploy Scenario ScenComptroller
     Unitroller SetPendingImpl ScenComptroller
@@ -199,7 +202,7 @@ Test "Set Pending Comptroller implemention on Unitroller from Timelock"
     Assert Equal (Unitroller PendingImplementation) (ComptrollerImpl ScenComptroller Address)
     From Coburn (Timelock QueueTransaction (Unitroller Address) 0 604900 "_acceptAdmin()" "")
     From Coburn (Timelock QueueTransaction (ComptrollerImpl ScenComptroller Address) 0 604900 "_become(address)" (Unitroller Address))
-    Timelock FastForward 604802
+    FreezeTime 604900
     From Coburn (Timelock ExecuteTransaction (Unitroller Address) 0 604900 "_acceptAdmin()" "")
     Assert Equal (Unitroller Admin) (Timelock Address)
     Assert Equal (Unitroller PendingAdmin) (Address Zero)

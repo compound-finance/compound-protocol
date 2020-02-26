@@ -26,16 +26,21 @@ import { maximillionCommands, processMaximillionEvent } from './Event/Maximillio
 import { invariantCommands, processInvariantEvent } from './Event/InvariantEvent';
 import { expectationCommands, processExpectationEvent } from './Event/ExpectationEvent';
 import { timelockCommands, processTimelockEvent } from './Event/TimelockEvent';
+import { compCommands, processCompEvent } from './Event/CompEvent';
+import { governorCommands, processGovernorEvent } from './Event/GovernorEvent';
 import { processTrxEvent, trxCommands } from './Event/TrxEvent';
-import { fetchers, getCoreValue } from './CoreValue';
+import { getFetchers, getCoreValue } from './CoreValue';
 import { formatEvent } from './Formatter';
 import { fallback } from './Invokation';
-import { sendRPC, sleep } from './Utils';
+import { getCurrentBlockNumber, getCurrentTimestamp, sendRPC, sleep } from './Utils';
 import { Map } from 'immutable';
 import { encodedNumber } from './Encoding';
 import { printHelp } from './Help';
 import { loadContracts } from './Networks';
 import { fork } from './Hypothetical';
+import { buildContractEvent } from './EventBuilder';
+import { Counter } from './Contract/Counter';
+import Web3 from 'web3';
 
 export class EventProcessingError extends Error {
   error: Error;
@@ -47,6 +52,7 @@ export class EventProcessingError extends Error {
     this.error = error;
     this.event = event;
     this.message = `Error: \`${this.error.toString()}\` when processing \`${formatEvent(this.event)}\``;
+    this.stack = error.stack;
   }
 }
 
@@ -109,7 +115,7 @@ async function sendEther(world: World, from: string, to: string, amount: encoded
   return world;
 }
 
-export const commands = [
+export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = [
   new View<{ n: NumberV }>(
     `
       #### History
@@ -128,17 +134,68 @@ export const commands = [
       return world;
     }
   ),
-  new View<{ ms: NumberV }>(
+  new View<{ seconds: NumberV }>(
     `
-      #### Sleep
+      #### SleepSeconds
 
-      * "Sleep ms:<Number>" - Sleeps for given amount of time.
-        * E.g. "Sleep 1000" - Sleeps for one second
+      * "SleepSeconds s:<Number>" - Sleeps for given amount of time.
+        * E.g. "SleepSeconds 1" - Sleeps for one second
     `,
-    'Sleep',
-    [new Arg('ms', getNumberV)],
-    async (world, { ms }) => {
-      await sleep(ms.toNumber());
+    'SleepSeconds',
+    [new Arg('seconds', getNumberV)],
+    async (world, { seconds }) => {
+      await sleep(seconds.toNumber() * 1000);
+      return world;
+    }
+  ),
+  new View<{ timestamp: NumberV }>(
+    `
+      #### SleepUntilTimestamp
+
+      * "SleepUntil timestamp:<Number>" - Sleeps until the given timestamp
+        * E.g. "SleepUntil 1579123423" - Sleeps from now until 1579123423
+    `,
+    'SleepUntilTimestamp',
+    [new Arg('timestamp', getNumberV)],
+    async (world, { timestamp }) => {
+      const delay = timestamp.toNumber() - getCurrentTimestamp();
+      if (delay > 0) {
+        await sleep(delay * 1000);
+      }
+      return world;
+    }
+  ),
+  new View<{ blocks: NumberV }>(
+    `
+      #### SleepBlocks
+
+      * "SleepForBlocks blocks:<Number>" - Sleeps for a given number of blocks
+        * E.g. "SleepBlocks 20" - Sleeps for 20 blocks
+    `,
+    'SleepBlocks',
+    [new Arg('blocks', getNumberV)],
+    async (world, { blocks }) => {
+      const targetBlockNumber = blocks.toNumber() + await getCurrentBlockNumber(world);
+      while (await getCurrentBlockNumber(world) < targetBlockNumber) {
+        await sleep(1000);
+      }
+      return world;
+    }
+  ),
+  new View<{ blockNumber: NumberV }>(
+    `
+      #### SleepUntilBlock
+
+      * "SleepUntilBlock blockNumber:<Number>" - Sleeps until the given blockNumber
+        * E.g. "SleepUntilBlock 2006868" - Sleeps from now until block 2006868.
+    `,
+    'SleepUntilBlock',
+    [new Arg('blockNumber', getNumberV)],
+    async (world, { blockNumber }) => {
+      const delay = blockNumber.toNumber() - await getCurrentBlockNumber(world);
+      while (blockNumber.toNumber() > await getCurrentBlockNumber(world)) {
+        await sleep(1000);
+      }
       return world;
     }
   ),
@@ -157,22 +214,23 @@ export const commands = [
       return world;
     }
   ),
-  new View<{ res: Value }>(
-    `
-      #### Read
+  async (world: World) =>
+    new View<{ res: Value }>(
+      `
+        #### Read
 
-      * "Read ..." - Reads given value and prints result
-        * E.g. "Read CToken cBAT ExchangeRateStored" - Returns exchange rate of cBAT
-    `,
-    'Read',
-    [new Arg('res', getCoreValue, { variadic: true })],
-    async (world, { res }) => {
-      world.printer.printValue(res);
+        * "Read ..." - Reads given value and prints result
+          * E.g. "Read CToken cBAT ExchangeRateStored" - Returns exchange rate of cBAT
+      `,
+      'Read',
+      [new Arg('res', getCoreValue, { variadic: true })],
+      async (world, { res }) => {
+        world.printer.printValue(res);
 
-      return world;
-    },
-    { subExpressions: fetchers }
-  ),
+        return world;
+      },
+      { subExpressions: (await getFetchers(world)).fetchers }
+    ),
   new View<{ message: StringV }>(
     `
       #### Print
@@ -212,7 +270,7 @@ export const commands = [
       new Arg('url', getStringV),
       new Arg('unlockedAccounts', getAddressV, { mapped: true })
     ],
-    (world, { url, unlockedAccounts }) => fork(world, url.val, unlockedAccounts.map(v => v.val))
+    async (world, { url, unlockedAccounts }) => fork(world, url.val, unlockedAccounts.map(v => v.val))
   ),
 
   new View<{ networkVal: StringV; }>(
@@ -326,6 +384,21 @@ export const commands = [
     }
   ),
 
+  new View<{ timestamp: NumberV }>(
+    `
+      #### FreezeTime
+
+      * "FreezeTime timestamp:<Number>" - Freeze Ganache evm time to specific timestamp
+        * E.g. "FreezeTime 1573597400"
+    `,
+    'FreezeTime',
+    [new Arg('timestamp', getNumberV)],
+    async (world, { timestamp }) => {
+      await sendRPC(world, 'evm_freezeTime', [timestamp.val]);
+      return world;
+    }
+  ),
+
   new View<{}>(
     `
       #### MineBlock
@@ -337,6 +410,38 @@ export const commands = [
     [],
     async (world, { }) => {
       await sendRPC(world, 'evm_mine', []);
+      return world;
+    }
+  ),
+
+  new View<{ blockNumber: NumberV }>(
+    `
+      #### SetBlockNumber
+
+      * "SetBlockNumber 10" - Increase Ganache evm block number
+        * E.g. "SetBlockNumber 10"
+    `,
+    'SetBlockNumber',
+    [new Arg('blockNumber', getNumberV)],
+    async (world, { blockNumber }) => {
+
+      await sendRPC(world, 'evm_mineBlockNumber', [blockNumber.val])
+      return world;
+    }
+  ),
+
+  new View<{ blockNumber: NumberV }>(
+    `
+      #### AdvanceBlocks
+
+      * "AdvanceBlocks 10" - Increase Ganache latest + block number
+        * E.g. "AdvanceBlocks 10"
+    `,
+    'AdvanceBlocks',
+    [new Arg('blockNumber', getNumberV)],
+    async (world, { blockNumber }) => {
+      const currentBlockNumber = await getCurrentBlockNumber(world);
+      await sendRPC(world, 'evm_mineBlockNumber', [Number(blockNumber.val) + currentBlockNumber]);
       return world;
     }
   ),
@@ -656,6 +761,38 @@ export const commands = [
     { subExpressions: timelockCommands() }
   ),
 
+  new Command<{ event: EventV }>(
+    `
+      #### Comp
+
+      * "Comp ...event" - Runs given comp event
+      * E.g. "Comp Deploy"
+    `,
+    'Comp',
+    [new Arg('event', getEventV, { variadic: true })],
+    (world, from, { event }) => {
+      return processCompEvent(world, event.val, from);
+    },
+    { subExpressions: compCommands() }
+  ),
+
+  new Command<{ event: EventV }>(
+    `
+      #### Governor
+
+      * "Governor ...event" - Runs given governor event
+      * E.g. "Governor Deploy Alpha"
+    `,
+    'Governor',
+    [new Arg('event', getEventV, { variadic: true })],
+    (world, from, { event }) => {
+      return processGovernorEvent(world, event.val, from);
+    },
+    { subExpressions: governorCommands() }
+  ),
+
+  buildContractEvent<Counter>("Counter"),
+
   new View<{ event: EventV }>(
     `
       #### Help
@@ -667,6 +804,7 @@ export const commands = [
     [new Arg('event', getEventV, { variadic: true })],
     async (world, { event }) => {
       world.printer.printLine('');
+      let { commands } = await getCommands(world);
       printHelp(world.printer, event.val, commands);
 
       return world;
@@ -674,6 +812,23 @@ export const commands = [
   )
 ];
 
+async function getCommands(world: World) {
+  if (world.commands) {
+    return { world, commands: world.commands };
+  }
+
+  let allCommands = await Promise.all(commands.map((command) => {
+    if (typeof (command) === 'function') {
+      return command(world);
+    } else {
+      return Promise.resolve(command);
+    }
+  }));
+
+  return { world: world.set('commands', allCommands), commands: allCommands };
+}
+
 export async function processCoreEvent(world: World, event: Event, from: string | null): Promise<World> {
-  return await processCommandEvent<any>('Core', commands, world, event, from);
+  let { world: nextWorld, commands } = await getCommands(world);
+  return await processCommandEvent<any>('Core', commands, nextWorld, event, from);
 }

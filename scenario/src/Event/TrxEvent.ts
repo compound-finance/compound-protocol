@@ -13,11 +13,11 @@ import {Arg, Command, processCommandEvent} from '../Command';
 import {encodedNumber} from '../Encoding';
 
 async function setTrxValue(world: World, value: encodedNumber): Promise<World> {
-	return world.update('trxInvokationOpts', (t) => t.set('value', value));
+	return world.update('trxInvokationOpts', (t) => t.set('value', value.toString()));
 }
 
 async function setTrxGasPrice(world: World, gasPrice: encodedNumber): Promise<World> {
-	return world.update('trxInvokationOpts', (t) => t.set('gasPrice', gasPrice.toString()));
+  return world.update('trxInvokationOpts', (t) => t.set('gasPrice', gasPrice.toString()));;
 }
 
 export function trxCommands() {

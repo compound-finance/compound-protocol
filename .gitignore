@@ -4,9 +4,12 @@ build
 build_
 node_modules
 .env
+.certora*
+certora_*
 coverage/
 coverage.json
 coverageEnv/
+emv-*/
 formulas/
 networks/test.json
 networks/test-abi.json
@@ -27,3 +30,11 @@ test-results.xml
 .tsbuilt
 yarn-error.log
 scenario/build/webpack.js
+.scencache
+.solcache
+.solcachecov
+scenario/.tscache
+tests/scenarios/
+junit.xml
+.build
+.last_confs

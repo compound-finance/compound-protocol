@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity ^0.5.16;
 
 import "./CTokenInterfaces.sol";
 
@@ -19,7 +19,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
      * @param decimals_ ERC-20 decimal precision of this token
      * @param admin_ Address of the administrator of this token
      * @param implementation_ The address of the implementation the contract delegates to
-     * @param becomeImplementationData The encoded args for becomeImplmenetation
+     * @param becomeImplementationData The encoded args for becomeImplementation
      */
     constructor(address underlying_,
                 ComptrollerInterface comptroller_,

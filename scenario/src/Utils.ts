@@ -1,5 +1,6 @@
 import { Event } from './Event';
 import { World } from './World';
+import { AbiItem } from 'web3-utils';
 
 // Wraps the element in an array, if it was not already an array
 // If array is null or undefined, return the empty array
@@ -50,7 +51,8 @@ export function encodeABI(world: World, fnABI: string, fnParams: string[]): stri
     name: fnName,
     inputs: fnInputs.split(',').map(i => ({ name: '', type: i }))
   };
-  return world.web3.eth.abi.encodeFunctionCall(jsonInterface, fnParams);
+  // XXXS
+  return world.web3.eth.abi.encodeFunctionCall(<AbiItem>jsonInterface, fnParams);
 }
 
 export function encodeParameters(world: World, fnABI: string, fnParams: string[]): string {
@@ -76,6 +78,16 @@ export function decodeParameters(world: World, fnABI: string, data: string): str
   return inputTypes.map((_, index) => parameters[index]);
 }
 
+export async function getCurrentBlockNumber(world: World): Promise<number> {
+  const { result: currentBlockNumber }: any = await sendRPC(world, 'eth_blockNumber', []);
+  return parseInt(currentBlockNumber);
+}
+
+export function getCurrentTimestamp(): number {
+  return Math.floor(Date.now() / 1000);
+}
+
+
 export function sleep(timeout: number): Promise<void> {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -86,6 +98,10 @@ export function sleep(timeout: number): Promise<void> {
 
 export function sendRPC(world: World, method: string, params: any[]) {
   return new Promise((resolve, reject) => {
+    if (!world.web3.currentProvider || typeof (world.web3.currentProvider) === 'string') {
+      return reject(`cannot send from currentProvider=${world.web3.currentProvider}`);
+    }
+
     world.web3.currentProvider.send(
       {
         jsonrpc: '2.0',

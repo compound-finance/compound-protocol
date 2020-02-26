@@ -12,6 +12,7 @@ export const accountMap = {
 
   "geoff": 2,
   "third": 2,
+  "guardian": 2,
 
   "torrey": 3,
   "fourth": 3,

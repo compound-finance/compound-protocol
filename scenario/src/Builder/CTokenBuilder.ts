@@ -53,7 +53,7 @@ export async function buildCToken(
     `
       #### CErc20Delegator
 
-      * "CErc20Delegator symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - A CToken Scenario for local testing
+      * "CErc20Delegator symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - The real deal CToken
         * E.g. "CToken Deploy CErc20Delegator cDAI \"Compound DAI\" (Erc20 DAI Address) (Comptroller Address) (InterestRateModel Address) 1.0 8 Geoff (CToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
     `,
       'CErc20Delegator',

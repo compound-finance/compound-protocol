@@ -32,7 +32,7 @@ export function mcdFetchers() {
       ],
       async (world, { potAddress, method, args }) => {
         const PotContract = getContract('PotLike');
-        const pot = PotContract.at<Pot>(world, potAddress.val);
+        const pot = await PotContract.at<Pot>(world, potAddress.val);
         const argStrings = args.map(arg => arg.val);
         return new NumberV(await pot.methods[method.val](...argStrings).call())
       }
@@ -52,7 +52,7 @@ export function mcdFetchers() {
       ],
       async (world, { vatAddress, method, args }) => {
         const VatContract = getContract('VatLike');
-        const vat = VatContract.at<Vat>(world, vatAddress.val);
+        const vat = await VatContract.at<Vat>(world, vatAddress.val);
         const argStrings = args.map(arg => arg.val);
         return new NumberV(await vat.methods[method.val](...argStrings).call())
       }
