@@ -3,7 +3,6 @@ import { World } from '../World';
 import { CToken } from '../Contract/CToken';
 import { CErc20Delegator } from '../Contract/CErc20Delegator';
 import { Erc20 } from '../Contract/Erc20';
-import { InterestRateModel } from '../Contract/InterestRateModel';
 import {
   getAddressV,
   getCoreValue,
@@ -41,6 +40,10 @@ export async function getCErc20DelegatorV(world: World, event: Event): Promise<C
   );
 
   return getWorldContractByAddress<CErc20Delegator>(world, address.val);
+}
+
+async function getInterestRateModel(world: World, cToken: CToken): Promise<AddressV> {
+  return new AddressV(await cToken.methods.interestRateModel().call());
 }
 
 async function cTokenAddress(world: World, cToken: CToken): Promise<AddressV> {
@@ -120,6 +123,20 @@ export function cTokenFetchers() {
         new Arg("cToken", getCTokenV)
       ],
       (world, { cToken }) => cTokenAddress(world, cToken),
+      { namePos: 1 }
+    ),
+
+    new Fetcher<{ cToken: CToken }, AddressV>(`
+        #### InterestRateModel
+
+        * "CToken <CToken> InterestRateModel" - Returns the interest rate model of CToken contract
+          * E.g. "CToken cZRX InterestRateModel" - Returns cZRX's interest rate model
+      `,
+      "InterestRateModel",
+      [
+        new Arg("cToken", getCTokenV)
+      ],
+      (world, { cToken }) => getInterestRateModel(world, cToken),
       { namePos: 1 }
     ),
 

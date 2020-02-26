@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
 import "../SafeMath.sol";
@@ -36,7 +36,7 @@ contract GovernorAlpha {
     function votingDelay() public pure returns (uint) { return 1; } // 1 block
 
     /// @notice The duration of voting on a proposal, in blocks
-    function votingPeriod() public pure returns (uint) { return 17280; } // 3 days in blocks
+    function votingPeriod() public pure returns (uint) { return 17280; } // ~3 days in blocks (assuming 15s blocks)
 
     /// @notice The address of the Compound Protocol Timelock
     TimelockInterface public timelock;

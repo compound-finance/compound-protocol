@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
 import "../EIP20Interface.sol";
@@ -10,7 +10,7 @@ import "../EIP20Interface.sol";
  */
 contract Comp is EIP20Interface {
     /// @notice EIP-20 token name for this token
-    string public constant name = "Compound Governance Token";
+    string public constant name = "Compound";
 
     /// @notice EIP-20 token symbol for this token
     string public constant symbol = "COMP";

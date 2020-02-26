@@ -11,7 +11,7 @@ jobs:
     steps:
       - run:
         |
-          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.13/solc-static-linux -O /usr/local/bin/solc
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
       - checkout
       - restore_cache:
@@ -81,7 +81,7 @@ jobs:
     steps:
       - run:
         |
-          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.13/solc-static-linux -O /usr/local/bin/solc
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
       - checkout
       - restore_cache:

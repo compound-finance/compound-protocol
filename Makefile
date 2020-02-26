@@ -45,6 +45,7 @@ spec/certora/Governor/%.cvl:
 	 spec/certora/contracts/GovernorAlphaCertora.sol \
 	 spec/certora/contracts/TimelockCertora.sol \
 	 spec/certora/contracts/CompCertora.sol \
+	 --settings -assumeUnwindCond,-enableWildcardInlining=false \
 	 --solc_args "'--evm-version istanbul'" \
 	 --link \
 	 GovernorAlphaCertora:timelock=TimelockCertora \

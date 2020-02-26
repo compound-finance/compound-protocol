@@ -3916,10 +3916,10 @@ eth-query@^2.0.2, eth-query@^2.1.0, eth-query@^2.1.2:
     json-rpc-random-id "^1.0.0"
     xtend "^4.0.1"
 
-eth-saddle@0.1.9:
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/eth-saddle/-/eth-saddle-0.1.9.tgz#8d2754528eb5d15b0b0ed83e41550a5bba12e32d"
-  integrity sha512-XjiaBsdhpJ6bjVxzur3yOx3XYfOVmWW4e5+7EirCcjYO0hnFcjpDOD02wE5y0ss1bNj9XB9TYVQL6BDoZw+DSQ==
+eth-saddle@0.1.10:
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/eth-saddle/-/eth-saddle-0.1.10.tgz#b51cb72029d1505b101f4bd0ff8dabccde1d9fd9"
+  integrity sha512-VGhIzXv0M4GpQsW5EVj734AZmn7TNYCrqvK8LIq9ozMI/xGHIxxp/Mt0TZwdxQPyrJpCLHeOKcoghqacKwD2Lw==
   dependencies:
     "@0x/sol-tracing-utils" "^7.0.3"
     "@0x/subproviders" "^6.0.0"

@@ -19,10 +19,6 @@ async function getPendingAdmin(world: World, timelock: Timelock): Promise<Addres
   return new AddressV(await timelock.methods.pendingAdmin().call());
 }
 
-async function getBlockTimestamp(world: World, timelock: Timelock): Promise<NumberV> {
-  return new NumberV(await timelock.methods.blockTimestamp().call());
-}
-
 async function getDelay(world: World, timelock: Timelock): Promise<NumberV> {
   return new NumberV(await timelock.methods.delay().call());
 }
@@ -62,16 +58,6 @@ export function timelockFetchers() {
       'PendingAdmin',
       [new Arg('timelock', getTimelock, { implicit: true })],
       (world, { timelock }) => getPendingAdmin(world, timelock)
-    ),
-    new Fetcher<{ timelock: Timelock }, NumberV>(
-      `
-        #### BlockTimestamp
-
-        * "BlockTimestamp" - Gets the blockTimestamp of the Timelock
-      `,
-      'BlockTimestamp',
-      [new Arg('timelock', getTimelock, { implicit: true })],
-      (world, { timelock }) => getBlockTimestamp(world, timelock)
     ),
     new Fetcher<{ timelock: Timelock }, NumberV>(
       `

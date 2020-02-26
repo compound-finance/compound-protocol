@@ -9,7 +9,7 @@ const {
 const EIP712 = require('../Utils/EIP712');
 
 describe('Comp', () => {
-  const name = 'Compound Governance Token';
+  const name = 'Compound';
   const symbol = 'COMP';
 
   let root, a1, a2, accounts, chainId;

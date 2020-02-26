@@ -1,19 +1,19 @@
 {
-  "name": "compound-protocol",
+  "name": "compound-money-market",
   "version": "0.2.1",
-  "description": "The Compound Protocol",
+  "description": "The Compound Money Market",
   "main": "index.js",
   "scripts": {
     "compile": "./script/compile",
     "console": "if node -v | grep -E \"v(12|13)\" > /dev/null; then flags=\"-n --experimental-repl-await\"; fi; npx $flags saddle console",
     "coverage": "./script/coverage",
-    "deploy": "./scenario/script/repl -s ./script/scen/deploy.scen",
+    "deploy": "./scenario/script/repl -s ./scenario/scen/deploy.scen",
     "lint": "./script/lint",
     "repl": "./scenario/script/repl",
     "test": "./script/test",
     "test:prepare": "NO_RUN=true ./script/test"
   },
-  "repository": "git@github.com:compound-finance/compound-protocol.git",
+  "repository": "git@github.com:compound-finance/money-market.git",
   "author": "Compound Finance",
   "license": "UNLICENSED",
   "devDependencies": {
@@ -24,7 +24,7 @@
     "solparse": "^2.2.8"
   },
   "dependencies": {
-    "eth-saddle": "0.1.9"
+    "eth-saddle": "0.1.10"
   },
   "resolutions": {
     "scrypt.js": "https://registry.npmjs.org/@compound-finance/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz",

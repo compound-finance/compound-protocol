@@ -45,7 +45,7 @@ export async function buildErc20(world: World, from: string, event: Event): Prom
     new Fetcher<{ symbol: StringV, address: AddressV, name: StringV }, TokenData>(`
         #### Existing
 
-        * "Existing symbol:<String> address:<Address>" - Wrap an existing Erc20 token
+        * "Existing symbol:<String> address:<Address> name:<String>" - Wrap an existing Erc20 token
           * E.g. "Erc20 Deploy Existing DAI 0x123...
       `,
       "Existing",
@@ -56,7 +56,7 @@ export async function buildErc20(world: World, from: string, event: Event): Prom
       ],
       async (world, { symbol, name, address }) => {
         const existingToken = await ExistingToken.at<Erc20>(world, address.val);
-                                                                   const tokenName = name.val === undefined ? symbol.val : name.val;
+        const tokenName = name.val === undefined ? symbol.val : name.val;
         const decimals = await existingToken.methods.decimals().call();
 
         return {

@@ -3,7 +3,7 @@ Implements `transfer` and `transferForm` with 64-bit return values, just to be
 especially non-compliant and stress safe token.
 .*/
 
-pragma solidity ^0.5.12;
+pragma solidity ^0.5.16;
 
 contract EIP20NonCompliantHarness {
     bool garbage;

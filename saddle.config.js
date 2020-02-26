@@ -10,6 +10,7 @@ module.exports = {
     shell: process.env['SADDLE_SHELL'] || '/bin/bash'
   },
   // build_dir: ".build",                                   // Directory to place built contracts
+  extra_build_files: ['remote/*.json'],                     // Additional build files to deep merge
   // coverage_dir: "coverage",                              // Directory to place coverage files
   // coverage_ignore: [],                                   // List of files to ignore for coverage
   contracts: process.env['SADDLE_CONTRACTS'] || "{contracts,contracts/**,tests/Contracts}/*.sol",
@@ -170,6 +171,17 @@ module.exports = {
     });
   },
   write_network_file: (network, value) => {
-    // Do nothing
+    const fs = require('fs');
+    const path = require('path');
+    const util = require('util');
+
+    const networkFile = path.join(process.cwd(), 'networks', `${network}.json`);
+    return util.promisify(fs.readFile)(networkFile).then((json) => {
+      return util.promisify(fs.writeFile)(networkFile,
+      JSON.stringify({
+        ...JSON.parse(json),
+        'Contracts': value
+      }, null, 4));
+    });
   }
 }

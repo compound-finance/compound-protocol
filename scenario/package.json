@@ -1,12 +1,12 @@
 {
-  "name": "compound-scenarios",
+  "name": "compound-money-market",
   "version": "0.2.1",
-  "description": "The Compound Scenario Runner",
+  "description": "The Compound Money Market",
   "main": "index.js",
   "scripts": {
     "build": "./script/webpack"
   },
-  "repository": "git@github.com:compound-finance/compound-protocol.git",
+  "repository": "git@github.com:compound-finance/money-market.git",
   "author": "Compound Finance",
   "license": "UNLICENSED",
   "devDependencies": {
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "bignumber.js": "8.0.1",
-    "eth-saddle": "0.1.9",
+    "eth-saddle": "0.1.10",
     "ethers": "^4.0.0-beta.1",
     "immutable": "^4.0.0-rc.12",
     "truffle-flattener": "^1.3.0",

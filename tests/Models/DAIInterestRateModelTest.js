@@ -71,6 +71,8 @@ async function getKovanFork() {
 describe('DAIInterestRateModel', () => {
   describe("constructor", () => {
     it.skip("sets jug and ilk address and pokes", async () => {
+      // NB: Going back a certain distance requires an archive node, currently that add-on is $250/mo
+      //  https://community.infura.io/t/error-returned-error-project-id-does-not-have-access-to-archive-state/847
       const {kovan, root, accounts} = await getKovanFork();
 
       // TODO: Get contract craz
