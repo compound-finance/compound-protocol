@@ -230,16 +230,11 @@ Test "Keeps all storage"
     --
     -- MintGuardianPaused; 11
     Assert Equal (StorageAt Comptroller 10 40 "bool") False
-    Assert Equal (Comptroller MintGuardianPaused) False
-    From Coburn (Comptroller SetGuardianPaused "Mint" True)
-    Assert Equal (Comptroller MintGuardianPaused) True
-    Assert Equal (StorageAt Comptroller 10 40 "bool") True
+    Assert Equal (Comptroller _MintGuardianPaused) False
     --
     -- BorrowGuardianPaused; 12
     Assert Equal (StorageAt Comptroller 10 42 "bool") False
-    From Coburn (Comptroller SetGuardianPaused "Borrow" True)
-    Assert Equal (Comptroller BorrowGuardianPaused) True
-    Assert Equal (StorageAt Comptroller 10 42 "bool") True
+    Assert Equal (Comptroller _BorrowGuardianPaused) False
     --
     -- TransferGuardianPaused; 13
     Assert Equal (StorageAt Comptroller 10 44 "bool") False
@@ -252,3 +247,18 @@ Test "Keeps all storage"
     From Coburn (Comptroller SetGuardianPaused "Seize" True)
     Assert Equal (Comptroller SeizeGuardianPaused) True
     Assert Equal (StorageAt Comptroller 10 46 "bool") True
+    --
+    -- Pause by market storage
+    --
+    -- MintGuardianPaused; 15
+    Assert Equal (StorageAtMapping Comptroller 11 (Address cZRX) "bool") False
+    From Coburn (Comptroller SetGuardianMarketPaused cZRX "Mint" True)
+    Assert Equal (Comptroller MintGuardianMarketPaused cZRX) True
+    Assert Equal (StorageAtMapping Comptroller 11 (Address cZRX) "bool") True
+    --
+    -- BorrowGuardianPaused; 16
+    Assert Equal (StorageAtMapping Comptroller 12 (Address cZRX) "bool") False
+    From Coburn (Comptroller SetGuardianMarketPaused cZRX "Borrow" True)
+    Assert Equal (Comptroller BorrowGuardianMarketPaused cZRX) True
+    Assert Equal (StorageAtMapping Comptroller 12 (Address cZRX) "bool") True
+    --

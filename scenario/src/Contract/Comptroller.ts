@@ -35,14 +35,16 @@ interface ComptrollerMethods {
   _acceptAdmin(): Sendable<number>
   _setPauseGuardian(string): Sendable<number>
   pauseGuardian(): Callable<string>
-  _setMintPaused(string): Sendable<number>
-  _setBorrowPaused(string): Sendable<number>
+  _setMintPaused(market: string, string): Sendable<number>
+  _setBorrowPaused(market: string, string): Sendable<number>
   _setTransferPaused(string): Sendable<number>
   _setSeizePaused(string): Sendable<number>
-  mintGuardianPaused(): Callable<boolean>
-  borrowGuardianPaused(): Callable<boolean>
+  _mintGuardianPaused(): Callable<boolean>
+  _borrowGuardianPaused(): Callable<boolean>
   transferGuardianPaused(): Callable<boolean>
   seizeGuardianPaused(): Callable<boolean>
+  mintGuardianPaused(market: string): Callable<boolean>
+  borrowGuardianPaused(market: string): Callable<boolean>
 }
 
 export interface Comptroller extends Contract {

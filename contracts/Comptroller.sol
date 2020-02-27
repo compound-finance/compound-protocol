@@ -59,9 +59,14 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     event NewPauseGuardian(address oldPauseGuardian, address newPauseGuardian);
 
     /**
-     * @notice Emitted when an action is paused
+     * @notice Emitted when an action is paused globally
      */
     event ActionPaused(string action, bool pauseState);
+
+    /**
+     * @notice Emitted when an action is paused on a market
+     */
+    event ActionPaused(CToken cToken, string action, bool pauseState);
 
     /**
      * @notice Indicator that this is a Comptroller contract (for inspection)
@@ -235,7 +240,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      */
     function mintAllowed(address cToken, address minter, uint mintAmount) external returns (uint) {
         // Pausing is a very serious situation - we revert to sound the alarms
-        require(!mintGuardianPaused, "mint is paused");
+        require(!mintGuardianPaused[cToken], "mint is paused");
 
         // Shh - currently unused
         minter;
@@ -332,7 +337,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      */
     function borrowAllowed(address cToken, address borrower, uint borrowAmount) external returns (uint) {
         // Pausing is a very serious situation - we revert to sound the alarms
-        require(!borrowGuardianPaused, "borrow is paused");
+        require(!borrowGuardianPaused[cToken], "borrow is paused");
 
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
@@ -995,21 +1000,23 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         return uint(Error.NO_ERROR);
     }
 
-    function _setMintPaused(bool state) public returns (bool) {
+    function _setMintPaused(CToken cToken, bool state) public returns (bool) {
+        require(markets[address(cToken)].isListed, "cannot pause a market that is not listed");
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
         require(msg.sender == admin || state == true, "only admin can unpause");
 
-        mintGuardianPaused = state;
-        emit ActionPaused("Mint", state);
+        mintGuardianPaused[address(cToken)] = state;
+        emit ActionPaused(cToken, "Mint", state);
         return state;
     }
 
-    function _setBorrowPaused(bool state) public returns (bool) {
+    function _setBorrowPaused(CToken cToken, bool state) public returns (bool) {
+        require(markets[address(cToken)].isListed, "cannot pause a market that is not listed");
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
         require(msg.sender == admin || state == true, "only admin can unpause");
 
-        borrowGuardianPaused = state;
-        emit ActionPaused("Borrow", state);
+        borrowGuardianPaused[address(cToken)] = state;
+        emit ActionPaused(cToken, "Borrow", state);
         return state;
     }
 

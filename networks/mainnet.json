@@ -19,6 +19,7 @@
         "cErc20Delegate": "0x99ee778B9A6205657DD03B2B91415C8646d521ec",
         "cETH": "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5",
         "Base500bps_Slope1200bps": "0xa1046abfc2598F48C44Fb320d281d3F3c0733c9a",
+        "Base500bps_Slope1500bps": "0xd928c8ead620bb316d2cefe3caf81dc2dec6ff63",
         "cSAI": "0xF5DCe57282A584D2746FaF1593d3121Fcac444dC",
         "Timelock": "0x6d903f6003cca6255D85CcA4D3B5E5146dC33925",
         "Base200bps_Slope1000bps": "0x0c3f8df27e1a00b47653fde878d68d35f00714c0",
@@ -334,6 +335,14 @@
             "slope": "120000000000000000",
             "address": "0xa1046abfc2598F48C44Fb320d281d3F3c0733c9a"
         },
+      "Base500bps_Slope1500bps": {
+            "name": "Base500bps_Slope1500bps",
+            "contract": "WhitePaperInterestRateModel",
+            "description": "WhitePaper baseRate=50000000000000000 multiplier=150000000000000000",
+            "base": "50000000000000000",
+            "slope": "150000000000000000",
+            "address": "0xd928c8ead620bb316d2cefe3caf81dc2dec6ff63"
+      },
         "Base0bps_Slope2000bps": {
             "name": "Base0bps_Slope2000bps",
             "contract": "WhitePaperInterestRateModel",

@@ -317,26 +317,28 @@ export function comptrollerFetchers() {
         ],
         async (world, {comptroller}) => new AddressV(await comptroller.methods.pauseGuardian().call())
     ),
-    new Fetcher<{comptroller: Comptroller}, BoolV>(`
-        #### MintGuardianPaused
 
-        * "MintGuardianPaused" - Returns the Comptrollers's Mint paused status
-        * E.g. "Comptroller MintGuardianPaused"
+    new Fetcher<{comptroller: Comptroller}, BoolV>(`
+        #### _MintGuardianPaused
+
+        * "_MintGuardianPaused" - Returns the Comptrollers's original global Mint paused status
+        * E.g. "Comptroller _MintGuardianPaused"
         `,
-        "MintGuardianPaused",
+        "_MintGuardianPaused",
         [new Arg("comptroller", getComptroller, {implicit: true})],
-        async (world, {comptroller}) => new BoolV(await comptroller.methods.mintGuardianPaused().call())
+        async (world, {comptroller}) => new BoolV(await comptroller.methods._mintGuardianPaused().call())
     ),
     new Fetcher<{comptroller: Comptroller}, BoolV>(`
-        #### BorrowGuardianPaused
+        #### _BorrowGuardianPaused
 
-        * "BorrowGuardianPaused" - Returns the Comptrollers's Borrow paused status
-        * E.g. "Comptroller BorrowGuardianPaused"
+        * "_BorrowGuardianPaused" - Returns the Comptrollers's original global Borrow paused status
+        * E.g. "Comptroller _BorrowGuardianPaused"
         `,
-        "BorrowGuardianPaused",
+        "_BorrowGuardianPaused",
         [new Arg("comptroller", getComptroller, {implicit: true})],
-        async (world, {comptroller}) => new BoolV(await comptroller.methods.borrowGuardianPaused().call())
-        ),
+        async (world, {comptroller}) => new BoolV(await comptroller.methods._borrowGuardianPaused().call())
+    ),
+
     new Fetcher<{comptroller: Comptroller}, BoolV>(`
         #### TransferGuardianPaused
 
@@ -356,7 +358,34 @@ export function comptrollerFetchers() {
         "SeizeGuardianPaused",
         [new Arg("comptroller", getComptroller, {implicit: true})],
         async (world, {comptroller}) => new BoolV(await comptroller.methods.seizeGuardianPaused().call())
-    )
+    ),
+
+    new Fetcher<{comptroller: Comptroller, cToken: CToken}, BoolV>(`
+        #### MintGuardianMarketPaused
+
+        * "MintGuardianMarketPaused" - Returns the Comptrollers's Mint paused status in market
+        * E.g. "Comptroller MintGuardianMarketPaused cREP"
+        `,
+        "MintGuardianMarketPaused",
+        [
+          new Arg("comptroller", getComptroller, {implicit: true}),
+          new Arg("cToken", getCTokenV)
+        ],
+        async (world, {comptroller, cToken}) => new BoolV(await comptroller.methods.mintGuardianPaused(cToken._address).call())
+    ),
+    new Fetcher<{comptroller: Comptroller, cToken: CToken}, BoolV>(`
+        #### BorrowGuardianMarketPaused
+
+        * "BorrowGuardianMarketPaused" - Returns the Comptrollers's Borrow paused status in market
+        * E.g. "Comptroller BorrowGuardianMarketPaused cREP"
+        `,
+        "BorrowGuardianMarketPaused",
+        [
+          new Arg("comptroller", getComptroller, {implicit: true}),
+          new Arg("cToken", getCTokenV)
+        ],
+        async (world, {comptroller, cToken}) => new BoolV(await comptroller.methods.borrowGuardianPaused(cToken._address).call())
+    ),
   ];
 }
 

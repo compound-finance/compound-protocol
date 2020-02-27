@@ -103,14 +103,14 @@ Test "Borrow some BAT reverts if borrow is paused"
     Prep Geoff Some ZRX cZRX
     Mint Geoff 100e18 cZRX
     EnterMarkets Geoff cZRX cBAT
-    From Coburn (Comptroller SetGuardianPaused "Borrow" True)
+    From Coburn (Comptroller SetGuardianMarketPaused cBAT "Borrow" True)
     AllowFailures
     Borrow Geoff 1e18 cBAT
     Assert Revert "revert borrow is paused"
     Assert Equal (cToken cBAT BorrowBalance Geoff) 0
     Assert Equal (Erc20 BAT TokenBalance Geoff) 0
     Assert Equal (Erc20 BAT TokenBalance cBAT) (Exactly 10e18)
-    Comptroller SetGuardianPaused "Borrow" False
+    Comptroller SetGuardianMarketPaused cBAT "Borrow" False
     Borrow Geoff 1e18 cBAT
     Assert Equal (cToken cBAT BorrowBalance Geoff) (Exactly 1e18)
     Assert Equal (Erc20 BAT TokenBalance Geoff) (Exactly 1e18)
