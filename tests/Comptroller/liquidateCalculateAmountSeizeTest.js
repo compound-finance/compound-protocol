@@ -64,7 +64,7 @@ describe('Comptroller', () => {
       await send(cTokenCollateral, 'harnessExchangeRateDetails', [1, 0, 10]); // (1 - 10) -> underflow
       await expect(
         send(comptroller, 'liquidateCalculateSeizeTokens', [cTokenBorrowed._address, cTokenCollateral._address, repayAmount])
-      ).rejects.toRevert("revert exchangeRateStored: exchangeRateStoredInternal failed");
+      ).rejects.toRevert('revert EXCHANGE_RATE_CALCULATION_FAILED: SUB');
     });
 
     [

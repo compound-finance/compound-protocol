@@ -161,12 +161,12 @@ describe('CToken', function () {
 
     it("reverts on overflow of principal", async () => {
       await pretendBorrow(cToken, borrower, 1, 3, -1);
-      await expect(call(cToken, 'borrowBalanceStored', [borrower])).rejects.toRevert("revert borrowBalanceStored: borrowBalanceStoredInternal failed");
+      await expect(call(cToken, 'borrowBalanceStored', [borrower])).rejects.toRevert("revert BORROW_BALANCE_CALCULATION_FAILED: MUL");
     });
 
     it("reverts on non-zero stored principal with zero account index", async () => {
       await pretendBorrow(cToken, borrower, 0, 3, 5);
-      await expect(call(cToken, 'borrowBalanceStored', [borrower])).rejects.toRevert("revert borrowBalanceStored: borrowBalanceStoredInternal failed");
+      await expect(call(cToken, 'borrowBalanceStored', [borrower])).rejects.toRevert("revert BORROW_BALANCE_CALCULATION_FAILED: DIV");
     });
   });
 

@@ -89,7 +89,7 @@ describe('CToken', () => {
     recordGasCost(trxReceipt.gasUsed, 'first mint', filename);
   });
 
-  it.only('second mint', async () => {
+  it('second mint', async () => {
     await mint(cToken, minter, mintAmount, exchangeRate);
 
     await send(cToken, 'harnessSetAccrualBlockNumber', [40]);
@@ -133,7 +133,7 @@ describe('CToken', () => {
     // console.log(getOpcodeDigest(opcodeCount));
   });
 
-  it('redeem', async () => {
+  it.only('redeem', async () => {
     await preRedeem(cToken, redeemer, redeemTokens, redeemAmount, exchangeRate);
     const trxReceipt = await quickRedeem(cToken, redeemer, redeemTokens);
     recordGasCost(trxReceipt.gasUsed, 'redeem', filename);

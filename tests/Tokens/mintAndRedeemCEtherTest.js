@@ -103,7 +103,7 @@ describe('CEther', () => {
       });
 
       it("returns error from redeemFresh without emitting any extra logs", async () => {
-        expect(await redeem(cToken, redeemer, redeemTokens.mul(5), redeemAmount.mul(5))).toHaveTokenFailure('MATH_ERROR', 'REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED');
+        await expect(redeem(cToken, redeemer, redeemTokens.mul(5), redeemAmount.mul(5))).rejects.toRevert('revert REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED');
       });
 
       it("returns success from redeemFresh and redeems the correct amount", async () => {

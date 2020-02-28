@@ -10,7 +10,7 @@ describe('CToken', function () {
     it("cannot transfer from a zero balance", async () => {
       const cToken = await makeCToken({supportMarket: true});
       expect(await call(cToken, 'balanceOf', [root])).toEqualNumber(0);
-      expect(await send(cToken, 'transfer', [accounts[0], 100])).toHaveTokenFailure('MATH_ERROR', 'TRANSFER_NOT_ENOUGH');
+      await expect(send(cToken, 'transfer', [accounts[0], 100])).rejects.toRevert('revert TRANSFER_NOT_ENOUGH');
     });
 
     it("transfers 50 tokens", async () => {

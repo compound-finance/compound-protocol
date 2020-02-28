@@ -82,7 +82,7 @@ Test "cToken Transfer From Not Allowed"
     Invariant Remains (Erc20 cZRX TokenBalance Torrey) (Exactly 0e9)
     AllowFailures
     Erc20 cZRX TransferFrom Geoff Torrey 10e9
-    Assert Failure MATH_ERROR TRANSFER_NOT_ALLOWED
+    Assert Revert "revert TRANSFER_INSUFFICIENT_ALLOWANCE"
 
 Test "cToken Transfer paused"
     NewComptroller

@@ -4,8 +4,9 @@ import "../../contracts/CEther.sol";
 import "./ComptrollerHarness.sol";
 
 contract CEtherHarness is CEther {
+    uint blockNumber = 100000;
     uint harnessExchangeRate;
-    uint public blockNumber = 100000;
+    bool harnessExchangeRateStored;
 
     mapping (address => bool) public failTransferToAddresses;
 
@@ -30,11 +31,11 @@ contract CEtherHarness is CEther {
         return super.doTransferOut(to, amount);
     }
 
-    function exchangeRateStoredInternal() internal view returns (MathError, uint) {
-        if (harnessExchangeRate != 0) {
-            return (MathError.NO_ERROR, harnessExchangeRate);
+    function exchangeRateStored(uint cash, uint borrows, uint reserves, uint tokens) public view returns (uint) {
+        if (harnessExchangeRateStored) {
+            return harnessExchangeRate;
         }
-        return super.exchangeRateStoredInternal();
+        return super.exchangeRateStored(cash, borrows, reserves, tokens);
     }
 
     function getBlockNumber() internal view returns (uint) {
@@ -77,6 +78,7 @@ contract CEtherHarness is CEther {
 
     function harnessSetExchangeRate(uint exchangeRate) public {
         harnessExchangeRate = exchangeRate;
+        harnessExchangeRateStored = true;
     }
 
     function harnessSetFailTransferToAddress(address _to, bool _fail) public {

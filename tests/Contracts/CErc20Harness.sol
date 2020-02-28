@@ -36,11 +36,11 @@ contract CErc20Harness is CErc20Immutable {
         return super.doTransferOut(to, amount);
     }
 
-    function exchangeRateStoredInternal() internal view returns (MathError, uint) {
+    function exchangeRateStored(uint cash, uint borrows, uint reserves, uint tokens) public view returns (uint) {
         if (harnessExchangeRateStored) {
-            return (MathError.NO_ERROR, harnessExchangeRate);
+            return harnessExchangeRate;
         }
-        return super.exchangeRateStoredInternal();
+        return super.exchangeRateStored(cash, borrows, reserves, tokens);
     }
 
     function getBlockNumber() internal view returns (uint) {
@@ -241,20 +241,17 @@ contract CErc20DelegatorScenario is CErc20Delegator {
 }
 
 contract CErc20DelegateHarness is CErc20Delegate {
-    event Log(string x, address y);
-    event Log(string x, uint y);
-
     uint blockNumber = 100000;
     uint harnessExchangeRate;
     bool harnessExchangeRateStored;
 
     mapping (address => bool) public failTransferToAddresses;
 
-    function exchangeRateStoredInternal() internal view returns (MathError, uint) {
+    function exchangeRateStored(uint cash, uint borrows, uint reserves, uint tokens) public view returns (uint) {
         if (harnessExchangeRateStored) {
-            return (MathError.NO_ERROR, harnessExchangeRate);
+            return harnessExchangeRate;
         }
-        return super.exchangeRateStoredInternal();
+        return super.exchangeRateStored(cash, borrows, reserves, tokens);
     }
 
     function doTransferOut(address payable to, uint amount) internal {
