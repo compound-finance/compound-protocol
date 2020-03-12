@@ -22,24 +22,24 @@ export interface PriceOracleProxyData {
 
 export async function buildPriceOracleProxy(world: World, from: string, event: Event): Promise<{world: World, priceOracleProxy: PriceOracleProxy, invokation: Invokation<PriceOracleProxy>}> {
   const fetchers = [
-    new Fetcher<{comptroller: AddressV, priceOracle: AddressV, cETH: AddressV, cUSDC: AddressV, cSAI: AddressV, cDAI: AddressV}, PriceOracleProxyData>(`
+    new Fetcher<{guardian: AddressV, priceOracle: AddressV, cETH: AddressV, cUSDC: AddressV, cSAI: AddressV, cDAI: AddressV}, PriceOracleProxyData>(`
         #### Price Oracle Proxy
 
-        * "Deploy <Comptroller:Address> <PriceOracle:Address> <cETH:Address> <cUSDC:Address> <cSAI:Address> <cDAI:Address>" - The Price Oracle which proxies to a backing oracle
+        * "Deploy <Guardian:Address> <PriceOracle:Address> <cETH:Address> <cUSDC:Address> <cSAI:Address> <cDAI:Address>" - The Price Oracle which proxies to a backing oracle
         * E.g. "PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) cETH cUSDC cSAI cDAI"
       `,
       "PriceOracleProxy",
       [
-        new Arg("comptroller", getAddressV),
+        new Arg("guardian", getAddressV),
         new Arg("priceOracle", getAddressV),
         new Arg("cETH", getAddressV),
         new Arg("cUSDC", getAddressV),
         new Arg("cSAI", getAddressV),
         new Arg("cDAI", getAddressV)
       ],
-      async (world, {comptroller, priceOracle, cETH, cUSDC, cSAI, cDAI}) => {
+      async (world, {guardian, priceOracle, cETH, cUSDC, cSAI, cDAI}) => {
         return {
-          invokation: await PriceOracleProxyContract.deploy<PriceOracleProxy>(world, from, [comptroller.val, priceOracle.val, cETH.val, cUSDC.val, cSAI.val, cDAI.val]),
+          invokation: await PriceOracleProxyContract.deploy<PriceOracleProxy>(world, from, [guardian.val, priceOracle.val, cETH.val, cUSDC.val, cSAI.val, cDAI.val]),
           description: "Price Oracle Proxy",
           cETH: cETH.val,
           cUSDC: cUSDC.val,

@@ -189,7 +189,7 @@ Test "Set Pending Comptroller implemention on Unitroller from Timelock"
     ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
     Unitroller SetPendingImpl ScenComptrollerG1
     Assert Equal (Unitroller PendingImplementation) (ComptrollerImpl ScenComptrollerG1 Address)
-    PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) -- if listing cEther use ListedEtherToken to replace proxy
+    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) -- if listing cEther use ListedEtherToken to replace proxy
     ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracleProxy Address) 0.1 20
     Assert Equal (Unitroller PendingImplementation) (Address Zero)
     Assert Equal (Unitroller Implementation) (Address ScenComptrollerG1)

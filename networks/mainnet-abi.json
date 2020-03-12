@@ -1941,7 +1941,7 @@
             "inputs": [
                 {
                     "internalType": "address",
-                    "name": "comptroller_",
+                    "name": "guardian_",
                     "type": "address"
                 },
                 {
@@ -2042,10 +2042,10 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptroller",
+            "name": "daiOracleKey",
             "outputs": [
                 {
-                    "internalType": "contract Comptroller",
+                    "internalType": "address",
                     "name": "",
                     "type": "address"
                 }
@@ -2053,7 +2053,7 @@
             "payable": false,
             "stateMutability": "view",
             "type": "function",
-            "signature": "0x5fe3b567"
+            "signature": "0xe5ee0f6e"
         },
         {
             "constant": true,
@@ -2080,6 +2080,22 @@
         {
             "constant": true,
             "inputs": [],
+            "name": "guardian",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x452a9320"
+        },
+        {
+            "constant": true,
+            "inputs": [],
             "name": "isPriceOracle",
             "outputs": [
                 {
@@ -2096,7 +2112,39 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "makerUsdOracleKey",
+            "name": "saiPrice",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0xa86b1944"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "price",
+                    "type": "uint256"
+                }
+            ],
+            "name": "setSaiPrice",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function",
+            "signature": "0xf9c99e9c"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "usdcOracleKey",
             "outputs": [
                 {
                     "internalType": "address",
@@ -2107,7 +2155,7 @@
             "payable": false,
             "stateMutability": "view",
             "type": "function",
-            "signature": "0xbc8a4ef4"
+            "signature": "0x3e76f255"
         },
         {
             "constant": true,

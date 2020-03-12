@@ -45,6 +45,14 @@ async function verifyPriceOracleProxy(world: World, priceOracleProxy: PriceOracl
   return world;
 }
 
+async function setSaiPrice(world: World, from: string, priceOracleProxy: PriceOracleProxy, amount: NumberV): Promise<World> {
+  return addAction(
+    world,
+    `Set price oracle SAI price to ${amount.show()}`,
+    await invoke(world, priceOracleProxy.methods.setSaiPrice(amount.encode()), from)
+  );
+}
+
 export function priceOracleProxyCommands() {
   return [
     new Command<{params: EventV}>(`
@@ -73,6 +81,20 @@ export function priceOracleProxyCommands() {
         new Arg("contractName", getStringV, {default: new StringV("PriceOracleProxy")})
       ],
       (world, {priceOracleProxy, apiKey, contractName}) => verifyPriceOracleProxy(world, priceOracleProxy, apiKey.val, contractName.val)
+    ),
+
+    new Command<{priceOracleProxy: PriceOracleProxy, amount: NumberV}>(`
+        #### SetSaiPrice
+
+        * "SetSaiPrice <Amount>" - Sets the per-ether price for SAI
+          * E.g. "PriceOracleProxy SetSaiPrice 1.0"
+      `,
+      "SetSaiPrice",
+      [
+        new Arg("priceOracleProxy", getPriceOracleProxy, {implicit: true}),
+        new Arg("amount", getExpNumberV)
+      ],
+      (world, from, {priceOracleProxy, amount}) => setSaiPrice(world, from, priceOracleProxy, amount)
     )
   ];
 }
