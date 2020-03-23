@@ -1,6 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-set -exo pipefail
+set -eo pipefail
+set -x
 
 cd `dirname $0`/..
 

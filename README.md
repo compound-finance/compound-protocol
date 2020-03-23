@@ -142,7 +142,7 @@ To run in docker:
 From within a docker shell, you can interact locally with the protocol via ganache and truffle:
 
 ```bash
-    /compound-protocol # yarn console -n goerli
+    /compound-protocol > yarn console -n goerli
     Using network goerli https://goerli-eth.compound.finance
     Saddle console on network goerli https://goerli-eth.compound.finance
     Deployed goerli contracts

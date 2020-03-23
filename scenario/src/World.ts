@@ -50,6 +50,7 @@ export interface WorldProps {
   invokationOpts: InvokationOpts;
   trxInvokationOpts: Map<string, any>;
   basePath: string | null;
+  totalGas: number | null;
   eventDecoder: EventDecoder;
   fs: object | null;
   commands: Command<any>[] | undefined;
@@ -80,6 +81,7 @@ const defaultWorldProps: WorldProps = {
   invokationOpts: {},
   trxInvokationOpts: Map({}),
   basePath: null,
+  totalGas: null,
   eventDecoder: {},
   fs: null,
   commands: undefined,
@@ -186,7 +188,8 @@ export async function initWorld(
   saddle: Saddle,
   network: string,
   accounts: string[],
-  basePath: string | null
+  basePath: string | null,
+  totalGas: number | null
 ): Promise<World> {
   return new World({
     actions: [],
@@ -209,6 +212,7 @@ export async function initWorld(
     accounts: loadAccounts(accounts),
     trxInvokationOpts: Map({}),
     basePath: basePath,
+    totalGas: totalGas ? totalGas : null,
     eventDecoder: {},
     fs: network === 'test' ? {} : null
   });
