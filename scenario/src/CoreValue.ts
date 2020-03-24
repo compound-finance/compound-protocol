@@ -38,6 +38,14 @@ import { toEncodableNum } from './Encoding';
 import { BigNumber } from 'bignumber.js';
 import { buildContractFetcher } from './EventBuilder';
 
+import {
+  padLeft,
+  sha3,
+  toBN,
+  toDecimal,
+  toHex
+} from 'web3-utils';
+
 const expMantissa = new BigNumber('1000000000000000000');
 
 function getSigFigs(value) {
@@ -408,33 +416,20 @@ const fetchers = [
       new Arg('valType', getStringV)
     ],
     async (world, { addr, slot, start, valType }) => {
-      let stored = await world.web3.eth.getStorageAt(addr.val, slot.val);
-      const startVal = Number(start.val);
-      let reverse = s =>
-        s
-          .split('')
-          .reverse()
-          .join('');
-      let val;
-      stored = stored
-        .slice(2) // drop leading 0x and reverse since items are packed from the back of the slot
-        .split('')
-        .reverse()
-        .join('');
+      const startVal = start.toNumber()
+      const reverse = s => s.split('').reverse().join('');
+      const storage = await world.web3.eth.getStorageAt(addr.val, slot.toNumber());
+      const stored = reverse(storage.slice(2)); // drop leading 0x and reverse since items are packed from the back of the slot
 
       // Don't forget to re-reverse
       switch (valType.val) {
         case 'bool':
-          val = '0x' + reverse(stored.slice(startVal, (startVal as number) + 2));
-          return new BoolV(val != '0x' && val != '0x0');
+          return new BoolV(!!reverse(stored.slice(startVal, startVal + 2)));
         case 'address':
-          val = '0x' + reverse(stored.slice(startVal, (startVal as number) + 40));
-          return new AddressV(val);
+          return new AddressV('0x' + padLeft(reverse(stored.slice(startVal, startVal + 40)), 40));
         case 'number':
-          let parsed = world.web3.utils.toBN('0x' + reverse(stored));
-
-          // if the numbers are big, they are big...
-          if (parsed.gt(world.web3.utils.toBN(1000))) {
+          let parsed = toBN('0x' + reverse(stored));
+          if (parsed.gt(toBN(1000))) {
             return new ExpNumberV(parsed.toString(), 1e18);
           } else {
             return new ExpNumberV(parsed.toString(), 1);
@@ -463,35 +458,21 @@ const fetchers = [
       new Arg('valType', getStringV)
     ],
     async (world, { addr, slot, key, nestedKey, valType }) => {
-      let paddedSlot = world.web3.utils.padLeft(slot.val, 64);
-      let paddedKey = world.web3.utils.padLeft(key.val, 64);
-      let newKey = world.web3.utils.sha3(paddedKey + paddedSlot);
-
+      let paddedSlot = slot.toNumber().toString(16).padStart(64, '0');
+      let paddedKey = padLeft(key.val, 64);
+      let newKey = sha3(paddedKey + paddedSlot);
       let val = await world.web3.eth.getStorageAt(addr.val, newKey);
 
       switch (valType.val) {
         case 'marketStruct':
           let isListed = val == '0x01';
-          let collateralFactorKey =
-            '0x' +
-            world.web3.utils
-              .toBN(newKey)
-              .add(world.web3.utils.toBN(1))
-              .toString(16);
-
+          let collateralFactorKey = '0x' + toBN(newKey).add(toBN(1)).toString(16);
           let collateralFactorStr = await world.web3.eth.getStorageAt(addr.val, collateralFactorKey);
-          let collateralFactor = world.web3.utils.toBN(collateralFactorStr);
-
-          let userMarketBaseKey = world.web3.utils
-            .toBN(newKey)
-            .add(world.web3.utils.toBN(2))
-            .toString(16);
-          userMarketBaseKey = world.web3.utils.padLeft(userMarketBaseKey, 64);
-
-          let paddedSlot = world.web3.utils.padLeft(userMarketBaseKey, 64);
-          let paddedKey = world.web3.utils.padLeft(nestedKey.val, 64);
-          let newKeyToo = world.web3.utils.sha3(paddedKey + paddedSlot);
-
+          let collateralFactor = toBN(collateralFactorStr);
+          let userMarketBaseKey = padLeft(toBN(newKey).add(toBN(2)).toString(16), 64);
+          let paddedSlot = padLeft(userMarketBaseKey, 64);
+          let paddedKey = padLeft(nestedKey.val, 64);
+          let newKeyToo = sha3(paddedKey + paddedSlot);
           let userInMarket = await world.web3.eth.getStorageAt(addr.val, newKeyToo);
 
           return new ListV([
@@ -522,21 +503,18 @@ const fetchers = [
       new Arg('valType', getStringV)
     ],
     async (world, { addr, slot, key, valType }) => {
-      let paddedSlot = world.web3.utils.padLeft(slot.val, 64);
-      let paddedKey = world.web3.utils.padLeft(key.val, 64);
-      let newKey = world.web3.utils.sha3(paddedKey + paddedSlot);
+      let paddedSlot = slot.toNumber().toString(16).padStart(64, '0');
+      let paddedKey = padLeft(key.val, 64);
+      let newKey = sha3(paddedKey + paddedSlot);
       let val = await world.web3.eth.getStorageAt(addr.val, newKey);
 
       switch (valType.val) {
         case 'list(address)':
-          let num = world.web3.utils.hexToNumber(val);
-
-          let p = new Array(num).fill(undefined).map(async (_v, index) => {
-            let newKeySha = world.web3.utils.sha3(newKey);
-            let itemKey = world.web3.utils.toBN(newKeySha).add(world.web3.utils.toBN(index));
-            let paddedKey = world.web3.utils.padLeft(itemKey.toString(16), 40);
-            let x = await world.web3.eth.getStorageAt(addr.val, `0x${paddedKey}`);
-            return new AddressV(x);
+          let p = new Array(toDecimal(val)).fill(undefined).map(async (_v, index) => {
+            let newKeySha = sha3(newKey);
+            let itemKey = toBN(newKeySha).add(toBN(index));
+            let address = await world.web3.eth.getStorageAt(addr.val, padLeft(toHex(itemKey), 40));
+            return new AddressV(address);
           });
 
           let all = await Promise.all(p);
@@ -547,10 +525,10 @@ const fetchers = [
         case 'address':
           return new AddressV(val);
         case 'number':
-          let parsed = world.web3.utils.toBN(val);
+          let parsed = toBN(val);
 
           // if the numbers are big, they are big...
-          if (parsed.gt(world.web3.utils.toBN(1000))) {
+          if (parsed.gt(toBN(1000))) {
             return new ExpNumberV(parsed.toString(), 1e18);
           } else {
             return new ExpNumberV(parsed.toString(), 1);

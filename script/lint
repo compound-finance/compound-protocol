@@ -1,5 +1,6 @@
-#!/usr/bin/env sh
-set -e
+#!/bin/bash
+
+set -eo pipefail
 
 DIR=`dirname $0`
 PROJ_ROOT="$DIR/.."

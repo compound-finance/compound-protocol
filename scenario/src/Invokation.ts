@@ -222,7 +222,12 @@ export async function invoke<T>(world: World, fn: Sendable<T>, from: string, err
     ...trxInvokationOpts
   };
 
-  try {
+  if (world.totalGas) {
+    invokationOpts = {
+      ...invokationOpts,
+      gas: world.totalGas
+    }
+  } else {
     try {
       const gas = await fn.estimateGas({ ...invokationOpts });
       invokationOpts = {
@@ -235,7 +240,9 @@ export async function invoke<T>(world: World, fn: Sendable<T>, from: string, err
         gas: 2000000
       };
     }
+  }
 
+  try {
     let error: null | Error = null;
 
     try {
@@ -261,9 +268,13 @@ export async function invoke<T>(world: World, fn: Sendable<T>, from: string, err
     if (world.settings.printTxLogs) {
       const eventLogs = Object.values(result && result.events || {}).map((event: any) => {
         const eventLog = event.raw;
-
         if (eventLog) {
-          return world.eventDecoder[eventLog.topics[0]](eventLog);
+          const eventDecoder = world.eventDecoder[eventLog.topics[0]];
+          if (eventDecoder) {
+            return eventDecoder(eventLog);
+          } else {
+            return eventLog;
+          }
         }
       });
       console.log('EMITTED EVENTS:   ', eventLogs);

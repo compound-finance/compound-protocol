@@ -1,9 +1,8 @@
 const { address, both, etherMantissa } = require('../Utils/Ethereum');
-
-const { makeComptroller, makePriceOracle, makeCToken, makeToken } = require('../Utils/Compound');
+const { makeComptroller, makeCToken } = require('../Utils/Compound');
 
 describe('Comptroller', () => {
-  let comptroller;
+  let comptroller, cToken;
   let root, accounts;
 
   beforeEach(async () => {
@@ -57,10 +56,11 @@ describe('Comptroller', () => {
 
   describe('setting paused', () => {
     beforeEach(async () => {
-      comptroller = await makeComptroller();
+      cToken = await makeCToken({supportMarket: true});
+      comptroller = cToken.comptroller;
     });
 
-    let methods = ["Borrow", "Mint", "Transfer", "Seize"];
+    let globalMethods = ["Transfer", "Seize"];
     describe('succeeding', () => {
       let pauseGuardian;
       beforeEach(async () => {
@@ -68,7 +68,7 @@ describe('Comptroller', () => {
         await send(comptroller, '_setPauseGuardian', [accounts[1]], {from: root});
       });
 
-      methods.forEach(async (method) => {
+      globalMethods.forEach(async (method) => {
         it(`only pause guardian or admin can pause ${method}`, async () => {
           await expect(send(comptroller, `_set${method}Paused`, [true], {from: accounts[2]})).rejects.toRevert("revert only pause guardian and admin can pause");
           await expect(send(comptroller, `_set${method}Paused`, [false], {from: accounts[2]})).rejects.toRevert("revert only pause guardian and admin can pause");
@@ -94,27 +94,69 @@ describe('Comptroller', () => {
 
         it(`pauses ${method}`, async() => {
           await send(comptroller, `_set${method}Paused`, [true], {from: pauseGuardian});
-
-          let camelCase = method.charAt(0).toLowerCase() + method.substring(1);
           switch (method) {
-          case "Mint":
-            await expect(send(comptroller, `${camelCase}Allowed`, [address(1), address(2), 1])).rejects.toRevert(`revert ${method.toLowerCase()} is paused`);
-            break;
-
-          case "Borrow":
-            await expect(send(comptroller, `${camelCase}Allowed`, [address(1), address(2), 1])).rejects.toRevert(`revert ${method.toLowerCase()} is paused`);
-            break;
-
           case "Transfer":
             await expect(
-              send(comptroller, `${camelCase}Allowed`, [address(1), address(2), address(3), 1])
+              send(comptroller, 'transferAllowed', [address(1), address(2), address(3), 1])
             ).rejects.toRevert(`revert ${method.toLowerCase()} is paused`);
             break;
 
           case "Seize":
             await expect(
-              send(comptroller, `${camelCase}Allowed`, [address(1), address(2), address(3), address(4), 1])
+              send(comptroller, 'seizeAllowed', [address(1), address(2), address(3), address(4), 1])
             ).rejects.toRevert(`revert ${method.toLowerCase()} is paused`);
+            break;
+
+          default:
+            break;
+          }
+        });
+      });
+    });
+
+    let marketMethods = ["Borrow", "Mint"];
+    describe('succeeding', () => {
+      let pauseGuardian;
+      beforeEach(async () => {
+        pauseGuardian = accounts[1];
+        await send(comptroller, '_setPauseGuardian', [accounts[1]], {from: root});
+      });
+
+      marketMethods.forEach(async (method) => {
+        it(`only pause guardian or admin can pause ${method}`, async () => {
+          await expect(send(comptroller, `_set${method}Paused`, [cToken._address, true], {from: accounts[2]})).rejects.toRevert("revert only pause guardian and admin can pause");
+          await expect(send(comptroller, `_set${method}Paused`, [cToken._address, false], {from: accounts[2]})).rejects.toRevert("revert only pause guardian and admin can pause");
+        });
+
+        it(`PauseGuardian can pause of ${method}GuardianPaused`, async () => {
+          result = await send(comptroller, `_set${method}Paused`, [cToken._address, true], {from: pauseGuardian});
+          expect(result).toHaveLog(`ActionPaused`, {cToken: cToken._address, action: method, pauseState: true});
+
+          let camelCase = method.charAt(0).toLowerCase() + method.substring(1);
+
+          state = await call(comptroller, `${camelCase}GuardianPaused`, [cToken._address]);
+          expect(state).toEqual(true);
+
+          await expect(send(comptroller, `_set${method}Paused`, [cToken._address, false], {from: pauseGuardian})).rejects.toRevert("revert only admin can unpause");
+          result = await send(comptroller, `_set${method}Paused`, [cToken._address, false]);
+
+          expect(result).toHaveLog(`ActionPaused`, {cToken: cToken._address, action: method, pauseState: false});
+
+          state = await call(comptroller, `${camelCase}GuardianPaused`, [cToken._address]);
+          expect(state).toEqual(false);
+        });
+
+        it(`pauses ${method}`, async() => {
+          await send(comptroller, `_set${method}Paused`, [cToken._address, true], {from: pauseGuardian});
+          switch (method) {
+          case "Mint":
+            expect(await call(comptroller, 'mintAllowed', [address(1), address(2), 1])).toHaveTrollError('MARKET_NOT_LISTED');
+            await expect(send(comptroller, 'mintAllowed', [cToken._address, address(2), 1])).rejects.toRevert(`revert ${method.toLowerCase()} is paused`);
+            break;
+
+          case "Borrow":
+            expect(await call(comptroller, 'borrowAllowed', [address(1), address(2), 1])).toHaveTrollError('MARKET_NOT_LISTED');
+            await expect(send(comptroller, 'borrowAllowed', [cToken._address, address(2), 1])).rejects.toRevert(`revert ${method.toLowerCase()} is paused`);
             break;
 
           default:

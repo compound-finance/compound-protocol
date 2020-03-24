@@ -12,6 +12,8 @@ const basePath = process.env.proj_root || path.join(process.cwd());
 const baseScenarioPath = path.join(basePath, 'spec', 'scenario');
 const coreMacros = fs.readFileSync(path.join(baseScenarioPath, 'CoreMacros'));
 
+const TOTAL_GAS = 5000000;
+
 function loadScenario(file) {
   const scenarios = {};
   const fullPath = `${baseScenarioPath}/${file}`;
@@ -100,7 +102,7 @@ function run(file) {
         } else {
           let finalWorld;
           let runner = async () => {
-            let world = await initWorld(expect, new ConsolePrinter(verbose), web3, saddle, network, accounts, basePath);
+            let world = await initWorld(expect, new ConsolePrinter(verbose), web3, saddle, network, accounts, basePath, TOTAL_GAS);
             world = loadVerbose(world);
             world = loadInvokationOpts(world);
 

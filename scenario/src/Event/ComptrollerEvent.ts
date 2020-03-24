@@ -247,12 +247,6 @@ async function setPauseGuardian(world: World, from: string, comptroller: Comptro
 async function setGuardianPaused(world: World, from: string, comptroller: Comptroller, action: string, state: boolean): Promise<World> {
   let fun;
   switch(action){
-    case "Mint":
-      fun = comptroller.methods._setMintPaused
-      break;
-    case "Borrow":
-      fun = comptroller.methods._setBorrowPaused
-      break;
     case "Transfer":
       fun = comptroller.methods._setTransferPaused
       break;
@@ -261,6 +255,27 @@ async function setGuardianPaused(world: World, from: string, comptroller: Comptr
       break;
   }
   let invokation = await invoke(world, fun(state), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Comptroller: ${describeUser(world, from)} sets ${action} paused`,
+    invokation
+  );
+
+  return world;
+}
+
+async function setGuardianMarketPaused(world: World, from: string, comptroller: Comptroller, cToken: CToken, action: string, state: boolean): Promise<World> {
+  let fun;
+  switch(action){
+    case "Mint":
+      fun = comptroller.methods._setMintPaused
+      break;
+    case "Borrow":
+      fun = comptroller.methods._setBorrowPaused
+      break;
+  }
+  let invokation = await invoke(world, fun(cToken._address, state), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,
@@ -453,11 +468,12 @@ export function comptrollerCommands() {
       ],
       (world, from, {comptroller, newPauseGuardian}) => setPauseGuardian(world, from, comptroller, newPauseGuardian.val)
     ),
+
     new Command<{comptroller: Comptroller, action: StringV, isPaused: BoolV}>(`
         #### SetGuardianPaused
 
         * "Comptroller SetGuardianPaused <Action> <Bool>" - Pauses or unpaused given cToken function
-        * E.g. "Comptroller SetGuardianPaused "Mint" True"
+        * E.g. "Comptroller SetGuardianPaused "Transfer" True"
         `,
         "SetGuardianPaused",
         [
@@ -466,7 +482,24 @@ export function comptrollerCommands() {
           new Arg("isPaused", getBoolV)
         ],
         (world, from, {comptroller, action, isPaused}) => setGuardianPaused(world, from, comptroller, action.val, isPaused.val)
-        ),
+    ),
+
+    new Command<{comptroller: Comptroller, cToken: CToken, action: StringV, isPaused: BoolV}>(`
+        #### SetGuardianMarketPaused
+
+        * "Comptroller SetGuardianMarketPaused <CToken> <Action> <Bool>" - Pauses or unpaused given cToken function
+        * E.g. "Comptroller SetGuardianMarketPaused cREP "Mint" True"
+        `,
+        "SetGuardianMarketPaused",
+        [
+          new Arg("comptroller", getComptroller, {implicit: true}),
+          new Arg("cToken", getCTokenV),
+          new Arg("action", getStringV),
+          new Arg("isPaused", getBoolV)
+        ],
+        (world, from, {comptroller, cToken, action, isPaused}) => setGuardianMarketPaused(world, from, comptroller, cToken, action.val, isPaused.val)
+    ),
+
     new Command<{comptroller: Comptroller, blocks: NumberV, _keyword: StringV}>(`
         #### FastForward
 

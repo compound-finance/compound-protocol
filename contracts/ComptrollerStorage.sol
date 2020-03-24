@@ -82,11 +82,15 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
 
 
     /**
-     * @notice The Pause Guardian can pause certain actions as a safety mechanism. Actions which allow users to remove their own assets cannot be paused.
+     * @notice The Pause Guardian can pause certain actions as a safety mechanism.
+     *  Actions which allow users to remove their own assets cannot be paused.
+     *  Liquidation / seizing / transfer can only be paused globally, not by market.
      */
     address public pauseGuardian;
-    bool public mintGuardianPaused;
-    bool public borrowGuardianPaused;
+    bool public _mintGuardianPaused;
+    bool public _borrowGuardianPaused;
     bool public transferGuardianPaused;
     bool public seizeGuardianPaused;
+    mapping(address => bool) public mintGuardianPaused;
+    mapping(address => bool) public borrowGuardianPaused;
 }
