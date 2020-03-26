@@ -25,7 +25,7 @@ Macro SetupPriceOracleProxy
 
 Test "computes address(2) / address(1) * maker usd price for cdai when within ratio bound"
     SetupPriceOracleProxy
-    PriceOracle SetPrice cDAI 0.005 -- the maker usd/eth price is at the dai address
+    PriceOracle SetPrice cSAI 0.005 -- the maker usd/eth price is at the sai address
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000001) 5740564708572881000000000000
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000002) 5842307360923634
     Assert Equal (PriceOracleProxy Price cSAI) 0.005088617285507479e18
@@ -33,7 +33,7 @@ Test "computes address(2) / address(1) * maker usd price for cdai when within ra
 
 Test "computes address(2) / address(1) * maker usd price for cdai when below ratio bound"
     SetupPriceOracleProxy
-    PriceOracle SetPrice cDAI 0.005 -- the maker usd/eth price is at the dai address
+    PriceOracle SetPrice cSAI 0.005 -- the maker usd/eth price is at the sai address
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000001) 57405647085728810000000000000
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000002) 5842307360923634
     Assert Equal (PriceOracleProxy Price cDAI) 0.00475e18
@@ -41,7 +41,7 @@ Test "computes address(2) / address(1) * maker usd price for cdai when below rat
 
 Test "computes address(2) / address(1) * maker usd price for cdai when above ratio bound"
     SetupPriceOracleProxy
-    PriceOracle SetPrice cDAI 0.005 -- the maker usd/eth price is at the dai address - will be scaled by 1e18
+    PriceOracle SetPrice cSAI 0.005 -- the maker usd/eth price is at the sai address - will be scaled by 1e18
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000001) 5740564708572881000000000000
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000002) 58423073609236340
     Assert Equal (PriceOracleProxy Price cDAI) 0.00525e18
@@ -49,7 +49,7 @@ Test "computes address(2) / address(1) * maker usd price for cdai when above rat
 
 Test "gets tether and usdc prices"
     SetupPriceOracleProxy
-    PriceOracle SetPrice cDAI 0.005 -- the maker usd/eth price is at the dai address - will be scaled by 1e18
+    PriceOracle SetPrice cSAI 0.005 -- the maker usd/eth price is at the sai address - will be scaled by 1e18
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000001) 5740564708572881000000000000--usdcOracleKey USDC/ETH
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000002) 5842307360923634--daiOracleKey DAI/ETH
     -- scaled to 1e30 bc both tokens have 6 decimals

@@ -100,12 +100,12 @@ describe('PriceOracleProxy', () => {
     });
 
     it("proxies to v1 oracle for cusdc", async () => {
-      await setAndVerifyBackingPrice(cDai, 50);
+      await setAndVerifyBackingPrice(cSai, 50);
       await readAndVerifyProxyPrice(cUsdc, 50e12);
     });
 
     it("computes address(2) / address(1) * maker usd price for csai and cdai", async () => {
-      await setAndVerifyBackingPrice(cDai, 5);
+      await setAndVerifyBackingPrice(cSai, 5);
 
       // 0.95 < ratio < 1.05
       await send(backingOracle, "setDirectPrice", [address(1), etherMantissa(1e12)]);

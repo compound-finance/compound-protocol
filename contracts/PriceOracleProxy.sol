@@ -88,8 +88,8 @@ contract PriceOracleProxy is PriceOracle {
         cDaiAddress = cDaiAddress_;
         cUsdtAddress = cUsdtAddress_;
 
-        if (cDaiAddress_ != address(0)) {
-            makerUsdOracleKey = CErc20(cDaiAddress_).underlying();
+        if (cSaiAddress_ != address(0)) {
+            makerUsdOracleKey = CErc20(cSaiAddress_).underlying();
         }
     }
 
