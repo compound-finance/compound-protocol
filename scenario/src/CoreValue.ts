@@ -960,7 +960,8 @@ const fetchers = [
 ];
 
 let contractFetchers = [
-  "Counter"
+  "Counter",
+  "CompoundLens"
 ];
 
 export async function getFetchers(world: World) {

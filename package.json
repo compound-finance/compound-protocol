@@ -1,5 +1,5 @@
 {
-  "name": "compound-money-market",
+  "name": "compound-protocol",
   "version": "0.2.1",
   "description": "The Compound Money Market",
   "main": "index.js",
@@ -13,7 +13,7 @@
     "test": "./script/test",
     "test:prepare": "NO_RUN=true ./script/test"
   },
-  "repository": "git@github.com:compound-finance/money-market.git",
+  "repository": "git@github.com:compound-finance/compound-protocol.git",
   "author": "Compound Finance",
   "license": "UNLICENSED",
   "devDependencies": {

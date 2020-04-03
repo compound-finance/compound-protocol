@@ -66,7 +66,7 @@ async function makeCToken(opts = {}) {
   const interestRateModel = opts.interestRateModel || await makeInterestRateModel(opts.interestRateModelOpts);
   const exchangeRate = etherMantissa(dfn(opts.exchangeRate, 1));
   const decimals = etherUnsigned(dfn(opts.decimals, 8));
-  const symbol = opts.symbol || 'cOMG';
+  const symbol = opts.symbol || (kind === 'cether' ? 'cETH' : 'cOMG');
   const name = opts.name || `CToken ${symbol}`;
   const admin = opts.admin || root;
 

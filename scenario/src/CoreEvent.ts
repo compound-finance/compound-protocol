@@ -40,6 +40,7 @@ import { loadContracts } from './Networks';
 import { fork } from './Hypothetical';
 import { buildContractEvent } from './EventBuilder';
 import { Counter } from './Contract/Counter';
+import { CompoundLens } from './Contract/CompoundLens';
 import Web3 from 'web3';
 
 export class EventProcessingError extends Error {
@@ -792,6 +793,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
   ),
 
   buildContractEvent<Counter>("Counter"),
+  buildContractEvent<CompoundLens>("CompoundLens"),
 
   new View<{ event: EventV }>(
     `

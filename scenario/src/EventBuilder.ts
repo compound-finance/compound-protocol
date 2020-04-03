@@ -78,6 +78,7 @@ export function buildContractEvent<T extends Contract>(contractName: string) {
 
     const contract = invokation.value!;
     contract.address = contract._address;
+    const index = contractName == data.name ? [contractName] : [contractName, data.name];
 
     world = await storeAndSaveContract(
       world,
@@ -85,7 +86,7 @@ export function buildContractEvent<T extends Contract>(contractName: string) {
       data.name,
       invokation,
       [
-        { index: [contractName, data.name], data: data }
+        { index: index, data: data }
       ]
     );
 
@@ -154,6 +155,10 @@ export async function buildContractFetcher<T extends Contract>(world: World, con
         builder: (x) => new AddressV(x),
         getter: getAddressV
       },
+      'address[]': {
+        builder: (x) => new ArrayV<AddressV>(x),
+        getter: (x) => getArrayV<AddressV>(x),
+      },
       string: {
         builder: (x) => new StringV(x),
         getter: getStringV
@@ -161,6 +166,18 @@ export async function buildContractFetcher<T extends Contract>(world: World, con
       uint256: {
         builder: (x) => new NumberV(x),
         getter: getNumberV
+      },
+      'uint256[]': {
+        builder: (x) => new ArrayV<NumberV>(x),
+        getter: (x) => getArrayV<NumberV>(x),
+      },
+      'uint32[]': {
+        builder: (x) => new ArrayV<NumberV>(x),
+        getter: (x) => getArrayV<NumberV>(x),
+      },
+      'uint96[]': {
+        builder: (x) => new ArrayV<NumberV>(x),
+        getter: (x) => getArrayV<NumberV>(x),
       }
     };
 
