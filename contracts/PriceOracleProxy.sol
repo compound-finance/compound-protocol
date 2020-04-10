@@ -24,7 +24,10 @@ contract PriceOracleProxy is PriceOracle {
     /// @notice Address of the cUSDC contract, which we hand pick a key for
     address public cUsdcAddress;
 
-    /// @notice Address of the cSAI contract, which we hand pick a key for
+    /// @notice Address of the cUSDT contract, which uses the cUSDC price
+    address public cUsdtAddress;
+
+    /// @notice Address of the cSAI contract, which may have its price set
     address public cSaiAddress;
 
     /// @notice Address of the cDAI contract, which we hand pick a key for
@@ -44,8 +47,9 @@ contract PriceOracleProxy is PriceOracle {
      * @param v1PriceOracle_ The address of the v1 price oracle, which will continue to operate and hold prices for collateral assets
      * @param cEthAddress_ The address of cETH, which will return a constant 1e18, since all prices relative to ether
      * @param cUsdcAddress_ The address of cUSDC, which will be read from a special oracle key
-     * @param cSaiAddress_ The address of cSAI, which will be read directly from storage
+     * @param cSaiAddress_ The address of cSAI, which may be read directly from storage
      * @param cDaiAddress_ The address of cDAI, which will be read from a special oracle key
+     * @param cUsdtAddress_ The address of cUSDT, which uses the cUSDC price
      */
     constructor(address guardian_,
                 address v1PriceOracle_,

@@ -26,6 +26,7 @@ const redeemAmount = redeemTokens.mul(exchangeRate);
 async function preMint(cToken, minter, mintAmount, mintTokens, exchangeRate) {
   await preApprove(cToken, minter, mintAmount);
   await send(cToken.comptroller, 'setMintAllowed', [true]);
+  await send(cToken.comptroller, 'setMintVerify', [true]);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cToken.underlying, 'harnessSetFailTransferFromAddress', [minter, false]);
   await send(cToken, 'harnessSetBalance', [minter, 0]);
@@ -39,6 +40,7 @@ async function mintFresh(cToken, minter, mintAmount) {
 async function preRedeem(cToken, redeemer, redeemTokens, redeemAmount, exchangeRate) {
   await preSupply(cToken, redeemer, redeemTokens);
   await send(cToken.comptroller, 'setRedeemAllowed', [true]);
+  await send(cToken.comptroller, 'setRedeemVerify', [true]);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cToken.underlying, 'harnessSetBalance', [cToken._address, redeemAmount]);
   await send(cToken.underlying, 'harnessSetBalance', [redeemer, 0]);

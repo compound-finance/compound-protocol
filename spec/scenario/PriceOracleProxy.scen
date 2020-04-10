@@ -39,7 +39,7 @@ Test "sai price is dai price until set"
 
 Test "gets tether and usdc prices"
     SetupPriceOracleProxy
-    PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000001) 5740564708572881000000000000
+    PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000001) 5740564708.572881
     -- scaled to 1e30 bc both tokens have 6 decimals
-    Assert Equal (PriceOracleProxy Price cUSDT) 0.005e30
-    Assert Equal (PriceOracleProxy Price cUSDC) 0.005e30
+    Assert Equal (PriceOracleProxy Price cUSDT) 5740564708572881000000000000
+    Assert Equal (PriceOracleProxy Price cUSDC) 5740564708572881000000000000

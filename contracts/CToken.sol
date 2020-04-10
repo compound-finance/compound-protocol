@@ -121,6 +121,8 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         /* We emit a Transfer event */
         emit Transfer(src, dst, tokens);
 
+        comptroller.transferVerify(address(this), src, dst, tokens);
+
         return uint(Error.NO_ERROR);
     }
 
@@ -552,6 +554,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         emit Mint(minter, vars.actualMintAmount, vars.mintTokens);
         emit Transfer(address(this), minter, vars.mintTokens);
 
+        /* We call the defense hook */
+        comptroller.mintVerify(address(this), minter, vars.actualMintAmount, vars.mintTokens);
+
         return (uint(Error.NO_ERROR), vars.actualMintAmount);
     }
 
@@ -698,6 +703,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         emit Transfer(redeemer, address(this), vars.redeemTokens);
         emit Redeem(redeemer, vars.redeemAmount, vars.redeemTokens);
 
+        /* We call the defense hook */
+        comptroller.redeemVerify(address(this), redeemer, vars.redeemAmount, vars.redeemTokens);
+
         return uint(Error.NO_ERROR);
     }
 
@@ -787,6 +795,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         /* We emit a Borrow event */
         emit Borrow(borrower, borrowAmount, vars.accountBorrowsNew, vars.totalBorrowsNew);
 
+        /* We call the defense hook */
+        comptroller.borrowVerify(address(this), borrower, borrowAmount);
+
         return uint(Error.NO_ERROR);
     }
 
@@ -825,6 +836,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         Error err;
         MathError mathErr;
         uint repayAmount;
+        uint borrowerIndex;
         uint accountBorrows;
         uint accountBorrowsNew;
         uint totalBorrowsNew;
@@ -851,6 +863,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         }
 
         RepayBorrowLocalVars memory vars;
+
+        /* We remember the original borrowerIndex for verification purposes */
+        vars.borrowerIndex = accountBorrows[borrower].interestIndex;
 
         /* We fetch the amount the borrower owes, with accumulated interest */
         (vars.mathErr, vars.accountBorrows) = borrowBalanceStoredInternal(borrower);
@@ -896,6 +911,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
 
         /* We emit a RepayBorrow event */
         emit RepayBorrow(payer, borrower, vars.actualRepayAmount, vars.accountBorrowsNew, vars.totalBorrowsNew);
+
+        /* We call the defense hook */
+        comptroller.repayBorrowVerify(address(this), payer, borrower, vars.actualRepayAmount, vars.borrowerIndex);
 
         return (uint(Error.NO_ERROR), vars.actualRepayAmount);
     }
@@ -1068,6 +1086,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
 
         /* Emit a Transfer event */
         emit Transfer(borrower, liquidator, seizeTokens);
+
+        /* We call the defense hook */
+        comptroller.seizeVerify(address(this), seizerToken, liquidator, borrower, seizeTokens);
 
         return uint(Error.NO_ERROR);
     }
