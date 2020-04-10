@@ -137,7 +137,17 @@ describe('GovernorAlpha#propose/5', () => {
 
       expect(
         await send(gov, 'propose', [targets, values, signatures, callDatas, "second proposal"], { from: accounts[3] })
-      ).toHaveLog("ProposalCreated", { id: nextProposalId, targets: targets, values: values, signatures: signatures, calldatas: callDatas, description: "second proposal", proposer: accounts[3] });
+      ).toHaveLog("ProposalCreated", {
+        id: nextProposalId,
+        targets: targets,
+        values: values,
+        signatures: signatures,
+        calldatas: callDatas,
+        startBlock: 14,
+        endBlock: 17294,
+        description: "second proposal",
+        proposer: accounts[3]
+      });
     });
   });
 });

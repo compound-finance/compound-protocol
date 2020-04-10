@@ -156,11 +156,11 @@ module.exports = {
         {unlocked: 0}
       ]
     },
-    mainnet: {
+    kovan: {
       providers: [
         {env: "PROVIDER"},
-        // {file: "~/.ethereum/rinkeby-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
-        {http: "https://cloudflare-eth.com/"}
+        {file: "~/.ethereum/kovan-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
+        {http: "https://kovan-eth.compound.finance"}
       ],
       web3: {
         gas: [
@@ -178,10 +178,36 @@ module.exports = {
       },
       accounts: [
         {env: "ACCOUNT"},
-        {file: "~/.ethereum/mainnet"},                        // Load from given file with contents as the private key (e.g. 0x...)
+        {file: "~/.ethereum/kovan"},                        // Load from given file with contents as the private key (e.g. 0x...)
         {unlocked: 0}
       ]
-    }
+    },
+    mainnet: {
+      providers: [
+        {env: "PROVIDER"},
+        {file: "~/.ethereum/mainnet-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
+        {http: "https://mainnet-eth.compound.finance"}
+      ],
+      web3: {
+        gas: [
+          {env: "GAS"},
+          {default: "4600000"}
+        ],
+        gas_price: [
+          {env: "GAS_PRICE"},
+          {default: "4000000000"}
+        ],
+        options: {
+          transactionConfirmationBlocks: 1,
+          transactionBlockTimeout: 5
+        }
+      },
+      accounts: [
+        {env: "ACCOUNT"},
+        {file: `~/.ethereum/mainnet-${process.env['KEY']}`},
+        {file: "~/.ethereum/mainnet"}                        // Load from given file with contents as the private key (e.g. 0x...)
+      ]
+    },
   },
   get_network_file: (network) => {
     return null;

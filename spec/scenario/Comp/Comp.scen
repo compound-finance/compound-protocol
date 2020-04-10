@@ -39,6 +39,17 @@ Test "Check transfer updates balances correctly, emits Transfer event, and retur
     Assert Equal (Comp TokenBalance Jared) 10
     Assert Log Transfer (from (Address Geoff)) (to (Address Jared)) (amount "10")
 
+Test "Check self-transfer updates balances correctly, emits Transfer event, and returns true"
+    Comp Deploy Geoff
+    Expect Changes (Comp VotesLength Geoff) Zero
+    Expect Changes (Comp TokenBalance Geoff) Zero
+    From Geoff (Comp Transfer Geoff 10)
+    Assert Log Transfer (from (Address Geoff)) (to (Address Geoff)) (amount "10")
+    Expect Changes (Comp VotesLength Geoff) Zero
+    Expect Changes (Comp TokenBalance Geoff) Zero
+    From Geoff (Comp Transfer Geoff 0)
+    Assert Log Transfer (from (Address Geoff)) (to (Address Geoff)) (amount "0")
+
 Test "Check transferFrom with unlimited allowance updates balances correctly, emits Transfer event, and returns true"
     Comp Deploy Geoff
     From Geoff (Comp Approve Jared UInt256Max)

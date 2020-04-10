@@ -1,14 +1,7 @@
 pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
-import "../EIP20Interface.sol";
-
-/**
- * @title Compound's Governance Token Contract
- * @notice Immutable tokens for Compound Governors
- * @author Compound
- */
-contract Comp is EIP20Interface {
+contract Comp {
     /// @notice EIP-20 token name for this token
     string public constant name = "Compound";
 
@@ -56,6 +49,12 @@ contract Comp is EIP20Interface {
 
     /// @notice An event thats emitted when a delegate account's vote balance changes
     event DelegateVotesChanged(address indexed delegate, uint previousBalance, uint newBalance);
+
+    /// @notice The standard EIP-20 transfer event
+    event Transfer(address indexed from, address indexed to, uint256 amount);
+
+    /// @notice The standard EIP-20 approval event
+    event Approval(address indexed owner, address indexed spender, uint256 amount);
 
     /**
      * @notice Construct a new Comp token
@@ -291,8 +290,7 @@ contract Comp is EIP20Interface {
 
     function sub96(uint96 a, uint96 b, string memory errorMessage) internal pure returns (uint96) {
         require(b <= a, errorMessage);
-        uint96 c = a - b;
-        return c;
+        return a - b;
     }
 
     function getChainId() internal pure returns (uint) {

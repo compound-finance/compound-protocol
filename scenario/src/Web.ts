@@ -68,7 +68,7 @@ export async function webWorld(
     web3: web3
   };
 
-  let world = await initWorld(throwExpect, printer, web3, saddle, network, accounts, null);
+  let world = await initWorld(throwExpect, printer, web3, saddle, network, accounts, null, null);
 
   let networks = parseNetworkFile(networksData);
   let networksABI = parseNetworkFile(networksABIData);

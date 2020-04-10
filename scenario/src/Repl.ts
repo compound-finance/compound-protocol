@@ -30,6 +30,8 @@ const basePath = process.env.proj_root || process.cwd();
 const baseScenarioPath = path.join(basePath, 'spec', 'scenario');
 const baseNetworksPath = path.join(basePath, 'networks');
 
+const TOTAL_GAS = 5000000;
+
 function questionPromise(rl): Promise<string> {
   return new Promise((resolve, reject) => {
     rl.question(" > ", (command) => {
@@ -98,7 +100,7 @@ async function repl(): Promise<void> {
   let saddle = await getSaddle(network);
   let accounts: string[] = saddle.wallet_accounts.concat(saddle.accounts).filter((x) => !!x);
 
-  world = await initWorld(throwExpect, printer, saddle.web3, saddle, network, accounts, basePath);
+  world = await initWorld(throwExpect, printer, saddle.web3, saddle, network, accounts, basePath, TOTAL_GAS);
   [world, contractInfo] = await loadContracts(world);
   world = loadInvokationOpts(world);
   world = loadVerbose(world);

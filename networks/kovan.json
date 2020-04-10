@@ -29,7 +29,8 @@
         "cZRX": "0xC014DC10A57aC78350C5fddB26Bb66f1Cb0960a0",
         "cWBTC": "0x3659728876EfB2780f498Ce829C5b076e496E0e3",
         "USDC": "0x75B0622Cec14130172EaE9Cf166B92E5C112FaFF",
-        "Base200bps_Slope222bps_Kink90_Jump10": "0xE057EF4be5c6C712e13E24d4408f5F257fEd4d3f"
+        "Base200bps_Slope222bps_Kink90_Jump10": "0xE057EF4be5c6C712e13E24d4408f5F257fEd4d3f",
+        "CompoundLens": "0x6F4853929e4C30Fcd357f36d8d1aa9b5fAC82185"
     },
     "Blocks": {
         "ZRX": 14981231,
