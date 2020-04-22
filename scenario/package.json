@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "bignumber.js": "8.0.1",
-    "eth-saddle": "0.1.10",
+    "eth-saddle": "^0.1.17",
     "ethers": "^4.0.0-beta.1",
     "immutable": "^4.0.0-rc.12",
     "truffle-flattener": "^1.3.0",
