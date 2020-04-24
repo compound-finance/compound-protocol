@@ -158,6 +158,33 @@ jobs:
           at: ~/repo
       - run: yarn run lint
 
+  docker:
+    docker:
+      - image: cimg/go:1.13
+    steps:
+      - run: |
+          if [ -z "$DOCKER_USER" -o -z "$DOCKER_PASS" -o -z "$DOCKER_REPO" ]; then
+            echo "No DOCKER_REPO, DOCKER_USER or DOCKER_PASS, skipping Docker build..."
+            circleci-agent step halt
+          fi
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: |
+          echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+
+          set -x
+
+          IMAGE_NAME=${CIRCLE_PROJECT_USERNAME/-/}/$CIRCLE_PROJECT_REPONAME
+          COMMIT_TAG=$(git rev-parse --short HEAD)
+          docker build -t $IMAGE_NAME:$COMMIT_TAG .
+          docker push $IMAGE_NAME:$COMMIT_TAG
+
+          if [ -n "$CIRCLE_TAG" ]; then
+            docker build -t $IMAGE_NAME:$CIRCLE_TAG .
+            docker push $IMAGE_NAME:$CIRCLE_TAG
+          fi
+
 workflows:
   version: 2
   build-test-and-deploy:
@@ -166,3 +193,7 @@ workflows:
       - coverage
       - lint
       - verify
+      - docker:
+          filters:
+            tags:
+              only: /^v.*/

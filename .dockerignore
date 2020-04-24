@@ -36,3 +36,5 @@ junit.xml
 .last_confs
 .git
 script/certora
+.saddle_history
+.circleci

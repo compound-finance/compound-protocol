@@ -24,7 +24,7 @@
     "solparse": "^2.2.8"
   },
   "dependencies": {
-    "eth-saddle": "0.1.10"
+    "eth-saddle": "0.1.17"
   },
   "resolutions": {
     "scrypt.js": "https://registry.npmjs.org/@compound-finance/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz",

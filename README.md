@@ -184,6 +184,91 @@ This command will start a saddle console conencted to Goerli testnet (see [Saddl
     '10000000000000000000000000'
 ```
 
+Deploying a CToken from Source
+------------------------------
+
+Note: you will need to set `~/.ethereum/<network>` with your private key or assign your private key to the environment variable `ACCOUNT`.
+
+Note: for all sections including Etherscan verification, you must set the `ETHERSCAN_API_KEY` to a valid API Key from [Etherscan](https://etherscan.io/apis).
+
+To deploy a new cToken, you can run the `token:deploy`. command, as follows. If you set `VERIFY=true`, the script will verify the token on Etherscan as well. The JSON here is the token config JSON, which should be specific to the token you wish to list.
+
+```bash
+npx saddle -n rinkeby script token:deploy '{
+  "underlying": "0x577D296678535e4903D59A4C929B718e1D575e0A",
+  "comptroller": "$Comptroller",
+  "interestRateModel": "$Base200bps_Slope3000bps",
+  "initialExchangeRateMantissa": "2.0e18",
+  "name": "Compound Kyber Network Crystal",
+  "symbol": "cKNC",
+  "decimals": "8",
+  "admin": "$Timelock"
+}'
+```
+
+If you only want to verify an existing token an Etherscan, make sure `ETHERSCAN_API_KEY` is set and run `token:verify` with the first argument as the token address and the second as the token config JSON:
+
+```bash
+npx saddle -n rinkeby script token:verify 0x19B674715cD20626415C738400FDd0d32D6809B6 '{
+  "underlying": "0x577D296678535e4903D59A4C929B718e1D575e0A",
+  "comptroller": "$Comptroller",
+  "interestRateModel": "$Base200bps_Slope3000bps",
+  "initialExchangeRateMantissa": "2.0e18",
+  "name": "Compound Kyber Network Crystal",
+  "symbol": "cKNC",
+  "decimals": "8",
+  "admin": "$Timelock"
+}'
+```
+
+Finally, to see if a given deployment matches this version of the Compound Protocol, you can run `token:match` with a token address and token config:
+
+```bash
+npx saddle -n rinkeby script token:match 0x19B674715cD20626415C738400FDd0d32D6809B6 '{
+  "underlying": "0x577D296678535e4903D59A4C929B718e1D575e0A",
+  "comptroller": "$Comptroller",
+  "interestRateModel": "$Base200bps_Slope3000bps",
+  "initialExchangeRateMantissa": "2.0e18",
+  "name": "Compound Kyber Network Crystal",
+  "symbol": "cKNC",
+  "decimals": "8",
+  "admin": "$Timelock"
+}'
+```
+
+## Deploying a CToken from Docker Build
+---------------------------------------
+
+To deploy a specific version of the Compound Protocol, you can use the `token:deploy` script through Docker:
+
+```bash
+docker run --env ETHERSCAN_API_KEY --env VERIFY=true --env ACCOUNT=0x$(cat ~/.ethereum/rinkeby) compoundfinance/compound-protocol:latest npx saddle -n rinkeby script token:deploy '{
+  "underlying": "0x577D296678535e4903D59A4C929B718e1D575e0A",
+  "comptroller": "$Comptroller",
+  "interestRateModel": "$Base200bps_Slope3000bps",
+  "initialExchangeRateMantissa": "2.0e18",
+  "name": "Compound Kyber Network Crystal",
+  "symbol": "cKNC",
+  "decimals": "8",
+  "admin": "$Timelock"
+}'
+```
+
+To match a deployed contract against a given version of the Compound Protocol, you can run `token:match` through Docker, passing a token address and config:
+
+```bash
+docker run --env ACCOUNT=0x$(cat ~/.ethereum/rinkeby) compoundfinance/compound-protocol:latest npx saddle -n rinkeby script token:match 0xF1BAd36CB247C82Cb4e9C2874374492Afb50d565 '{
+  "underlying": "0x577D296678535e4903D59A4C929B718e1D575e0A",
+  "comptroller": "$Comptroller",
+  "interestRateModel": "$Base200bps_Slope3000bps",
+  "initialExchangeRateMantissa": "2.0e18",
+  "name": "Compound Kyber Network Crystal",
+  "symbol": "cKNC",
+  "decimals": "8",
+  "admin": "$Timelock"
+}'
+```
+
 Discussion
 ----------
 

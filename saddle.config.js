@@ -139,7 +139,7 @@ module.exports = {
       web3: {
         gas: [
           {env: "GAS"},
-          {default: "4600000"}
+          {default: "5600000"}
         ],
         gas_price: [
           {env: "GAS_PRICE"},
@@ -235,5 +235,10 @@ module.exports = {
         'Contracts': value
       }, null, 4));
     });
+  },
+  scripts: {
+    'token:deploy': "script/saddle/deployToken.js",
+    'token:verify': "script/saddle/verifyToken.js",
+    'token:match': "script/saddle/matchToken.js"
   }
 }
