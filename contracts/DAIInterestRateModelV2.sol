@@ -4,17 +4,21 @@ import "./JumpRateModel.sol";
 import "./SafeMath.sol";
 
 /**
-  * @title Compound's DAIInterestRateModel Contract
-  * @author Compound
-  * @notice The parameterized model described in section 2.4 of the original Compound Protocol whitepaper
+  * @title Compound's DAIInterestRateModel Contract (version 2)
+  * @author Compound (modified by Dharma Labs)
+  * @notice The parameterized model described in section 2.4 of the original Compound Protocol whitepaper.
+  * Version 2 modifies the original interest rate model by increasing the "gap" or slope of the model prior
+  * to the "kink" from 0.05% to 2% with the goal of "smoothing out" interest rate changes as the utilization
+  * rate increases.
   */
-contract DAIInterestRateModel is JumpRateModel {
+contract DAIInterestRateModelV2 is JumpRateModel {
     using SafeMath for uint;
 
     /**
-     * @notice The additional margin per block separating the base borrow rate from the roof (0.05% / block)
+     * @notice The additional margin per block separating the base borrow rate from the roof (2% / block).
+     * Note that this value has been increased from the original value of 0.05% per block.
      */
-    uint public constant gapPerBlock = 0.05e16 / blocksPerYear;
+    uint public constant gapPerBlock = 2e16 / blocksPerYear;
 
     /**
      * @notice The assumed (1 - reserve factor) used to calculate the minimum borrow rate (reserve factor = 0.05)
@@ -103,7 +107,12 @@ interface PotLike {
 }
 
 interface JugLike {
-    function ilks(bytes32) external view returns (uint duty, uint rho);
-    function base() external view returns (uint);
-}
+    // --- Data ---
+    struct Ilk {
+        uint256 duty;
+        uint256  rho;
+    }
 
+   mapping (bytes32 => Ilk) public ilks;
+   uint256 public base;
+}

@@ -18,7 +18,7 @@ function baseRoofRateFn(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves)
   const assumedOneMinusReserveFactor = 0.95;
   const stabilityFeePerBlock = (duty + mkrBase - 1) * 15;
   const dsrPerBlock = (dsr - 1) * 15;
-  const gapPerBlock = 0.0005 / blocksPerYear;
+  const gapPerBlock = 0.02 / blocksPerYear;
   const jumpPerBlock = jump / blocksPerYear;
 
   let baseRatePerBlock = dsrPerBlock / assumedOneMinusReserveFactor, multiplierPerBlock;
@@ -68,7 +68,7 @@ async function getKovanFork() {
   return {kovan, root, accounts};
 }
 
-describe('DAIInterestRateModel', () => {
+describe('DAIInterestRateModelV2', () => {
   describe("constructor", () => {
     it.skip("sets jug and ilk address and pokes", async () => {
       // NB: Going back a certain distance requires an archive node, currently that add-on is $250/mo
@@ -76,7 +76,7 @@ describe('DAIInterestRateModel', () => {
       const {kovan, root, accounts} = await getKovanFork();
 
       // TODO: Get contract craz
-      let {contract: model} = await saddle.deployFull('DAIInterestRateModel', [
+      let {contract: model} = await saddle.deployFull('DAIInterestRateModelV2', [
         etherUnsigned(0.8e18),
         etherUnsigned(0.9e18),
         "0xea190dbdc7adf265260ec4da6e9675fd4f5a78bb",
@@ -151,7 +151,7 @@ describe('DAIInterestRateModel', () => {
             etherUnsigned(perSecondBase)
           ]);
 
-          const daiIRM = await deploy('DAIInterestRateModel', [
+          const daiIRM = await deploy('DAIInterestRateModelV2', [
             etherUnsigned(jump),
             etherUnsigned(kink),
             pot._address,
@@ -227,7 +227,7 @@ describe('DAIInterestRateModel', () => {
             etherUnsigned(perSecondBase)
           ]);
 
-          const daiIRM = await deploy('DAIInterestRateModel', [
+          const daiIRM = await deploy('DAIInterestRateModelV2', [
             etherUnsigned(jump),
             etherUnsigned(kink),
             pot._address,
