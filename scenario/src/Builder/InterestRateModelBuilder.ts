@@ -22,7 +22,7 @@ import {getContract, getTestContract} from '../Contract';
 const FixedInterestRateModel = getTestContract('InterestRateModelHarness');
 const WhitePaperInterestRateModel = getContract('WhitePaperInterestRateModel');
 const JumpRateModel = getContract('JumpRateModel');
-const DAIInterestRateModel = getContract('DAIInterestRateModel');
+const DAIInterestRateModel = getContract('DAIInterestRateModelV2');
 
 export interface InterestRateModelData {
   invokation: Invokation<InterestRateModel>
