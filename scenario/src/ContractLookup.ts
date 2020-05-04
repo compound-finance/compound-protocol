@@ -2,7 +2,6 @@ import { Map } from 'immutable';
 
 import { Event } from './Event';
 import { World } from './World';
-import { accountMap } from './Accounts';
 import { Contract } from './Contract';
 import { mustString } from './Utils';
 
@@ -16,6 +15,7 @@ import { Erc20 } from './Contract/Erc20';
 import { InterestRateModel } from './Contract/InterestRateModel';
 import { PriceOracle } from './Contract/PriceOracle';
 import { Timelock } from './Contract/Timelock';
+import { AnchoredView } from './Contract/AnchoredView';
 
 type ContractDataEl = string | Map<string, object> | undefined;
 
@@ -111,6 +111,10 @@ export function getGovernorAddress(world: World, governorArg: string): string {
 
 export async function getPriceOracleProxy(world: World): Promise<PriceOracle> {
   return getWorldContract(world, [['Contracts', 'PriceOracleProxy']]);
+}
+
+export async function getAnchoredView(world: World): Promise<AnchoredView> {
+  return getWorldContract(world, [['Contracts', 'AnchoredView']]);
 }
 
 export async function getPriceOracle(world: World): Promise<PriceOracle> {
