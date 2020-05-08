@@ -1,12 +1,12 @@
 const {
   encodeParameters,
-  bigNumberify,
+  etherUnsigned,
   freezeTime,
   keccak256
 } = require('./Utils/Ethereum');
 
-const oneWeekInSeconds = bigNumberify(7 * 24 * 60 * 60);
-const zero = bigNumberify(0);
+const oneWeekInSeconds = etherUnsigned(7 * 24 * 60 * 60);
+const zero = etherUnsigned(0);
 const gracePeriod = oneWeekInSeconds.mul(2);
 
 describe('Timelock', () => {
@@ -19,7 +19,7 @@ describe('Timelock', () => {
   let value = zero;
   let signature = 'setDelay(uint256)';
   let data = encodeParameters(['uint256'], [newDelay]);
-  let revertData = encodeParameters(['uint256'], [bigNumberify(60 * 60)]);
+  let revertData = encodeParameters(['uint256'], [etherUnsigned(60 * 60)]);
   let eta;
   let queuedTxHash;
 
@@ -27,7 +27,7 @@ describe('Timelock', () => {
     [root, notAdmin, newAdmin] = accounts;
     timelock = await deploy('TimelockHarness', [root, delay]);
 
-    blockTimestamp = bigNumberify(100);
+    blockTimestamp = etherUnsigned(100);
     await freezeTime(blockTimestamp.toNumber())
     target = timelock.options.address;
     eta = blockTimestamp.add(delay);
@@ -286,7 +286,7 @@ describe('Timelock', () => {
     beforeEach(async () => {
       const configuredDelay = await call(timelock, 'delay');
 
-      delay = bigNumberify(configuredDelay);
+      delay = etherUnsigned(configuredDelay);
       signature = 'setPendingAdmin(address)';
       data = encodeParameters(['address'], [newAdmin]);
       eta = blockTimestamp.add(delay);

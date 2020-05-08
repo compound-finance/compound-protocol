@@ -92,6 +92,12 @@ async function getAssetsIn(world: World, comptroller: Comptroller, user: string)
   return new ListV(assetsList.map((a) => new AddressV(a)));
 }
 
+async function getCompMarkets(world: World, comptroller: Comptroller): Promise<ListV> {
+  let mkts = await comptroller.methods.getCompMarkets().call();
+
+  return new ListV(mkts.map((a) => new AddressV(a)));
+}
+
 async function checkListed(world: World, comptroller: Comptroller, cToken: CToken): Promise<BoolV> {
   let {0: isListed, 1: _collateralFactorMantissa} = await comptroller.methods.markets(cToken._address).call();
 
@@ -386,6 +392,16 @@ export function comptrollerFetchers() {
         ],
         async (world, {comptroller, cToken}) => new BoolV(await comptroller.methods.borrowGuardianPaused(cToken._address).call())
     ),
+    new Fetcher<{comptroller: Comptroller}, ListV>(`
+      #### GetCompMarkets
+
+      * "GetCompMarkets" - Returns an array of the currently enabled Comp markets. To use the auto-gen array getter compMarkets(uint), use CompMarkets
+      * E.g. "Comptroller GetCompMarkets"
+      `,
+      "GetCompMarkets",
+      [new Arg("comptroller", getComptroller, {implicit: true})],
+      async(world, {comptroller}) => await getCompMarkets(world, comptroller)
+      )
   ];
 }
 

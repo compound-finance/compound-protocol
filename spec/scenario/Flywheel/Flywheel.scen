@@ -1,0 +1,56 @@
+-- NewComptroller, but with markets listed so that we can make them comp markets in constructor
+Macro FlywheelComptroller price=1.0 closeFactor=0.1 maxAssets=20
+    Unitroller Deploy
+    ---- g1
+    PriceOracle Deploy Fixed price
+    ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
+    Unitroller SetPendingImpl ScenComptrollerG1
+    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero) -- if listing cEther use ListedEtherToken to replace proxy
+    ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracleProxy Address) closeFactor maxAssets
+    --list some tokens
+    ListedCToken ZRX cZRX initialExchangeRate:1e9
+    ListedCToken DAI cDAI initialExchangeRate:1e9
+    ----g2
+    ComptrollerImpl Deploy StandardG2 ComptrollerG2 --dont think we need scen
+    Unitroller SetPendingImpl ComptrollerG2
+    ComptrollerImpl ComptrollerG2 BecomeG2
+    -- final
+    ComptrollerImpl Deploy Scenario ComptrollerScen
+    Unitroller SetPendingImpl ComptrollerScen
+    ComptrollerImpl ComptrollerScen Become [cZRX cDAI]
+
+Pending "Accrue COMP during a mint"
+
+Pending "Accrue COMP during a borrow"
+
+Pending "Accrue COMP during a redeem"
+
+Pending "Accrue COMP during a repayBorrow"
+
+Pending "Accrue COMP during a repayBorrowBehalf"
+--make sure it works with repay behalf 0
+
+Pending "Accrue COMP during a liquidation"
+--make sure to verify balance for both liquidator and borrower
+
+Pending "Accrue COMP during a transfer"
+--make sure to verify balance for both sender and receiver
+
+Pending "Add a market via admin action, then accrue COMP"
+--verify all COMP speeds are correct and new comp index has been added
+--mint(), accrue comp for new market
+
+Pending "Remove a market via admin action, then accrue and transfer previously earned COMP"
+--verify all COMP speeds are correct and new comp index has been added, mint(), accrue comp for recently dropped market
+
+Pending "Accrue COMP in multiple markets simultaneously"
+--try one borrow and one supply
+
+Pending "Governance Update COMP Speed"
+
+Pending "Comptroller updgrade to change COMP speed"
+
+Pending "Replenish COMP in Comptroller"
+
+Pending "Changing COMP rate continues to distribute at the correct speed"
+

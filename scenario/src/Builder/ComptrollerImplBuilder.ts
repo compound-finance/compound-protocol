@@ -8,10 +8,14 @@ import { Arg, Fetcher, getFetcherValue } from '../Command';
 import { storeAndSaveContract } from '../Networks';
 import { getContract, getTestContract } from '../Contract';
 
-const ComptrollerContract = getContract('Comptroller');
 const ComptrollerG1Contract = getContract('ComptrollerG1');
 const ComptrollerScenarioG1Contract = getTestContract('ComptrollerScenarioG1');
+
+const ComptrollerG2Contract = getContract('ComptrollerG2');
+
 const ComptrollerScenarioContract = getTestContract('ComptrollerScenario');
+const ComptrollerContract = getContract('Comptroller');
+
 const ComptrollerBorkedContract = getTestContract('ComptrollerBorked');
 
 export interface ComptrollerImplData {
@@ -61,6 +65,24 @@ export async function buildComptrollerImpl(
       })
     ),
     new Fetcher<{ name: StringV }, ComptrollerImplData>(
+      `
+        #### StandardG2
+
+        * "StandardG2 name:<String>" - The standard generation 2 Comptroller contract
+          * E.g. "Comptroller Deploy StandardG2 MyStandard"
+      `,
+      'StandardG2',
+      [new Arg('name', getStringV)],
+      async (world, { name }) => {
+        return {
+          invokation: await ComptrollerG2Contract.deploy<ComptrollerImpl>(world, from, []),
+          name: name.val,
+          contract: 'ComptrollerG2',
+          description: 'StandardG2 Comptroller Impl'
+        };
+      }
+    ),
+        new Fetcher<{ name: StringV }, ComptrollerImplData>(
       `
         #### StandardG1
 

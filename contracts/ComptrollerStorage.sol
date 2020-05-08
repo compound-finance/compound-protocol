@@ -94,3 +94,37 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
     mapping(address => bool) public mintGuardianPaused;
     mapping(address => bool) public borrowGuardianPaused;
 }
+
+contract ComptrollerV3Storage is ComptrollerV2Storage {
+    struct CompMarketState {
+        /// @notice The market's last updated compBorrowIndex or compSupplyIndex
+        uint224 index;
+
+        /// @notice The block number the index was last updated at
+        uint32 block;
+    }
+
+    /// @notice A list of the markets earning COMP
+    CToken[] public compMarkets;
+
+    /// @notice The rate at which the flywheel distributes COMP, per block
+    uint public compRate;
+
+    /// @notice The portion of compRate that each market currently receives
+    mapping(address => uint) public compSpeeds;
+
+    /// @notice The COMP market supply state for each market
+    mapping(address => CompMarketState) public compSupplyState;
+
+    /// @notice The COMP market borrow state for each market
+    mapping(address => CompMarketState) public compBorrowState;
+
+    /// @notice The COMP borrow index for each supplier for each market as of the last time they accrued COMP
+    mapping(address => mapping(address => uint)) public compSupplierIndex;
+
+    /// @notice The COMP borrow index for each borrower for each market as of the last time they accrued COMP
+    mapping(address => mapping(address => uint)) public compBorrowerIndex;
+
+    /// @notice The COMP accrued but not yet transferred to each user
+    mapping(address => uint) public compAccrued;
+}

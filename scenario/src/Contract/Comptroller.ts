@@ -45,6 +45,7 @@ interface ComptrollerMethods {
   seizeGuardianPaused(): Callable<boolean>
   mintGuardianPaused(market: string): Callable<boolean>
   borrowGuardianPaused(market: string): Callable<boolean>
+  getCompMarkets(): Callable<string[]>
 }
 
 export interface Comptroller extends Contract {

@@ -975,8 +975,9 @@ const fetchers = [
 ];
 
 let contractFetchers = [
-  "Counter",
-  "CompoundLens"
+  { contract: "Counter", implicit: false },
+  { contract: "CompoundLens", implicit: false },
+  { contract: "Dripper", implicit: true }
 ];
 
 export async function getFetchers(world: World) {
@@ -984,8 +985,8 @@ export async function getFetchers(world: World) {
     return { world, fetchers: world.fetchers };
   }
 
-  let allFetchers = fetchers.concat(await Promise.all(contractFetchers.map((contractName) => {
-    return buildContractFetcher(world, contractName);
+  let allFetchers = fetchers.concat(await Promise.all(contractFetchers.map(({contract, implicit}) => {
+    return buildContractFetcher(world, contract, implicit);
   })));
 
   return { world: world.set('fetchers', allFetchers), fetchers: allFetchers };
