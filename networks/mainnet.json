@@ -21,6 +21,7 @@
         "cBAT": "0x6C8c6b02E7b2BE14d4fA6022Dfd6d75921D90E4E",
         "Base500bps_Slope1500bps": "0xd928c8ead620bb316d2cefe3caf81dc2dec6ff63",
         "DSR_Kink_9000bps_Jump_12000bps_AssumedRF_500bps": "0xec163986cC9a6593D6AdDcBFf5509430D348030F",
+        "DSR_Kink_9000bps_Jump_12000bps_AssumedRF_20000bps": "0x000000007675b5E1dA008f037A0800B309e0C493",
         "Base0bps_Slope2000bps": "0xc64C4cBA055eFA614CE01F4BAD8A9F519C4f8FaB",
         "BAT": "0x0D8775F648430679A709E98d2b0Cb6250d2887EF",
         "cUsdtDelegate": "0x976aa93ca5Aaa569109f4267589c619a097f001D",
@@ -58,6 +59,7 @@
         "cUSDT": 9879363,
         "cBAT": 7710735,
         "DSR_Kink_9000bps_Jump_12000bps_AssumedRF_500bps": 9122577,
+        "DSR_Kink_9000bps_Jump_12000bps_AssumedRF_20000bps": 9955628,
         "Base0bps_Slope2000bps": 7710727,
         "cUsdtDelegate": 9879348,
         "Base200bps_Slope1000bps": 9321474,
@@ -435,6 +437,16 @@
             "pot": "0x197e90f9fad81970ba7976f33cbd77088e5d7cf7",
             "jug": "0x19c0976f590d67707e62397c87829d896dc0f1f1",
             "address": "0xec163986cC9a6593D6AdDcBFf5509430D348030F"
+        },
+        "DSR_Kink_9000bps_Jump_12000bps_AssumedRF_20000bps": {
+            "name": "DSR_Kink_9000bps_Jump_12000bps_AssumedRF_20000bps",
+            "contract": "DAIInterestRateModelV2",
+            "description": "DAIInterestRateModelV2 jump=1200000000000000000 kink=900000000000000000 pot=0x197e90f9fad81970ba7976f33cbd77088e5d7cf7 jug=0x19c0976f590d67707e62397c87829d896dc0f1f1",
+            "jump": "1200000000000000000",
+            "kink": "900000000000000000",
+            "pot": "0x197e90f9fad81970ba7976f33cbd77088e5d7cf7",
+            "jug": "0x19c0976f590d67707e62397c87829d896dc0f1f1",
+            "address": "0x000000007675b5E1dA008f037A0800B309e0C493"
         },
         "Base0bps_Slope2000bps": {
             "name": "Base0bps_Slope2000bps",
