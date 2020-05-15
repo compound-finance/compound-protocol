@@ -79,12 +79,40 @@ contract ComptrollerHarness is Comptroller {
     function getBlockNumber() public view returns (uint) {
         return blockNumber;
     }
+
+    function getCompMarkets() public view returns (address[] memory) {
+        uint m = allMarkets.length;
+        uint n = 0;
+        for (uint i = 0; i < m; i++) {
+            if (markets[address(allMarkets[i])].isComped) {
+                n++;
+            }
+        }
+
+        address[] memory compMarkets = new address[](n);
+        uint k = 0;
+        for (uint i = 0; i < m; i++) {
+            if (markets[address(allMarkets[i])].isComped) {
+                compMarkets[k++] = address(allMarkets[i]);
+            }
+        }
+        return compMarkets;
+    }
 }
 
 contract ComptrollerScenario is Comptroller {
     uint public blockNumber;
+    address public compAddress;
 
     constructor() Comptroller() public {}
+
+    function setCompAddress(address compAddress_) public {
+        compAddress = compAddress_;
+    }
+
+    function getCompAddress() public view returns (address) {
+        return compAddress;
+    }
 
     function membershipLength(CToken cToken) public view returns (uint) {
         return accountAssets[address(cToken)].length;
@@ -102,6 +130,25 @@ contract ComptrollerScenario is Comptroller {
 
     function getBlockNumber() public view returns (uint) {
         return blockNumber;
+    }
+
+    function getCompMarkets() public view returns (address[] memory) {
+        uint m = allMarkets.length;
+        uint n = 0;
+        for (uint i = 0; i < m; i++) {
+            if (markets[address(allMarkets[i])].isComped) {
+                n++;
+            }
+        }
+
+        address[] memory compMarkets = new address[](n);
+        uint k = 0;
+        for (uint i = 0; i < m; i++) {
+            if (markets[address(allMarkets[i])].isComped) {
+                compMarkets[k++] = address(allMarkets[i]);
+            }
+        }
+        return compMarkets;
     }
 
     function unlist(CToken cToken) public {

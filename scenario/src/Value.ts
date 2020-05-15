@@ -376,7 +376,7 @@ export class ListV implements Value {
 
   compareTo(world: World, given: Value): boolean {
     if (given instanceof ListV || given instanceof ArrayV) {
-      return this.val.every((el, i) => el.compareTo(world, given.val[i]));
+      return this.val.every((el, i) => el.compareTo(world, given.val[i] || new NothingV()));
     } else {
       throw new Error(`Cannot compare ${typeof this} to ${typeof given} (${this.toString()}, ${given.toString()})`);
     }
@@ -404,7 +404,7 @@ export class ArrayV<T extends Value> implements Value {
 
   compareTo(world: World, given: Value): boolean {
     if (given instanceof ListV || given instanceof ArrayV) {
-      return this.val.every((el, i) => el.compareTo(world, given.val[i]));
+      return this.val.every((el, i) => el.compareTo(world, given.val[i] || new NothingV()));
     } else {
       throw new Error(`Cannot compare ${typeof this} to ${typeof given} (${this.toString()}, ${given.toString()})`);
     }

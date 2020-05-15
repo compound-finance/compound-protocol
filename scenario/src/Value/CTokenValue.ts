@@ -352,25 +352,26 @@ export function cTokenFetchers() {
       (world, {cToken}) => getInterestRate(world, cToken),
       {namePos: 1}
     ),
-    new Fetcher<{cToken: CToken, signature: StringV}, StringV>(`
-        #### Call
+    new Fetcher<{cToken: CToken, signature: StringV}, NumberV>(`
+        #### CallNum
 
         * "CToken <CToken> Call <signature>" - Simple direct call method, for now with no parameters
-          * E.g. "CToken cZRX Call \"iHaveSpoken()\""
+          * E.g. "CToken cZRX Call \"borrowIndex()\""
       `,
-      "Call",
+      "CallNum",
       [
         new Arg("cToken", getCTokenV),
         new Arg("signature", getStringV),
       ],
-      async (world, {cToken, signature}) => new StringV(
-        world.web3.eth.abi.decodeParameter('string',
-          await world.web3.eth.call({
+      async (world, {cToken, signature}) => {
+        const res = await world.web3.eth.call({
             to: cToken._address,
             data: world.web3.eth.abi.encodeFunctionSignature(signature.val)
           })
-        )
-      ),
+        const resNum : any = world.web3.eth.abi.decodeParameter('uint256',res);
+        return new NumberV(resNum);
+      }
+      ,
       {namePos: 1}
     ),
     new Fetcher<{ cToken: CToken }, AddressV>(`

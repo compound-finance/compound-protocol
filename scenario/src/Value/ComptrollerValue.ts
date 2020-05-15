@@ -4,6 +4,7 @@ import {Comptroller} from '../Contract/Comptroller';
 import {CToken} from '../Contract/CToken';
 import {
   getAddressV,
+  getCoreValue,
   getStringV,
   getNumberV
 } from '../CoreValue';
@@ -19,6 +20,7 @@ import {Arg, Fetcher, getFetcherValue} from '../Command';
 import {getComptroller} from '../ContractLookup';
 import {encodedNumber} from '../Encoding';
 import {getCTokenV} from '../Value/CTokenValue';
+import { encodeParameters, encodeABI } from '../Utils';
 
 export async function getComptrollerAddress(world: World, comptroller: Comptroller): Promise<AddressV> {
   return new AddressV(comptroller._address);
@@ -401,7 +403,121 @@ export function comptrollerFetchers() {
       "GetCompMarkets",
       [new Arg("comptroller", getComptroller, {implicit: true})],
       async(world, {comptroller}) => await getCompMarkets(world, comptroller)
-      )
+      ),
+
+    new Fetcher<{comptroller: Comptroller, signature: StringV, callArgs: StringV[]}, NumberV>(`
+        #### CallNum
+
+        * "CallNum signature:<String> ...callArgs<CoreValue>" - Simple direct call method
+          * E.g. "Comptroller CallNum \"compSpeeds(address)\" (Address Coburn)"
+      `,
+      "CallNum",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("signature", getStringV),
+        new Arg("callArgs", getCoreValue, {variadic: true, mapped: true})
+      ],
+      async (world, {comptroller, signature, callArgs}) => {
+        const fnData = encodeABI(world, signature.val, callArgs.map(a => a.val));
+        const res = await world.web3.eth.call({
+            to: comptroller._address,
+            data: fnData
+          })
+        const resNum : any = world.web3.eth.abi.decodeParameter('uint256',res);
+        return new NumberV(resNum);
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken, key: StringV}, NumberV>(`
+        #### CompSupplyState(address)
+
+        * "Comptroller CompBorrowState cZRX "index"
+      `,
+      "CompSupplyState",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+        new Arg("key", getStringV),
+      ],
+      async (world, {comptroller, CToken, key}) => {
+        const result = await comptroller.methods.compSupplyState(CToken._address).call();
+        return new NumberV(result[key.val]);
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken, key: StringV}, NumberV>(`
+        #### CompBorrowState(address)
+
+        * "Comptroller CompBorrowState cZRX "index"
+      `,
+      "CompBorrowState",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+        new Arg("key", getStringV),
+      ],
+      async (world, {comptroller, CToken, key}) => {
+        const result = await comptroller.methods.compBorrowState(CToken._address).call();
+        return new NumberV(result[key.val]);
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, account: AddressV, key: StringV}, NumberV>(`
+        #### CompAccrued(address)
+
+        * "Comptroller CompAccrued Coburn
+      `,
+      "CompAccrued",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("account", getAddressV),
+      ],
+      async (world, {comptroller,account}) => {
+        const result = await comptroller.methods.compAccrued(account.val).call();
+        return new NumberV(result);
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken, account: AddressV}, NumberV>(`
+        #### compSupplierIndex
+
+        * "Comptroller CompSupplierIndex cZRX Coburn
+      `,
+      "CompSupplierIndex",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+        new Arg("account", getAddressV),
+      ],
+      async (world, {comptroller, CToken, account}) => {
+        return new NumberV(await comptroller.methods.compSupplierIndex(CToken._address, account.val).call());
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken, account: AddressV}, NumberV>(`
+        #### CompBorrowerIndex
+
+        * "Comptroller CompBorrowerIndex cZRX Coburn
+      `,
+      "CompBorrowerIndex",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+        new Arg("account", getAddressV),
+      ],
+      async (world, {comptroller, CToken, account}) => {
+        return new NumberV(await comptroller.methods.compBorrowerIndex(CToken._address, account.val).call());
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken}, NumberV>(`
+        #### CompSpeed
+
+        * "Comptroller CompSpeed cZRX
+      `,
+      "CompSpeed",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+      ],
+      async (world, {comptroller, CToken}) => {
+        return new NumberV(await comptroller.methods.compSpeeds(CToken._address).call());
+      }
+    )
   ];
 }
 

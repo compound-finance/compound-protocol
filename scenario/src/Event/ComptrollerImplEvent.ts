@@ -3,7 +3,7 @@ import { addAction, describeUser, World } from '../World';
 import { ComptrollerImpl } from '../Contract/ComptrollerImpl';
 import { Unitroller } from '../Contract/Unitroller';
 import { invoke } from '../Invokation';
-import { getAddressV, getArrayV, getEventV, getExpNumberV, getNumberV, getStringV } from '../CoreValue';
+import { getAddressV, getArrayV, getEventV, getExpNumberV, getNumberV, getStringV, getCoreValue } from '../CoreValue';
 import { ArrayV, AddressV, EventV, NumberV, StringV } from '../Value';
 import { Arg, Command, View, processCommandEvent } from '../Command';
 import { buildComptrollerImpl } from '../Builder/ComptrollerImplBuilder';
@@ -12,6 +12,7 @@ import { getComptrollerImpl, getComptrollerImplData, getUnitroller } from '../Co
 import { verify } from '../Verify';
 import { mergeContractABI } from '../Networks';
 import { encodedNumber } from '../Encoding';
+import { encodeABI } from '../Utils';
 
 async function genComptrollerImpl(world: World, from: string, params: Event): Promise<World> {
   let { world: nextWorld, comptrollerImpl, comptrollerImplData } = await buildComptrollerImpl(
@@ -37,10 +38,11 @@ async function become(
   unitroller: Unitroller,
   compRate: encodedNumber,
   compMarkets: string[],
+  otherMarkets: string[]
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    comptrollerImpl.methods._become(unitroller._address, compRate, compMarkets),
+    comptrollerImpl.methods._become(unitroller._address, compRate, compMarkets, otherMarkets),
     from,
     ComptrollerErrorReporter
   );
@@ -250,11 +252,12 @@ export function comptrollerImplCommands() {
       comptrollerImpl: ComptrollerImpl;
       compRate: NumberV;
       compMarkets: ArrayV<AddressV>;
+      otherMarkets: ArrayV<AddressV>;
     }>(
       `
         #### Become
 
-        * "ComptrollerImpl <Impl> Become <Rate> <Markets>" - Become the comptroller, if possible.
+        * "ComptrollerImpl <Impl> Become <Rate> <CompMarkets> <OtherMarkets>" - Become the comptroller, if possible.
           * E.g. "ComptrollerImpl MyImpl Become 0.1e18 [cDAI, cETH, cUSDC]
       `,
       'Become',
@@ -262,10 +265,11 @@ export function comptrollerImplCommands() {
         new Arg('unitroller', getUnitroller, { implicit: true }),
         new Arg('comptrollerImpl', getComptrollerImpl),
         new Arg('compRate', getNumberV, { default: new NumberV(1e18) }),
-        new Arg('compMarkets', getArrayV(getAddressV))
+        new Arg('compMarkets', getArrayV(getAddressV),  {default: new ArrayV([]) }),
+        new Arg('otherMarkets', getArrayV(getAddressV), { default: new ArrayV([]) })
       ],
-      (world, from, { unitroller, comptrollerImpl, compRate, compMarkets }) => {
-        return become(world, from, comptrollerImpl, unitroller, compRate.encode(), compMarkets.val.map(a => a.val))
+      (world, from, { unitroller, comptrollerImpl, compRate, compMarkets, otherMarkets }) => {
+        return become(world, from, comptrollerImpl, unitroller, compRate.encode(), compMarkets.val.map(a => a.val), otherMarkets.val.map(a => a.val))
       },
       { namePos: 1 }
     ),

@@ -65,9 +65,10 @@ async function makeComptroller(opts = {}) {
     const comp = opts.comp || await deploy('Comp', [opts.compOwner || root]);
     const compRate = etherUnsigned(dfn(opts.compRate, 1e18));
     const compMarkets = opts.compMarkets || [];
+    const otherMarkets = opts.otherMarkets || [];
 
     await send(unitroller, '_setPendingImplementation', [comptroller._address]);
-    await send(comptroller, '_become', [unitroller._address, compRate, compMarkets]);
+    await send(comptroller, '_become', [unitroller._address, compRate, compMarkets, otherMarkets]);
     mergeInterface(unitroller, comptroller);
     await send(unitroller, '_setLiquidationIncentive', [liquidationIncentive]);
     await send(unitroller, '_setCloseFactor', [closeFactor]);

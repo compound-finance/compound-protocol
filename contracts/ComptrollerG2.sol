@@ -986,7 +986,7 @@ contract ComptrollerG2 is ComptrollerV2Storage, ComptrollerInterface, Comptrolle
 
         cToken.isCToken(); // Sanity check to make sure its really a CToken
 
-        markets[address(cToken)] = Market({isListed: true, collateralFactorMantissa: 0});
+        markets[address(cToken)] = Market({isListed: true, isComped: false, collateralFactorMantissa: 0});
         emit MarketListed(cToken);
 
         return uint(Error.NO_ERROR);

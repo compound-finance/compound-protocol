@@ -12,7 +12,8 @@ import {
   getExpNumberV,
   getNumberV,
   getPercentV,
-  getStringV
+  getStringV,
+  getCoreValue
 } from '../CoreValue';
 import {
   AddressV,
@@ -28,6 +29,7 @@ import {getComptroller, getComptrollerImpl} from '../ContractLookup';
 import {getLiquidity} from '../Value/ComptrollerValue';
 import {getCTokenV} from '../Value/CTokenValue';
 import {encodedNumber} from '../Encoding';
+import {encodeABI, rawValues} from "../Utils";
 
 async function genComptroller(world: World, from: string, params: Event): Promise<World> {
   let {world: nextWorld, comptrollerImpl: comptroller, comptrollerImplData: comptrollerData} = await buildComptrollerImpl(world, from, params);
@@ -182,6 +184,76 @@ async function fastForward(world: World, from: string, comptroller: Comptroller,
   world = addAction(
     world,
     `Fast forward ${blocks.show()} blocks to #${invokation.value}`,
+    invokation
+  );
+
+  return world;
+}
+
+async function sendAny(world: World, from:string, comptroller: Comptroller, signature: string, callArgs: string[]): Promise<World> {
+  const fnData = encodeABI(world, signature, callArgs);
+  await world.web3.eth.sendTransaction({
+      to: comptroller._address,
+      data: fnData,
+      from: from
+    })
+  return world;
+}
+
+async function addCompMarkets(world: World, from: string, comptroller: Comptroller, cTokens: CToken[]): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._addCompMarkets(cTokens.map(c => c._address)), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Added COMP markets ${cTokens.map(c => c.name)}`,
+    invokation
+  );
+
+  return world;
+}
+
+async function dropCompMarket(world: World, from: string, comptroller: Comptroller, cToken: CToken): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._dropCompMarket(cToken._address), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Drop COMP market ${cToken.name}`,
+    invokation
+  );
+
+  return world;
+}
+
+async function refreshCompSpeeds(world: World, from: string, comptroller: Comptroller): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods.refreshCompSpeeds(), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Refreshed COMP speeds`,
+    invokation
+  );
+
+  return world;
+}
+
+async function claimComp(world: World, from: string, comptroller: Comptroller, holder: string): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods.claimComp(holder), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Comp claimed by ${holder}`,
+    invokation
+  );
+
+  return world;
+}
+
+async function setCompRate(world: World, from: string, comptroller: Comptroller, rate: NumberV): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setCompRate(rate.encode()), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Comp rate set to ${rate.show()}`,
     invokation
   );
 
@@ -537,7 +609,86 @@ export function comptrollerCommands() {
 
       ],
       (world, {comptroller, input}) => decodeCall(world, comptroller, input.val)
-    )
+    ),
+
+    new Command<{comptroller: Comptroller, signature: StringV, callArgs: StringV[]}>(`
+      #### Send
+      * Comptroller Send functionSignature:<String> callArgs[] - Sends any transaction to comptroller
+      * E.g: Comptroller Send "setCompAddress(address)" (Address COMP)
+      `,
+      "Send",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("signature", getStringV),
+        new Arg("callArgs", getCoreValue, {variadic: true, mapped: true})
+      ],
+      (world, from, {comptroller, signature, callArgs}) => sendAny(world, from, comptroller, signature.val, rawValues(callArgs))
+    ),
+    new Command<{comptroller: Comptroller, cTokens: CToken[]}>(`
+      #### AddCompMarkets
+
+      * "Comptroller AddCompMarkets (<Address> ...)" - Makes a market COMP-enabled
+      * E.g. "Comptroller AddCompMarkets (cZRX cBAT)
+      `,
+      "AddCompMarkets",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("cTokens", getCTokenV, {mapped: true})
+      ],
+      (world, from, {comptroller, cTokens}) => addCompMarkets(world, from, comptroller, cTokens)
+     ),
+    new Command<{comptroller: Comptroller, cToken: CToken}>(`
+      #### DropCompMarket
+
+      * "Comptroller DropCompMarket <Address>" - Makes a market COMP
+      * E.g. "Comptroller DropCompMarket cZRX
+      `,
+      "DropCompMarket",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("cToken", getCTokenV)
+      ],
+      (world, from, {comptroller, cToken}) => dropCompMarket(world, from, comptroller, cToken)
+     ),
+
+    new Command<{comptroller: Comptroller}>(`
+      #### RefreshCompSpeeds
+
+      * "Comptroller RefreshCompSpeeds" - Recalculates all the COMP market speeds
+      * E.g. "Comptroller RefreshCompSpeeds
+      `,
+      "RefreshCompSpeeds",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true})
+      ],
+      (world, from, {comptroller}) => refreshCompSpeeds(world, from, comptroller)
+    ),
+    new Command<{comptroller: Comptroller, holder: AddressV}>(`
+      #### ClaimComp
+
+      * "Comptroller ClaimComp <holder>" - Claims comp
+      * E.g. "Comptroller ClaimComp Geoff
+      `,
+      "ClaimComp",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("holder", getAddressV)
+      ],
+      (world, from, {comptroller, holder}) => claimComp(world, from, comptroller, holder.val)
+    ),
+    new Command<{comptroller: Comptroller, rate: NumberV}>(`
+      #### SetCompRate
+
+      * "Comptroller SetCompRate <rate>" - Sets COMP rate
+      * E.g. "Comptroller SetCompRate 1e18
+      `,
+      "SetCompRate",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("rate", getNumberV)
+      ],
+      (world, from, {comptroller, rate}) => setCompRate(world, from, comptroller, rate)
+    ),
   ];
 }
 

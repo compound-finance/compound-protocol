@@ -15,6 +15,7 @@ interface ComptrollerImplMethods {
     comptroller: string,
     compRate: encodedNumber,
     compMarkets: string[],
+    otherMarkets: string[]
   ): Sendable<string>;
 }
 

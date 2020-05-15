@@ -29,7 +29,7 @@ contract CompoundLens {
     function cTokenMetadata(CToken cToken) public returns (CTokenMetadata memory) {
         uint exchangeRateCurrent = cToken.exchangeRateCurrent();
         Comptroller comptroller = Comptroller(address(cToken.comptroller()));
-        (bool isListed, uint collateralFactorMantissa) = comptroller.markets(address(cToken));
+        (bool isListed, uint collateralFactorMantissa, ) = comptroller.markets(address(cToken));
         address underlyingAssetAddress;
         uint underlyingDecimals;
 

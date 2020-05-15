@@ -12,6 +12,7 @@ const ComptrollerG1Contract = getContract('ComptrollerG1');
 const ComptrollerScenarioG1Contract = getTestContract('ComptrollerScenarioG1');
 
 const ComptrollerG2Contract = getContract('ComptrollerG2');
+const ComptrollerScenarioG2Contract = getContract('ComptrollerScenarioG2');
 
 const ComptrollerScenarioContract = getTestContract('ComptrollerScenario');
 const ComptrollerContract = getContract('Comptroller');
@@ -45,6 +46,22 @@ export async function buildComptrollerImpl(
         name: name.val,
         contract: 'ComptrollerScenarioG1',
         description: 'ScenarioG1 Comptroller Impl'
+      })
+    ),
+    new Fetcher<{ name: StringV }, ComptrollerImplData>(
+      `
+        #### ScenarioG2
+
+        * "ScenarioG2 name:<String>" - The Comptroller Scenario for local testing (G2)
+          * E.g. "ComptrollerImpl Deploy ScenarioG2 MyScen"
+      `,
+      'ScenarioG2',
+      [new Arg('name', getStringV)],
+      async (world, { name }) => ({
+        invokation: await ComptrollerScenarioG2Contract.deploy<ComptrollerImpl>(world, from, []),
+        name: name.val,
+        contract: 'ComptrollerScenarioG2Contract',
+        description: 'ScenarioG2 Comptroller Impl'
       })
     ),
 

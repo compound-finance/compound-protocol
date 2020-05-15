@@ -999,10 +999,20 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
 
         cToken.isCToken(); // Sanity check to make sure its really a CToken
 
-        markets[address(cToken)] = Market({isListed: true, collateralFactorMantissa: 0});
+        markets[address(cToken)] = Market({isListed: true, isComped: false, collateralFactorMantissa: 0});
+
+        _addMarketInternal(address(cToken));
+
         emit MarketListed(cToken);
 
         return uint(Error.NO_ERROR);
+    }
+
+    function _addMarketInternal(address cToken) internal {
+        for (uint i = 0; i < allMarkets.length; i ++) {
+            require(allMarkets[i] != CToken(cToken), "market already added");
+        }
+        allMarkets.push(CToken(cToken));
     }
 
     /**
@@ -1065,13 +1075,26 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         return state;
     }
 
-    function _become(Unitroller unitroller, uint compRate_, address[] memory compMarkets_) public {
+    function _become(Unitroller unitroller, uint compRate_, address[] memory compMarketsToAdd, address[] memory otherMarketsToAdd) public {
         require(msg.sender == unitroller.admin(), "only unitroller admin can change brains");
         require(unitroller._acceptImplementation() == 0, "change not authorized");
 
-        Comptroller freshBrainedComptroller = Comptroller(address(unitroller));
-        freshBrainedComptroller._setCompRate(compRate_);
-        freshBrainedComptroller._addCompMarkets(compMarkets_);
+        Comptroller(address(unitroller))._becomeG3(compRate_, compMarketsToAdd, otherMarketsToAdd);
+    }
+
+    function _becomeG3(uint compRate_, address[] memory compMarketsToAdd, address[] memory otherMarketsToAdd) public {
+        require(msg.sender == comptrollerImplementation, "only brains can become itself");
+
+        for (uint i = 0; i < compMarketsToAdd.length; i++) {
+            _addMarketInternal(address(compMarketsToAdd[i]));
+        }
+
+        for (uint i = 0; i < otherMarketsToAdd.length; i++) {
+            _addMarketInternal(address(otherMarketsToAdd[i]));
+        }
+
+        _setCompRate(compRate_);
+        _addCompMarkets(compMarketsToAdd);
     }
 
     /**
@@ -1087,33 +1110,33 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      * @notice Recalculate and update COMP speeds for all COMP markets
      */
     function refreshCompSpeeds() public {
-        CToken[] memory markets = compMarkets;
+        CToken[] memory allMarkets_ = allMarkets;
 
-        for (uint i = 0; i < markets.length; i++) {
-            CToken cToken = markets[i];
+        for (uint i = 0; i < allMarkets_.length; i++) {
+            CToken cToken = allMarkets_[i];
             Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
             updateCompSupplyIndex(address(cToken));
             updateCompBorrowIndex(address(cToken), borrowIndex);
         }
 
         Exp memory totalUtility = Exp({mantissa: 0});
-        Exp[] memory utilities = new Exp[](markets.length);
-        for (uint i = 0; i < markets.length; i++) {
-            CToken cToken = markets[i];
-            Exp memory assetPrice = Exp({mantissa: oracle.getUnderlyingPrice(cToken)});
-            Exp memory interestPerBlock = mul_(Exp({mantissa: cToken.borrowRatePerBlock()}), cToken.totalBorrows());
-            Exp memory utility = mul_(interestPerBlock, assetPrice);
-            utilities[i] = utility;
-            totalUtility = add_(totalUtility, utility);
+        Exp[] memory utilities = new Exp[](allMarkets_.length);
+        for (uint i = 0; i < allMarkets_.length; i++) {
+            CToken cToken = allMarkets_[i];
+            if (markets[address(cToken)].isComped) {
+                Exp memory assetPrice = Exp({mantissa: oracle.getUnderlyingPrice(cToken)});
+                Exp memory interestPerBlock = mul_(Exp({mantissa: cToken.borrowRatePerBlock()}), cToken.totalBorrows());
+                Exp memory utility = mul_(interestPerBlock, assetPrice);
+                utilities[i] = utility;
+                totalUtility = add_(totalUtility, utility);
+            }
         }
 
-        if (totalUtility.mantissa > 0) {
-            for (uint i = 0; i < markets.length; i++) {
-                CToken cToken = markets[i];
-                uint newSpeed = mul_(compRate, div_(utilities[i], totalUtility));
-                compSpeeds[address(cToken)] = newSpeed;
-                emit CompSpeedUpdated(cToken, newSpeed);
-            }
+        for (uint i = 0; i < allMarkets_.length; i++) {
+            CToken cToken = allMarkets[i];
+            uint newSpeed = totalUtility.mantissa > 0 ? mul_(compRate, div_(utilities[i], totalUtility)) : 0;
+            compSpeeds[address(cToken)] = newSpeed;
+            emit CompSpeedUpdated(cToken, newSpeed);
         }
     }
 
@@ -1238,9 +1261,9 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     function claimComp(address holder) public {
         refreshCompSpeeds();
 
-        CToken[] memory markets = compMarkets;
-        for (uint i = 0; i < markets.length; i++) {
-            CToken cToken = markets[i];
+        CToken[] memory allMarkets_ = allMarkets;
+        for (uint i = 0; i < allMarkets_.length; i++) {
+            CToken cToken = allMarkets_[i];
             Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
             distributeSupplierComp(address(cToken), holder);
             distributeBorrowerComp(address(cToken), holder, borrowIndex);
@@ -1257,7 +1280,9 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      */
     function _setCompRate(uint compRate_) public {
         require(adminOrInitializing(), "only admin can change comp rate");
+
         compRate = compRate_;
+
         refreshCompSpeeds();
     }
 
@@ -1267,20 +1292,20 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      */
     function _addCompMarkets(address[] memory cTokens) public {
         require(adminOrInitializing(), "only admin can add comp market");
+
         for (uint i = 0; i < cTokens.length; i++) {
             _addCompMarketInternal(cTokens[i]);
         }
+
         refreshCompSpeeds();
     }
 
     function _addCompMarketInternal(address cToken) internal {
-        require(markets[cToken].isListed == true, "comp market is not listed");
+        Market storage market = markets[cToken];
+        require(market.isListed == true, "comp market is not listed");
+        require(market.isComped == false, "comp market already added");
 
-        for (uint i = 0; i < compMarkets.length; i ++) {
-            require(compMarkets[i] != CToken(cToken), "comp market already added");
-        }
-
-        compMarkets.push(CToken(cToken));
+        market.isComped = true;
 
         if (compSupplyState[cToken].index == 0 && compSupplyState[cToken].block == 0) {
             compSupplyState[cToken].index = compInitialIndex;
@@ -1299,14 +1324,22 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      */
     function _dropCompMarket(address cToken) public {
         require(msg.sender == admin, "only admin can drop comp market");
-        for (uint i = 0; i < compMarkets.length; i ++) {
-            if (compMarkets[i] == CToken(cToken)) {
-                compMarkets[i] = compMarkets[compMarkets.length - 1];
-                compMarkets.length--;
-                break;
-            }
-        }
+
+        Market storage market = markets[cToken];
+        require(market.isComped == true, "market is not a comp market");
+
+        market.isComped = false;
+
         refreshCompSpeeds();
+    }
+
+    /**
+     * @notice Return all of the markets
+     * @dev The automatic getter may be used to access an individual market.
+     * @return The list of market addresses
+     */
+    function getAllMarkets() public view returns (CToken[] memory) {
+        return allMarkets;
     }
 
     function getBlockNumber() public view returns (uint) {
@@ -1319,14 +1352,5 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      */
     function getCompAddress() public view returns (address) {
         return 0xc00e94Cb662C3520282E6f5717214004A7f26888;
-    }
-
-    /**
-     * @notice Return all of the COMP markets
-     * @dev The automatic getter may be used to access an individual market.
-     * @return The list of COMP markets
-     */
-    function getCompMarkets() public view returns (CToken[] memory markets) {
-        return compMarkets;
     }
 }

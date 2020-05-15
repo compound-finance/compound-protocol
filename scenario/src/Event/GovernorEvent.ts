@@ -24,7 +24,7 @@ import { verify } from '../Verify';
 import { encodedNumber } from '../Encoding';
 import { processProposalEvent } from './ProposalEvent';
 import { processGuardianEvent } from './GovGuardianEvent';
-import { encodeParameters } from '../Utils';
+import { encodeParameters, rawValues } from '../Utils';
 import { getGovernorV } from '../Value/GovernorValue';
 
 async function genGovernor(world: World, from: string, params: Event): Promise<World> {
@@ -137,7 +137,7 @@ export function governorCommands() {
         const valuesU = values.val.map(a => a.encode());
         const signaturesU = signatures.val.map(a => a.val);
         const callDatasU: string[] = signatures.val.reduce((acc, cur, idx) => {
-          const args = callDataArgs.val[idx].val.map(a => a.val);
+          const args = rawValues(callDataArgs.val[idx]);
           acc.push(encodeParameters(world, cur.val, args));
           return acc;
         }, <string[]>[]);

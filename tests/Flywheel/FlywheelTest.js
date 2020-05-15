@@ -38,6 +38,40 @@ describe('Flywheel upgrade', () => {
       unitroller = await makeComptroller({kind: 'unitroller', unitroller, compMarkets});
       expect(await call(unitroller, 'getCompMarkets')).toEqual(compMarkets);
     });
+
+    it('adds the other markets', async () => {
+      let root = saddle.accounts[0];
+      let unitroller = await makeComptroller({kind: 'unitroller-prior'});
+      let allMarkets = await Promise.all([1, 2, 3].map(async _ => {
+        return makeCToken({comptroller: unitroller, supportMarket: true});
+      }));
+      allMarkets = allMarkets.map(c => c._address);
+      unitroller = await makeComptroller({
+        kind: 'unitroller',
+        unitroller,
+        compMarkets: allMarkets.slice(0, 1),
+        otherMarkets: allMarkets.slice(1)
+      });
+      expect(await call(unitroller, 'getAllMarkets')).toEqual(allMarkets);
+      expect(await call(unitroller, 'getCompMarkets')).toEqual(allMarkets.slice(0, 1));
+    });
+
+    it('_supportMarket() adds to all markets, and only once', async () => {
+      let root = saddle.accounts[0];
+      let unitroller = await makeComptroller({kind: 'unitroller'});
+      let allMarkets = [];
+      for (let _ of Array(10)) {
+        allMarkets.push(await makeCToken({comptroller: unitroller, supportMarket: true}));
+      }
+      expect(await call(unitroller, 'getAllMarkets')).toEqual(allMarkets.map(c => c._address));
+      expect(
+        makeComptroller({
+          kind: 'unitroller',
+          unitroller,
+          otherMarkets: [allMarkets[0]._address]
+        })
+      ).rejects.toRevert('revert market already added');
+    });
   });
 });
 
@@ -528,8 +562,8 @@ describe('Flywheel', () => {
 
       await send(comptroller, "setCompSupplyState", [mkt, idx, bn0]);
       await send(comptroller, "setCompBorrowState", [mkt, idx, bn0]);
-      await send(comptroller, "_dropCompMarket", [mkt]);
       await send(comptroller, "setBlockNumber", [bn1]);
+      await send(comptroller, "_dropCompMarket", [mkt]);
       await send(comptroller, "_addCompMarkets", [[mkt]]);
 
       const supplyState = await call(comptroller, 'compSupplyState', [mkt]);
@@ -546,7 +580,7 @@ describe('Flywheel', () => {
     it('should correctly drop a comp market if called by admin', async () => {
       await send(comptroller, '_dropCompMarket', [cLOW._address]);
       expect(await call(comptroller, 'getCompMarkets')).toEqual(
-        [cZRX, cREP].map((c) => c._address)
+        [cREP, cZRX].map((c) => c._address)
       );
     });
 
@@ -562,7 +596,14 @@ describe('Flywheel', () => {
         send(comptroller, '_dropCompMarket', [cLOW._address], {from: a1})
       ).rejects.toRevert('revert only admin can drop comp market');
     });
-  });
+
+    it('should not drop a comp market already dropped', async () => {
+      await send(comptroller, '_dropCompMarket', [cLOW._address]);
+      await expect(
+        send(comptroller, '_dropCompMarket', [cLOW._address])
+      ).rejects.toRevert('revert market is not a comp market');
+    });
+});
 
   describe('_setCompRate', () => {
     it('should correctly change comp rate if called by admin', async () => {

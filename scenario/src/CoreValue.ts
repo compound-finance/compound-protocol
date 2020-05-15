@@ -428,12 +428,7 @@ const fetchers = [
         case 'address':
           return new AddressV('0x' + padLeft(reverse(stored.slice(startVal, startVal + 40)), 40));
         case 'number':
-          let parsed = toBN('0x' + reverse(stored));
-          if (parsed.gt(toBN(1000))) {
-            return new ExpNumberV(parsed.toString(), 1e18);
-          } else {
-            return new ExpNumberV(parsed.toString(), 1);
-          }
+          return new NumberV(toBN('0x' + reverse(stored)).toString());
         default:
           return new NothingV();
       }
@@ -525,14 +520,7 @@ const fetchers = [
         case 'address':
           return new AddressV(val);
         case 'number':
-          let parsed = toBN(val);
-
-          // if the numbers are big, they are big...
-          if (parsed.gt(toBN(1000))) {
-            return new ExpNumberV(parsed.toString(), 1e18);
-          } else {
-            return new ExpNumberV(parsed.toString(), 1);
-          }
+          return new NumberV(toBN(val).toString());
         default:
           return new NothingV();
       }
