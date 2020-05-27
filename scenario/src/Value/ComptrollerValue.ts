@@ -76,7 +76,6 @@ async function getPendingAdmin(world: World, comptroller: Comptroller): Promise<
 
 async function getCollateralFactor(world: World, comptroller: Comptroller, cToken: CToken): Promise<NumberV> {
   let {0: _isListed, 1: collateralFactorMantissa} = await comptroller.methods.markets(cToken._address).call();
-
   return new NumberV(collateralFactorMantissa, 1e18);
 }
 
@@ -105,6 +104,12 @@ async function checkListed(world: World, comptroller: Comptroller, cToken: CToke
 
   return new BoolV(isListed);
 }
+
+async function checkIsComped(world: World, comptroller: Comptroller, cToken: CToken): Promise<BoolV> {
+  let {0: isListed, 1: _collateralFactorMantissa, 2: isComped} = await comptroller.methods.markets(cToken._address).call();
+  return new BoolV(isComped);
+}
+
 
 export function comptrollerFetchers() {
   return [
@@ -313,6 +318,19 @@ export function comptrollerFetchers() {
       ],
       (world, {comptroller, cToken}) => checkListed(world, comptroller, cToken)
     ),
+    new Fetcher<{comptroller: Comptroller, cToken: CToken}, BoolV>(`
+        #### CheckIsComped
+
+        * "Comptroller CheckIsComped <CToken>" - Returns true if market is listed, false otherwise.
+          * E.g. "Comptroller CheckIsComped cZRX"
+      `,
+      "CheckIsComped",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("cToken", getCTokenV)
+      ],
+      (world, {comptroller, cToken}) => checkIsComped(world, comptroller, cToken)
+    ),
     new Fetcher<{comptroller: Comptroller}, AddressV>(`
         #### PauseGuardian
 
@@ -394,6 +412,7 @@ export function comptrollerFetchers() {
         ],
         async (world, {comptroller, cToken}) => new BoolV(await comptroller.methods.borrowGuardianPaused(cToken._address).call())
     ),
+
     new Fetcher<{comptroller: Comptroller}, ListV>(`
       #### GetCompMarkets
 
@@ -403,7 +422,18 @@ export function comptrollerFetchers() {
       "GetCompMarkets",
       [new Arg("comptroller", getComptroller, {implicit: true})],
       async(world, {comptroller}) => await getCompMarkets(world, comptroller)
-      ),
+     ),
+
+    new Fetcher<{comptroller: Comptroller}, NumberV>(`
+      #### CompRate
+
+      * "CompRate" - Returns the current comp rate.
+      * E.g. "Comptroller CompRate"
+      `,
+      "CompRate",
+      [new Arg("comptroller", getComptroller, {implicit: true})],
+      async(world, {comptroller}) => new NumberV(await comptroller.methods.compRate().call())
+    ),
 
     new Fetcher<{comptroller: Comptroller, signature: StringV, callArgs: StringV[]}, NumberV>(`
         #### CallNum

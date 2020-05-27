@@ -115,7 +115,7 @@ function run(file) {
             return finalWorld;
           }
 
-          const spec = fn("scenario: " + name, runner, 360000);
+          const spec = fn("scenario: " + name, runner, 720000);
           afterEach(() => {
             if (finalWorld)
               spec.result.description += ` [${finalWorld.gasCounter.value} wei]`;

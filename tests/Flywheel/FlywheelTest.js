@@ -309,20 +309,20 @@ describe('Flywheel', () => {
     it('should not transfer if below comp claim threshold', async () => {
       const mkt = cREP;
       await send(comptroller.comp, 'transfer', [comptroller._address, etherUnsigned(50e18)], {from: root});
-      await send(mkt, "harnessSetAccountBorrows", [a1, etherUnsigned(5.5e18), etherExp(1)]);
+      await send(mkt, "harnessSetAccountBorrows", [a1, etherUnsigned(5.5e17), etherExp(1)]);
       await send(comptroller, "setCompBorrowState", [mkt._address, etherDouble(1.0019), 10]);
       await send(comptroller, "setCompBorrowerIndex", [mkt._address, a1, etherDouble(1)]);
       /*
         borrowerAmount = borrowBalance * 1e18 / borrow idx
-                       = 5.5e18 * 1e18 / 1.1e18 = 5e18
+                       = 5.5e17 * 1e18 / 1.1e18 = 5e17
         deltaIndex     = marketStoredIndex - userStoredIndex
                        = 1.0019e36 - 1e36 = 0.0019e36
         borrowerAccrued= borrowerAmount * deltaIndex / 1e36
-                       = 5e18 * 0.0019e36 / 1e36 = 0.0095e18
-        0.0095e18 < compClaimThreshold of 0.01e18
+                       = 5e17 * 0.0019e36 / 1e36 = 0.00095e18
+        0.00095e18 < compClaimThreshold of 0.001e18
       */
       await send(comptroller, "harnessDistributeBorrowerComp", [mkt._address, a1, etherExp(1.1)]);
-      expect(await compAccrued(comptroller, a1)).toEqualNumber(0.0095e18);
+      expect(await compAccrued(comptroller, a1)).toEqualNumber(0.00095e18);
       expect(await compBalance(comptroller, a1)).toEqualNumber(0);
     });
 
@@ -392,18 +392,18 @@ describe('Flywheel', () => {
       const mkt = cREP;
       await send(comptroller.comp, 'transfer', [comptroller._address, etherUnsigned(50e18)], {from: root});
 
-      await send(mkt, "harnessSetBalance", [a1, etherUnsigned(5e18)]);
+      await send(mkt, "harnessSetBalance", [a1, etherUnsigned(5e17)]);
       await send(comptroller, "setCompSupplyState", [mkt._address, etherDouble(1.0019), 10]);
       /*
-        supplierAmount  = 5e18
+        supplierAmount  = 5e17
         deltaIndex      = marketStoredIndex - userStoredIndex
                         = 1.0019e36 - 1e36 = 0.0019e36
         suppliedAccrued+= supplierTokens * deltaIndex / 1e36
-                        = 5e18 * 0.0019e36 / 1e36 = 0.0095e18
+                        = 5e17 * 0.0019e36 / 1e36 = 0.00095e18
       */
 
       await send(comptroller, "harnessDistributeSupplierComp", [mkt._address, a1]);
-      expect(await compAccrued(comptroller, a1)).toEqualNumber(0.0095e18);
+      expect(await compAccrued(comptroller, a1)).toEqualNumber(0.00095e18);
       expect(await compBalance(comptroller, a1)).toEqualNumber(0);
     });
 
@@ -524,9 +524,13 @@ describe('Flywheel', () => {
   describe('_addCompMarkets', () => {
     it('should correctly add a comp market if called by admin', async () => {
       const cBAT = await makeCToken({comptroller, supportMarket: true});
-      await send(comptroller, '_addCompMarkets', [[cBAT._address]]);
+      const tx = await send(comptroller, '_addCompMarkets', [[cBAT._address]]);
       const markets = await call(comptroller, 'getCompMarkets');
       expect(markets).toEqual([cLOW, cREP, cZRX, cBAT].map((c) => c._address));
+      expect(tx).toHaveLog('MarketComped', {
+        cToken: cBAT._address,
+        isComped: true
+      });
     });
 
     it('should revert if not called by admin', async () => {
@@ -578,10 +582,14 @@ describe('Flywheel', () => {
 
   describe('_dropCompMarket', () => {
     it('should correctly drop a comp market if called by admin', async () => {
-      await send(comptroller, '_dropCompMarket', [cLOW._address]);
+      const tx = await send(comptroller, '_dropCompMarket', [cLOW._address]);
       expect(await call(comptroller, 'getCompMarkets')).toEqual(
         [cREP, cZRX].map((c) => c._address)
       );
+      expect(tx).toHaveLog('MarketComped', {
+        cToken: cLOW._address,
+        isComped: false
+      });
     });
 
     it('should correctly drop a comp market from middle of array', async () => {
@@ -608,10 +616,14 @@ describe('Flywheel', () => {
   describe('_setCompRate', () => {
     it('should correctly change comp rate if called by admin', async () => {
       expect(await call(comptroller, 'compRate')).toEqualNumber(etherUnsigned(1e18));
-      await send(comptroller, '_setCompRate', [etherUnsigned(3e18)]);
+      const tx1 = await send(comptroller, '_setCompRate', [etherUnsigned(3e18)]);
       expect(await call(comptroller, 'compRate')).toEqualNumber(etherUnsigned(3e18));
-      await send(comptroller, '_setCompRate', [etherUnsigned(2e18)]);
+      const tx2 = await send(comptroller, '_setCompRate', [etherUnsigned(2e18)]);
       expect(await call(comptroller, 'compRate')).toEqualNumber(etherUnsigned(2e18));
+      expect(tx2).toHaveLog('NewCompRate', {
+        oldCompRateMantissa: etherUnsigned(3e18),
+        newCompRateMantissa: etherUnsigned(2e18)
+      });
     });
 
     it('should not change comp rate unless called by admin', async () => {

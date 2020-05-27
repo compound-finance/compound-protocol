@@ -4,7 +4,7 @@ import {mustArray} from './Utils';
 import {NothingV} from './Value';
 
 interface ArgOpts<T> {
-  default?: T
+  default?: T | T[]
   implicit?: boolean
   variadic?: boolean
   mapped?: boolean
@@ -16,7 +16,7 @@ export class Arg<T> {
   name: string
   type: any
   getter: (World, Event?) => Promise<T>
-  defaultValue: T | undefined
+  defaultValue: T | T[] | undefined
   implicit: boolean
   variadic: boolean
   mapped: boolean

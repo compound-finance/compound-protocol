@@ -1,14 +1,14 @@
 pragma solidity ^0.5.16;
 
 /**
- * @title Dripper Contract
+ * @title Reservoir Contract
  * @notice Distributes a token to a different contract at a fixed rate.
  * @dev This contract must be poked via the `drip()` function every so often.
  * @author Compound
  */
-contract Dripper {
+contract Reservoir {
 
-  /// @notice The block number when the Dripper started (immutable)
+  /// @notice The block number when the Reservoir started (immutable)
   uint public dripStart;
 
   /// @notice Tokens per block that to drip to target (immutable)
@@ -24,7 +24,7 @@ contract Dripper {
   uint public dripped;
 
   /**
-    * @notice Constructs a Dripper
+    * @notice Constructs a Reservoir
     * @param dripRate_ Numer of tokens per block to drip
     * @param token_ The token to drip
     * @param target_ The recipient of dripped tokens
@@ -45,7 +45,7 @@ contract Dripper {
   function drip() public returns (uint) {
     // First, read storage into memory
     EIP20Interface token_ = token;
-    uint dripperBalance_ = token_.balanceOf(address(this)); // TODO: Verify this is a static call
+    uint reservoirBalance_ = token_.balanceOf(address(this)); // TODO: Verify this is a static call
     uint dripRate_ = dripRate;
     uint dripStart_ = dripStart;
     uint dripped_ = dripped;
@@ -55,7 +55,7 @@ contract Dripper {
     // Next, calculate intermediate values
     uint dripTotal_ = mul(dripRate_, blockNumber_ - dripStart_, "dripTotal overflow");
     uint deltaDrip_ = sub(dripTotal_, dripped_, "deltaDrip underflow");
-    uint toDrip_ = min(dripperBalance_, deltaDrip_);
+    uint toDrip_ = min(reservoirBalance_, deltaDrip_);
     uint drippedNext_ = add(dripped_, toDrip_, "tautological");
 
     // Finally, write new `dripped` value and transfer tokens to target

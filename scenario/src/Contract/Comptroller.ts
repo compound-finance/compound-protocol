@@ -15,7 +15,7 @@ interface ComptrollerMethods {
   closeFactorMantissa(): Callable<number>
   blockNumber(): Callable<number>
   collateralFactor(string): Callable<string>
-  markets(string): Callable<{0: boolean, 1: number}>
+  markets(string): Callable<{0: boolean, 1: number, 2?: boolean}>
   _setMintPaused(bool): Sendable<number>
   _setMaxAssets(encodedNumber): Sendable<number>
   _setLiquidationIncentive(encodedNumber): Sendable<number>
@@ -49,6 +49,7 @@ interface ComptrollerMethods {
   _dropCompMarket(market: string): Sendable<void>
   getCompMarkets(): Callable<string[]>
   refreshCompSpeeds(): Sendable<void>
+  compRate(): Callable<number>
   compSupplyState(string): Callable<string>
   compBorrowState(string): Callable<string>
   compAccrued(string): Callable<string>

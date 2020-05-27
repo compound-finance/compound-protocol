@@ -41,7 +41,7 @@ import { fork } from './Hypothetical';
 import { buildContractEvent } from './EventBuilder';
 import { Counter } from './Contract/Counter';
 import { CompoundLens } from './Contract/CompoundLens';
-import { Dripper } from './Contract/Dripper';
+import { Reservoir } from './Contract/Reservoir';
 import Web3 from 'web3';
 
 export class EventProcessingError extends Error {
@@ -270,7 +270,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
     'Web3Fork',
     [
       new Arg('url', getStringV),
-      new Arg('unlockedAccounts', getAddressV, { mapped: true })
+      new Arg('unlockedAccounts', getAddressV, { default: [], mapped: true })
     ],
     async (world, { url, unlockedAccounts }) => fork(world, url.val, unlockedAccounts.map(v => v.val))
   ),
@@ -812,7 +812,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
 
   buildContractEvent<Counter>("Counter", false),
   buildContractEvent<CompoundLens>("CompoundLens", false),
-  buildContractEvent<Dripper>("Dripper", true),
+  buildContractEvent<Reservoir>("Reservoir", true),
 
   new View<{ event: EventV }>(
     `

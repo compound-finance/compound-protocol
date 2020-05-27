@@ -221,7 +221,8 @@ Macro CheckV3Storage
     -- CompAccrued; 24
     Assert Equal (StorageAt Comptroller 20 0 "number") 0
 
-Test "Keeps all storage"
+-- Times out coverage, disable for now - ideally set flag to not run in coverage
+Pending "Keeps all storage"
     Unitroller Deploy
     PriceOracle Deploy Fixed 1.0
     ComptrollerImpl Deploy StandardG1 ComptrollerG1

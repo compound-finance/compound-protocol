@@ -34,6 +34,7 @@ scenario/build/webpack.js
 .solcache
 .solcachecov
 scenario/.tscache
+script/certora
 tests/scenarios/
 junit.xml
 .build

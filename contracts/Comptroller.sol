@@ -47,6 +47,12 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     /// @notice Emitted when an action is paused on a market
     event ActionPaused(CToken cToken, string action, bool pauseState);
 
+    /// @notice Emitted when market comped status is changed
+    event MarketComped(CToken cToken, bool isComped);
+
+    /// @notice Emitted when COMP rate is changed
+    event NewCompRate(uint oldCompRateMantissa, uint newCompRateMantissa);
+
     /// @notice Emitted when a new COMP speed is calculated for a market
     event CompSpeedUpdated(CToken indexed cToken, uint newSpeed);
 
@@ -56,8 +62,8 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     /// @notice Emitted when COMP is distributed to a borrower
     event DistributedBorrowerComp(CToken indexed cToken, address indexed borrower, uint compDelta, uint compBorrowIndex);
 
-    /// @notice The threshold at which the flywheel starts to distribute COMP, in wei
-    uint public constant compClaimThreshold = 0.01e18;
+    /// @notice The threshold above which the flywheel transfers COMP, in wei
+    uint public constant compClaimThreshold = 0.001e18;
 
     /// @notice The initial COMP index for a market
     uint224 public constant compInitialIndex = 1e36;
@@ -1152,9 +1158,12 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         if (deltaBlocks > 0 && supplySpeed > 0) {
             uint supplyTokens = CToken(cToken).totalSupply();
             uint compAccrued = mul_(deltaBlocks, supplySpeed);
-            Double memory index = add_(Double({mantissa: supplyState.index}), fraction(compAccrued, supplyTokens));
-            supplyState.index = safe224(index.mantissa, "new index exceeds 224 bits");
-            supplyState.block = safe32(blockNumber, "block number exceeds 32 bits");
+            Double memory ratio = supplyTokens > 0 ? fraction(compAccrued, supplyTokens) : Double({mantissa: 0});
+            Double memory index = add_(Double({mantissa: supplyState.index}), ratio);
+            compSupplyState[cToken] = CompMarketState({
+                index: safe224(index.mantissa, "new index exceeds 224 bits"),
+                block: safe32(blockNumber, "block number exceeds 32 bits")
+            });
         } else if (deltaBlocks > 0) {
             supplyState.block = safe32(blockNumber, "block number exceeds 32 bits");
         }
@@ -1172,9 +1181,12 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         if (deltaBlocks > 0 && borrowSpeed > 0) {
             uint borrowAmount = div_(CToken(cToken).totalBorrows(), marketBorrowIndex);
             uint compAccrued = mul_(deltaBlocks, borrowSpeed);
-            Double memory index = add_(Double({mantissa: borrowState.index}), fraction(compAccrued, borrowAmount));
-            borrowState.index = safe224(index.mantissa, "new index exceeds 224 bits");
-            borrowState.block = safe32(blockNumber, "block number exceeds 32 bits");
+            Double memory ratio = borrowAmount > 0 ? fraction(compAccrued, borrowAmount) : Double({mantissa: 0});
+            Double memory index = add_(Double({mantissa: borrowState.index}), ratio);
+            compBorrowState[cToken] = CompMarketState({
+                index: safe224(index.mantissa, "new index exceeds 224 bits"),
+                block: safe32(blockNumber, "block number exceeds 32 bits")
+            });
         } else if (deltaBlocks > 0) {
             borrowState.block = safe32(blockNumber, "block number exceeds 32 bits");
         }
@@ -1188,21 +1200,17 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     function distributeSupplierComp(address cToken, address supplier) internal {
         CompMarketState storage supplyState = compSupplyState[cToken];
         Double memory supplyIndex = Double({mantissa: supplyState.index});
-
-        /* Short-circuit if this is not a COMP market */
-        if (supplyIndex.mantissa == 0) {
-            return;
-        }
-
         Double memory supplierIndex = Double({mantissa: compSupplierIndex[cToken][supplier]});
-        if (supplierIndex.mantissa == 0) {
+        compSupplierIndex[cToken][supplier] = supplyIndex.mantissa;
+
+        if (supplierIndex.mantissa == 0 && supplyIndex.mantissa > 0) {
             supplierIndex.mantissa = compInitialIndex;
         }
+
         Double memory deltaIndex = sub_(supplyIndex, supplierIndex);
         uint supplierTokens = CToken(cToken).balanceOf(supplier);
         uint supplierDelta = mul_(supplierTokens, deltaIndex);
         uint supplierAccrued = add_(compAccrued[supplier], supplierDelta);
-        compSupplierIndex[cToken][supplier] = supplyIndex.mantissa;
         compAccrued[supplier] = transferComp(supplier, supplierAccrued, compClaimThreshold);
         emit DistributedSupplierComp(CToken(cToken), supplier, supplierDelta, supplyIndex.mantissa);
     }
@@ -1216,12 +1224,6 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     function distributeBorrowerComp(address cToken, address borrower, Exp memory marketBorrowIndex) internal {
         CompMarketState storage borrowState = compBorrowState[cToken];
         Double memory borrowIndex = Double({mantissa: borrowState.index});
-
-        /* Short-circuit if this is not a COMP market */
-        if (borrowIndex.mantissa == 0) {
-            return;
-        }
-
         Double memory borrowerIndex = Double({mantissa: compBorrowerIndex[cToken][borrower]});
         compBorrowerIndex[cToken][borrower] = borrowIndex.mantissa;
 
@@ -1281,7 +1283,9 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     function _setCompRate(uint compRate_) public {
         require(adminOrInitializing(), "only admin can change comp rate");
 
+        uint oldRate = compRate;
         compRate = compRate_;
+        emit NewCompRate(oldRate, compRate_);
 
         refreshCompSpeeds();
     }
@@ -1306,15 +1310,20 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         require(market.isComped == false, "comp market already added");
 
         market.isComped = true;
+        emit MarketComped(CToken(cToken), true);
 
         if (compSupplyState[cToken].index == 0 && compSupplyState[cToken].block == 0) {
-            compSupplyState[cToken].index = compInitialIndex;
-            compSupplyState[cToken].block = safe32(getBlockNumber(), "block number exceeds 32 bits");
+            compSupplyState[cToken] = CompMarketState({
+                index: compInitialIndex,
+                block: safe32(getBlockNumber(), "block number exceeds 32 bits")
+            });
         }
 
         if (compBorrowState[cToken].index == 0 && compBorrowState[cToken].block == 0) {
-            compBorrowState[cToken].index = compInitialIndex;
-            compBorrowState[cToken].block = safe32(getBlockNumber(), "block number exceeds 32 bits");
+            compBorrowState[cToken] = CompMarketState({
+                index: compInitialIndex,
+                block: safe32(getBlockNumber(), "block number exceeds 32 bits")
+            });
         }
     }
 
@@ -1329,6 +1338,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         require(market.isComped == true, "market is not a comp market");
 
         market.isComped = false;
+        emit MarketComped(CToken(cToken), false);
 
         refreshCompSpeeds();
     }

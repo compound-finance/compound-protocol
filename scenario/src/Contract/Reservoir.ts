@@ -2,7 +2,7 @@ import { Contract } from '../Contract';
 import { encodedNumber } from '../Encoding';
 import { Callable, Sendable } from '../Invokation';
 
-export interface DripperMethods {
+export interface ReservoirMethods {
   drip(): Sendable<void>;
   dripped(): Callable<number>;
   dripStart(): Callable<number>;
@@ -11,7 +11,7 @@ export interface DripperMethods {
   target(): Callable<string>;
 }
 
-export interface Dripper extends Contract {
-  methods: DripperMethods;
+export interface Reservoir extends Contract {
+  methods: ReservoirMethods;
   name: string;
 }
