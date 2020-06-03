@@ -9,7 +9,8 @@ const {
 const {
   etherExp,
   etherDouble,
-  etherUnsigned
+  etherUnsigned,
+  etherMantissa
 } = require('../Utils/Ethereum');
 
 const compRate = etherUnsigned(1e18);
@@ -77,7 +78,7 @@ describe('Flywheel upgrade', () => {
 
 describe('Flywheel', () => {
   let root, a1, a2, a3, accounts;
-  let comptroller, cLOW, cREP, cZRX;
+  let comptroller, cLOW, cREP, cZRX, cEVIL;
   beforeEach(async () => {
     let interestRateModelOpts = {borrowRate: 0.000001};
     [root, a1, a2, a3, ...accounts] = saddle.accounts;
@@ -85,6 +86,7 @@ describe('Flywheel', () => {
     cLOW = await makeCToken({comptroller, supportMarket: true, underlyingPrice: 1, interestRateModelOpts});
     cREP = await makeCToken({comptroller, supportMarket: true, underlyingPrice: 2, interestRateModelOpts});
     cZRX = await makeCToken({comptroller, supportMarket: true, underlyingPrice: 3, interestRateModelOpts});
+    cEVIL = await makeCToken({comptroller, supportMarket: false, underlyingPrice: 3, interestRateModelOpts});
     await send(comptroller, '_addCompMarkets', [[cLOW, cREP, cZRX].map(c => c._address)]);
   });
 
@@ -471,14 +473,145 @@ describe('Flywheel', () => {
       const compBalancePre = await compBalance(comptroller, a2);
       await quickMint(cLOW, a2, mintAmount);
       await fastForward(comptroller, deltaBlocks);
-      await send(comptroller, 'claimComp', [a2]);
+      const tx = await send(comptroller, 'claimComp', [a2]);
       const a2AccruedPost = await compAccrued(comptroller, a2);
       const compBalancePost = await compBalance(comptroller, a2);
+      expect(tx.gasUsed).toBeLessThan(330000);
       expect(speed).toEqualNumber(compRate);
       expect(a2AccruedPre).toEqualNumber(0);
       expect(a2AccruedPost).toEqualNumber(0);
       expect(compBalancePre).toEqualNumber(0);
       expect(compBalancePost).toEqualNumber(compRate.mul(deltaBlocks).sub(1)); // index is 8333...
+    });
+
+    it('should accrue comp and then transfer comp accrued in a single market', async () => {
+      const compRemaining = compRate.mul(100), mintAmount = etherUnsigned(12e18), deltaBlocks = 10;
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      await pretendBorrow(cLOW, a1, 1, 1, 100);
+      await send(comptroller, 'refreshCompSpeeds');
+      const speed = await call(comptroller, 'compSpeeds', [cLOW._address]);
+      const a2AccruedPre = await compAccrued(comptroller, a2);
+      const compBalancePre = await compBalance(comptroller, a2);
+      await quickMint(cLOW, a2, mintAmount);
+      await fastForward(comptroller, deltaBlocks);
+      const tx = await send(comptroller, 'claimComp', [a2, [cLOW._address]]);
+      const a2AccruedPost = await compAccrued(comptroller, a2);
+      const compBalancePost = await compBalance(comptroller, a2);
+      expect(tx.gasUsed).toBeLessThan(160000);
+      expect(speed).toEqualNumber(compRate);
+      expect(a2AccruedPre).toEqualNumber(0);
+      expect(a2AccruedPost).toEqualNumber(0);
+      expect(compBalancePre).toEqualNumber(0);
+      expect(compBalancePost).toEqualNumber(compRate.mul(deltaBlocks).sub(1)); // index is 8333...
+    });
+
+    it('should claim when comp accrued is below threshold', async () => {
+      const compRemaining = etherExp(1), accruedAmt = etherUnsigned(0.0009e18)
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      await send(comptroller, 'setCompAccrued', [a1, accruedAmt]);
+      await send(comptroller, 'claimComp', [a1, [cLOW._address]]);
+      expect(await compAccrued(comptroller, a1)).toEqualNumber(0);
+      expect(await compBalance(comptroller, a1)).toEqualNumber(accruedAmt);
+    });
+
+    it('should revert when a market is not listed', async () => {
+      const cNOT = await makeCToken({comptroller});
+      await expect(
+        send(comptroller, 'claimComp', [a1, [cNOT._address]])
+      ).rejects.toRevert('revert market must be listed');
+    });
+  });
+
+  describe('claimComp batch', () => {
+    it('should revert when claiming comp from non-listed market', async () => {
+      const compRemaining = compRate.mul(100), deltaBlocks = 10, mintAmount = etherExp(10);
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      let [_, __, ...claimAccts] = saddle.accounts;
+
+      for(let from of claimAccts) {
+        expect(await send(cLOW.underlying, 'harnessSetBalance', [from, mintAmount], { from })).toSucceed();
+        send(cLOW.underlying, 'approve', [cLOW._address, mintAmount], { from });
+        send(cLOW, 'mint', [mintAmount], { from });
+      }
+
+      await pretendBorrow(cLOW, root, 1, 1, etherExp(10));
+      await send(comptroller, 'refreshCompSpeeds');
+
+      await fastForward(comptroller, deltaBlocks);
+
+      await expect(send(comptroller, 'claimComp', [claimAccts, [cLOW._address, cEVIL._address], true, true])).rejects.toRevert('revert market must be listed');
+    });
+
+
+    it('should claim the expected amount when holders and ctokens arg is duplicated', async () => {
+      const compRemaining = compRate.mul(100), deltaBlocks = 10, mintAmount = etherExp(10);
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      let [_, __, ...claimAccts] = saddle.accounts;
+      for(let from of claimAccts) {
+        expect(await send(cLOW.underlying, 'harnessSetBalance', [from, mintAmount], { from })).toSucceed();
+        send(cLOW.underlying, 'approve', [cLOW._address, mintAmount], { from });
+        send(cLOW, 'mint', [mintAmount], { from });
+      }
+      await pretendBorrow(cLOW, root, 1, 1, etherExp(10));
+      await send(comptroller, 'refreshCompSpeeds');
+
+      await fastForward(comptroller, deltaBlocks);
+
+      const tx = await send(comptroller, 'claimComp', [[...claimAccts, ...claimAccts], [cLOW._address, cLOW._address], false, true]);
+      // comp distributed => 10e18
+      for(let acct of claimAccts) {
+        expect(await call(comptroller, 'compSupplierIndex', [cLOW._address, acct])).toEqualNumber(etherDouble(1.125));
+        expect(await compBalance(comptroller, acct)).toEqualNumber(etherExp(1.25));
+      }
+    });
+
+    it('claims comp for multiple suppliers only', async () => {
+      const compRemaining = compRate.mul(100), deltaBlocks = 10, mintAmount = etherExp(10);
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      let [_, __, ...claimAccts] = saddle.accounts;
+      for(let from of claimAccts) {
+        expect(await send(cLOW.underlying, 'harnessSetBalance', [from, mintAmount], { from })).toSucceed();
+        send(cLOW.underlying, 'approve', [cLOW._address, mintAmount], { from });
+        send(cLOW, 'mint', [mintAmount], { from });
+      }
+      await pretendBorrow(cLOW, root, 1, 1, etherExp(10));
+      await send(comptroller, 'refreshCompSpeeds');
+
+      await fastForward(comptroller, deltaBlocks);
+
+      const tx = await send(comptroller, 'claimComp', [claimAccts, [cLOW._address], false, true]);
+      // comp distributed => 10e18
+      for(let acct of claimAccts) {
+        expect(await call(comptroller, 'compSupplierIndex', [cLOW._address, acct])).toEqualNumber(etherDouble(1.125));
+        expect(await compBalance(comptroller, acct)).toEqualNumber(etherExp(1.25));
+      }
+    });
+
+    it('claims comp for multiple borrowers only, primes uninitiated', async () => {
+      const compRemaining = compRate.mul(100), deltaBlocks = 10, mintAmount = etherExp(10), borrowAmt = etherExp(1), borrowIdx = etherExp(1)
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      let [_,__, ...claimAccts] = saddle.accounts;
+
+      for(let acct of claimAccts) {
+        await send(cLOW, 'harnessIncrementTotalBorrows', [borrowAmt]);
+        await send(cLOW, 'harnessSetAccountBorrows', [acct, borrowAmt, borrowIdx]);
+      }
+      await send(comptroller, 'refreshCompSpeeds');
+
+      await send(comptroller, 'harnessFastForward', [10]);
+
+      const tx = await send(comptroller, 'claimComp', [claimAccts, [cLOW._address], true, false]);
+      for(let acct of claimAccts) {
+        expect(await call(comptroller, 'compBorrowerIndex', [cLOW._address, acct])).toEqualNumber(etherDouble(2.25));
+        expect(await call(comptroller, 'compSupplierIndex', [cLOW._address, acct])).toEqualNumber(0);
+      }
+    });
+
+    it('should revert when a market is not listed', async () => {
+      const cNOT = await makeCToken({comptroller});
+      await expect(
+        send(comptroller, 'claimComp', [[a1, a2], [cNOT._address], true, true])
+      ).rejects.toRevert('revert market must be listed');
     });
   });
 
@@ -519,7 +652,7 @@ describe('Flywheel', () => {
       expect(speed2).toEqualNumber(0);
       expect(speed3).toEqualNumber(compRate.div(4).mul(3));
     });
-});
+  });
 
   describe('_addCompMarkets', () => {
     it('should correctly add a comp market if called by admin', async () => {
@@ -611,7 +744,7 @@ describe('Flywheel', () => {
         send(comptroller, '_dropCompMarket', [cLOW._address])
       ).rejects.toRevert('revert market is not a comp market');
     });
-});
+  });
 
   describe('_setCompRate', () => {
     it('should correctly change comp rate if called by admin', async () => {
@@ -621,8 +754,8 @@ describe('Flywheel', () => {
       const tx2 = await send(comptroller, '_setCompRate', [etherUnsigned(2e18)]);
       expect(await call(comptroller, 'compRate')).toEqualNumber(etherUnsigned(2e18));
       expect(tx2).toHaveLog('NewCompRate', {
-        oldCompRateMantissa: etherUnsigned(3e18),
-        newCompRateMantissa: etherUnsigned(2e18)
+        oldCompRate: etherUnsigned(3e18),
+        newCompRate: etherUnsigned(2e18)
       });
     });
 

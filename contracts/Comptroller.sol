@@ -51,7 +51,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     event MarketComped(CToken cToken, bool isComped);
 
     /// @notice Emitted when COMP rate is changed
-    event NewCompRate(uint oldCompRateMantissa, uint newCompRateMantissa);
+    event NewCompRate(uint oldCompRate, uint newCompRate);
 
     /// @notice Emitted when a new COMP speed is calculated for a market
     event CompSpeedUpdated(CToken indexed cToken, uint newSpeed);
@@ -247,7 +247,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
 
         // Keep the flywheel moving
         updateCompSupplyIndex(cToken);
-        distributeSupplierComp(cToken, minter);
+        distributeSupplierComp(cToken, minter, false);
 
         return uint(Error.NO_ERROR);
     }
@@ -287,7 +287,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
 
         // Keep the flywheel moving
         updateCompSupplyIndex(cToken);
-        distributeSupplierComp(cToken, redeemer);
+        distributeSupplierComp(cToken, redeemer, false);
 
         return uint(Error.NO_ERROR);
     }
@@ -376,7 +376,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         // Keep the flywheel moving
         Exp memory borrowIndex = Exp({mantissa: CToken(cToken).borrowIndex()});
         updateCompBorrowIndex(cToken, borrowIndex);
-        distributeBorrowerComp(cToken, borrower, borrowIndex);
+        distributeBorrowerComp(cToken, borrower, borrowIndex, false);
 
         return uint(Error.NO_ERROR);
     }
@@ -424,7 +424,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         // Keep the flywheel moving
         Exp memory borrowIndex = Exp({mantissa: CToken(cToken).borrowIndex()});
         updateCompBorrowIndex(cToken, borrowIndex);
-        distributeBorrowerComp(cToken, borrower, borrowIndex);
+        distributeBorrowerComp(cToken, borrower, borrowIndex, false);
 
         return uint(Error.NO_ERROR);
     }
@@ -557,8 +557,8 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
 
         // Keep the flywheel moving
         updateCompSupplyIndex(cTokenCollateral);
-        distributeSupplierComp(cTokenCollateral, borrower);
-        distributeSupplierComp(cTokenCollateral, liquidator);
+        distributeSupplierComp(cTokenCollateral, borrower, false);
+        distributeSupplierComp(cTokenCollateral, liquidator, false);
 
         return uint(Error.NO_ERROR);
     }
@@ -611,8 +611,8 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
 
         // Keep the flywheel moving
         updateCompSupplyIndex(cToken);
-        distributeSupplierComp(cToken, src);
-        distributeSupplierComp(cToken, dst);
+        distributeSupplierComp(cToken, src, false);
+        distributeSupplierComp(cToken, dst, false);
 
         return uint(Error.NO_ERROR);
     }
@@ -1110,7 +1110,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         return msg.sender == admin || msg.sender == comptrollerImplementation;
     }
 
-    /*** Comp Flywheel Distribution ***/
+    /*** Comp Distribution ***/
 
     /**
      * @notice Recalculate and update COMP speeds for all COMP markets
@@ -1197,7 +1197,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      * @param cToken The market in which the supplier is interacting
      * @param supplier The address of the supplier to distribute COMP to
      */
-    function distributeSupplierComp(address cToken, address supplier) internal {
+    function distributeSupplierComp(address cToken, address supplier, bool distributeAll) internal {
         CompMarketState storage supplyState = compSupplyState[cToken];
         Double memory supplyIndex = Double({mantissa: supplyState.index});
         Double memory supplierIndex = Double({mantissa: compSupplierIndex[cToken][supplier]});
@@ -1211,7 +1211,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         uint supplierTokens = CToken(cToken).balanceOf(supplier);
         uint supplierDelta = mul_(supplierTokens, deltaIndex);
         uint supplierAccrued = add_(compAccrued[supplier], supplierDelta);
-        compAccrued[supplier] = transferComp(supplier, supplierAccrued, compClaimThreshold);
+        compAccrued[supplier] = transferComp(supplier, supplierAccrued, distributeAll ? 0 : compClaimThreshold);
         emit DistributedSupplierComp(CToken(cToken), supplier, supplierDelta, supplyIndex.mantissa);
     }
 
@@ -1221,7 +1221,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      * @param cToken The market in which the borrower is interacting
      * @param borrower The address of the borrower to distribute COMP to
      */
-    function distributeBorrowerComp(address cToken, address borrower, Exp memory marketBorrowIndex) internal {
+    function distributeBorrowerComp(address cToken, address borrower, Exp memory marketBorrowIndex, bool distributeAll) internal {
         CompMarketState storage borrowState = compBorrowState[cToken];
         Double memory borrowIndex = Double({mantissa: borrowState.index});
         Double memory borrowerIndex = Double({mantissa: compBorrowerIndex[cToken][borrower]});
@@ -1232,7 +1232,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             uint borrowerAmount = div_(CToken(cToken).borrowBalanceStored(borrower), marketBorrowIndex);
             uint borrowerDelta = mul_(borrowerAmount, deltaIndex);
             uint borrowerAccrued = add_(compAccrued[borrower], borrowerDelta);
-            compAccrued[borrower] = transferComp(borrower, borrowerAccrued, compClaimThreshold);
+            compAccrued[borrower] = transferComp(borrower, borrowerAccrued, distributeAll ? 0 : compClaimThreshold);
             emit DistributedBorrowerComp(CToken(cToken), borrower, borrowerDelta, borrowIndex.mantissa);
         }
     }
@@ -1245,7 +1245,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      * @return The amount of COMP which was NOT transferred to the user
      */
     function transferComp(address user, uint userAccrued, uint threshold) internal returns (uint) {
-        if (userAccrued >= threshold) {
+        if (userAccrued >= threshold && userAccrued > 0) {
             Comp comp = Comp(getCompAddress());
             uint compRemaining = comp.balanceOf(address(this));
             if (userAccrued <= compRemaining) {
@@ -1257,24 +1257,52 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
-     * @notice Claim all the comp accrued by holder
-     * @param holder The address to claim comp for
+     * @notice Claim all the comp accrued by holder in all markets
+     * @param holder The address to claim COMP for
      */
     function claimComp(address holder) public {
-        refreshCompSpeeds();
-
-        CToken[] memory allMarkets_ = allMarkets;
-        for (uint i = 0; i < allMarkets_.length; i++) {
-            CToken cToken = allMarkets_[i];
-            Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
-            distributeSupplierComp(address(cToken), holder);
-            distributeBorrowerComp(address(cToken), holder, borrowIndex);
-        }
-
-        compAccrued[holder] = transferComp(holder, compAccrued[holder], 0);
+        return claimComp(holder, allMarkets);
     }
 
-    /*** Comp Flyhwheel Admin ***/
+    /**
+     * @notice Claim all the comp accrued by holder in the specified markets
+     * @param holder The address to claim COMP for
+     * @param cTokens The list of markets to claim COMP in
+     */
+    function claimComp(address holder, CToken[] memory cTokens) public {
+        address[] memory holders = new address[](1);
+        holders[0] = holder;
+        claimComp(holders, cTokens, true, true);
+    }
+
+    /**
+     * @notice Claim all comp accrued by the holders
+     * @param holders The addresses to claim COMP for
+     * @param cTokens The list of markets to claim COMP in
+     * @param borrowers Whether or not to claim COMP earned by borrowing
+     * @param suppliers Whether or not to claim COMP earned by supplying
+     */
+    function claimComp(address[] memory holders, CToken[] memory cTokens, bool borrowers, bool suppliers) public {
+        for (uint i = 0; i < cTokens.length; i++) {
+            CToken cToken = cTokens[i];
+            require(markets[address(cToken)].isListed, "market must be listed");
+            if (borrowers == true) {
+                Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
+                updateCompBorrowIndex(address(cToken), borrowIndex);
+                for (uint j = 0; j < holders.length; j++) {
+                    distributeBorrowerComp(address(cToken), holders[j], borrowIndex, true);
+                }
+            }
+            if (suppliers == true) {
+                updateCompSupplyIndex(address(cToken));
+                for (uint j = 0; j < holders.length; j++) {
+                    distributeSupplierComp(address(cToken), holders[j], true);
+                }
+            }
+        }
+    }
+
+    /*** Comp Distribution Admin ***/
 
     /**
      * @notice Set the amount of COMP distributed per block

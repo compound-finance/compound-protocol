@@ -10,7 +10,7 @@ const {
 
 
 // NB: coverage doesn't like this
-describe.skip('Flywheel gas', () => {
+describe.skip('Flywheel trace ops', () => {
   let root, a1, a2, a3, accounts;
   let comptroller, market;
   beforeEach(async () => {

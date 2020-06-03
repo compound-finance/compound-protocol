@@ -56,11 +56,11 @@ contract ComptrollerHarness is Comptroller {
     }
 
     function harnessDistributeBorrowerComp(address cToken, address borrower, uint marketBorrowIndexMantissa) public {
-        distributeBorrowerComp(cToken, borrower, Exp({mantissa: marketBorrowIndexMantissa}));
+        distributeBorrowerComp(cToken, borrower, Exp({mantissa: marketBorrowIndexMantissa}), false);
     }
 
     function harnessDistributeSupplierComp(address cToken, address supplier) public {
-        distributeSupplierComp(cToken, supplier);
+        distributeSupplierComp(cToken, supplier, false);
     }
 
     function harnessTransferComp(address user, uint userAccrued, uint threshold) public returns (uint) {

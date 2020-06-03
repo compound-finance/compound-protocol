@@ -169,7 +169,7 @@ async function makeCToken(opts = {}) {
 
   if (opts.collateralFactor) {
     const factor = etherMantissa(opts.collateralFactor);
-    await send(comptroller, '_setCollateralFactor', [cToken._address, factor]);
+    expect(await send(comptroller, '_setCollateralFactor', [cToken._address, factor])).toSucceed();
   }
 
   return Object.assign(cToken, { name, symbol, underlying, comptroller, interestRateModel });

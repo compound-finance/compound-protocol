@@ -259,6 +259,29 @@ contract CompoundLens {
         });
     }
 
+    struct CompBalanceMetadataExt {
+        uint balance;
+        uint votes;
+        address delegate;
+        uint allocated;
+    }
+
+    function getCompBalanceMetadataExt(Comp comp, Comptroller comptroller, address account) external returns (CompBalanceMetadataExt memory) {
+        uint balance = comp.balanceOf(account);
+        comptroller.claimComp(account);
+        uint newBalance = comp.balanceOf(account);
+        uint accrued = comptroller.compAccrued(account);
+        uint total = add(accrued, newBalance, "sum comp total");
+        uint allocated = sub(total, balance, "sub allocated");
+
+        return CompBalanceMetadataExt({
+            balance: balance,
+            votes: uint256(comp.getCurrentVotes(account)),
+            delegate: comp.delegates(account),
+            allocated: allocated
+        });
+    }
+
     struct CompVotes {
         uint blockNumber;
         uint votes;
@@ -277,5 +300,17 @@ contract CompoundLens {
 
     function compareStrings(string memory a, string memory b) internal pure returns (bool) {
         return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
+    }
+
+    function add(uint a, uint b, string memory errorMessage) internal pure returns (uint) {
+        uint c = a + b;
+        require(c >= a, errorMessage);
+        return c;
+    }
+
+    function sub(uint a, uint b, string memory errorMessage) internal pure returns (uint) {
+        require(b <= a, errorMessage);
+        uint c = a - b;
+        return c;
     }
 }
