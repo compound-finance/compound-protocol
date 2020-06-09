@@ -33,7 +33,7 @@
     "Reservoir": "0x4Aebe384D31e9309BEDf8552232C07591e0cA56F",
     "GovernorAlpha": "0x93ACbA9ecaCeC21BFA09b0C4650Be3596713d747",
     "Maximillion": "0xE0a38ab2951B6525C33f20D5E637Ab24DFEF9bcB",
-    "StdComptrollerG3": "0x63Eff946bC42C46450be42721811C1c46714D52d",
+    "StdComptrollerG3": "0x6F4B5C3d29ed8eFa211bB7549bDCcEc19c74c1AA",
     "Comptroller": "0x54188bBeDD7b68228fa89CbDDa5e3e930459C6c6",
     "PriceOracleProxy": "0xb2b3d5B4E35881D518fa2062325F118A6Ebb6C4A"
   },
@@ -70,7 +70,7 @@
     "Reservoir": 8026391,
     "GovernorAlpha": 8036134,
     "Maximillion": 8026452,
-    "StdComptrollerG3": 8036279
+    "StdComptrollerG3": 8053317
   },
   "PriceOracle": {
     "description": "SimplePriceOracle",
@@ -102,7 +102,7 @@
       "description": "Comptroller Description"
     },
     "StdComptrollerG3": {
-      "address": "0x63Eff946bC42C46450be42721811C1c46714D52d",
+      "address": "0x6F4B5C3d29ed8eFa211bB7549bDCcEc19c74c1AA",
       "contract": "ComptrollerRopsten",
       "description": "Comptroller Description"
     }
