@@ -63,7 +63,7 @@ async function getImplementation(world: World, comptroller: Comptroller): Promis
 }
 
 async function getBlockNumber(world: World, comptroller: Comptroller): Promise<NumberV> {
-  return new NumberV(await comptroller.methods.blockNumber().call());
+  return new NumberV(await comptroller.methods.getBlockNumber().call());
 }
 
 async function getAdmin(world: World, comptroller: Comptroller): Promise<AddressV> {

@@ -13,7 +13,7 @@ interface ComptrollerMethods {
   maxAssets(): Callable<number>
   liquidationIncentiveMantissa(): Callable<number>
   closeFactorMantissa(): Callable<number>
-  blockNumber(): Callable<number>
+  getBlockNumber(): Callable<number>
   collateralFactor(string): Callable<string>
   markets(string): Callable<{0: boolean, 1: number, 2?: boolean}>
   _setMintPaused(bool): Sendable<number>

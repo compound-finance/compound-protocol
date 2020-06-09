@@ -100,7 +100,11 @@ export async function mergeContractABI(
     throw new Error(`Missing contract ABI for ${b}`);
   }
 
-  const fullABI = aABI.toJS().concat(bABI.toJS());
+  const itemBySig: { [key: string]: AbiItem } = {};
+  for (let item of aABI.toJS().concat(bABI.toJS())) {
+    itemBySig[item.signature] = item;
+  }
+  const fullABI = Object.values(itemBySig);
 
   // Store Comptroller address
   networks = networks.setIn(['Contracts', targetName], contractTarget._address);

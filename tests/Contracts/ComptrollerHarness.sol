@@ -3,6 +3,18 @@ pragma solidity ^0.5.16;
 import "../../contracts/Comptroller.sol";
 import "../../contracts/PriceOracle.sol";
 
+contract ComptrollerKovan is Comptroller {
+  function getCompAddress() public view returns (address) {
+    return 0x61460874a7196d6a22D1eE4922473664b3E95270;
+  }
+}
+
+contract ComptrollerRopsten is Comptroller {
+  function getCompAddress() public view returns (address) {
+    return 0x1Fe16De955718CFAb7A44605458AB023838C2793;
+  }
+}
+
 contract ComptrollerHarness is Comptroller {
     address compAddress;
     uint public blockNumber;

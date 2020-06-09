@@ -18,7 +18,7 @@
     "BAT": "0x482dC9bB08111CB875109B075A40881E48aE02Cd",
     "Fauceteer": "0x916518711a75a98Ac00e8E3386d036F7eA56A484",
     "PriceOracle": "0x37ac0cb24b5DA520B653A5D94cFF26EB08d4Dc02",
-    "StdComptrollerG3": "0xD3099817E1fA16ffa321b0114f2e193869521E70",
+    "StdComptrollerG3": "0xbDF4D9A65023CAf0DaDa604cf46C44D5aab0bb0C",
     "Timelock": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
     "Jug": "0xcbB7718c9F39d05aEEDE1c472ca8Bf804b2f1EaD",
     "Pot": "0xEA190DBDC7adF265260ec4dA6e9675Fd4f5A78bb",
@@ -33,12 +33,13 @@
     "cREP": "0xA4eC170599a1Cf87240a35b9B1B8Ff823f448b57",
     "cBAT": "0x4a77fAeE9650b09849Ff459eA1476eaB01606C7a",
     "Reservoir": "0x33deD5C4eA51dBC7AF955396839655EFe13E3F1b",
-    "GovernorAlpha": "0x4DEA597f90801192A88F690213D888fD6Fc3145d",
+    "GovernorAlpha": "0x665a5f09716d63D9256934855b0CE2056a5C4Cf8",
     "DSR_Kink_9000bps_Jump_12000bps_AssumedRF_20000bps": "0xe5318b00F1Bf6D9a8cdC4707290c157354738727",
     "Maximillion": "0xC363f83902Ac614F318b04771d21D25aC0d73be5",
     "cDAI": "0xF0d0EB522cfa50B716B3b1604C4F0fA6f04376AD",
     "StdComptrollerG2": "0xd026627b0D6326dbA5f3c9ecbca1545dB8CD3486",
     "Base200bps_Slope2000bps_Jump20000bps_Kink90_bad": "0xC0421A129E775680BD22Af5143098075eD6B85d5",
+    "Base200bps_Slope2000bps_Jump20000bps_Kink90_bad_2": "0x059965e18ae254954b500f198876bd43afc1ddec",
     "Comptroller": "0x5eAe89DC1C671724A672ff0630122ee834098657",
     "PriceOracleProxy": "0x37ac0cb24b5DA520B653A5D94cFF26EB08d4Dc02"
   },
@@ -60,7 +61,7 @@
     "BAT": 18751073,
     "Fauceteer": 18751074,
     "PriceOracle": 18751077,
-    "StdComptrollerG3": 18751090,
+    "StdComptrollerG3": 18963197,
     "Timelock": 18751096,
     "cDaiDelegate": 18751101,
     "Unitroller": 18751106,
@@ -73,12 +74,13 @@
     "cREP": 18751142,
     "cBAT": 18751147,
     "Reservoir": 18751158,
-    "GovernorAlpha": 18751167,
+    "GovernorAlpha": 18964189,
     "DSR_Kink_9000bps_Jump_12000bps_AssumedRF_20000bps": 18751174,
     "Maximillion": 18751178,
     "cDAI": 18751182,
     "StdComptrollerG2": 18958731,
-    "Base200bps_Slope2000bps_Jump20000bps_Kink90_bad": 18746562
+    "Base200bps_Slope2000bps_Jump20000bps_Kink90_bad": 18746562,
+    "Base200bps_Slope2000bps_Jump20000bps_Kink90_bad_2": 18746562
   },
   "PriceOracle": {
     "description": "SimplePriceOracle",
@@ -105,7 +107,7 @@
       "description": "Comptroller Description"
     },
     "StdComptrollerG3": {
-      "address": "0xD3099817E1fA16ffa321b0114f2e193869521E70",
+      "address": "0xbDF4D9A65023CAf0DaDa604cf46C44D5aab0bb0C",
       "contract": "ComptrollerKovan",
       "description": "Comptroller Description"
     },
@@ -158,7 +160,8 @@
     "Maximillion": "0x00000000000000000000000041b5844f4680a8c38fbb695b7f9cfd1f64474a72",
     "cDAI": "0x0000000000000000000000004f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa0000000000000000000000005eae89dc1c671724a672ff0630122ee834098657000000000000000000000000e5318b00f1bf6d9a8cdc4707290c157354738727000000000000000000000000000000000000000000a56fa5b99019a5c8000000000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000001800000000000000000000000000000000000000000000000000000000000000008000000000000000000000000a776184fd6f545dae5f51361dbcc9018549a9749000000000000000000000000c8016288db9dfe5a1ca2503879dcde880737718600000000000000000000000000000000000000000000000000000000000001c0000000000000000000000000000000000000000000000000000000000000000c436f6d706f756e64204441490000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000463444149000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
     "StdComptrollerG2": "0x",
-    "Base200bps_Slope2000bps_Jump20000bps_Kink90_bad": "0x00000000000000000000000000000000000000000000000000470de4df82000000000000000000000000000000000000000000000000000002c68af0bb1400000000000000000000000000000000000000000000000000001bc16d674ec80000000000000000000000000000000000000000000000000000000000000000005a"
+    "Base200bps_Slope2000bps_Jump20000bps_Kink90_bad": "0x00000000000000000000000000000000000000000000000000470de4df82000000000000000000000000000000000000000000000000000002c68af0bb1400000000000000000000000000000000000000000000000000001bc16d674ec80000000000000000000000000000000000000000000000000000000000000000005a",
+    "Base200bps_Slope2000bps_Jump20000bps_Kink90_bad_2": "0x00000000000000000000000000000000000000000000000000470de4df82000000000000000000000000000000000000000000000000000002c68af0bb1400000000000000000000000000000000000000000000000000001bc16d674ec80000000000000000000000000000000000000000000000000000000000000000005a"
   },
   "Tokens": {
     "COMP": {
@@ -229,7 +232,7 @@
       "decimals": 8,
       "address": "0xAf45ae737514C8427D373D50Cd979a242eC59e5a",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x162c44e53097e7B5aaE939b297ffFD6Bf90D1EE3",
       "contract": "CErc20Immutable"
     },
@@ -239,7 +242,7 @@
       "decimals": 8,
       "address": "0xa1fAA15655B0e7b6B6470ED3d096390e6aD93Abb",
       "initial_exchange_rate_mantissa": "20000000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0xd3A691C852CDB01E281545A27064741F0B7f6825",
       "contract": "CErc20Immutable"
     },
@@ -249,7 +252,7 @@
       "decimals": 8,
       "address": "0x3f0A0EA2f86baE6362CF9799B523BA06647Da018",
       "initial_exchange_rate_mantissa": "200000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x07de306FF27a2B630B1141956844eB1552B956B5",
       "contract": "CErc20Delegator"
     },
@@ -259,7 +262,7 @@
       "decimals": 8,
       "address": "0x4a92E71227D294F041BD82dd8f78591B75140d63",
       "initial_exchange_rate_mantissa": "200000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0xb7a4F3E9097C08dA09517b5aB877F7a917224ede",
       "contract": "CErc20Immutable"
     },
@@ -269,7 +272,7 @@
       "decimals": 8,
       "address": "0x41B5844f4680a8C38fBb695b7F9CFd1F64474a72",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "",
       "contract": "CEther"
     },
@@ -279,7 +282,7 @@
       "decimals": 8,
       "address": "0xb3f7fB482492f4220833De6D6bfCC81157214bEC",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0xD1308F63823221518Ec88EB209CBaa1ac182105f",
       "contract": "CErc20Immutable"
     },
@@ -289,7 +292,7 @@
       "decimals": 8,
       "address": "0xA4eC170599a1Cf87240a35b9B1B8Ff823f448b57",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x50DD65531676F718B018De3dc48F92B53D756996",
       "contract": "CErc20Immutable"
     },
@@ -299,7 +302,7 @@
       "decimals": 8,
       "address": "0x4a77fAeE9650b09849Ff459eA1476eaB01606C7a",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x482dC9bB08111CB875109B075A40881E48aE02Cd",
       "contract": "CErc20Immutable"
     },
@@ -309,7 +312,7 @@
       "decimals": 8,
       "address": "0xF0d0EB522cfa50B716B3b1604C4F0fA6f04376AD",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa",
       "contract": "CErc20Delegator"
     }
@@ -328,7 +331,7 @@
       "decimals": 8,
       "address": "0xAf45ae737514C8427D373D50Cd979a242eC59e5a",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x162c44e53097e7B5aaE939b297ffFD6Bf90D1EE3",
       "contract": "CErc20Immutable"
     },
@@ -338,7 +341,7 @@
       "decimals": 8,
       "address": "0xa1fAA15655B0e7b6B6470ED3d096390e6aD93Abb",
       "initial_exchange_rate_mantissa": "20000000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0xd3A691C852CDB01E281545A27064741F0B7f6825",
       "contract": "CErc20Immutable"
     },
@@ -348,7 +351,7 @@
       "decimals": 8,
       "address": "0x3f0A0EA2f86baE6362CF9799B523BA06647Da018",
       "initial_exchange_rate_mantissa": "200000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x07de306FF27a2B630B1141956844eB1552B956B5",
       "contract": "CErc20Delegator"
     },
@@ -358,7 +361,7 @@
       "decimals": 8,
       "address": "0x4a92E71227D294F041BD82dd8f78591B75140d63",
       "initial_exchange_rate_mantissa": "200000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0xb7a4F3E9097C08dA09517b5aB877F7a917224ede",
       "contract": "CErc20Immutable"
     },
@@ -368,7 +371,7 @@
       "decimals": 8,
       "address": "0x41B5844f4680a8C38fBb695b7F9CFd1F64474a72",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "",
       "contract": "CEther"
     },
@@ -378,7 +381,7 @@
       "decimals": 8,
       "address": "0xb3f7fB482492f4220833De6D6bfCC81157214bEC",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0xD1308F63823221518Ec88EB209CBaa1ac182105f",
       "contract": "CErc20Immutable"
     },
@@ -388,7 +391,7 @@
       "decimals": 8,
       "address": "0xA4eC170599a1Cf87240a35b9B1B8Ff823f448b57",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x50DD65531676F718B018De3dc48F92B53D756996",
       "contract": "CErc20Immutable"
     },
@@ -398,7 +401,7 @@
       "decimals": 8,
       "address": "0x4a77fAeE9650b09849Ff459eA1476eaB01606C7a",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x482dC9bB08111CB875109B075A40881E48aE02Cd",
       "contract": "CErc20Immutable"
     },
@@ -408,7 +411,7 @@
       "decimals": 8,
       "address": "0xF0d0EB522cfa50B716B3b1604C4F0fA6f04376AD",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
-      "admin": "0xA776184Fd6F545DAe5f51361dBcC9018549a9749",
+      "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa",
       "contract": "CErc20Delegator"
     }
@@ -461,6 +464,16 @@
       "contract": "JumpRateModel",
       "description": "JumpRateModel  baseRate=20000000000000000 multiplier=200000000000000000 jump=2000000000000000000 kink=90",
       "address": "0xC0421A129E775680BD22Af5143098075eD6B85d5",
+      "base": "20000000000000000",
+      "slope": "200000000000000000",
+      "jump": "2000000000000000000",
+      "kink": "90"
+    },
+    "Base200bps_Slope2000bps_Jump20000bps_Kink90_bad_2": {
+      "name": "Base200bps_Slope2000bps_Jump20000bps_Kink90_bad_2",
+      "contract": "JumpRateModel",
+      "description": "JumpRateModel  baseRate=20000000000000000 multiplier=200000000000000000 jump=2000000000000000000 kink=90",
+      "address": "0x059965e18ae254954b500f198876bd43afc1ddec",
       "base": "20000000000000000",
       "slope": "200000000000000000",
       "jump": "2000000000000000000",
