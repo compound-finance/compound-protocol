@@ -7,10 +7,6 @@ function address(n) {
   return `0x${n.toString(16).padStart(40, '0')}`;
 }
 
-function bigNumberify(num) {
-  return ethers.utils.bigNumberify(new BigNum(num).toFixed());
-}
-
 function encodeParameters(types, values) {
   const abi = new ethers.utils.AbiCoder();
   return abi.encode(types, values);
@@ -27,14 +23,31 @@ async function etherGasCost(receipt) {
   return ethers.utils.bigNumberify(gasUsed.times(gasPrice).toFixed());
 }
 
-function etherMantissa(num) {
+function etherExp(num) { return etherMantissa(num, 1e18) }
+function etherDouble(num) { return etherMantissa(num, 1e36) }
+function etherMantissa(num, scale = 1e18) {
   if (num < 0)
     return ethers.utils.bigNumberify(new BigNum(2).pow(256).plus(num).toFixed());
-  return ethers.utils.bigNumberify(new BigNum(num).times(1e18).toFixed());
+  return ethers.utils.bigNumberify(new BigNum(num).times(scale).toFixed());
 }
 
 function etherUnsigned(num) {
   return ethers.utils.bigNumberify(new BigNum(num).toFixed());
+}
+
+function mergeInterface(into, from) {
+  const key = (item) => item.inputs ? `${item.name}/${item.inputs.length}` : item.name;
+  const existing = into.options.jsonInterface.reduce((acc, item) => {
+    acc[key(item)] = true;
+    return acc;
+  }, {});
+  const extended = from.options.jsonInterface.reduce((acc, item) => {
+    if (!(key(item) in existing))
+      acc.push(item)
+    return acc;
+  }, into.options.jsonInterface.slice());
+  into.options.jsonInterface = into.options.jsonInterface.concat(from.options.jsonInterface);
+  return into;
 }
 
 function getContractDefaults() {
@@ -113,12 +126,14 @@ async function sendFallback(contract, opts = {}) {
 
 module.exports = {
   address,
-  bigNumberify,
   encodeParameters,
   etherBalance,
   etherGasCost,
+  etherExp,
+  etherDouble,
   etherMantissa,
   etherUnsigned,
+  mergeInterface,
   keccak256,
   unlockedAccounts,
   unlockedAccount,

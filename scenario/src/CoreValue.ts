@@ -428,12 +428,7 @@ const fetchers = [
         case 'address':
           return new AddressV('0x' + padLeft(reverse(stored.slice(startVal, startVal + 40)), 40));
         case 'number':
-          let parsed = toBN('0x' + reverse(stored));
-          if (parsed.gt(toBN(1000))) {
-            return new ExpNumberV(parsed.toString(), 1e18);
-          } else {
-            return new ExpNumberV(parsed.toString(), 1);
-          }
+          return new NumberV(toBN('0x' + reverse(stored)).toString());
         default:
           return new NothingV();
       }
@@ -458,6 +453,7 @@ const fetchers = [
       new Arg('valType', getStringV)
     ],
     async (world, { addr, slot, key, nestedKey, valType }) => {
+      const areEqual = (v, x) => toBN(v).eq(toBN(x));
       let paddedSlot = slot.toNumber().toString(16).padStart(64, '0');
       let paddedKey = padLeft(key.val, 64);
       let newKey = sha3(paddedKey + paddedSlot);
@@ -465,20 +461,24 @@ const fetchers = [
 
       switch (valType.val) {
         case 'marketStruct':
-          let isListed = val == '0x01';
+          let isListed = areEqual(val, 1);
           let collateralFactorKey = '0x' + toBN(newKey).add(toBN(1)).toString(16);
           let collateralFactorStr = await world.web3.eth.getStorageAt(addr.val, collateralFactorKey);
           let collateralFactor = toBN(collateralFactorStr);
           let userMarketBaseKey = padLeft(toBN(newKey).add(toBN(2)).toString(16), 64);
           let paddedSlot = padLeft(userMarketBaseKey, 64);
           let paddedKey = padLeft(nestedKey.val, 64);
-          let newKeyToo = sha3(paddedKey + paddedSlot);
-          let userInMarket = await world.web3.eth.getStorageAt(addr.val, newKeyToo);
+          let newKeyTwo = sha3(paddedKey + paddedSlot);
+          let userInMarket = await world.web3.eth.getStorageAt(addr.val, newKeyTwo);
+
+          let isCompKey = '0x' + toBN(newKey).add(toBN(3)).toString(16);
+          let isCompStr = await world.web3.eth.getStorageAt(addr.val, isCompKey);
 
           return new ListV([
             new BoolV(isListed),
             new ExpNumberV(collateralFactor.toString(), 1e18),
-            new BoolV(userInMarket == '0x01')
+            new BoolV(areEqual(userInMarket, 1)),
+            new BoolV(areEqual(isCompStr, 1))
           ]);
         default:
           return new NothingV();
@@ -525,14 +525,7 @@ const fetchers = [
         case 'address':
           return new AddressV(val);
         case 'number':
-          let parsed = toBN(val);
-
-          // if the numbers are big, they are big...
-          if (parsed.gt(toBN(1000))) {
-            return new ExpNumberV(parsed.toString(), 1e18);
-          } else {
-            return new ExpNumberV(parsed.toString(), 1);
-          }
+          return new NumberV(toBN(val).toString());
         default:
           return new NothingV();
       }
@@ -975,8 +968,9 @@ const fetchers = [
 ];
 
 let contractFetchers = [
-  "Counter",
-  "CompoundLens"
+  { contract: "Counter", implicit: false },
+  { contract: "CompoundLens", implicit: false },
+  { contract: "Reservoir", implicit: true }
 ];
 
 export async function getFetchers(world: World) {
@@ -984,8 +978,8 @@ export async function getFetchers(world: World) {
     return { world, fetchers: world.fetchers };
   }
 
-  let allFetchers = fetchers.concat(await Promise.all(contractFetchers.map((contractName) => {
-    return buildContractFetcher(world, contractName);
+  let allFetchers = fetchers.concat(await Promise.all(contractFetchers.map(({contract, implicit}) => {
+    return buildContractFetcher(world, contract, implicit);
   })));
 
   return { world: world.set('fetchers', allFetchers), fetchers: allFetchers };

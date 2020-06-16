@@ -38,25 +38,37 @@ export function mustString(arg: Event): string {
   throw new Error(`Expected string argument, got ${arg.toString()}`);
 }
 
+export function rawValues(args) {
+  if (Array.isArray(args))
+    return args.map(rawValues);
+  if (Array.isArray(args.val))
+    return args.val.map(rawValues);
+  return args.val;
+}
+
 // Web3 doesn't have a function ABI parser.. not sure why.. but we build a simple encoder
 // that accepts "fun(uint256,uint256)" and params and returns the encoded value.
 export function encodeABI(world: World, fnABI: string, fnParams: string[]): string {
-  const regex = /(\w+)\(([\w,]+)\)/;
-  const res = regex.exec(fnABI);
-  if (!res) {
-    throw new Error(`Expected ABI signature, got: ${fnABI}`);
+  if (fnParams.length == 0) {
+    return world.web3.eth.abi.encodeFunctionSignature(fnABI);
+  } else {
+    const regex = /(\w+)\(([\w,\[\]]+)\)/;
+    const res = regex.exec(fnABI);
+    if (!res) {
+      throw new Error(`Expected ABI signature, got: ${fnABI}`);
+    }
+    const [_, fnName, fnInputs] = <[string, string, string]>(<unknown>res);
+    const jsonInterface = {
+      name: fnName,
+      inputs: fnInputs.split(',').map(i => ({ name: '', type: i }))
+    };
+    // XXXS
+    return world.web3.eth.abi.encodeFunctionCall(<AbiItem>jsonInterface, fnParams);
   }
-  const [_, fnName, fnInputs] = <[string, string, string]>(<unknown>res);
-  const jsonInterface = {
-    name: fnName,
-    inputs: fnInputs.split(',').map(i => ({ name: '', type: i }))
-  };
-  // XXXS
-  return world.web3.eth.abi.encodeFunctionCall(<AbiItem>jsonInterface, fnParams);
 }
 
 export function encodeParameters(world: World, fnABI: string, fnParams: string[]): string {
-  const regex = /(\w+)\(([\w,]+)\)/;
+  const regex = /(\w+)\(([\w,\[\]]+)\)/;
   const res = regex.exec(fnABI);
   if (!res) {
     return '0x0';
@@ -66,7 +78,7 @@ export function encodeParameters(world: World, fnABI: string, fnParams: string[]
 }
 
 export function decodeParameters(world: World, fnABI: string, data: string): string[] {
-  const regex = /(\w+)\(([\w,]+)\)/;
+  const regex = /(\w+)\(([\w,\[\]]+)\)/;
   const res = regex.exec(fnABI);
   if (!res) {
     return [];

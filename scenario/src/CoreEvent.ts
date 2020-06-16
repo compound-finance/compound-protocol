@@ -41,6 +41,7 @@ import { fork } from './Hypothetical';
 import { buildContractEvent } from './EventBuilder';
 import { Counter } from './Contract/Counter';
 import { CompoundLens } from './Contract/CompoundLens';
+import { Reservoir } from './Contract/Reservoir';
 import Web3 from 'web3';
 
 export class EventProcessingError extends Error {
@@ -269,7 +270,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
     'Web3Fork',
     [
       new Arg('url', getStringV),
-      new Arg('unlockedAccounts', getAddressV, { mapped: true })
+      new Arg('unlockedAccounts', getAddressV, { default: [], mapped: true })
     ],
     async (world, { url, unlockedAccounts }) => fork(world, url.val, unlockedAccounts.map(v => v.val))
   ),
@@ -415,7 +416,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
     }
   ),
 
-  new View<{ blockNumber: NumberV }>(
+  new Command<{ blockNumber: NumberV }>(
     `
       #### SetBlockNumber
 
@@ -424,14 +425,31 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
     `,
     'SetBlockNumber',
     [new Arg('blockNumber', getNumberV)],
-    async (world, { blockNumber }) => {
-
-      await sendRPC(world, 'evm_mineBlockNumber', [blockNumber.val])
+    async (world, from, { blockNumber }) => {
+      await sendRPC(world, 'evm_mineBlockNumber', [blockNumber.toNumber() - 1])
       return world;
     }
   ),
 
-  new View<{ blockNumber: NumberV }>(
+  new Command<{ blockNumber: NumberV, event: EventV }>(
+    `
+      #### Block
+
+      * "Block 10 (...event)" - Set block to block N and run event
+        * E.g. "Block 10 (Comp Deploy Admin)"
+    `,
+    'Block',
+    [
+      new Arg('blockNumber', getNumberV),
+      new Arg('event', getEventV)
+    ],
+    async (world, from, { blockNumber, event }) => {
+      await sendRPC(world, 'evm_mineBlockNumber', [blockNumber.toNumber() - 2])
+      return await processCoreEvent(world, event.val, from);
+    }
+  ),
+
+  new Command<{ blockNumber: NumberV }>(
     `
       #### AdvanceBlocks
 
@@ -440,7 +458,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
     `,
     'AdvanceBlocks',
     [new Arg('blockNumber', getNumberV)],
-    async (world, { blockNumber }) => {
+    async (world, from, { blockNumber }) => {
       const currentBlockNumber = await getCurrentBlockNumber(world);
       await sendRPC(world, 'evm_mineBlockNumber', [Number(blockNumber.val) + currentBlockNumber]);
       return world;
@@ -792,8 +810,9 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
     { subExpressions: governorCommands() }
   ),
 
-  buildContractEvent<Counter>("Counter"),
-  buildContractEvent<CompoundLens>("CompoundLens"),
+  buildContractEvent<Counter>("Counter", false),
+  buildContractEvent<CompoundLens>("CompoundLens", false),
+  buildContractEvent<Reservoir>("Reservoir", true),
 
   new View<{ event: EventV }>(
     `

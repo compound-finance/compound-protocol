@@ -5,13 +5,14 @@ const {
   encodeParameters,
   etherBalance,
   etherMantissa,
-  etherUnsigned
+  etherUnsigned,
+  mergeInterface
 } = require('./Ethereum');
 
 async function makeComptroller(opts = {}) {
   const {
     root = saddle.account,
-    kind = 'unitroller-v1'
+    kind = 'unitroller'
   } = opts || {};
 
   if (kind == 'bool') {
@@ -32,14 +33,12 @@ async function makeComptroller(opts = {}) {
     await send(comptroller, '_setMaxAssets', [maxAssets]);
     await send(comptroller, '_setPriceOracle', [priceOracle._address]);
 
-    comptroller.options.address = comptroller._address;
-
     return Object.assign(comptroller, { priceOracle });
   }
 
-  if (kind == 'unitroller-v1') {
-    const unitroller = await deploy('Unitroller');
-    const comptroller = await deploy('ComptrollerHarness');
+  if (kind == 'unitroller-prior') {
+    const unitroller = opts.unitroller || await deploy('Unitroller');
+    const comptroller = await deploy('ComptrollerG2');
     const priceOracle = opts.priceOracle || await makePriceOracle(opts.priceOracleOpts);
     const closeFactor = etherMantissa(dfn(opts.closeFactor, .051));
     const maxAssets = etherUnsigned(dfn(opts.maxAssets, 10));
@@ -47,13 +46,37 @@ async function makeComptroller(opts = {}) {
 
     await send(unitroller, '_setPendingImplementation', [comptroller._address]);
     await send(comptroller, '_become', [unitroller._address]);
-    comptroller.options.address = unitroller._address;
-    await send(comptroller, '_setLiquidationIncentive', [liquidationIncentive]);
-    await send(comptroller, '_setCloseFactor', [closeFactor]);
-    await send(comptroller, '_setMaxAssets', [maxAssets]);
-    await send(comptroller, '_setPriceOracle', [priceOracle._address]);
+    mergeInterface(unitroller, comptroller);
+    await send(unitroller, '_setLiquidationIncentive', [liquidationIncentive]);
+    await send(unitroller, '_setCloseFactor', [closeFactor]);
+    await send(unitroller, '_setMaxAssets', [maxAssets]);
+    await send(unitroller, '_setPriceOracle', [priceOracle._address]);
 
-    return Object.assign(comptroller, { priceOracle });
+    return Object.assign(unitroller, { priceOracle });
+  }
+
+  if (kind == 'unitroller') {
+    const unitroller = opts.unitroller || await deploy('Unitroller');
+    const comptroller = await deploy('ComptrollerHarness');
+    const priceOracle = opts.priceOracle || await makePriceOracle(opts.priceOracleOpts);
+    const closeFactor = etherMantissa(dfn(opts.closeFactor, .051));
+    const maxAssets = etherUnsigned(dfn(opts.maxAssets, 10));
+    const liquidationIncentive = etherMantissa(1);
+    const comp = opts.comp || await deploy('Comp', [opts.compOwner || root]);
+    const compRate = etherUnsigned(dfn(opts.compRate, 1e18));
+    const compMarkets = opts.compMarkets || [];
+    const otherMarkets = opts.otherMarkets || [];
+
+    await send(unitroller, '_setPendingImplementation', [comptroller._address]);
+    await send(comptroller, '_become', [unitroller._address, compRate, compMarkets, otherMarkets]);
+    mergeInterface(unitroller, comptroller);
+    await send(unitroller, '_setLiquidationIncentive', [liquidationIncentive]);
+    await send(unitroller, '_setCloseFactor', [closeFactor]);
+    await send(unitroller, '_setMaxAssets', [maxAssets]);
+    await send(unitroller, '_setPriceOracle', [priceOracle._address]);
+    await send(unitroller, 'setCompAddress', [comp._address]); // harness only
+
+    return Object.assign(unitroller, { priceOracle, comp });
   }
 }
 
@@ -126,13 +149,17 @@ async function makeCToken(opts = {}) {
           cDelegatee._address,
           "0x0"
         ]
-                                   );
+      );
       cToken = await saddle.getContractAt('CErc20DelegateHarness', cDelegator._address); // XXXS at
       break;
   }
 
   if (opts.supportMarket) {
     await send(comptroller, '_supportMarket', [cToken._address]);
+  }
+
+  if (opts.addCompMarket) {
+    await send(comptroller, '_addCompMarket', [cToken._address]);
   }
 
   if (opts.underlyingPrice) {
@@ -142,7 +169,7 @@ async function makeCToken(opts = {}) {
 
   if (opts.collateralFactor) {
     const factor = etherMantissa(opts.collateralFactor);
-    await send(comptroller, '_setCollateralFactor', [cToken._address, factor]);
+    expect(await send(comptroller, '_setCollateralFactor', [cToken._address, factor])).toSucceed();
   }
 
   return Object.assign(cToken, { name, symbol, underlying, comptroller, interestRateModel });

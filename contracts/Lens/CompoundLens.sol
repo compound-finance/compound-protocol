@@ -3,10 +3,19 @@ pragma experimental ABIEncoderV2;
 
 import "../CErc20.sol";
 import "../CToken.sol";
-import "../Comptroller.sol";
+import "../PriceOracle.sol";
 import "../EIP20Interface.sol";
 import "../Governance/GovernorAlpha.sol";
 import "../Governance/Comp.sol";
+
+interface ComptrollerLensInterface {
+    function markets(address) external view returns (bool, uint);
+    function oracle() external view returns (PriceOracle);
+    function getAccountLiquidity(address) external view returns (uint, uint, uint);
+    function getAssetsIn(address) external view returns (CToken[] memory);
+    function claimComp(address) external;
+    function compAccrued(address) external view returns (uint);
+}
 
 contract CompoundLens {
     struct CTokenMetadata {
@@ -28,7 +37,7 @@ contract CompoundLens {
 
     function cTokenMetadata(CToken cToken) public returns (CTokenMetadata memory) {
         uint exchangeRateCurrent = cToken.exchangeRateCurrent();
-        Comptroller comptroller = Comptroller(address(cToken.comptroller()));
+        ComptrollerLensInterface comptroller = ComptrollerLensInterface(address(cToken.comptroller()));
         (bool isListed, uint collateralFactorMantissa) = comptroller.markets(address(cToken));
         address underlyingAssetAddress;
         uint underlyingDecimals;
@@ -120,7 +129,7 @@ contract CompoundLens {
     }
 
     function cTokenUnderlyingPrice(CToken cToken) public returns (CTokenUnderlyingPrice memory) {
-        Comptroller comptroller = Comptroller(address(cToken.comptroller()));
+        ComptrollerLensInterface comptroller = ComptrollerLensInterface(address(cToken.comptroller()));
         PriceOracle priceOracle = comptroller.oracle();
 
         return CTokenUnderlyingPrice({
@@ -144,7 +153,7 @@ contract CompoundLens {
         uint shortfall;
     }
 
-    function getAccountLimits(Comptroller comptroller, address account) public returns (AccountLimits memory) {
+    function getAccountLimits(ComptrollerLensInterface comptroller, address account) public returns (AccountLimits memory) {
         (uint errorCode, uint liquidity, uint shortfall) = comptroller.getAccountLiquidity(account);
         require(errorCode == 0);
 
@@ -259,6 +268,29 @@ contract CompoundLens {
         });
     }
 
+    struct CompBalanceMetadataExt {
+        uint balance;
+        uint votes;
+        address delegate;
+        uint allocated;
+    }
+
+    function getCompBalanceMetadataExt(Comp comp, ComptrollerLensInterface comptroller, address account) external returns (CompBalanceMetadataExt memory) {
+        uint balance = comp.balanceOf(account);
+        comptroller.claimComp(account);
+        uint newBalance = comp.balanceOf(account);
+        uint accrued = comptroller.compAccrued(account);
+        uint total = add(accrued, newBalance, "sum comp total");
+        uint allocated = sub(total, balance, "sub allocated");
+
+        return CompBalanceMetadataExt({
+            balance: balance,
+            votes: uint256(comp.getCurrentVotes(account)),
+            delegate: comp.delegates(account),
+            allocated: allocated
+        });
+    }
+
     struct CompVotes {
         uint blockNumber;
         uint votes;
@@ -277,5 +309,17 @@ contract CompoundLens {
 
     function compareStrings(string memory a, string memory b) internal pure returns (bool) {
         return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
+    }
+
+    function add(uint a, uint b, string memory errorMessage) internal pure returns (uint) {
+        uint c = a + b;
+        require(c >= a, errorMessage);
+        return c;
+    }
+
+    function sub(uint a, uint b, string memory errorMessage) internal pure returns (uint) {
+        require(b <= a, errorMessage);
+        uint c = a - b;
+        return c;
     }
 }

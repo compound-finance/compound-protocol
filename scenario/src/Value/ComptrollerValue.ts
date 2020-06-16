@@ -4,6 +4,7 @@ import {Comptroller} from '../Contract/Comptroller';
 import {CToken} from '../Contract/CToken';
 import {
   getAddressV,
+  getCoreValue,
   getStringV,
   getNumberV
 } from '../CoreValue';
@@ -19,6 +20,7 @@ import {Arg, Fetcher, getFetcherValue} from '../Command';
 import {getComptroller} from '../ContractLookup';
 import {encodedNumber} from '../Encoding';
 import {getCTokenV} from '../Value/CTokenValue';
+import { encodeParameters, encodeABI } from '../Utils';
 
 export async function getComptrollerAddress(world: World, comptroller: Comptroller): Promise<AddressV> {
   return new AddressV(comptroller._address);
@@ -61,7 +63,7 @@ async function getImplementation(world: World, comptroller: Comptroller): Promis
 }
 
 async function getBlockNumber(world: World, comptroller: Comptroller): Promise<NumberV> {
-  return new NumberV(await comptroller.methods.blockNumber().call());
+  return new NumberV(await comptroller.methods.getBlockNumber().call());
 }
 
 async function getAdmin(world: World, comptroller: Comptroller): Promise<AddressV> {
@@ -74,7 +76,6 @@ async function getPendingAdmin(world: World, comptroller: Comptroller): Promise<
 
 async function getCollateralFactor(world: World, comptroller: Comptroller, cToken: CToken): Promise<NumberV> {
   let {0: _isListed, 1: collateralFactorMantissa} = await comptroller.methods.markets(cToken._address).call();
-
   return new NumberV(collateralFactorMantissa, 1e18);
 }
 
@@ -92,11 +93,23 @@ async function getAssetsIn(world: World, comptroller: Comptroller, user: string)
   return new ListV(assetsList.map((a) => new AddressV(a)));
 }
 
+async function getCompMarkets(world: World, comptroller: Comptroller): Promise<ListV> {
+  let mkts = await comptroller.methods.getCompMarkets().call();
+
+  return new ListV(mkts.map((a) => new AddressV(a)));
+}
+
 async function checkListed(world: World, comptroller: Comptroller, cToken: CToken): Promise<BoolV> {
   let {0: isListed, 1: _collateralFactorMantissa} = await comptroller.methods.markets(cToken._address).call();
 
   return new BoolV(isListed);
 }
+
+async function checkIsComped(world: World, comptroller: Comptroller, cToken: CToken): Promise<BoolV> {
+  let {0: isListed, 1: _collateralFactorMantissa, 2: isComped} = await comptroller.methods.markets(cToken._address).call();
+  return new BoolV(isComped);
+}
+
 
 export function comptrollerFetchers() {
   return [
@@ -305,6 +318,19 @@ export function comptrollerFetchers() {
       ],
       (world, {comptroller, cToken}) => checkListed(world, comptroller, cToken)
     ),
+    new Fetcher<{comptroller: Comptroller, cToken: CToken}, BoolV>(`
+        #### CheckIsComped
+
+        * "Comptroller CheckIsComped <CToken>" - Returns true if market is listed, false otherwise.
+          * E.g. "Comptroller CheckIsComped cZRX"
+      `,
+      "CheckIsComped",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("cToken", getCTokenV)
+      ],
+      (world, {comptroller, cToken}) => checkIsComped(world, comptroller, cToken)
+    ),
     new Fetcher<{comptroller: Comptroller}, AddressV>(`
         #### PauseGuardian
 
@@ -386,6 +412,142 @@ export function comptrollerFetchers() {
         ],
         async (world, {comptroller, cToken}) => new BoolV(await comptroller.methods.borrowGuardianPaused(cToken._address).call())
     ),
+
+    new Fetcher<{comptroller: Comptroller}, ListV>(`
+      #### GetCompMarkets
+
+      * "GetCompMarkets" - Returns an array of the currently enabled Comp markets. To use the auto-gen array getter compMarkets(uint), use CompMarkets
+      * E.g. "Comptroller GetCompMarkets"
+      `,
+      "GetCompMarkets",
+      [new Arg("comptroller", getComptroller, {implicit: true})],
+      async(world, {comptroller}) => await getCompMarkets(world, comptroller)
+     ),
+
+    new Fetcher<{comptroller: Comptroller}, NumberV>(`
+      #### CompRate
+
+      * "CompRate" - Returns the current comp rate.
+      * E.g. "Comptroller CompRate"
+      `,
+      "CompRate",
+      [new Arg("comptroller", getComptroller, {implicit: true})],
+      async(world, {comptroller}) => new NumberV(await comptroller.methods.compRate().call())
+    ),
+
+    new Fetcher<{comptroller: Comptroller, signature: StringV, callArgs: StringV[]}, NumberV>(`
+        #### CallNum
+
+        * "CallNum signature:<String> ...callArgs<CoreValue>" - Simple direct call method
+          * E.g. "Comptroller CallNum \"compSpeeds(address)\" (Address Coburn)"
+      `,
+      "CallNum",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("signature", getStringV),
+        new Arg("callArgs", getCoreValue, {variadic: true, mapped: true})
+      ],
+      async (world, {comptroller, signature, callArgs}) => {
+        const fnData = encodeABI(world, signature.val, callArgs.map(a => a.val));
+        const res = await world.web3.eth.call({
+            to: comptroller._address,
+            data: fnData
+          })
+        const resNum : any = world.web3.eth.abi.decodeParameter('uint256',res);
+        return new NumberV(resNum);
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken, key: StringV}, NumberV>(`
+        #### CompSupplyState(address)
+
+        * "Comptroller CompBorrowState cZRX "index"
+      `,
+      "CompSupplyState",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+        new Arg("key", getStringV),
+      ],
+      async (world, {comptroller, CToken, key}) => {
+        const result = await comptroller.methods.compSupplyState(CToken._address).call();
+        return new NumberV(result[key.val]);
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken, key: StringV}, NumberV>(`
+        #### CompBorrowState(address)
+
+        * "Comptroller CompBorrowState cZRX "index"
+      `,
+      "CompBorrowState",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+        new Arg("key", getStringV),
+      ],
+      async (world, {comptroller, CToken, key}) => {
+        const result = await comptroller.methods.compBorrowState(CToken._address).call();
+        return new NumberV(result[key.val]);
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, account: AddressV, key: StringV}, NumberV>(`
+        #### CompAccrued(address)
+
+        * "Comptroller CompAccrued Coburn
+      `,
+      "CompAccrued",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("account", getAddressV),
+      ],
+      async (world, {comptroller,account}) => {
+        const result = await comptroller.methods.compAccrued(account.val).call();
+        return new NumberV(result);
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken, account: AddressV}, NumberV>(`
+        #### compSupplierIndex
+
+        * "Comptroller CompSupplierIndex cZRX Coburn
+      `,
+      "CompSupplierIndex",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+        new Arg("account", getAddressV),
+      ],
+      async (world, {comptroller, CToken, account}) => {
+        return new NumberV(await comptroller.methods.compSupplierIndex(CToken._address, account.val).call());
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken, account: AddressV}, NumberV>(`
+        #### CompBorrowerIndex
+
+        * "Comptroller CompBorrowerIndex cZRX Coburn
+      `,
+      "CompBorrowerIndex",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+        new Arg("account", getAddressV),
+      ],
+      async (world, {comptroller, CToken, account}) => {
+        return new NumberV(await comptroller.methods.compBorrowerIndex(CToken._address, account.val).call());
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken}, NumberV>(`
+        #### CompSpeed
+
+        * "Comptroller CompSpeed cZRX
+      `,
+      "CompSpeed",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+      ],
+      async (world, {comptroller, CToken}) => {
+        return new NumberV(await comptroller.methods.compSpeeds(CToken._address).call());
+      }
+    )
   ];
 }
 

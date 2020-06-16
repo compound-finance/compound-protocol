@@ -1,7 +1,7 @@
 
 function getRaw(config, key, required=true) {
   let value = config[key];
-  if (!value) {
+  if (required && !value) {
     throw new Error(`Config missing required key \`${key}\``);
   }
   return value;
@@ -43,10 +43,34 @@ function getAddress(addresses, config, key, required=true) {
 function getNumber(config, key, required=true) {
   let value = getRaw(config, key, required);
   let result = Number(value);
-  if (Number.isNaN(result)) {
+  if (value == null && !required){
+    return null;
+  } else if (Number.isNaN(result)) {
     throw new Error(`Invalid number for \`${key}\`=${value}`);
   } else {
-    return Number(result);
+    return result;
+  }
+}
+
+function getArray(config, key, required = true) {
+  let value = getRaw(config, key, required);
+  if (value == null && !required){
+    return null;
+  } else if (Array.isArray(value)) {
+    return value;
+  } else {
+    throw new Error(`Invalid array for \`${key}\`=${value}`);
+  }
+}
+
+function getBoolean(config, key, required = true) {
+  let value = getRaw(config, key, required);
+  if (value == null && !required){
+    return null;
+  } else if (value === "false" || value === "true") {
+    return value == 'true';
+  } else {
+    throw new Error(`Invalid bool for \`${key}\`=${value}`);
   }
 }
 
@@ -79,5 +103,8 @@ function loadConf(configArg, addresses) {
 
 module.exports = {
   loadAddress,
-  loadConf
+  loadConf,
+  getNumber,
+  getArray,
+  getBoolean
 };

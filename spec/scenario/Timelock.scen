@@ -183,7 +183,7 @@ Test "Reduce reserves for CEther from Timelock and send reserves to external add
     Trx GasPrice 0 (From Jared (Timelock ExecuteTransaction Jared 1000000000000000000 604900 "" ""))
     Assert Equal (EtherBalance (Timelock Address)) (Exactly 0e18)
 
-Test "Set Pending Comptroller implemention on Unitroller from Timelock"
+Test "Set Pending Comptroller implementation on Unitroller from Timelock"
     Unitroller Deploy
     PriceOracle Deploy Simple
     ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
@@ -201,11 +201,11 @@ Test "Set Pending Comptroller implemention on Unitroller from Timelock"
     Assert Equal (Unitroller PendingAdmin) (Timelock Address)
     Assert Equal (Unitroller PendingImplementation) (ComptrollerImpl ScenComptroller Address)
     From Coburn (Timelock QueueTransaction (Unitroller Address) 0 604900 "_acceptAdmin()" "")
-    From Coburn (Timelock QueueTransaction (ComptrollerImpl ScenComptroller Address) 0 604900 "_become(address)" (Unitroller Address))
+    From Coburn (Timelock QueueTransaction (ComptrollerImpl ScenComptroller Address) 0 604900 "_become(address,uint256,address[],address[])" (Unitroller Address) "1000000000000000000" [] [])
     FreezeTime 604900
     From Coburn (Timelock ExecuteTransaction (Unitroller Address) 0 604900 "_acceptAdmin()" "")
     Assert Equal (Unitroller Admin) (Timelock Address)
     Assert Equal (Unitroller PendingAdmin) (Address Zero)
-    From Coburn (Timelock ExecuteTransaction (ComptrollerImpl ScenComptroller Address) 0 604900 "_become(address)" (Unitroller Address))
+    From Coburn (Timelock ExecuteTransaction (ComptrollerImpl ScenComptroller Address) 0 604900 "_become(address,uint256,address[],address[])" (Unitroller Address) "1000000000000000000" [] [])
     Assert Equal (Unitroller Implementation) (Address ScenComptroller)
     Assert Equal (Unitroller PendingImplementation) (Address Zero)

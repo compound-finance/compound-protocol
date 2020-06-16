@@ -9,10 +9,19 @@ Test "Standard Upgrade"
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
     Assert Equal (Comptroller Implementation) (Address ScenComptrollerG1)
-    -- Upgrade to G*
+    ListedCToken ZRX cZRX
+    ListedCToken DAI cDAI
+    -- Upgrade to G2
+    ComptrollerImpl Deploy StandardG2 StandardComptrollerG2
+    Unitroller SetPendingImpl StandardComptrollerG2
+    ComptrollerImpl StandardComptrollerG2 BecomeG2
+    Assert Equal (Comptroller CloseFactor) 0.2
+    Assert Equal (Comptroller MaxAssets) 20
+    Assert Equal (Comptroller Implementation) (Address StandardComptrollerG2)
+    -- Upgrade to G3
     ComptrollerImpl Deploy Scenario ScenComptroller
     Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become
+    ComptrollerImpl ScenComptroller Become 1e18 [cZRX cDAI]
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
     Assert Equal (Comptroller Implementation) (Address ScenComptroller)
@@ -27,31 +36,41 @@ Test "Standard Upgrade, then downgrade then upgrade again"
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
     Assert Equal (Comptroller Implementation) (Address ScenComptrollerG1)
-    -- Upgrade to G*
-    ComptrollerImpl Deploy Scenario ScenComptroller
-    Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become
+    ListedCToken ZRX cZRX
+    ListedCToken DAI cDAI
+    -- Upgrade to G2
+    ComptrollerImpl Deploy StandardG2 ComptrollerG2
+    Unitroller SetPendingImpl ComptrollerG2
+    ComptrollerImpl ComptrollerG2 BecomeG2
     Comptroller SetPauseGuardian Coburn
     Assert Equal (Comptroller PauseGuardian) (Address Coburn)
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
-    Assert Equal (Comptroller Implementation) (Address ScenComptroller)
-    -- Downgrade to G1
-    Unitroller SetPendingImpl ScenComptrollerG1
-    ComptrollerImpl ScenComptrollerG1 Recome
-    Assert ReadRevert (Comptroller PauseGuardian) "revert"
+    Assert Equal (Comptroller Implementation) (Address ComptrollerG2)
+    -- Upgrade to G3
+    ComptrollerImpl Deploy Scenario ScenComptroller
+    Unitroller SetPendingImpl ScenComptroller
+    ComptrollerImpl ScenComptroller Become 1e18 [cZRX cDAI]
+    Assert Equal (Comptroller PauseGuardian) (Address Coburn)
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
-    Assert Equal (Comptroller Implementation) (Address ScenComptrollerG1)
-    -- Upgrade again
+    Assert Equal (Comptroller Implementation) (Address ScenComptroller)
+    -- Downgrade to G2
+    Unitroller SetPendingImpl ComptrollerG2
+    ComptrollerImpl ComptrollerG2 BecomeG2
+    Assert Equal (Comptroller CloseFactor) 0.2
+    Assert Equal (Comptroller MaxAssets) 20
+    Assert Equal (Comptroller Implementation) (Address ComptrollerG2)
+    -- Upgrade to G3 again
     Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become
+    ComptrollerImpl ScenComptroller Become 1e18 []
+    Assert Equal (Comptroller GetCompMarkets) [(Address cZRX) (Address cDAI)]
     Assert Equal (Comptroller PauseGuardian) (Address Coburn)
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
     Assert Equal (Comptroller Implementation) (Address ScenComptroller)
 
-Pending "Once become, can become again"
+Test "Once become, can become again"
     -- TODO: See why ABI is broken here
     Unitroller Deploy
     PriceOracle Deploy Fixed 1.0
@@ -68,6 +87,7 @@ Pending "Once become, can become again"
     Assert Equal (Comptroller MaxAssets) 40
     Assert Equal (Comptroller Implementation) (Address ScenComptrollerG1_2)
 
+--G1 recome
 Test "Recome has default values"
     Unitroller Deploy
     PriceOracle Deploy Fixed 1.0
@@ -78,6 +98,7 @@ Test "Recome has default values"
     Assert Equal (Comptroller MaxAssets) 0
     Assert Equal (Comptroller Implementation) (Address ScenComptrollerG1)
 
+--G1 bork
 Test "Bork and unbork"
     Unitroller Deploy
     PriceOracle Deploy Fixed 1.0
@@ -101,117 +122,39 @@ Test "Bork and unbork"
     Assert Equal (Comptroller MaxAssets) 20
     Assert Equal (Comptroller Implementation) (Address ScenComptrollerG1)
 
-Test "Keeps all storage"
-    Unitroller Deploy
-    PriceOracle Deploy Fixed 1.0
-    ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
-    --
-    Unitroller SetPendingImpl ScenComptrollerG1
-    ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracle Address) 0.2 20
-    NewCToken ZRX cZRX
-    NewCToken BAT cBAT
-    Give cBAT 10e18 BAT -- Faucet some bat to borrow
-    Support cZRX collateralFactor:0.5
-    Support cBAT collateralFactor:0.4
-    Prep Geoff Some ZRX cZRX
-    Mint Geoff 100e18 cZRX
-    EnterMarkets Geoff cZRX cBAT
-    Borrow Geoff 1e18 cBAT
-    --
-    -- Unitroller Storage
-    --
+Macro CheckUnitrollerStorage implementation
     -- Admin; 0
     Assert Equal (Comptroller Admin) (Address Root)
     Assert Equal (StorageAt Comptroller 0 0 "address") (Address Root)
     -- PendingAdmin; 1
-    Comptroller SetPendingAdmin Coburn
     Assert Equal (Comptroller PendingAdmin) (Address Coburn)
     Assert Equal (StorageAt Comptroller 1 0 "address") (Address Coburn)
     -- ComptrollerImplementation; 2
-    Assert Equal (Unitroller Implementation) (Address ScenComptrollerG1)
-    Assert Equal (StorageAt Comptroller 2 0 "address") (Address ScenComptrollerG1)
-    -- PendingComptrollerImplementation; 3
-    ComptrollerImpl Deploy Scenario ScenComptroller
-    Unitroller SetPendingImpl ScenComptroller
-    Assert Equal (Unitroller PendingImplementation) (Address ScenComptroller)
-    Assert Equal (StorageAt Comptroller 3 0 "address") (Address ScenComptroller)
-    --
-    -- V1 Storage
-    --
-    -- Oracle; 4
-    Assert Equal (Comptroller PriceOracle) (Address PriceOracle)
-    Assert Equal (StorageAt Comptroller 4 0 "address") (Address PriceOracle)
-    -- CloseFactorMantissa; 5
-    Assert Equal (Comptroller CloseFactor) 0.2
-    Assert Equal (StorageAt Comptroller 5 0 "number") 0.2
-    -- LiquidationIncentiveMantissa; 6
-    Assert Equal (Comptroller LiquidationIncentive) 1
-    Assert Equal (StorageAt Comptroller 6 0 "number") 1
-    -- MaxAssets; 7
-    Assert Equal (Comptroller MaxAssets) 20
-    Assert Equal (StorageAt Comptroller 7 0 "number") 20
-    --
-    -- AccountAssets; 8 *
-    Assert Equal (StorageAt Comptroller 8 0 "number") 0
-    Assert Equal (StorageAtMapping Comptroller 8 (Address Geoff) "number") 2
-    Assert Equal (StorageAtMapping Comptroller 8 (Address Geoff) "list(address)") [(Address cZRX) (Address cBAT)]
-    Assert Equal (Comptroller AssetsIn Geoff) [(Address cZRX) (Address cBAT)]
-    -- Markets; 9 *
-    Assert Equal (StorageAt Comptroller 9 0 "number") 0
-    Assert Equal (StorageAtNestedMapping Comptroller 9 (Address cZRX) Geoff "marketStruct") [True 0.5 True]
-    Assert Equal (StorageAtNestedMapping Comptroller 9 (Address cBAT) Geoff "marketStruct") [True 0.4 True]
-    Assert Equal (StorageAtNestedMapping Comptroller 9 (Address cBAT) Coburn "marketStruct") [True 0.4 False]
-    Assert Equal (Comptroller CollateralFactor cZRX) 0.5
-    Assert Equal (Comptroller CollateralFactor cBAT) 0.4
-    Assert Equal (Comptroller CheckMembership Geoff cZRX) True
-    Assert Equal (Comptroller CheckMembership Geoff cBAT) True
-           --
-    ComptrollerImpl ScenComptroller Become
-    --
-    -- Recheck all unitroller and v1 storage
-    --
-    -- Unitroller Storage again
-    --
-    -- Admin; 0
-    Assert Equal (StorageAt Comptroller 0 0 "address") (Address Root)
-    -- PendingAdmin; 1
-    Assert Equal (StorageAt Comptroller 1 0 "address") (Address Coburn)
-    -- ComptrollerImplementation; 2
-    Assert Equal (Unitroller Implementation) (Address ScenComptroller)
-    Assert Equal (StorageAt Comptroller 2 0 "address") (Address ScenComptroller)
+    Assert Equal (Unitroller Implementation) implementation
+    Assert Equal (StorageAt Comptroller 2 0 "address") implementation
     -- PendingComptrollerImplementation; 3
     -- check as number since casting address 0 is not defined
     Assert Equal (StorageAt Comptroller 3 0 "number") 0
-    --
-    -- V1 Storage again
-    --
+
+Macro CheckV1Storage
     -- Oracle; 4
     Assert Equal (Comptroller PriceOracle) (Address PriceOracle)
     Assert Equal (StorageAt Comptroller 4 0 "address") (Address PriceOracle)
-    --
     -- CloseFactorMantissa; 5
     Assert Equal (Comptroller CloseFactor) 0.2
-    Assert Equal (StorageAt Comptroller 5 0 "number") 0.2
-    --
+    Assert Equal (StorageAt Comptroller 5 0 "number") 0.2e18
     -- LiquidationIncentiveMantissa; 6
     Assert Equal (Comptroller LiquidationIncentive) 1
-    Assert Equal (StorageAt Comptroller 6 0 "number") 1
-    --
+    Assert Equal (StorageAt Comptroller 6 0 "number") 1e18
     -- MaxAssets; 7
     Assert Equal (Comptroller MaxAssets) 20
     Assert Equal (StorageAt Comptroller 7 0 "number") 20
-    --
     -- AccountAssets; 8 *
     Assert Equal (StorageAt Comptroller 8 0 "number") 0
     Assert Equal (StorageAtMapping Comptroller 8 (Address Geoff) "number") 2
     Assert Equal (StorageAtMapping Comptroller 8 (Address Geoff) "list(address)") [(Address cZRX) (Address cBAT)]
     Assert Equal (Comptroller AssetsIn Geoff) [(Address cZRX) (Address cBAT)]
     -- Markets; 9 *
-    Assert Equal (Comptroller CollateralFactor cZRX) 0.5
-    Assert Equal (Comptroller CollateralFactor cBAT) 0.4
-    Assert Equal (Comptroller CheckMembership Geoff cZRX) True
-    Assert Equal (Comptroller CheckMembership Geoff cBAT) True
-    Assert Equal (Comptroller CheckMembership Coburn cBAT) False
     Assert Equal (StorageAt Comptroller 9 0 "number") 0
     Assert Equal (StorageAtNestedMapping Comptroller 9 (Address cZRX) Geoff "marketStruct") [True 0.5 True]
     Assert Equal (StorageAtNestedMapping Comptroller 9 (Address cBAT) Geoff "marketStruct") [True 0.4 True]
@@ -220,33 +163,29 @@ Test "Keeps all storage"
     Assert Equal (Comptroller CollateralFactor cBAT) 0.4
     Assert Equal (Comptroller CheckMembership Geoff cZRX) True
     Assert Equal (Comptroller CheckMembership Geoff cBAT) True
-    --
-    -- V2 Storage
-    --
+
+Macro CheckV2Storage
     -- PauseGuardian; 10
-    Comptroller SetPauseGuardian Coburn
     Assert Equal (Comptroller PauseGuardian) (Address Coburn)
     Assert Equal (StorageAt Comptroller 10 0 "address") (Address Coburn)
-    --
     -- MintGuardianPaused; 11
     Assert Equal (StorageAt Comptroller 10 40 "bool") False
     Assert Equal (Comptroller _MintGuardianPaused) False
-    --
     -- BorrowGuardianPaused; 12
     Assert Equal (StorageAt Comptroller 10 42 "bool") False
     Assert Equal (Comptroller _BorrowGuardianPaused) False
-    --
     -- TransferGuardianPaused; 13
     Assert Equal (StorageAt Comptroller 10 44 "bool") False
     From Coburn (Comptroller SetGuardianPaused "Transfer" True)
     Assert Equal (Comptroller TransferGuardianPaused) True
     Assert Equal (StorageAt Comptroller 10 44 "bool") True
-    --
+    Comptroller SetGuardianPaused "Transfer" False
     -- SeizeGuardianPaused; 14
     Assert Equal (StorageAt Comptroller 10 46 "bool") False
     From Coburn (Comptroller SetGuardianPaused "Seize" True)
     Assert Equal (Comptroller SeizeGuardianPaused) True
     Assert Equal (StorageAt Comptroller 10 46 "bool") True
+    Comptroller SetGuardianPaused "Seize" False
     --
     -- Pause by market storage
     --
@@ -255,10 +194,71 @@ Test "Keeps all storage"
     From Coburn (Comptroller SetGuardianMarketPaused cZRX "Mint" True)
     Assert Equal (Comptroller MintGuardianMarketPaused cZRX) True
     Assert Equal (StorageAtMapping Comptroller 11 (Address cZRX) "bool") True
-    --
+    Comptroller SetGuardianMarketPaused cZRX "Mint" False
     -- BorrowGuardianPaused; 16
     Assert Equal (StorageAtMapping Comptroller 12 (Address cZRX) "bool") False
     From Coburn (Comptroller SetGuardianMarketPaused cZRX "Borrow" True)
     Assert Equal (Comptroller BorrowGuardianMarketPaused cZRX) True
     Assert Equal (StorageAtMapping Comptroller 12 (Address cZRX) "bool") True
+    Comptroller SetGuardianMarketPaused cZRX "Borrow" False
+
+Macro CheckV3Storage
+    -- AllMarkets; 17
+    Assert Equal (StorageAt Comptroller 13 0 "number") 2
+    -- TODO: StorageAtArray Comptroller 13?
+    -- CompRate; 18
+    Assert Equal (StorageAt Comptroller 14 0 "number") 1e18
+    -- CompSpeeds; 19
+    Assert Equal (StorageAt Comptroller 15 0 "number") 0
+    -- CompSupplyState; 20
+    Assert Equal (StorageAt Comptroller 16 0 "number") 0
+    -- CompBorrowState; 21
+    Assert Equal (StorageAt Comptroller 17 0 "number") 0
+    -- CompSupplierIndex; 22
+    Assert Equal (StorageAt Comptroller 18 0 "number") 0
+    -- CompBorrowerIndex; 23
+    Assert Equal (StorageAt Comptroller 19 0 "number") 0
+    -- CompAccrued; 24
+    Assert Equal (StorageAt Comptroller 20 0 "number") 0
+
+-- Times out coverage, disable for now - ideally set flag to not run in coverage
+Pending "Keeps all storage"
+    Unitroller Deploy
+    PriceOracle Deploy Fixed 1.0
+    ComptrollerImpl Deploy StandardG1 ComptrollerG1
+    Unitroller SetPendingImpl ComptrollerG1
+    ComptrollerImpl ComptrollerG1 BecomeG1 (PriceOracle Address) 0.2 20
+    Comptroller SetPendingAdmin Coburn
+    ---
+    NewCToken ZRX cZRX delegatorType:CErc20Delegator cTokenType:CErc20Delegate
+    NewCToken BAT cBAT delegatorType:CErc20Delegator cTokenType:CErc20Delegate
+    Give cBAT 10e18 BAT -- Faucet some bat to borrow
+    Support cZRX collateralFactor:0.5
+    Support cBAT collateralFactor:0.4
+    Prep Geoff Some ZRX cZRX
+    Mint Geoff 100e18 cZRX
+    EnterMarkets Geoff cZRX cBAT
+    Borrow Geoff 1e18 cBAT
     --
+    CheckUnitrollerStorage (Address ComptrollerG1)
+    CheckV1Storage
+    --
+    ComptrollerImpl Deploy StandardG2 ComptrollerG2
+    Unitroller SetPendingImpl ComptrollerG2
+    Assert Equal (Unitroller PendingImplementation) (Address ComptrollerG2)
+    Assert Equal (StorageAt Comptroller 3 0 "address") (Address ComptrollerG2)
+    ComptrollerImpl ComptrollerG2 BecomeG2
+    Comptroller SetPauseGuardian Coburn
+    --
+    CheckUnitrollerStorage (Address ComptrollerG2)
+    CheckV1Storage
+    CheckV2Storage
+    --
+    ComptrollerImpl Deploy Standard ComptrollerG3
+    Unitroller SetPendingImpl ComptrollerG3
+    ComptrollerImpl ComptrollerG3 Become 1e18 [cZRX cBAT]
+    --
+    CheckUnitrollerStorage (Address ComptrollerG3)
+    CheckV1Storage
+    CheckV2Storage
+    CheckV3Storage

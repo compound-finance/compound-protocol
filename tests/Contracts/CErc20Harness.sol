@@ -294,6 +294,10 @@ contract CErc20DelegateHarness is CErc20Delegate {
         totalBorrows = totalBorrows_;
     }
 
+    function harnessIncrementTotalBorrows(uint addtlBorrow_) public {
+        totalBorrows = totalBorrows + addtlBorrow_;
+    }
+
     function harnessSetTotalReserves(uint totalReserves_) public {
         totalReserves = totalReserves_;
     }
