@@ -28,7 +28,7 @@ jobs:
       - restore_cache:
           keys:
           - v2-scencache
-      - run: yarn install
+      - run: yarn install || (yarn cache clean && yarn install)
       - run: cd scenario && yarn install
       - save_cache:
           paths:
@@ -98,7 +98,7 @@ jobs:
       - restore_cache:
           keys:
           - v2-scencache
-      - run: yarn install
+      - run: yarn install || (yarn cache clean && yarn install)
       - run: cd scenario && yarn install
       - save_cache:
           paths:
@@ -149,7 +149,7 @@ jobs:
           keys:
           - v2-dependencies-{{ checksum "package.json" }}
           - v2-dependencies-
-      - run: yarn install
+      - run: yarn install || (yarn cache clean && yarn install)
       - save_cache:
           paths:
             - node_modules
