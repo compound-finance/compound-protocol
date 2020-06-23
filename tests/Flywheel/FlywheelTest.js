@@ -652,6 +652,12 @@ describe('Flywheel', () => {
       expect(speed2).toEqualNumber(0);
       expect(speed3).toEqualNumber(compRate.div(4).mul(3));
     });
+
+    it('should not be callable inside a contract', async () => {
+      await pretendBorrow(cLOW, a1, 1, 1, 100);
+      await pretendBorrow(cZRX, a1, 1, 1, 100);
+      await expect(deploy('RefreshSpeedsProxy', [comptroller._address])).rejects.toRevert('revert only externally owned accounts may refresh speeds');
+    });
   });
 
   describe('_addCompMarkets', () => {
