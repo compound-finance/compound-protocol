@@ -168,7 +168,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     /**
      * @notice Removes asset from sender's account liquidity calculation
      * @dev Sender must not have an outstanding borrow balance in the asset,
-     *  or be providing neccessary collateral for an outstanding borrow.
+     *  or be providing necessary collateral for an outstanding borrow.
      * @param cTokenAddress The address of the asset to be removed
      * @return Whether or not the account successfully exited the market
      */
@@ -1081,26 +1081,9 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         return state;
     }
 
-    function _become(Unitroller unitroller, uint compRate_, address[] memory compMarketsToAdd, address[] memory otherMarketsToAdd) public {
+    function _become(Unitroller unitroller) public {
         require(msg.sender == unitroller.admin(), "only unitroller admin can change brains");
         require(unitroller._acceptImplementation() == 0, "change not authorized");
-
-        Comptroller(address(unitroller))._becomeG3(compRate_, compMarketsToAdd, otherMarketsToAdd);
-    }
-
-    function _becomeG3(uint compRate_, address[] memory compMarketsToAdd, address[] memory otherMarketsToAdd) public {
-        require(msg.sender == comptrollerImplementation, "only brains can become itself");
-
-        for (uint i = 0; i < compMarketsToAdd.length; i++) {
-            _addMarketInternal(address(compMarketsToAdd[i]));
-        }
-
-        for (uint i = 0; i < otherMarketsToAdd.length; i++) {
-            _addMarketInternal(address(otherMarketsToAdd[i]));
-        }
-
-        _setCompRate(compRate_);
-        _addCompMarkets(compMarketsToAdd);
     }
 
     /**

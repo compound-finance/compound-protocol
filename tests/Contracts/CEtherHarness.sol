@@ -1,7 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "../../contracts/CEther.sol";
-import "./ComptrollerHarness.sol";
+import "./ComptrollerScenario.sol";
 
 contract CEtherHarness is CEther {
     uint harnessExchangeRate;
