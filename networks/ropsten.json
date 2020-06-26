@@ -34,6 +34,7 @@
     "GovernorAlpha": "0x93ACbA9ecaCeC21BFA09b0C4650Be3596713d747",
     "Maximillion": "0xE0a38ab2951B6525C33f20D5E637Ab24DFEF9bcB",
     "StdComptrollerG3": "0x6F4B5C3d29ed8eFa211bB7549bDCcEc19c74c1AA",
+    "StdComptrollerG4": "0xdC82E0c29e0c69cAf323dCF6Bd25dcE741d4C38C",
     "Comptroller": "0x54188bBeDD7b68228fa89CbDDa5e3e930459C6c6",
     "PriceOracleProxy": "0xb2b3d5B4E35881D518fa2062325F118A6Ebb6C4A"
   },
@@ -71,7 +72,8 @@
     "Reservoir": 8026391,
     "GovernorAlpha": 8036134,
     "Maximillion": 8026452,
-    "StdComptrollerG3": 8053317
+    "StdComptrollerG3": 8053317,
+    "StdComptrollerG4": 8175772
   },
   "PriceOracle": {
     "description": "SimplePriceOracle",
@@ -104,6 +106,11 @@
     },
     "StdComptrollerG3": {
       "address": "0x6F4B5C3d29ed8eFa211bB7549bDCcEc19c74c1AA",
+      "contract": "ComptrollerRopsten",
+      "description": "Comptroller Description"
+    },
+    "StdComptrollerG4": {
+      "address": "0xdC82E0c29e0c69cAf323dCF6Bd25dcE741d4C38C",
       "contract": "ComptrollerRopsten",
       "description": "Comptroller Description"
     }
@@ -148,7 +155,8 @@
     "Reservoir": "0x00000000000000000000000000000000000000000000000006f05b59d3b200000000000000000000000000001fe16de955718cfab7a44605458ab023838c279300000000000000000000000054188bbedd7b68228fa89cbdda5e3e930459c6c6",
     "GovernorAlpha": "0x0000000000000000000000000a278af3cf0f5ba7a22133f0c165f6de2dcdf6890000000000000000000000001fe16de955718cfab7a44605458ab023838c27930000000000000000000000009687eb285292cba14a60a0c77dfd36dd95b93889",
     "Maximillion": "0x000000000000000000000000be839b6d93e3ea47effcca1f27841c917a8794f3",
-    "StdComptrollerG3": "0x"
+    "StdComptrollerG3": "0x",
+    "StdComptrollerG4": "0x"
   },
   "Tokens": {
     "ZRX": {
