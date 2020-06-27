@@ -56,4 +56,4 @@ done
 [[ -z $no_tsc ]] && "$dir/tsc"
 [[ -z $no_compile ]] && "$proj_root/script/compile"
 
-proj_root="$proj_root" env_vars="$env_vars" dry_run="$dry_run" script="$(IFS=, ; echo "${script[*]}")" network="$network" verbose="$verbose" node "$tsc_root/.tsbuilt/repl.js"
+proj_root="$proj_root" env_vars="$env_vars" dry_run="$dry_run" script="$(IFS=, ; echo "${script[*]}")" network="$network" verbose="$verbose" node "$tsc_root/.tsbuilt/Repl.js"
