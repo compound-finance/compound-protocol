@@ -4,7 +4,7 @@ import "../../contracts/CErc20Immutable.sol";
 import "../../contracts/CErc20Delegator.sol";
 import "../../contracts/CErc20Delegate.sol";
 import "../../contracts/CDaiDelegate.sol";
-import "./ComptrollerHarness.sol";
+import "./ComptrollerScenario.sol";
 
 contract CErc20Harness is CErc20Immutable {
     uint blockNumber = 100000;

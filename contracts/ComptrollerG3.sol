@@ -13,7 +13,7 @@ import "./Governance/Comp.sol";
  * @title Compound's Comptroller Contract
  * @author Compound
  */
-contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerErrorReporter, Exponential {
+contract ComptrollerG3 is ComptrollerV3Storage, ComptrollerInterface, ComptrollerErrorReporter, Exponential {
     /// @notice Emitted when an admin supports a market
     event MarketListed(CToken cToken);
 
@@ -168,7 +168,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     /**
      * @notice Removes asset from sender's account liquidity calculation
      * @dev Sender must not have an outstanding borrow balance in the asset,
-     *  or be providing necessary collateral for an outstanding borrow.
+     *  or be providing neccessary collateral for an outstanding borrow.
      * @param cTokenAddress The address of the asset to be removed
      * @return Whether or not the account successfully exited the market
      */
@@ -1081,9 +1081,26 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         return state;
     }
 
-    function _become(Unitroller unitroller) public {
+    function _become(Unitroller unitroller, uint compRate_, address[] memory compMarketsToAdd, address[] memory otherMarketsToAdd) public {
         require(msg.sender == unitroller.admin(), "only unitroller admin can change brains");
         require(unitroller._acceptImplementation() == 0, "change not authorized");
+
+        ComptrollerG3(address(unitroller))._becomeG3(compRate_, compMarketsToAdd, otherMarketsToAdd);
+    }
+
+    function _becomeG3(uint compRate_, address[] memory compMarketsToAdd, address[] memory otherMarketsToAdd) public {
+        require(msg.sender == comptrollerImplementation, "only brains can become itself");
+
+        for (uint i = 0; i < compMarketsToAdd.length; i++) {
+            _addMarketInternal(address(compMarketsToAdd[i]));
+        }
+
+        for (uint i = 0; i < otherMarketsToAdd.length; i++) {
+            _addMarketInternal(address(otherMarketsToAdd[i]));
+        }
+
+        _setCompRate(compRate_);
+        _addCompMarkets(compMarketsToAdd);
     }
 
     /**
@@ -1099,11 +1116,6 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      * @notice Recalculate and update COMP speeds for all COMP markets
      */
     function refreshCompSpeeds() public {
-        require(msg.sender == tx.origin, "only externally owned accounts may refresh speeds");
-        refreshCompSpeedsInternal();
-    }
-
-    function refreshCompSpeedsInternal() internal {
         CToken[] memory allMarkets_ = allMarkets;
 
         for (uint i = 0; i < allMarkets_.length; i++) {
@@ -1119,7 +1131,8 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             CToken cToken = allMarkets_[i];
             if (markets[address(cToken)].isComped) {
                 Exp memory assetPrice = Exp({mantissa: oracle.getUnderlyingPrice(cToken)});
-                Exp memory utility = mul_(assetPrice, cToken.totalBorrows());
+                Exp memory interestPerBlock = mul_(Exp({mantissa: cToken.borrowRatePerBlock()}), cToken.totalBorrows());
+                Exp memory utility = mul_(interestPerBlock, assetPrice);
                 utilities[i] = utility;
                 totalUtility = add_(totalUtility, utility);
             }
@@ -1302,7 +1315,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         compRate = compRate_;
         emit NewCompRate(oldRate, compRate_);
 
-        refreshCompSpeedsInternal();
+        refreshCompSpeeds();
     }
 
     /**
@@ -1316,7 +1329,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             _addCompMarketInternal(cTokens[i]);
         }
 
-        refreshCompSpeedsInternal();
+        refreshCompSpeeds();
     }
 
     function _addCompMarketInternal(address cToken) internal {
@@ -1355,7 +1368,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         market.isComped = false;
         emit MarketComped(CToken(cToken), false);
 
-        refreshCompSpeedsInternal();
+        refreshCompSpeeds();
     }
 
     /**
