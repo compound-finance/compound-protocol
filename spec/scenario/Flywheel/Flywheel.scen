@@ -17,9 +17,9 @@ Macro FlywheelComptroller price=1.0 borrowRate=0.000005 compInitAmount=5000000e1
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
     -- final
-    ComptrollerImpl Deploy Scenario ComptrollerScen
+    ComptrollerImpl Deploy ScenarioG3 ComptrollerScen
     Unitroller SetPendingImpl ComptrollerScen
-    ComptrollerImpl ComptrollerScen Become 1e18 [cZRX cBAT]
+    ComptrollerImpl ComptrollerScen BecomeG3 1e18 [cZRX cBAT]
     Erc20 Deploy Standard COMP "COMP Token" 18
     Give (Address Comptroller) compInitAmount COMP
     Comptroller Send "setCompAddress(address)" (Address COMP)

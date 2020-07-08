@@ -19,12 +19,12 @@ Test "Standard Upgrade"
     Assert Equal (Comptroller MaxAssets) 20
     Assert Equal (Comptroller Implementation) (Address StandardComptrollerG2)
     -- Upgrade to G3
-    ComptrollerImpl Deploy Scenario ScenComptroller
-    Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become 1e18 [cZRX cDAI]
+    ComptrollerImpl Deploy ScenarioG3 ScenComptrollerG3
+    Unitroller SetPendingImpl ScenComptrollerG3
+    ComptrollerImpl ScenComptrollerG3 BecomeG3 1e18 [cZRX cDAI]
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
-    Assert Equal (Comptroller Implementation) (Address ScenComptroller)
+    Assert Equal (Comptroller Implementation) (Address ScenComptrollerG3)
 
 Test "Standard Upgrade, then downgrade then upgrade again"
     Unitroller Deploy
@@ -48,13 +48,13 @@ Test "Standard Upgrade, then downgrade then upgrade again"
     Assert Equal (Comptroller MaxAssets) 20
     Assert Equal (Comptroller Implementation) (Address ComptrollerG2)
     -- Upgrade to G3
-    ComptrollerImpl Deploy Scenario ScenComptroller
-    Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become 1e18 [cZRX cDAI]
+    ComptrollerImpl Deploy ScenarioG3 ScenComptrollerG3
+    Unitroller SetPendingImpl ScenComptrollerG3
+    ComptrollerImpl ScenComptrollerG3 BecomeG3 1e18 [cZRX cDAI]
     Assert Equal (Comptroller PauseGuardian) (Address Coburn)
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
-    Assert Equal (Comptroller Implementation) (Address ScenComptroller)
+    Assert Equal (Comptroller Implementation) (Address ScenComptrollerG3)
     -- Downgrade to G2
     Unitroller SetPendingImpl ComptrollerG2
     ComptrollerImpl ComptrollerG2 BecomeG2
@@ -62,13 +62,13 @@ Test "Standard Upgrade, then downgrade then upgrade again"
     Assert Equal (Comptroller MaxAssets) 20
     Assert Equal (Comptroller Implementation) (Address ComptrollerG2)
     -- Upgrade to G3 again
-    Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become 1e18 []
+    Unitroller SetPendingImpl ScenComptrollerG3
+    ComptrollerImpl ScenComptrollerG3 BecomeG3 1e18 []
     Assert Equal (Comptroller GetCompMarkets) [(Address cZRX) (Address cDAI)]
     Assert Equal (Comptroller PauseGuardian) (Address Coburn)
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
-    Assert Equal (Comptroller Implementation) (Address ScenComptroller)
+    Assert Equal (Comptroller Implementation) (Address ScenComptrollerG3)
 
 Test "Once become, can become again"
     -- TODO: See why ABI is broken here
@@ -254,11 +254,20 @@ Pending "Keeps all storage"
     CheckV1Storage
     CheckV2Storage
     --
-    ComptrollerImpl Deploy Standard ComptrollerG3
+    ComptrollerImpl Deploy StandardG3 ComptrollerG3
     Unitroller SetPendingImpl ComptrollerG3
-    ComptrollerImpl ComptrollerG3 Become 1e18 [cZRX cBAT]
+    ComptrollerImpl ComptrollerG3 BecomeG3 1e18 [cZRX cBAT]
     --
     CheckUnitrollerStorage (Address ComptrollerG3)
+    CheckV1Storage
+    CheckV2Storage
+    CheckV3Storage
+    --
+    ComptrollerImpl Deploy Standard ComptrollerG4
+    Unitroller SetPendingImpl ComptrollerG4
+    ComptrollerImpl ComptrollerG4 Become
+    --
+    CheckUnitrollerStorage (Address ComptrollerG4)
     CheckV1Storage
     CheckV2Storage
     CheckV3Storage
