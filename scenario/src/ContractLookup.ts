@@ -106,7 +106,7 @@ export function getErc20Address(world: World, erc20Arg: string): string {
 }
 
 export function getGovernorAddress(world: World, governorArg: string): string {
-  return getContractDataString(world, [['Governor', governorArg, 'address']]);
+  return getContractDataString(world, [['Contracts', governorArg]]);
 }
 
 export async function getPriceOracleProxy(world: World): Promise<PriceOracle> {

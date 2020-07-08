@@ -15,7 +15,7 @@ Macro PricedComptroller closeFactor=0.1 maxAssets=20
     ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracleProxy Address) closeFactor maxAssets
     ComptrollerImpl Deploy Scenario ScenComptroller
     Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become 1e18 []
+    ComptrollerImpl ScenComptroller Become
 
 Macro NewComptroller price=1.0 closeFactor=0.1 maxAssets=20
     --g1
@@ -30,9 +30,13 @@ Macro NewComptroller price=1.0 closeFactor=0.1 maxAssets=20
     Unitroller SetPendingImpl ComptrollerG2
     ComptrollerImpl ComptrollerG2 BecomeG2
     --g3
+    ComptrollerImpl Deploy StandardG3 ComptrollerG3
+    Unitroller SetPendingImpl ComptrollerG3
+    ComptrollerImpl ComptrollerG3 BecomeG3 1e18 []
+    --g4
     ComptrollerImpl Deploy Scenario ScenComptroller
     Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become 1e18 []
+    ComptrollerImpl ScenComptroller Become
 
 Macro NewCToken erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard delegatorType=CErc20DelegatorScenario cTokenType=CErc20DelegateScenario admin=Admin becomeImplementationData="0x0"
     Erc20 Deploy tokenType erc20 erc20

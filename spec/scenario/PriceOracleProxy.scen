@@ -10,10 +10,14 @@ Macro SetupPriceOracleProxy
     ComptrollerImpl Deploy StandardG2 ComptrollerG2
     Unitroller SetPendingImpl ComptrollerG2
     ComptrollerImpl ComptrollerG2 BecomeG2
+    -- Update to G3
+    ComptrollerImpl Deploy StandardG3 ComptrollerG3
+    Unitroller SetPendingImpl ComptrollerG3
+    ComptrollerImpl ComptrollerG3 BecomeG3 1e18 []
     -- Update to G*
     ComptrollerImpl Deploy Scenario ScenComptroller
     Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become 1e18 []
+    ComptrollerImpl ScenComptroller Become
     NewEtherToken cETH
     NewCToken USDC cUSDC
     NewCToken SAI cSAI
