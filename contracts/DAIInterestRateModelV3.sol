@@ -4,21 +4,21 @@ import "./JumpRateModel.sol";
 import "./SafeMath.sol";
 
 /**
-  * @title Compound's DAIInterestRateModel Contract (version 2)
+  * @title Compound's DAIInterestRateModel Contract (version 3)
   * @author Compound (modified by Dharma Labs)
   * @notice The parameterized model described in section 2.4 of the original Compound Protocol whitepaper.
-  * Version 2 modifies the original interest rate model by increasing the "gap" or slope of the model prior
-  * to the "kink" from 0.05% to 2% with the goal of "smoothing out" interest rate changes as the utilization
-  * rate increases.
+  * Version 3 modifies the interest rate model in Version 2 by increasing the "gap" or slope of the model
+  * prior to the "kink" from 2% to 4%, moving the utilization point of the kink from 90% to 80%, and
+  * targeting a ~25% rate at full utilization.
   */
-contract DAIInterestRateModelV2 is JumpRateModel {
+contract DAIInterestRateModelV3 is JumpRateModel {
     using SafeMath for uint;
 
     /**
-     * @notice The additional margin per block separating the base borrow rate from the roof (2% / block).
-     * Note that this value has been increased from the original value of 0.05% per block.
+     * @notice The additional margin per block separating the base borrow rate from the roof (4% / block).
+     * Note that this value has been increased from the prior value of 2% per block.
      */
-    uint public constant gapPerBlock = 2e16 / blocksPerYear;
+    uint public constant gapPerBlock = 4e16 / blocksPerYear;
 
     /**
      * @notice The assumed (1 - reserve factor) used to calculate the minimum borrow rate (reserve factor = 0.05)

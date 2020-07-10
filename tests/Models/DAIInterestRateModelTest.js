@@ -68,7 +68,7 @@ async function getKovanFork() {
   return {kovan, root, accounts};
 }
 
-describe('DAIInterestRateModelV2', () => {
+describe('DAIInterestRateModelV3', () => {
   describe("constructor", () => {
     it.skip("sets jug and ilk address and pokes", async () => {
       // NB: Going back a certain distance requires an archive node, currently that add-on is $250/mo
@@ -76,7 +76,7 @@ describe('DAIInterestRateModelV2', () => {
       const {kovan, root, accounts} = await getKovanFork();
 
       // TODO: Get contract craz
-      let {contract: model} = await saddle.deployFull('DAIInterestRateModelV2', [
+      let {contract: model} = await saddle.deployFull('DAIInterestRateModelV3', [
         etherUnsigned(0.8e18),
         etherUnsigned(0.9e18),
         "0xea190dbdc7adf265260ec4da6e9675fd4f5a78bb",
@@ -151,7 +151,7 @@ describe('DAIInterestRateModelV2', () => {
             etherUnsigned(perSecondBase)
           ]);
 
-          const daiIRM = await deploy('DAIInterestRateModelV2', [
+          const daiIRM = await deploy('DAIInterestRateModelV3', [
             etherUnsigned(jump),
             etherUnsigned(kink),
             pot._address,
@@ -227,7 +227,7 @@ describe('DAIInterestRateModelV2', () => {
             etherUnsigned(perSecondBase)
           ]);
 
-          const daiIRM = await deploy('DAIInterestRateModelV2', [
+          const daiIRM = await deploy('DAIInterestRateModelV3', [
             etherUnsigned(jump),
             etherUnsigned(kink),
             pot._address,
