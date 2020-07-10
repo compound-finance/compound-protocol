@@ -1,6 +1,6 @@
 pragma solidity ^0.5.16;
 
-import "./JumpRateModel.sol";
+import "./JumpRateModelV2.sol";
 import "./SafeMath.sol";
 
 /**
@@ -11,7 +11,7 @@ import "./SafeMath.sol";
   * prior to the "kink" from 2% to 4%, moving the utilization point of the kink from 90% to 80%, and
   * targeting a ~25% rate at full utilization.
   */
-contract DAIInterestRateModelV3 is JumpRateModel {
+contract DAIInterestRateModelV3 is JumpRateModelV2 {
     using SafeMath for uint;
 
     address public owner;
