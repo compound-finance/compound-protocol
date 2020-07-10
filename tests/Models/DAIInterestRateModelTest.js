@@ -80,7 +80,8 @@ describe('DAIInterestRateModelV3', () => {
         etherUnsigned(0.8e18),
         etherUnsigned(0.9e18),
         "0xea190dbdc7adf265260ec4da6e9675fd4f5a78bb",
-        "0xcbb7718c9f39d05aeede1c472ca8bf804b2f1ead"
+        "0xcbb7718c9f39d05aeede1c472ca8bf804b2f1ead",
+        "0xe3e07f4f3e2f5a5286a99b9b8deed08b8e07550b" // kovan timelock
       ], {gas: 20000000, gasPrice: 20000, from: root}, kovan);
 
       let args = [0.5e18, 0.45e18, 500].map(etherUnsigned);
@@ -155,7 +156,8 @@ describe('DAIInterestRateModelV3', () => {
             etherUnsigned(jump),
             etherUnsigned(kink),
             pot._address,
-            jug._address
+            jug._address,
+            "0x0000000000000000000000000000000000000000" // dummy Timelock
           ]);
 
           const expected = baseRoofRateFn(onePlusPerSecondDsr / 1e27, onePlusPerSecondDuty / 1e27, perSecondBase / 1e27, jump / 1e18, kink / 1e18, cash, borrows, reserves);
@@ -231,7 +233,8 @@ describe('DAIInterestRateModelV3', () => {
             etherUnsigned(jump),
             etherUnsigned(kink),
             pot._address,
-            jug._address
+            jug._address,
+            "0x0000000000000000000000000000000000000000" // dummy Timelock
           ]);
 
           const expected = daiSupplyRate(onePlusPerSecondDsr / 1e27, onePlusPerSecondDuty / 1e27, perSecondBase / 1e27, jump / 1e18, kink / 1e18, cash, borrows, reserves, reserveFactor / 1e18);
