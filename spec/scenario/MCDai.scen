@@ -165,4 +165,4 @@ Pending "Test resigning implementation"
 
 Pending "DAI interest rate model"
     ForkMCD101
-    InterestRateModel Deploy DAIInterestRateModel DSR_Kink_9000bps_Jump_12000bps_AssumedRF_500bps 120e16 90e16 PotAddress JugAddress
+    InterestRateModel Deploy DAIInterestRateModel DSR_Kink_9000bps_Jump_12000bps_AssumedRF_500bps 120e16 90e16 PotAddress JugAddress CTokenAdmin
