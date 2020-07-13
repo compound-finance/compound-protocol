@@ -18,7 +18,7 @@ function baseRoofRateFn(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves)
   const assumedOneMinusReserveFactor = 0.95;
   const stabilityFeePerBlock = (duty + mkrBase - 1) * 15;
   const dsrPerBlock = (dsr - 1) * 15;
-  const gapPerBlock = 0.02 / blocksPerYear;
+  const gapPerBlock = 0.04 / blocksPerYear;
   const jumpPerBlock = jump / blocksPerYear;
 
   let baseRatePerBlock = dsrPerBlock / assumedOneMinusReserveFactor, multiplierPerBlock;
