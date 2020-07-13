@@ -52,7 +52,7 @@ function daiSupplyRate(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves, 
   return cashSupplyRate.plus(lendingSupplyRate).toNumber();
 }
 
-let fork = "https://kovan.infura.io/v3/e1a5d4d2c06a4e81945fca56d0d5d8ea@14764778";
+let fork = "https://kovan-eth.compound.finance/@14764778";
 
 async function getKovanFork() {
   const kovan = new web3.constructor(
@@ -70,7 +70,7 @@ async function getKovanFork() {
 
 describe('DAIInterestRateModelV3', () => {
   describe("constructor", () => {
-    it.skip("sets jug and ilk address and pokes", async () => {
+    it("sets jug and ilk address and pokes", async () => {
       // NB: Going back a certain distance requires an archive node, currently that add-on is $250/mo
       //  https://community.infura.io/t/error-returned-error-project-id-does-not-have-access-to-archive-state/847
       const {kovan, root, accounts} = await getKovanFork();
