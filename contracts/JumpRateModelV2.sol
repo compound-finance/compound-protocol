@@ -64,7 +64,7 @@ contract JumpRateModelV2 is InterestRateModel {
      * @param jumpMultiplierPerYear The multiplierPerBlock after hitting a specified utilization point
      * @param kink_ The utilization point at which the jump multiplier is applied
      */
-    function updateJumpRateModel(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) public {
+    function updateJumpRateModel(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) external {
         require(msg.sender == owner, "only the owner may call this function.");
 
         updateJumpRateModelInternal(baseRatePerYear, multiplierPerYear, jumpMultiplierPerYear, kink_);
@@ -129,7 +129,7 @@ contract JumpRateModelV2 is InterestRateModel {
      */
     function updateJumpRateModelInternal(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) internal {
         baseRatePerBlock = baseRatePerYear.div(blocksPerYear);
-        multiplierPerBlock = multiplierPerYear.div(blocksPerYear);
+        multiplierPerBlock = (multiplierPerYear.mul(1e18)).div(blocksPerYear.mul(kink_));
         jumpMultiplierPerBlock = jumpMultiplierPerYear.div(blocksPerYear);
         kink = kink_;
 
