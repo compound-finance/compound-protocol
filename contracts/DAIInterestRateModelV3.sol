@@ -50,7 +50,7 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      */
     function updateJumpRateModel(uint baseRatePerYear, uint gapPerYear, uint jumpMultiplierPerYear, uint kink_) external {
         require(msg.sender == owner, "only the owner may call this function.");
-        gapPerBlock = gapPerYear.div(blocksPerYear);
+        gapPerBlock = gapPerYear / blocksPerYear;
         updateJumpRateModelInternal(0, 0, jumpMultiplierPerYear, kink_);
         poke();
     }
