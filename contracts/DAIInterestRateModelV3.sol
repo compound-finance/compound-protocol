@@ -7,14 +7,11 @@ import "./SafeMath.sol";
   * @title Compound's DAIInterestRateModel Contract (version 3)
   * @author Compound (modified by Dharma Labs)
   * @notice The parameterized model described in section 2.4 of the original Compound Protocol whitepaper.
-  * Version 3 modifies the interest rate model in Version 2 by increasing the "gap" or slope of the model
-  * prior to the "kink" from 2% to 4%, moving the utilization point of the kink from 90% to 80%, and
-  * targeting a ~25% rate at full utilization.
+  * Version 3 modifies the interest rate model in Version 2 by increasing the initial "gap" or slope of
+  * the model prior to the "kink" from 2% to 4%, and enabling updateable parameters.
   */
 contract DAIInterestRateModelV3 is JumpRateModelV2 {
     using SafeMath for uint;
-
-    address public owner;
 
     /**
      * @notice The additional margin per block separating the base borrow rate from the roof.
@@ -37,27 +34,20 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      * @param jug_ The address of the Dai jug (where SF is kept)
      * @param owner_ The address of the owner, i.e. the Timelock contract (which has the ability to update parameters directly)
      */
-    constructor(uint jumpMultiplierPerYear, uint kink_, address pot_, address jug_, address owner_) JumpRateModelV2(0, 0, jumpMultiplierPerYear, kink_) public {
+    constructor(uint jumpMultiplierPerYear, uint kink_, address pot_, address jug_, address owner_) JumpRateModelV2(0, 0, jumpMultiplierPerYear, kink_, owner_) public {
         gapPerBlock = 4e16 / blocksPerYear;
         pot = PotLike(pot_);
         jug = JugLike(jug_);
-        owner = owner_;
         poke();
     }
 
     /**
-     * @notice Update the parameters of the interest rate model (only callable by owner, i.e. Timelock)
-     * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by 1e18)
-     * @param multiplierPerYear The rate of increase in interest rate wrt utilization (scaled by 1e18)
-     * @param jumpMultiplierPerYear The multiplierPerBlock after hitting a specified utilization point
-     * @param kink_ The utilization point at which the jump multiplier is applied
-     * @param gapPerBlock_ The additional margin per block separating the base borrow rate from the roof
+     * @notice Update the gapPerBlock parameter of the interest rate model (only callable by owner, i.e. Timelock)
+     * @param gapPerYear The additional margin per year separating the base borrow rate from the roof.
      */
-    function update(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_, uint gapPerBlock_) public {
+    function updateGap(uint gapPerYear) public {
         require(msg.sender == owner, "only the owner may call this function.");
-
-        updateInternal(baseRatePerYear, multiplierPerYear, jumpMultiplierPerYear, kink_);
-        gapPerBlock = gapPerBlock_;
+        gapPerBlock = gapPerYear / blocksPerYear;
         poke();
     }
 
