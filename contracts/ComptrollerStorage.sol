@@ -127,3 +127,8 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
     /// @notice The COMP accrued but not yet transferred to each user
     mapping(address => uint) public compAccrued;
 }
+
+contract ComptrollerV4Storage is ComptrollerV3Storage {
+    // @notice max borrow limits enforced by borrowAllowed for each cToken address. Default is 0, so must be set whenever adding a new market.
+    mapping(address => uint256) public borrowLimits;
+}

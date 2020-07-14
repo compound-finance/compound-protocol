@@ -13,7 +13,7 @@ import "./Governance/Comp.sol";
  * @title Compound's Comptroller Contract
  * @author Compound
  */
-contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerErrorReporter, Exponential {
+contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerErrorReporter, Exponential {
     /// @notice Emitted when an admin supports a market
     event MarketListed(CToken cToken);
 
@@ -61,9 +61,6 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /// @notice Emitted when COMP is distributed to a borrower
     event DistributedBorrowerComp(CToken indexed cToken, address indexed borrower, uint compDelta, uint compBorrowIndex);
-
-    /// @notice Emitted when borrow limit for a cToken in set
-    event NewBorrowLimit(CToken cToken, uint limit);
 
     /// @notice The threshold above which the flywheel transfers COMP, in wei
     uint public constant compClaimThreshold = 0.001e18;
@@ -366,14 +363,6 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
         if (oracle.getUnderlyingPrice(CToken(cToken)) == 0) {
             return uint(Error.PRICE_ERROR);
-        }
-
-        // Error if borrow brings total borrow above limit
-        (MathError mathErr, uint hypotheticalTotalBorrows) = addUInt(CToken(cToken).totalBorrows(),borrowAmount);
-        assert(mathErr == MathError.NO_ERROR);
-
-        if(hypotheticalTotalBorrows > borrowLimits[cToken]) {
-            return uint(Error.MARKET_BORROW_LIMIT_REACHED);
         }
 
         (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(borrower, CToken(cToken), 0, borrowAmount);
@@ -1030,40 +1019,6 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
             require(allMarkets[i] != CToken(cToken), "market already added");
         }
         allMarkets.push(CToken(cToken));
-
-        // Initially, set borrow limit to unlimited. This should be set appropriately in the same governance call immediatly after adding the market.
-        _setMarketBorrowLimitInternal(CToken(cToken),uint(-1));
-
-    }
-
-
-    /**
-      * @notice Set the given borrow limit for the given cToken market
-      * @dev Admin function to set the borrow limit
-      * @param cToken The address of the market (token) to change the borrow limit for
-      * @param borrowLimit The new borrow limit value in underlying (maximum borrowing) to be set
-      * @return uint 0=success, otherwise a failure. (See enum Error for details)
-      */
-    function _setMarketBorrowLimit(CToken cToken, uint256 borrowLimit) public returns (uint) {
-        // Allow pause guardian to change borrow limit too.
-        if (msg.sender != admin && msg.sender != pauseGuardian) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.SET_MARKET_BORROW_LIMIT_OWNER_CHECK);
-        }
-
-        _setMarketBorrowLimitInternal(cToken,borrowLimit);
-
-        return uint(Error.NO_ERROR);
-    }
-
-    function _setMarketBorrowLimitInternal(CToken cToken, uint256 borrowLimit) internal {
-        borrowLimits[address(cToken)] = borrowLimit;
-
-        emit NewBorrowLimit(cToken,borrowLimit);
-    }
-
-
-    function getMarketBorrowLimit(CToken cToken) public view returns (uint) {
-        return borrowLimits[address(cToken)];
     }
 
     /**
@@ -1129,17 +1084,6 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     function _become(Unitroller unitroller) public {
         require(msg.sender == unitroller.admin(), "only unitroller admin can change brains");
         require(unitroller._acceptImplementation() == 0, "change not authorized");
-
-        // Intially, all markets have unlimited borrowing
-        Comptroller(address(unitroller))._becomeG5(uint(-1));
-    }
-
-    function _becomeG5(uint256 defaultBorrowLimit) public {
-        require(msg.sender == comptrollerImplementation, "only brains can become itself");
-
-        for(uint i = 0; i < allMarkets.length; i++) {
-            _setMarketBorrowLimitInternal(allMarkets[i],defaultBorrowLimit);
-        }
     }
 
     /**
