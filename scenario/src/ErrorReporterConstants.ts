@@ -53,7 +53,7 @@ const ComptrollerErrorReporter = {
     'SET_PRICE_ORACLE_OWNER_CHECK',
     'SUPPORT_MARKET_EXISTS',
     'SUPPORT_MARKET_OWNER_CHECK',
-    'ZUNUSED'
+    'SET_PAUSE_GUARDIAN_OWNER_CHECK',
   ]
 };
 

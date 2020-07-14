@@ -11,9 +11,9 @@ import "./Governance/Comp.sol";
 
 /**
  * @title Compound's Comptroller Contract
- * @author Compound (modified by Arr00)
+ * @author Compound
  */
-contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerErrorReporter, Exponential {
+contract ComptrollerG4 is ComptrollerV3Storage, ComptrollerInterface, ComptrollerErrorReporter, Exponential {
     /// @notice Emitted when an admin supports a market
     event MarketListed(CToken cToken);
 
@@ -61,12 +61,6 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /// @notice Emitted when COMP is distributed to a borrower
     event DistributedBorrowerComp(CToken indexed cToken, address indexed borrower, uint compDelta, uint compBorrowIndex);
-
-    /// @notice Emitted when borrow cap for a cToken is changed
-    event NewBorrowCap(CToken indexed cToken, uint newBorrowCap);
-
-    /// @notice Emitted when borrow cap guardian is changed
-    event NewBorrowCapGuardian(address oldBorrowCapGuardian, address newBorrowCapGuardian);
 
     /// @notice The threshold above which the flywheel transfers COMP, in wei
     uint public constant compClaimThreshold = 0.001e18;
@@ -369,16 +363,6 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
         if (oracle.getUnderlyingPrice(CToken(cToken)) == 0) {
             return uint(Error.PRICE_ERROR);
-        }
-
-
-        uint borrowCap = borrowCaps[cToken];
-        // Borrow cap of 0 corresponds to unlimited borrowing
-        if (borrowCap != 0) {
-            uint totalBorrows = CToken(cToken).totalBorrows();
-            (MathError mathErr, uint nextTotalBorrows) = addUInt(totalBorrows, borrowAmount);
-            require(mathErr == MathError.NO_ERROR, "total borrows overflow");
-            require(nextTotalBorrows < borrowCap, "market borrow cap reached");
         }
 
         (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(borrower, CToken(cToken), 0, borrowAmount);
@@ -1035,44 +1019,6 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
             require(allMarkets[i] != CToken(cToken), "market already added");
         }
         allMarkets.push(CToken(cToken));
-    }
-
-
-    /**
-      * @notice Set the given borrow caps for the given cToken markets. Borrowing that brings total borrows to or above borrow cap will revert.
-      * @dev Admin or borrowCapGuardian function to set the borrow caps. A borrow cap of 0 corresponds to unlimited borrowing.
-      * @param cTokens The addresses of the markets (tokens) to change the borrow caps for
-      * @param newBorrowCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
-      */
-    function _setMarketBorrowCaps(CToken[] calldata cTokens, uint[] calldata newBorrowCaps) external {
-    	require(msg.sender == admin || msg.sender == borrowCapGuardian, "only admin or borrow cap guardian can set borrow caps"); 
-
-        uint numMarkets = cTokens.length;
-        uint numBorrowCaps = newBorrowCaps.length;
-
-        require(numMarkets != 0 && numMarkets == numBorrowCaps, "invalid input");
-
-        for(uint i = 0; i < numMarkets; i++) {
-            borrowCaps[address(cTokens[i])] = newBorrowCaps[i];
-            emit NewBorrowCap(cTokens[i], newBorrowCaps[i]);
-        }
-    }
-
-    /**
-     * @notice Admin function to change the Borrow Cap Guardian
-     * @param newBorrowCapGuardian The address of the new Borrow Cap Guardian
-     */
-    function _setBorrowCapGuardian(address newBorrowCapGuardian) external {
-        require(msg.sender == admin, "only admin can set borrow cap guardian");
-
-        // Save current value for inclusion in log
-        address oldBorrowCapGuardian = borrowCapGuardian;
-
-        // Store borrowCapGuardian with value newBorrowCapGuardian
-        borrowCapGuardian = newBorrowCapGuardian;
-
-        // Emit NewBorrowCapGuardian(OldBorrowCapGuardian, NewBorrowCapGuardian)
-        emit NewBorrowCapGuardian(oldBorrowCapGuardian, newBorrowCapGuardian);
     }
 
     /**
