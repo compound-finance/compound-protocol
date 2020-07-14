@@ -368,12 +368,16 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
             return uint(Error.PRICE_ERROR);
         }
 
-        // Error if borrow brings total borrow above limit
-        (MathError mathErr, uint hypotheticalTotalBorrows) = addUInt(CToken(cToken).totalBorrows(),borrowAmount);
-        assert(mathErr == MathError.NO_ERROR);
 
-        if(hypotheticalTotalBorrows > borrowLimits[cToken]) {
-            return uint(Error.MARKET_BORROW_LIMIT_REACHED);
+        uint borrowLimit = borrowLimits[cToken];
+        if (borrowLimit > 0) {
+            uint totalBorrows = CToken(cToken).totalBorrows();
+            (MathError mathErr, uint nextTotalBorrows) = addUInt(totalBorrows ,borrowAmount);
+            require(mathErr == MathErorr.NO_ERROR, "Borrow limit overflow");
+    
+            if (nextTotalBorrows > borrowLimit) {
+                return uint(Error.MARKET_BORROW_LIMIT_REACHED);
+            }
         }
 
         (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(borrower, CToken(cToken), 0, borrowAmount);
@@ -1030,10 +1034,6 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
             require(allMarkets[i] != CToken(cToken), "market already added");
         }
         allMarkets.push(CToken(cToken));
-
-        // Initially, set borrow limit to unlimited. This should be set appropriately in the same governance call immediatly after adding the market.
-        _setMarketBorrowLimitInternal(CToken(cToken),uint(-1));
-
     }
 
 
@@ -1050,15 +1050,11 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_MARKET_BORROW_LIMIT_OWNER_CHECK);
         }
 
-        _setMarketBorrowLimitInternal(cToken,borrowLimit);
-
-        return uint(Error.NO_ERROR);
-    }
-
-    function _setMarketBorrowLimitInternal(CToken cToken, uint256 borrowLimit) internal {
         borrowLimits[address(cToken)] = borrowLimit;
 
-        emit NewBorrowLimit(cToken,borrowLimit);
+        emit NewBorrowLimit(cToken, borrowLimit);
+
+        return uint(Error.NO_ERROR);
     }
 
 
@@ -1129,17 +1125,6 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     function _become(Unitroller unitroller) public {
         require(msg.sender == unitroller.admin(), "only unitroller admin can change brains");
         require(unitroller._acceptImplementation() == 0, "change not authorized");
-
-        // Intially, all markets have unlimited borrowing
-        Comptroller(address(unitroller))._becomeG5(uint(-1));
-    }
-
-    function _becomeG5(uint256 defaultBorrowLimit) public {
-        require(msg.sender == comptrollerImplementation, "only brains can become itself");
-
-        for(uint i = 0; i < allMarkets.length; i++) {
-            _setMarketBorrowLimitInternal(allMarkets[i],defaultBorrowLimit);
-        }
     }
 
     /**
