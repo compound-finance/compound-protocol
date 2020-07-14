@@ -373,7 +373,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         if (borrowLimit > 0) {
             uint totalBorrows = CToken(cToken).totalBorrows();
             (MathError mathErr, uint nextTotalBorrows) = addUInt(totalBorrows ,borrowAmount);
-            require(mathErr == MathErorr.NO_ERROR, "Borrow limit overflow");
+            require(mathErr == MathError.NO_ERROR, "Borrow limit overflow");
     
             if (nextTotalBorrows > borrowLimit) {
                 return uint(Error.MARKET_BORROW_LIMIT_REACHED);
