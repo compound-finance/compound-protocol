@@ -109,7 +109,7 @@ export async function buildInterestRateModel(world: World, from: string, event: 
          #### DAIInterestRateModel
 
          * "DAIInterestRateModel name:<String> jump:<Number> kink:<Number> pot:<Address> jug:<Address> owner:<Address>" - The DAI interest rate model
-           * E.g. "InterestRateModel Deploy DAIInterestRateModel MyInterestRateModel 200 0.90 0xPotAddress 0xJugAddress" 0xTimelockAddress - 200% multiplier at 90% utilization
+           * E.g. "InterestRateModel Deploy DAIInterestRateModel MyInterestRateModel (Exp 2) (Exp 0.9) PotAddress JugAddress" Timelock - 200% multiplier at 90% utilization
        `,
        "DAIInterestRateModel",
        [

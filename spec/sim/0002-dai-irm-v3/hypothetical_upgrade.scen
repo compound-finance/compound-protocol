@@ -9,11 +9,12 @@ Alias CompHolder "0x19bc62ff7cd9ffd6bdced9802ff718f09f7259f1"
 Web3Fork "https://mainnet-eth.compound.finance/@10473211" (CompHolder)
 UseConfigs mainnet
 
-InterestRateModel Deploy DAIInterestRateModel DSR_Kink_9000bps_Jump_12000bps_AssumedRF_500bps 120e16 90e16 PotAddress JugAddress (Address GovernorAlpha)
+-- Deploy IRM contract
+InterestRateModel Deploy DAIInterestRateModel UpdateableDaiInterestRateModel (Exp 1.09) (Exp 0.8) PotAddress JugAddress (Address Timelock)
 
 -- Propose to apply the patch
 From CompHolder (Comp Delegate CompHolder)
-From CompHolder (Governor GovernorAlpha Propose "DAI IRM v3" [(Address cDAI)] [0] ["_setInterestRateModel(address)"] [[(InterestRateModel DSR_Kink_9000bps_Jump_12000bps_AssumedRF_500bps Address)]])
+From CompHolder (Governor GovernorAlpha Propose "DAI IRM v3" [(Address cDAI)] [0] ["_setInterestRateModel(address)"] [[(InterestRateModel UpdateableDaiInterestRateModel Address)]])
 
 -- Vote for, queue, and execute the proposal
 MineBlock
@@ -24,13 +25,28 @@ IncreaseTime 604910
 Governor GovernorAlpha Proposal LastProposal Execute
 
 -- Check model
-Assert Equal (CToken cDAI InterestRateModel) (InterestRateModel DSR_Kink_9000bps_Jump_12000bps_AssumedRF_500bps Address)
+Assert Equal (CToken cDAI InterestRateModel) (InterestRateModel UpdateableDaiInterestRateModel Address)
+
+-- Propose to apply the update
+From CompHolder (Governor GovernorAlpha Propose "DAI IRM v3 update" [(Address UpdateableDaiInterestRateModel)] [0] ["updateJumpRateModel(uint256,uint256,uint256,uint256)"] [[0 (Exp 0.4) (Exp 1.1) (Exp 0.7)]])
+
+-- Vote for, queue, and execute the proposal to update
+MineBlock
+From CompHolder (Governor GovernorAlpha Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+Governor GovernorAlpha Proposal LastProposal Queue
+IncreaseTime 604910
+
+-- NOTE: checking the interest rate before the update currently returns 0, needs to be investigated!
+Assert Equal (InterestRateModel UpdateableDaiInterestRateModel BorrowRate 1 10 1) (Zero)
+
+Governor GovernorAlpha Proposal LastProposal Execute
+
+Assert Equal (InterestRateModel UpdateableDaiInterestRateModel BorrowRate 1 10 1) (0.7299999999953279)
 
 -- TODO:
--- * confirm new cDAI interest rate matches expectations
--- * gov can propose a rate update (and values do actually change)
+-- * additional tests that new cDAI interest rate matches expectations
 -- * no one else can propose rate update
--- * ... other things?
+-- * get a non-zero initial interest rate!
 
 Print "Looking good!"
-
