@@ -65,6 +65,9 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     /// @notice Emitted when borrow limit for a cToken in set
     event NewBorrowLimit(CToken cToken, uint limit);
 
+    /// @notice Emitted when borrow limit guardian is changed
+    event NewBorrowLimitGuardian(address oldBorrowLimitGuardian, address newBorrowLimitGuardian);
+
     /// @notice The threshold above which the flywheel transfers COMP, in wei
     uint public constant compClaimThreshold = 0.001e18;
 
@@ -1039,14 +1042,14 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /**
       * @notice Set the given borrow limit for the given cToken market
-      * @dev Admin function to set the borrow limit
+      * @dev Admin or borrowLimitGuardian function to set the borrow limit
       * @param cToken The address of the market (token) to change the borrow limit for
       * @param borrowLimit The new borrow limit value in underlying (maximum borrowing) to be set
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
-    function _setMarketBorrowLimit(CToken cToken, uint256 borrowLimit) public returns (uint) {
-        // Allow pause guardian to change borrow limit too.
-        if (msg.sender != admin && msg.sender != pauseGuardian) {
+    function _setMarketBorrowLimit(CToken cToken, uint256 borrowLimit) external returns (uint) {
+        // Allow borrow limit guardian to change borrow limit too.
+        if (msg.sender != admin && msg.sender != borrowLimitGuardian) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_MARKET_BORROW_LIMIT_OWNER_CHECK);
         }
 
@@ -1060,6 +1063,28 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     function getMarketBorrowLimit(CToken cToken) public view returns (uint) {
         return borrowLimits[address(cToken)];
+    }
+
+    /**
+     * @notice Admin function to change the Borrow Limit Guardian
+     * @param newBorrowLimitGuardian The address of the new Borrow Limit Guardian
+     * @return uint 0=success, otherwise a failure. (See enum Error for details)
+     */
+    function _setBorrowLimitGuardian(address newBorrowLimitGuardian) public returns (uint) {
+        if (msg.sender != admin) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_BORROW_LIMIT_GUARDIAN_OWNER_CHECK);
+        }
+
+        // Save current value for inclusion in log
+        address oldBorrowLimitGuardian = borrowLimitGuardian;
+
+        // Store borrowLimitGuardian with value newBorrowLimitGuardian
+        borrowLimitGuardian = newBorrowLimitGuardian;
+
+        // Emit NewBorrowLimitGuardian(OldBorrowLimitGuardian, NewBorrowLimitGuardian)
+        emit NewBorrowLimitGuardian(oldBorrowLimitGuardian, newBorrowLimitGuardian);
+
+        return uint(Error.NO_ERROR);
     }
 
     /**
