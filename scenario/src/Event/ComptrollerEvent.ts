@@ -358,6 +358,18 @@ async function setGuardianMarketPaused(world: World, from: string, comptroller: 
   return world;
 }
 
+async function setMarketBorrowLimit(world: World, from: string, comptroller: Comptroller, cToken: CToken, borrowLimit: NumberV): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setMarketBorrowLimit(cToken._address, borrowLimit.encode()), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Borrow limit on ${cToken.name} set to ${borrowLimit.show()}`,
+    invokation
+  );
+
+  return world;
+}
+
 export function comptrollerCommands() {
   return [
     new Command<{comptrollerParams: EventV}>(`
@@ -688,6 +700,20 @@ export function comptrollerCommands() {
         new Arg("rate", getNumberV)
       ],
       (world, from, {comptroller, rate}) => setCompRate(world, from, comptroller, rate)
+    ),
+    new Command<{comptroller: Comptroller, cToken: CToken, borrowLimit: NumberV}>(`
+      #### SetMarketBorrowLimit
+
+      * "Comptroller SetMarketBorrowLimit <cToken> <borrowLimit>" - Sets Market Borrow Limit
+      * E.g "Comptroller SetMarketBorrowLimit cZRX 10000.0e18
+      `,
+      "SetMarketBorrowLimit",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("cToken", getCTokenV),
+        new Arg("borrowLimit", getNumberV)
+      ],
+      (world, from, {comptroller,cToken,borrowLimit}) => setMarketBorrowLimit(world, from, comptroller, cToken, borrowLimit)
     ),
   ];
 }

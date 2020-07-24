@@ -30,7 +30,8 @@ const ComptrollerErrorReporter = {
     'REJECTION',
     'SNAPSHOT_ERROR',
     'TOO_MANY_ASSETS',
-    'TOO_MUCH_REPAY'
+    'TOO_MUCH_REPAY',
+    'MARKET_BORROW_LIMIT_REACHED'
   ],
 
   FailureInfo: [
@@ -53,7 +54,9 @@ const ComptrollerErrorReporter = {
     'SET_PRICE_ORACLE_OWNER_CHECK',
     'SUPPORT_MARKET_EXISTS',
     'SUPPORT_MARKET_OWNER_CHECK',
-    'ZUNUSED'
+    'SET_PAUSE_GUARDIAN_OWNER_CHECK',
+    'SET_MARKET_BORROW_LIMIT_OWNER_CHECK',
+    'SET_BORROW_LIMIT_GUARDIAN_OWNER_CHECK'
   ]
 };
 
