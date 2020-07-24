@@ -1,0 +1,110 @@
+Test "Attempt to borrow over set limit ERC20"
+    NewComptroller price:1.0
+    NewCToken ZRX cZRX
+    NewCToken BAT cBAT
+    Comptroller SetMarketBorrowLimit cBAT 0.5e18
+    Give cBAT 10e18 BAT -- Faucet some bat to borrow
+    Support cZRX collateralFactor:0.5
+    Support cBAT collateralFactor:0.5
+    Prep Geoff Some ZRX cZRX
+    Mint Geoff 100e18 cZRX
+    EnterMarkets Geoff cZRX
+    AllowFailures
+    Borrow Geoff 1e18 cBAT
+    Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION MARKET_BORROW_LIMIT_REACHED
+    Assert Equal (cToken cBAT BorrowBalance Geoff) (Exactly 0)
+    Assert Equal (Erc20 BAT TokenBalance Geoff) (Exactly 0)
+    Assert Equal (Erc20 BAT TokenBalance cBAT) (Exactly 10e18)
+    Assert Equal (Comptroller MembershipLength Geoff) (Exactly 2)
+    Assert True (Comptroller CheckMembership Geoff cZRX)
+    Assert True (Comptroller CheckMembership Geoff cBAT)
+
+Test "Attempt to borrow at set limit ERC20"
+    NewComptroller price:1.0
+    NewCToken ZRX cZRX
+    NewCToken BAT cBAT
+    Comptroller SetMarketBorrowLimit cBAT 1.0e18
+    Give cBAT 10e18 BAT -- Faucet some bat to borrow
+    Support cZRX collateralFactor:0.5
+    Support cBAT collateralFactor:0.5
+    Prep Geoff Some ZRX cZRX
+    Mint Geoff 100e18 cZRX
+    EnterMarkets Geoff cZRX
+    Borrow Geoff 1e18 cBAT
+    Assert Equal (cToken cBAT BorrowBalance Geoff) (Exactly 1e18)
+    Assert Equal (Erc20 BAT TokenBalance Geoff) (Exactly 1e18)
+    Assert Equal (Erc20 BAT TokenBalance cBAT) (Exactly 9e18)
+    Assert Equal (Comptroller MembershipLength Geoff) (Exactly 2)
+    Assert True (Comptroller CheckMembership Geoff cZRX)
+    Assert True (Comptroller CheckMembership Geoff cBAT)
+
+Test "Attempt to borrow below set limit ERC20"
+    NewComptroller price:1.0
+    NewCToken ZRX cZRX
+    NewCToken BAT cBAT
+    Comptroller SetMarketBorrowLimit cBAT 10e18
+    Give cBAT 10e18 BAT -- Faucet some bat to borrow
+    Support cZRX collateralFactor:0.5
+    Support cBAT collateralFactor:0.5
+    Prep Geoff Some ZRX cZRX
+    Mint Geoff 100e18 cZRX
+    EnterMarkets Geoff cZRX
+    Borrow Geoff 1e18 cBAT
+    Assert Equal (cToken cBAT BorrowBalance Geoff) (Exactly 1e18)
+    Assert Equal (Erc20 BAT TokenBalance Geoff) (Exactly 1e18)
+    Assert Equal (Erc20 BAT TokenBalance cBAT) (Exactly 9e18)
+    Assert Equal (Comptroller MembershipLength Geoff) (Exactly 2)
+    Assert True (Comptroller CheckMembership Geoff cZRX)
+    Assert True (Comptroller CheckMembership Geoff cBAT)
+
+Test "Borrow some Eth over limit"
+    NewComptroller price:1.0
+    ListedCToken ZRX cZRX
+    ListedEtherToken cETH initialExchangeRate:0.005e9
+    SetCollateralFactor cZRX collateralFactor:0.5
+    SetCollateralFactor cETH collateralFactor:0.5
+    Comptroller SetMarketBorrowLimit cETH 0.0001e18
+    Donate cETH 0.003e18
+    Prep Geoff Some ZRX cZRX
+    Mint Geoff 1e18 cZRX
+    EnterMarkets Geoff cZRX
+    AllowFailures
+    BorrowEth Geoff 0.001e18 cETH
+    Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION MARKET_BORROW_LIMIT_REACHED
+    Assert Equal (EtherBalance cETH) 0.003e18
+
+Test "Borrow some Eth enters Eth and succeeds when Eth not entered. At borrow limit"
+    NewComptroller price:1.0
+    ListedCToken ZRX cZRX
+    ListedEtherToken cETH initialExchangeRate:0.005e9
+    SetCollateralFactor cZRX collateralFactor:0.5
+    SetCollateralFactor cETH collateralFactor:0.5
+    Comptroller SetMarketBorrowLimit cETH 0.001e18
+    Donate cETH 0.003e18
+    Prep Geoff Some ZRX cZRX
+    Mint Geoff 1e18 cZRX
+    EnterMarkets Geoff cZRX
+    Expect Changes (EtherBalance Geoff) +0.001e18
+    BorrowEth Geoff 0.001e18 cETH
+    Assert Equal (EtherBalance cETH) 0.002e18
+    Assert Equal (Comptroller Liquidity Geoff) 4.99e17
+    Assert Equal (Comptroller MembershipLength Geoff) (Exactly 2)
+    Assert True (Comptroller CheckMembership Geoff cETH)
+
+Test "Borrow some Eth enters Eth and succeeds when Eth not entered. At under borrow limit"
+    NewComptroller price:1.0
+    ListedCToken ZRX cZRX
+    ListedEtherToken cETH initialExchangeRate:0.005e9
+    SetCollateralFactor cZRX collateralFactor:0.5
+    SetCollateralFactor cETH collateralFactor:0.5
+    Comptroller SetMarketBorrowLimit cETH 0.01e18
+    Donate cETH 0.003e18
+    Prep Geoff Some ZRX cZRX
+    Mint Geoff 1e18 cZRX
+    EnterMarkets Geoff cZRX
+    Expect Changes (EtherBalance Geoff) +0.001e18
+    BorrowEth Geoff 0.001e18 cETH
+    Assert Equal (EtherBalance cETH) 0.002e18
+    Assert Equal (Comptroller Liquidity Geoff) 4.99e17
+    Assert Equal (Comptroller MembershipLength Geoff) (Exactly 2)
+    Assert True (Comptroller CheckMembership Geoff cETH)

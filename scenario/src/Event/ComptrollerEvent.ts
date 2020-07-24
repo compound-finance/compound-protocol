@@ -359,7 +359,7 @@ async function setGuardianMarketPaused(world: World, from: string, comptroller: 
 }
 
 async function setMarketBorrowLimit(world: World, from: string, comptroller: Comptroller, cToken: CToken, borrowLimit: NumberV): Promise<World> {
-  let invokation = await invoke(world, comptroller.methods._setMarketBorrowLimit(cToken, borrowLimit.encode()), from, ComptrollerErrorReporter);
+  let invokation = await invoke(world, comptroller.methods._setMarketBorrowLimit(cToken._address, borrowLimit.encode()), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,

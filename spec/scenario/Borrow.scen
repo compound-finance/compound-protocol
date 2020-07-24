@@ -3,7 +3,6 @@ Test "Borrow some BAT and enters BAT if BAT not entered"
     NewComptroller price:1.0
     NewCToken ZRX cZRX
     NewCToken BAT cBAT
-    Comptroller SetMarketBorrowLimit cBAT 10.0e18
     Give cBAT 10e18 BAT -- Faucet some bat to borrow
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
