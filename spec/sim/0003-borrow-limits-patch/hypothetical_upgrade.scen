@@ -1,0 +1,45 @@
+#!/usr/bin/env yarn repl -s
+
+PrintTransactionLogs
+Alias CompHolder "0x19bc62ff7cd9ffd6bdced9802ff718f09f7259f1"
+Alias USDCWhale "0x92d7796c04ee34d1d16c57fab92fc2bccf434468"
+Alias cBATBorrower "0xe5f3dbcc3dcf75a6946822aae7df5160505d3069"
+Web3Fork "https://mainnet-eth.compound.finance/@10331520" (CompHolder USDCWhale cBATBorrower)
+UseConfigs mainnet
+
+-- Deploy the flywheel impl
+
+ComptrollerImpl Deploy Standard ComptrollerG5
+
+-- Propose to apply the patch
+
+From CompHolder (Comp Delegate CompHolder)
+From CompHolder (Governor GovernorAlpha Propose "Borrow Limit Comptroller Patch" [(Address Unitroller) (Address ComptrollerG5)] [0 0] ["_setPendingImplementation(address)" "_become(address)"] [[(Address ComptrollerG5)] [(Address Unitroller)]])
+
+-- Vote for, queue, and execute the proposal
+
+MineBlock
+From CompHolder (Governor GovernorAlpha Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+Governor GovernorAlpha Proposal LastProposal Queue
+IncreaseTime 604910
+Governor GovernorAlpha Proposal LastProposal Execute
+
+Assert Equal (Address (Unitroller Implementation)) (Address ComptrollerG5)
+
+From USDCWhale (Trx GasPrice 0 (Erc20 USDC Approve cUSDC UInt256Max))
+From USDCWhale (Trx GasPrice 0 (CToken cUSDC Mint 10000e6))
+From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 100e6))
+
+Comptroller SetMarketBorrowLimit cUSDC 10e6
+
+AllowFailures
+
+From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 100e6))
+Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION MARKET_BORROW_LIMIT_REACHED
+
+From USDCWhale (Trx GasPrice 0 (CToken cUSDC Repay 100e6))
+From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 10e6))
+
+
+Print "Borrow Limit Comptroller Patch OK!"
