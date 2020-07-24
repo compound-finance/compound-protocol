@@ -1,8 +1,10 @@
+
 Test "Attempt to borrow over set limit ERC20"
     NewComptroller price:1.0
     NewCToken ZRX cZRX
     NewCToken BAT cBAT
     Comptroller SetMarketBorrowLimit cBAT 0.5e18
+    Assert Equal (Comptroller GetMarketBorrowLimit cBAT) (Exactly 0.5e18)
     Give cBAT 10e18 BAT -- Faucet some bat to borrow
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
@@ -118,3 +120,24 @@ Test "Setting Borrow Limit restricted to admin"
     AllowFailures
     From Robert (Comptroller SetMarketBorrowLimit cETH 0.01e18)
     Assert Failure UNAUTHORIZED SET_MARKET_BORROW_LIMIT_OWNER_CHECK
+
+Test "Borrow limit guardian can set borrow limits"
+    NewComptroller price:1.0
+    ListedCToken ZRX cZRX
+    ListedEtherToken cETH initialExchangeRate:0.005e9
+    SetCollateralFactor cZRX collateralFactor:0.5
+    SetCollateralFactor cETH collateralFactor:0.5
+    Comptroller SetBorrowLimitGuardian Geoff
+    From Geoff (Comptroller SetMarketBorrowLimit cZRX 0.5e18)
+    AllowFailures
+    From Robert (Comptroller SetMarketBorrowLimit cETH 0.01e18) -- Robert still can't...
+    Assert Failure UNAUTHORIZED SET_MARKET_BORROW_LIMIT_OWNER_CHECK
+    Assert Equal (Comptroller GetMarketBorrowLimit cZRX) (Exactly 0.5e18)
+    Assert Equal (Comptroller BorrowLimitGuardian) (User Geoff Address)
+
+Test "Only admin can set Borrow Limit Guardian"
+    NewComptroller price:1.0
+    AllowFailures
+    From Robert (Comptroller SetBorrowLimitGuardian Robert) -- Robert has really gone rogue
+    Assert Failure UNAUTHORIZED SET_BORROW_LIMIT_GUARDIAN_OWNER_CHECK
+

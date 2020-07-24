@@ -547,6 +547,32 @@ export function comptrollerFetchers() {
       async (world, {comptroller, CToken}) => {
         return new NumberV(await comptroller.methods.compSpeeds(CToken._address).call());
       }
+    ),
+    new Fetcher<{comptroller: Comptroller}, AddressV>(`
+        #### BorrowLimitGuardian
+
+        * "BorrowLimitGuardian" - Returns the Comptrollers's BorrowLimitGuardian
+        * E.g. "Comptroller BorrowLimitGuardian"
+        `,
+        "BorrowLimitGuardian",
+        [
+          new Arg("comptroller", getComptroller, {implicit: true})
+        ],
+        async (world, {comptroller}) => new AddressV(await comptroller.methods.borrowLimitGuardian().call())
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken}, NumberV>(`
+        #### GetMarketBorrowLimit
+
+        * "Comptroller GetMarketBorrowLimit cZRX
+      `,
+      "GetMarketBorrowLimit",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+      ],
+      async (world, {comptroller, CToken}) => {
+        return new NumberV(await comptroller.methods.getMarketBorrowLimit(CToken._address).call());
+      }
     )
   ];
 }

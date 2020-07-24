@@ -370,6 +370,18 @@ async function setMarketBorrowLimit(world: World, from: string, comptroller: Com
   return world;
 }
 
+async function setBorrowLimitGuardian(world: World, from: string, comptroller: Comptroller, newBorrowLimitGuardian: string): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setBorrowLimitGuardian(newBorrowLimitGuardian), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Comptroller: ${describeUser(world, from)} sets borrow limit guardian to ${newBorrowLimitGuardian}`,
+    invokation
+  );
+
+  return world;
+}
+
 export function comptrollerCommands() {
   return [
     new Command<{comptrollerParams: EventV}>(`
@@ -715,6 +727,19 @@ export function comptrollerCommands() {
       ],
       (world, from, {comptroller,cToken,borrowLimit}) => setMarketBorrowLimit(world, from, comptroller, cToken, borrowLimit)
     ),
+    new Command<{comptroller: Comptroller, newBorrowLimitGuardian: AddressV}>(`
+        #### SetBorrowLimitGuardian
+
+        * "Comptroller SetBorrowLimitGuardian newBorrowLimitGuardian:<Address>" - Sets the Borrow Limit Guardian for the Comptroller
+          * E.g. "Comptroller SetBorrowLimitGuardian Geoff"
+      `,
+      "SetBorrowLimitGuardian",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("newBorrowLimitGuardian", getAddressV)
+      ],
+      (world, from, {comptroller, newBorrowLimitGuardian}) => setBorrowLimitGuardian(world, from, comptroller, newBorrowLimitGuardian.val)
+    )
   ];
 }
 
