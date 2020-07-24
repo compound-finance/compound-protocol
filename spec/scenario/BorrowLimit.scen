@@ -119,7 +119,7 @@ Test "Setting Borrow Limit restricted to admin"
     SetCollateralFactor cETH collateralFactor:0.5
     AllowFailures
     From Robert (Comptroller SetMarketBorrowLimit cETH 0.01e18)
-    Assert Failure UNAUTHORIZED SET_MARKET_BORROW_LIMIT_OWNER_CHECK
+    Assert Revert
 
 Test "Borrow limit guardian can set borrow limits"
     NewComptroller price:1.0
@@ -131,7 +131,7 @@ Test "Borrow limit guardian can set borrow limits"
     From Geoff (Comptroller SetMarketBorrowLimit cZRX 0.5e18)
     AllowFailures
     From Robert (Comptroller SetMarketBorrowLimit cETH 0.01e18) -- Robert still can't...
-    Assert Failure UNAUTHORIZED SET_MARKET_BORROW_LIMIT_OWNER_CHECK
+    Assert Revert
     Assert Equal (Comptroller GetMarketBorrowLimit cZRX) (Exactly 0.5e18)
     Assert Equal (Comptroller BorrowLimitGuardian) (User Geoff Address)
 
@@ -139,5 +139,5 @@ Test "Only admin can set Borrow Limit Guardian"
     NewComptroller price:1.0
     AllowFailures
     From Robert (Comptroller SetBorrowLimitGuardian Robert) -- Robert has really gone rogue
-    Assert Failure UNAUTHORIZED SET_BORROW_LIMIT_GUARDIAN_OWNER_CHECK
+    Assert Revert
 

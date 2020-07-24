@@ -1047,17 +1047,13 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
       * @param borrowLimit The new borrow limit value in underlying (maximum borrowing) to be set
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
-    function _setMarketBorrowLimit(CToken cToken, uint256 borrowLimit) external returns (uint) {
+    function _setMarketBorrowLimit(CToken cToken, uint256 borrowLimit) external {
         // Allow borrow limit guardian to change borrow limit too.
-        if (msg.sender != admin && msg.sender != borrowLimitGuardian) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.SET_MARKET_BORROW_LIMIT_OWNER_CHECK);
-        }
+        require(msg.sender == admin || msg.sender == borrowLimitGuardian, "Only admin or Borrow Limit Guardian can set market borrow limits"); 
 
         borrowLimits[address(cToken)] = borrowLimit;
 
         emit NewBorrowLimit(cToken, borrowLimit);
-
-        return uint(Error.NO_ERROR);
     }
 
 
@@ -1070,10 +1066,8 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
      * @param newBorrowLimitGuardian The address of the new Borrow Limit Guardian
      * @return uint 0=success, otherwise a failure. (See enum Error for details)
      */
-    function _setBorrowLimitGuardian(address newBorrowLimitGuardian) public returns (uint) {
-        if (msg.sender != admin) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.SET_BORROW_LIMIT_GUARDIAN_OWNER_CHECK);
-        }
+    function _setBorrowLimitGuardian(address newBorrowLimitGuardian) public {
+        require(msg.sender == admin, "Only admin can set Borrow Limit Guardian");
 
         // Save current value for inclusion in log
         address oldBorrowLimitGuardian = borrowLimitGuardian;
@@ -1083,8 +1077,6 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
         // Emit NewBorrowLimitGuardian(OldBorrowLimitGuardian, NewBorrowLimitGuardian)
         emit NewBorrowLimitGuardian(oldBorrowLimitGuardian, newBorrowLimitGuardian);
-
-        return uint(Error.NO_ERROR);
     }
 
     /**

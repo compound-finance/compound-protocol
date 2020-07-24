@@ -9,12 +9,12 @@ UseConfigs mainnet
 
 -- Deploy the flywheel impl
 
-ComptrollerImpl Deploy Standard ComptrollerG5
+ComptrollerImpl Deploy ComptrollerG5
 
 -- Propose to apply the patch
 
 From CompHolder (Comp Delegate CompHolder)
-From CompHolder (Governor GovernorAlpha Propose "Borrow Limit Comptroller Patch" [(Address Unitroller) (Address ComptrollerG5)] [0 0] ["_setPendingImplementation(address)" "_become(address)"] [[(Address ComptrollerG5)] [(Address Unitroller)]])
+From CompHolder (Governor GovernorAlpha Propose "Borrow Limit Comptroller Patch" [(Address Unitroller) (Address ComptrollerG5) (Address Unitroller)] [0 0 0] ["_setPendingImplementation(address)" "_become(address)" "_setBorrowLimitGuardian(address)"] [[(Address ComptrollerG5)] [(Address Unitroller)] [(Address CompHolder)]])
 
 -- Vote for, queue, and execute the proposal
 
@@ -24,6 +24,7 @@ AdvanceBlocks 20000
 Governor GovernorAlpha Proposal LastProposal Queue
 IncreaseTime 604910
 Governor GovernorAlpha Proposal LastProposal Execute
+ComptrollerImpl ComptrollerG5 MergeABI
 
 Assert Equal (Address (Unitroller Implementation)) (Address ComptrollerG5)
 
@@ -31,14 +32,14 @@ From USDCWhale (Trx GasPrice 0 (Erc20 USDC Approve cUSDC UInt256Max))
 From USDCWhale (Trx GasPrice 0 (CToken cUSDC Mint 10000e6))
 From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 100e6))
 
-Comptroller SetMarketBorrowLimit cUSDC 10e6
+From CompHolder (Comptroller SetMarketBorrowLimit cUSDC 10e6)
 
 AllowFailures
 
 From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 100e6))
 Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION MARKET_BORROW_LIMIT_REACHED
 
-From USDCWhale (Trx GasPrice 0 (CToken cUSDC Repay 100e6))
+From USDCWhale (Trx GasPrice 0 (CToken cUSDC RepayBorrow 100e6))
 From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 10e6))
 
 
