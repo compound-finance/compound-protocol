@@ -108,3 +108,13 @@ Test "Borrow some Eth enters Eth and succeeds when Eth not entered. At under bor
     Assert Equal (Comptroller Liquidity Geoff) 4.99e17
     Assert Equal (Comptroller MembershipLength Geoff) (Exactly 2)
     Assert True (Comptroller CheckMembership Geoff cETH)
+
+Test "Setting Borrow Limit restricted to admin"
+    NewComptroller price:1.0
+    ListedCToken ZRX cZRX
+    ListedEtherToken cETH initialExchangeRate:0.005e9
+    SetCollateralFactor cZRX collateralFactor:0.5
+    SetCollateralFactor cETH collateralFactor:0.5
+    AllowFailures
+    From Robert (Comptroller SetMarketBorrowLimit cETH 0.01e18)
+    Assert Failure UNAUTHORIZED SET_MARKET_BORROW_LIMIT_OWNER_CHECK
