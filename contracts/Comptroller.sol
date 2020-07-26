@@ -62,7 +62,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     /// @notice Emitted when COMP is distributed to a borrower
     event DistributedBorrowerComp(CToken indexed cToken, address indexed borrower, uint compDelta, uint compBorrowIndex);
 
-    /// @notice Emitted when borrow limit for a cToken in set
+    /// @notice Emitted when borrow limit for a cToken is changed
     event NewBorrowLimit(CToken cToken, uint limit);
 
     /// @notice Emitted when borrow limit guardian is changed
@@ -377,10 +377,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
             uint totalBorrows = CToken(cToken).totalBorrows();
             (MathError mathErr, uint nextTotalBorrows) = addUInt(totalBorrows ,borrowAmount);
             require(mathErr == MathError.NO_ERROR, "Borrow limit overflow");
-    
-            if (nextTotalBorrows > borrowLimit) {
-                return uint(Error.MARKET_BORROW_LIMIT_REACHED);
-            }
+            require(nextTotalBorrows <= borrowLimit, "Market borrow limit reached");
         }
 
         (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(borrower, CToken(cToken), 0, borrowAmount);

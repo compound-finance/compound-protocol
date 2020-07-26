@@ -13,13 +13,10 @@ Test "Attempt to borrow over set limit ERC20"
     EnterMarkets Geoff cZRX
     AllowFailures
     Borrow Geoff 1e18 cBAT
-    Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION MARKET_BORROW_LIMIT_REACHED
+    Assert Revert
     Assert Equal (cToken cBAT BorrowBalance Geoff) (Exactly 0)
     Assert Equal (Erc20 BAT TokenBalance Geoff) (Exactly 0)
     Assert Equal (Erc20 BAT TokenBalance cBAT) (Exactly 10e18)
-    Assert Equal (Comptroller MembershipLength Geoff) (Exactly 2)
-    Assert True (Comptroller CheckMembership Geoff cZRX)
-    Assert True (Comptroller CheckMembership Geoff cBAT)
 
 Test "Attempt to borrow at set limit ERC20"
     NewComptroller price:1.0
@@ -72,7 +69,7 @@ Test "Borrow some Eth over limit"
     EnterMarkets Geoff cZRX
     AllowFailures
     BorrowEth Geoff 0.001e18 cETH
-    Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION MARKET_BORROW_LIMIT_REACHED
+    Assert Revert
     Assert Equal (EtherBalance cETH) 0.003e18
 
 Test "Borrow some Eth enters Eth and succeeds when Eth not entered. At borrow limit"

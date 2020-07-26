@@ -19,8 +19,7 @@ contract ComptrollerErrorReporter {
         REJECTION,
         SNAPSHOT_ERROR,
         TOO_MANY_ASSETS,
-        TOO_MUCH_REPAY,
-        MARKET_BORROW_LIMIT_REACHED
+        TOO_MUCH_REPAY
     }
 
     enum FailureInfo {
