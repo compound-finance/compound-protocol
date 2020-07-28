@@ -1048,8 +1048,24 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         // Allow borrow limit guardian to change borrow limit too.
         require(msg.sender == admin || msg.sender == borrowLimitGuardian, "Only admin or Borrow Limit Guardian can set market borrow limits"); 
 
-        borrowLimits[address(cToken)] = borrowLimit;
+        _setMarketBorrowLimitInternal(cToken,borrowLimit);
+    }
 
+    function _setMarketBorrowLimits(CToken[] calldata cTokens, uint256[] calldata borrowLimits) external {
+    	require(msg.sender == admin || msg.sender == borrowLimitGuardian, "Only admin or Borrow Limit Guardian can set market borrow limits"); 
+
+        uint numMarkets = cTokens.length;
+        uint numLimits = borrowLimits.length;
+
+        require(numMarkets != 0 && numMarkets == numLimits, "Invalid input");
+
+        for(uint8 i = 0; i < numMarkets; i++) {
+        	_setMarketBorrowLimitInternal(cTokens[i],borrowLimits[i]);
+        }
+    }
+
+    function _setMarketBorrowLimitInternal(CToken cToken, uint256 borrowLimit) internal {
+    	borrowLimits[address(cToken)] = borrowLimit;
         emit NewBorrowLimit(cToken, borrowLimit);
     }
 

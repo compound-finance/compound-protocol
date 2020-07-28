@@ -127,7 +127,9 @@ Test "Borrow limit guardian can set borrow limits"
     Comptroller SetBorrowLimitGuardian Geoff
     From Geoff (Comptroller SetMarketBorrowLimit cZRX 0.5e18)
     AllowFailures
-    From Robert (Comptroller SetMarketBorrowLimit cETH 0.01e18) -- Robert still can't...
+    From Robert (Comptroller SetMarketBorrowLimit cZRX 0.01e18) -- Robert still can't...
+    Assert Revert
+    From Robert (Comptroller SetMarketBorrowLimits (cZRX) (0.01e18))
     Assert Revert
     Assert Equal (Comptroller GetMarketBorrowLimit cZRX) (Exactly 0.5e18)
     Assert Equal (Comptroller BorrowLimitGuardian) (User Geoff Address)
@@ -137,4 +139,31 @@ Test "Only admin can set Borrow Limit Guardian"
     AllowFailures
     From Robert (Comptroller SetBorrowLimitGuardian Robert) -- Robert has really gone rogue
     Assert Revert
+
+Test "SetBorrowLimits works correctly too"
+    NewComptroller price:1.0
+    NewCToken ZRX cZRX
+    NewCToken BAT cBAT
+    NewCToken USDC cUSDC
+    Comptroller SetMarketBorrowLimits (cBAT cUSDC) (0.5e18 1e6)
+    Assert Equal (Comptroller GetMarketBorrowLimit cBAT) (Exactly 0.5e18)
+    Assert Equal (Comptroller GetMarketBorrowLimit cUSDC) (Exactly 1e6)
+    Give cBAT 10e18 BAT -- Faucet some bat to borrow
+    Give cUSDC 20e6 USDC
+    Support cZRX collateralFactor:0.5
+    Support cBAT collateralFactor:0.5
+    Support cUSDC collateralFactor:0.5
+    Prep Geoff Some ZRX cZRX
+    Mint Geoff 100e18 cZRX
+    EnterMarkets Geoff cZRX
+    AllowFailures
+    Borrow Geoff 1e18 cBAT
+    Assert Revert
+    Borrow Geoff 2e6 cUSDC
+    Assert Revert
+    Borrow Geoff 1e6 cUSDC
+    Assert Equal (cToken cBAT BorrowBalance Geoff) (Exactly 0)
+    Assert Equal (Erc20 BAT TokenBalance Geoff) (Exactly 0)
+    Assert Equal (Erc20 BAT TokenBalance cBAT) (Exactly 10e18)
+    Assert Equal (Erc20 USDC TokenBalance Geoff) (Exactly 1e6)
 

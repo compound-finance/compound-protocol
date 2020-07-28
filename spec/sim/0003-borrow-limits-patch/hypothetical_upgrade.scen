@@ -37,7 +37,7 @@ From CompHolder (Comptroller SetMarketBorrowLimit cUSDC 10e6)
 AllowFailures
 
 From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 100e6))
-Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION MARKET_BORROW_LIMIT_REACHED
+Assert Revert
 
 From USDCWhale (Trx GasPrice 0 (CToken cUSDC RepayBorrow 100e6))
 From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 10e6))

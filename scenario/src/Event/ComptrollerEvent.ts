@@ -369,6 +369,17 @@ async function setMarketBorrowLimit(world: World, from: string, comptroller: Com
 
   return world;
 }
+async function setMarketBorrowLimits(world: World, from: string, comptroller: Comptroller, cTokens: CToken[], borrowLimits: NumberV[]): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setMarketBorrowLimits(cTokens.map(c => c._address), borrowLimits.map(c => c.encode())), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Borrow limits on ${cTokens} set to ${borrowLimits}`,
+    invokation
+  );
+
+  return world;
+}
 
 async function setBorrowLimitGuardian(world: World, from: string, comptroller: Comptroller, newBorrowLimitGuardian: string): Promise<World> {
   let invokation = await invoke(world, comptroller.methods._setBorrowLimitGuardian(newBorrowLimitGuardian), from, ComptrollerErrorReporter);
@@ -726,6 +737,20 @@ export function comptrollerCommands() {
         new Arg("borrowLimit", getNumberV)
       ],
       (world, from, {comptroller,cToken,borrowLimit}) => setMarketBorrowLimit(world, from, comptroller, cToken, borrowLimit)
+    ),
+    new Command<{comptroller: Comptroller, cTokens: CToken[], borrowLimits: NumberV[]}>(`
+      #### SetMarketBorrowLimits
+
+      * "Comptroller SetMarketBorrowLimit (<CToken> ...) (<borrowLimit> ...)" - Sets Market Borrow Limit
+      * E.g "Comptroller SetMarketBorrowLimits (cZRX cUSDC) (10000.0e18, 1000.0e6)
+      `,
+      "SetMarketBorrowLimits",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("cTokens", getCTokenV, {mapped: true}),
+        new Arg("borrowLimits", getNumberV, {mapped: true})
+      ],
+      (world, from, {comptroller,cTokens,borrowLimits}) => setMarketBorrowLimits(world, from, comptroller, cTokens, borrowLimits)
     ),
     new Command<{comptroller: Comptroller, newBorrowLimitGuardian: AddressV}>(`
         #### SetBorrowLimitGuardian
