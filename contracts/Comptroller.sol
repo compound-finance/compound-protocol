@@ -1051,16 +1051,16 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         _setMarketBorrowLimitInternal(cToken,borrowLimit);
     }
 
-    function _setMarketBorrowLimits(CToken[] calldata cTokens, uint256[] calldata borrowLimits) external {
+    function _setMarketBorrowLimits(CToken[] calldata cTokens, uint256[] calldata newBorrowLimits) external {
     	require(msg.sender == admin || msg.sender == borrowLimitGuardian, "Only admin or Borrow Limit Guardian can set market borrow limits"); 
 
         uint numMarkets = cTokens.length;
-        uint numLimits = borrowLimits.length;
+        uint numLimits = newBorrowLimits.length;
 
         require(numMarkets != 0 && numMarkets == numLimits, "Invalid input");
 
         for(uint8 i = 0; i < numMarkets; i++) {
-        	_setMarketBorrowLimitInternal(cTokens[i],borrowLimits[i]);
+        	_setMarketBorrowLimitInternal(cTokens[i],newBorrowLimits[i]);
         }
     }
 
