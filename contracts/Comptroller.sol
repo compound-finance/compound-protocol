@@ -375,9 +375,9 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         uint borrowLimit = borrowLimits[cToken];
         if (borrowLimit > 0) {
             uint totalBorrows = CToken(cToken).totalBorrows();
-            (MathError mathErr, uint nextTotalBorrows) = addUInt(totalBorrows ,borrowAmount);
-            require(mathErr == MathError.NO_ERROR, "Borrow limit overflow");
-            require(nextTotalBorrows <= borrowLimit, "Market borrow limit reached");
+            (MathError mathErr, uint nextTotalBorrows) = addUInt(totalBorrows, borrowAmount);
+            require(mathErr == MathError.NO_ERROR, "borrow limit overflow");
+            require(nextTotalBorrows <= borrowLimit, "market borrow limit reached");
         }
 
         (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(borrower, CToken(cToken), 0, borrowAmount);
@@ -1038,40 +1038,23 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
 
     /**
-      * @notice Set the given borrow limit for the given cToken market
-      * @dev Admin or borrowLimitGuardian function to set the borrow limit
-      * @param cToken The address of the market (token) to change the borrow limit for
-      * @param borrowLimit The new borrow limit value in underlying (maximum borrowing) to be set
-      * @return uint 0=success, otherwise a failure. (See enum Error for details)
+      * @notice Set the given borrow limits for the given cToken markets
+      * @dev Admin or borrowLimitGuardian function to set the borrow limits
+      * @param cTokens The addresses of the markets (tokens) to change the borrow limits for
+      * @param newBorrowLimits The new borrow limit values in underlying (maximum borrowing) to be set
       */
-    function _setMarketBorrowLimit(CToken cToken, uint256 borrowLimit) external {
-        // Allow borrow limit guardian to change borrow limit too.
-        require(msg.sender == admin || msg.sender == borrowLimitGuardian, "Only admin or Borrow Limit Guardian can set market borrow limits"); 
-
-        _setMarketBorrowLimitInternal(cToken,borrowLimit);
-    }
-
     function _setMarketBorrowLimits(CToken[] calldata cTokens, uint256[] calldata newBorrowLimits) external {
-    	require(msg.sender == admin || msg.sender == borrowLimitGuardian, "Only admin or Borrow Limit Guardian can set market borrow limits"); 
+    	require(msg.sender == admin || msg.sender == borrowLimitGuardian, "only admin or borrow limit guardian"); 
 
         uint numMarkets = cTokens.length;
         uint numLimits = newBorrowLimits.length;
 
-        require(numMarkets != 0 && numMarkets == numLimits, "Invalid input");
+        require(numMarkets != 0 && numMarkets == numLimits, "invalid input");
 
         for(uint8 i = 0; i < numMarkets; i++) {
-        	_setMarketBorrowLimitInternal(cTokens[i],newBorrowLimits[i]);
+            borrowLimits[address(cTokens[i])] = newBorrowLimits[i];
+            emit NewBorrowLimit(cTokens[i], newBorrowLimits[i]);
         }
-    }
-
-    function _setMarketBorrowLimitInternal(CToken cToken, uint256 borrowLimit) internal {
-    	borrowLimits[address(cToken)] = borrowLimit;
-        emit NewBorrowLimit(cToken, borrowLimit);
-    }
-
-
-    function getMarketBorrowLimit(CToken cToken) public view returns (uint) {
-        return borrowLimits[address(cToken)];
     }
 
     /**
@@ -1080,7 +1063,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
      * @return uint 0=success, otherwise a failure. (See enum Error for details)
      */
     function _setBorrowLimitGuardian(address newBorrowLimitGuardian) public {
-        require(msg.sender == admin, "Only admin can set Borrow Limit Guardian");
+        require(msg.sender == admin, "only admin");
 
         // Save current value for inclusion in log
         address oldBorrowLimitGuardian = borrowLimitGuardian;

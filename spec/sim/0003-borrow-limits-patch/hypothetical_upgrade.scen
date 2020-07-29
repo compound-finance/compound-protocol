@@ -32,7 +32,7 @@ From USDCWhale (Trx GasPrice 0 (Erc20 USDC Approve cUSDC UInt256Max))
 From USDCWhale (Trx GasPrice 0 (CToken cUSDC Mint 10000e6))
 From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 100e6))
 
-From CompHolder (Comptroller SetMarketBorrowLimit cUSDC 10e6)
+From CompHolder (Comptroller SetMarketBorrowLimits (cUSDC) (10e6))
 
 AllowFailures
 

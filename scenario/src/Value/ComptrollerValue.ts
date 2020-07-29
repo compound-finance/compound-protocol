@@ -561,17 +561,17 @@ export function comptrollerFetchers() {
         async (world, {comptroller}) => new AddressV(await comptroller.methods.borrowLimitGuardian().call())
     ),
     new Fetcher<{comptroller: Comptroller, CToken: CToken}, NumberV>(`
-        #### GetMarketBorrowLimit
+        #### BorrowLimits
 
-        * "Comptroller GetMarketBorrowLimit cZRX
+        * "Comptroller BorrowLimits cZRX
       `,
-      "GetMarketBorrowLimit",
+      "BorrowLimits",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
         new Arg("CToken", getCTokenV),
       ],
       async (world, {comptroller, CToken}) => {
-        return new NumberV(await comptroller.methods.getMarketBorrowLimit(CToken._address).call());
+        return new NumberV(await comptroller.methods.borrowLimits(CToken._address).call());
       }
     )
   ];
