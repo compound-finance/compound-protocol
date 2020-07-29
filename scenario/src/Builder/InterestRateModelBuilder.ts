@@ -22,7 +22,7 @@ import {getContract, getTestContract} from '../Contract';
 const FixedInterestRateModel = getTestContract('InterestRateModelHarness');
 const WhitePaperInterestRateModel = getContract('WhitePaperInterestRateModel');
 const JumpRateModel = getContract('JumpRateModel');
-const DAIInterestRateModel = getContract('DAIInterestRateModelV2');
+const DAIInterestRateModel = getContract('DAIInterestRateModelV3');
 
 export interface InterestRateModelData {
   invokation: Invokation<InterestRateModel>
@@ -105,11 +105,11 @@ export async function buildInterestRateModel(world: World, from: string, event: 
        })
     ),
 
-    new Fetcher<{name: StringV, jump: NumberV, kink: NumberV, pot: AddressV, jug: AddressV}, InterestRateModelData>(`
+    new Fetcher<{name: StringV, jump: NumberV, kink: NumberV, pot: AddressV, jug: AddressV, owner: AddressV}, InterestRateModelData>(`
          #### DAIInterestRateModel
 
-         * "DAIInterestRateModel name:<String> jump:<Number> kink:<Number> pot:<Address> jug:<Address>" - The DAI interest rate model
-           * E.g. "InterestRateModel Deploy DAIInterestRateModel MyInterestRateModel 200 0.90 0xPotAddress 0xJugAddress" - 200% multiplier at 90% utilization
+         * "DAIInterestRateModel name:<String> jump:<Number> kink:<Number> pot:<Address> jug:<Address> owner:<Address>" - The DAI interest rate model
+           * E.g. "InterestRateModel Deploy DAIInterestRateModel MyInterestRateModel (Exp 2) (Exp 0.9) PotAddress JugAddress" Timelock - 200% multiplier at 90% utilization
        `,
        "DAIInterestRateModel",
        [
@@ -117,17 +117,19 @@ export async function buildInterestRateModel(world: World, from: string, event: 
          new Arg("jump", getExpNumberV),
          new Arg("kink", getExpNumberV),
          new Arg("pot", getAddressV),
-         new Arg("jug", getAddressV)
+         new Arg("jug", getAddressV),
+         new Arg("owner", getAddressV),
        ],
-       async (world, {name, jump, kink, pot, jug}) => ({
-         invokation: await DAIInterestRateModel.deploy<InterestRateModel>(world, from, [jump.encode(), kink.encode(), pot.val, jug.val]),
+       async (world, {name, jump, kink, pot, jug, owner}) => ({
+         invokation: await DAIInterestRateModel.deploy<InterestRateModel>(world, from, [jump.encode(), kink.encode(), pot.val, jug.val, owner.val]),
          name: name.val,
          contract: "DAIInterestRateModel",
-         description: `DAIInterestRateModel jump=${jump.encode().toString()} kink=${kink.encode().toString()} pot=${pot.val} jug=${jug.val}`,
+         description: `DAIInterestRateModel jump=${jump.encode().toString()} kink=${kink.encode().toString()} pot=${pot.val} jug=${jug.val} owner=${owner.val}`,
          jump: jump.encode().toString(),
          kink: kink.encode().toString(),
          pot: pot.val,
-         jug: jug.val
+         jug: jug.val,
+         owner: owner.val
        })
      )
   ];
