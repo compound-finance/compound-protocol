@@ -1060,9 +1060,8 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     /**
      * @notice Admin function to change the Borrow Limit Guardian
      * @param newBorrowLimitGuardian The address of the new Borrow Limit Guardian
-     * @return uint 0=success, otherwise a failure. (See enum Error for details)
      */
-    function _setBorrowLimitGuardian(address newBorrowLimitGuardian) public {
+    function _setBorrowLimitGuardian(address newBorrowLimitGuardian) external {
         require(msg.sender == admin, "only admin");
 
         // Save current value for inclusion in log
