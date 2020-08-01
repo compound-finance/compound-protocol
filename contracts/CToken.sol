@@ -412,48 +412,60 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
          *  totalBorrowsNew = interestAccumulated + totalBorrows
          *  totalReservesNew = interestAccumulated * reserveFactor + totalReserves
          *  borrowIndexNew = simpleInterestFactor * borrowIndex + borrowIndex
+         *         
+         *  for gas saving, if blockDelta == 0:
+         *  simpleInterestFactor = borrowRate * 0 = 0;
+         *  interestAccumulated = simpleInterestFactor * totalBorrows = 0;
+         *  totalBorrowsNew =  interestAccumulated + totalBorrows  = totalBorrows
+         *  totalReservesNew = interestAccumulated * reserveFactor + totalReserves = totalReserves
+         *  borrowIndexNew = simpleInterestFactor * borrowIndex + borrowIndex = borrowIndex
+         * 
          */
 
         Exp memory simpleInterestFactor;
-        uint interestAccumulated;
-        uint totalBorrowsNew;
-        uint totalReservesNew;
-        uint borrowIndexNew;
 
-        (mathErr, simpleInterestFactor) = mulScalar(Exp({mantissa: borrowRateMantissa}), blockDelta);
-        if (mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_SIMPLE_INTEREST_FACTOR_CALCULATION_FAILED, uint(mathErr));
+        // for gas saving, if blockDelta == 0, init these vars:
+        uint interestAccumulated = 0;
+        uint totalBorrowsNew = totalBorrows;
+        uint totalReservesNew = totalReserves;
+        uint borrowIndexNew = borrowIndex;
+
+        if (blockDelta > 0) {
+            (mathErr, simpleInterestFactor) = mulScalar(Exp({mantissa: borrowRateMantissa}), blockDelta);
+            if (mathErr != MathError.NO_ERROR) {
+                return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_SIMPLE_INTEREST_FACTOR_CALCULATION_FAILED, uint(mathErr));
+            }
+
+            (mathErr, interestAccumulated) = mulScalarTruncate(simpleInterestFactor, borrowsPrior);
+            if (mathErr != MathError.NO_ERROR) {
+                return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_ACCUMULATED_INTEREST_CALCULATION_FAILED, uint(mathErr));
+            }
+
+            (mathErr, totalBorrowsNew) = addUInt(interestAccumulated, borrowsPrior);
+            if (mathErr != MathError.NO_ERROR) {
+                return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_BORROWS_CALCULATION_FAILED, uint(mathErr));
+            }
+
+            (mathErr, totalReservesNew) = mulScalarTruncateAddUInt(Exp({mantissa: reserveFactorMantissa}), interestAccumulated, reservesPrior);
+            if (mathErr != MathError.NO_ERROR) {
+                return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_RESERVES_CALCULATION_FAILED, uint(mathErr));
+            }
+
+            (mathErr, borrowIndexNew) = mulScalarTruncateAddUInt(simpleInterestFactor, borrowIndexPrior, borrowIndexPrior);
+            if (mathErr != MathError.NO_ERROR) {
+                return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_BORROW_INDEX_CALCULATION_FAILED, uint(mathErr));
+            }
+
+            /////////////////////////
+            // EFFECTS & INTERACTIONS
+            // (No safe failures beyond this point)
+
+            /* We write the previously calculated values into storage */
+            accrualBlockNumber = currentBlockNumber;
+            borrowIndex = borrowIndexNew;
+            totalBorrows = totalBorrowsNew;
+            totalReserves = totalReservesNew;
         }
-
-        (mathErr, interestAccumulated) = mulScalarTruncate(simpleInterestFactor, borrowsPrior);
-        if (mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_ACCUMULATED_INTEREST_CALCULATION_FAILED, uint(mathErr));
-        }
-
-        (mathErr, totalBorrowsNew) = addUInt(interestAccumulated, borrowsPrior);
-        if (mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_BORROWS_CALCULATION_FAILED, uint(mathErr));
-        }
-
-        (mathErr, totalReservesNew) = mulScalarTruncateAddUInt(Exp({mantissa: reserveFactorMantissa}), interestAccumulated, reservesPrior);
-        if (mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_RESERVES_CALCULATION_FAILED, uint(mathErr));
-        }
-
-        (mathErr, borrowIndexNew) = mulScalarTruncateAddUInt(simpleInterestFactor, borrowIndexPrior, borrowIndexPrior);
-        if (mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_BORROW_INDEX_CALCULATION_FAILED, uint(mathErr));
-        }
-
-        /////////////////////////
-        // EFFECTS & INTERACTIONS
-        // (No safe failures beyond this point)
-
-        /* We write the previously calculated values into storage */
-        accrualBlockNumber = currentBlockNumber;
-        borrowIndex = borrowIndexNew;
-        totalBorrows = totalBorrowsNew;
-        totalReserves = totalReservesNew;
 
         /* We emit an AccrueInterest event */
         emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
