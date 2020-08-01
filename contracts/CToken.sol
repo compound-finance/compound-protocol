@@ -415,7 +415,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
          *  borrowIndexNew = simpleInterestFactor * borrowIndex + borrowIndex
          *         
          *  for gas saving, if blockDelta == 0:
-         *  simpleInterestFactor = borrowRate * 0 = 0;
+         *  simpleInterestFactor = borrowRate * blockDelta = 0;
          *  interestAccumulated = simpleInterestFactor * totalBorrows = 0;
          *  totalBorrowsNew =  interestAccumulated + totalBorrows  = totalBorrows
          *  totalReservesNew = interestAccumulated * reserveFactor + totalReserves = totalReserves
