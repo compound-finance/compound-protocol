@@ -2,9 +2,8 @@
 
 PrintTransactionLogs
 Alias CompHolder "0x19bc62ff7cd9ffd6bdced9802ff718f09f7259f1"
-Alias USDCWhale "0x92d7796c04ee34d1d16c57fab92fc2bccf434468"
-Alias cBATBorrower "0xe5f3dbcc3dcf75a6946822aae7df5160505d3069"
-Web3Fork "https://mainnet-eth.compound.finance/@10331520" (CompHolder USDCWhale cBATBorrower)
+Alias USDCWhale "0x826356424140c82938e7088abb103fb2ad0fa160"
+Web3Fork "https://mainnet-eth.compound.finance/@10675233" (CompHolder USDCWhale)
 UseConfigs mainnet
 
 -- Deploy the flywheel impl
