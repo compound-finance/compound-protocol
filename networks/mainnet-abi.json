@@ -1384,6 +1384,7 @@
             "type": "function"
         }
     ],
+
     "PriceOracle": [
         {
             "constant": true,
@@ -1936,6 +1937,7 @@
             "type": "function"
         }
     ],
+
     "PriceOracleProxy": [
         {
             "inputs": [
@@ -2258,6 +2260,7 @@
             "signature": "constructor"
         }
     ],
+
     "Base200bps_Slope2000bps_Jump20000bps_Kink90": [
         {
             "inputs": [
@@ -2517,6 +2520,7 @@
             "signature": "0x6e71e2d8"
         }
     ],
+
     "GovernorAlpha": [
         {
             "inputs": [
@@ -3272,6 +3276,7 @@
             "signature": "0x02a251a3"
         }
     ],
+
     "cDAI": [
         {
             "inputs": [
@@ -4804,6 +4809,7 @@
             "signature": "0x6f307dc3"
         }
     ],
+
     "CompoundLens": [
         {
             "constant": false,
@@ -5460,6 +5466,7 @@
             "signature": "0x995ed99f"
         }
     ],
+
     "DAI": [
         {
             "anonymous": false,
@@ -5713,6 +5720,7 @@
             "signature": "0xdd62ed3e"
         }
     ],
+
     "StdComptroller": [
         {
             "constant": true,
@@ -6792,6 +6800,7 @@
             "signature": "0x45b96fe442630264581b197e84bbada861235052c5a1aadfff9ea4e40a969aa0"
         }
     ],
+
     "Unitroller": [
         {
             "constant": true,
@@ -8845,6 +8854,7 @@
             "signature": "0x23b872dd"
         }
     ],
+
     "Reservoir": [
         {
             "inputs": [
@@ -8966,6 +8976,7 @@
             "signature": "0xfc0c546a"
         }
     ],
+
     "Comptroller": [
         {
             "constant": true,
@@ -11246,6 +11257,7 @@
             "signature": "0x4d8e5037"
         }
     ],
+
     "Comp": [
         {
             "inputs": [
@@ -11800,6 +11812,7 @@
             "signature": "0x23b872dd"
         }
     ],
+
     "cUSDT": [
         {
             "inputs": [
@@ -13332,6 +13345,7 @@
             "signature": "0x6f307dc3"
         }
     ],
+
     "cBAT": [
         {
             "constant": true,
@@ -14970,6 +14984,7 @@
             "signature": "0x6e71e2d8"
         }
     ],
+
     "Base0bps_Slope2000bps": [
         {
             "constant": true,
@@ -16579,6 +16594,7 @@
             "signature": "0x6f307dc3"
         }
     ],
+
     "StdComptroller_2_6": [
         {
             "inputs": [],
@@ -18083,6 +18099,7 @@
             "signature": "0x6a56947e"
         }
     ],
+
     "Base200bps_Slope1000bps": [
         {
             "constant": true,
@@ -19376,6 +19393,7 @@
             "signature": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
         }
     ],
+
     "StdComptrollerG2": [
         {
             "constant": true,
@@ -20967,6 +20985,7 @@
             "signature": "0x6e71e2d8"
         }
     ],
+
     "Base500bps_Slope1200bps": [
         {
             "constant": true,
@@ -21077,6 +21096,7 @@
             "signature": "constructor"
         }
     ],
+
     "cSAI": [
         {
             "constant": true,
@@ -22312,6 +22332,7 @@
             "signature": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
         }
     ],
+
     "StdComptrollerG3": [
         {
             "inputs": [],
@@ -24429,6 +24450,7 @@
             "signature": "0x6a56947e"
         }
     ],
+
     "Timelock": [
         {
             "constant": false,
@@ -24858,6 +24880,7 @@
             "signature": "0x76e2796dc3a81d57b0e8504b647febcbeeb5f4af818e164f11eef8131a6a763f"
         }
     ],
+
     "Base200bps_Slope3000bps": [
         {
             "constant": true,
@@ -24968,6 +24991,7 @@
             "signature": "constructor"
         }
     ],
+
     "cREP": [
         {
             "constant": true,
@@ -26203,6 +26227,7 @@
             "signature": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
         }
     ],
+
     "Base200bps_Slope2000bps_Jump8000bps_Kink90": [
         {
             "inputs": [
@@ -26462,6 +26487,7 @@
             "signature": "0x6e71e2d8"
         }
     ],
+
     "Base200bps_Slope222bps_Kink90_Jump40": [
         {
             "inputs": [
@@ -26721,6 +26747,7 @@
             "signature": "0x6e71e2d8"
         }
     ],
+
     "SAI": [
         {
             "constant": true,
@@ -28373,6 +28400,7 @@
             "type": "function"
         }
     ],
+
     "StdComptrollerG4": [
         {
             "inputs": [],
@@ -30449,6 +30477,7 @@
             "signature": "0x6a56947e"
         }
     ],
+
     "cZRX": [
         {
             "constant": true,
@@ -31684,6 +31713,7 @@
             "signature": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
         }
     ],
+
     "cWBTC": [
         {
             "constant": true,
@@ -32919,6 +32949,7 @@
             "signature": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
         }
     ],
+
     "USDC": [
         {
             "anonymous": false,
@@ -33489,5 +33520,971 @@
           "type": "function",
           "signature": "0x6e71e2d8"
       }
-   ]
+  ],
+
+  "PriceData": [
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint64",
+                "name": "priorTimestamp",
+                "type": "uint64"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "messageTimestamp",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "blockTimestamp",
+                "type": "uint256"
+            }
+        ],
+        "name": "NotWritten",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "source",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "key",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint64",
+                "name": "timestamp",
+                "type": "uint64"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint64",
+                "name": "value",
+                "type": "uint64"
+            }
+        ],
+        "name": "Write",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "source",
+                "type": "address"
+            },
+            {
+                "internalType": "string",
+                "name": "key",
+                "type": "string"
+            }
+        ],
+        "name": "get",
+        "outputs": [
+            {
+                "internalType": "uint64",
+                "name": "",
+                "type": "uint64"
+            },
+            {
+                "internalType": "uint64",
+                "name": "",
+                "type": "uint64"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "source",
+                "type": "address"
+            },
+            {
+                "internalType": "string",
+                "name": "key",
+                "type": "string"
+            }
+        ],
+        "name": "getPrice",
+        "outputs": [
+            {
+                "internalType": "uint64",
+                "name": "",
+                "type": "uint64"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes",
+                "name": "message",
+                "type": "bytes"
+            },
+            {
+                "internalType": "bytes",
+                "name": "signature",
+                "type": "bytes"
+            }
+        ],
+        "name": "put",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes",
+                "name": "message",
+                "type": "bytes"
+            },
+            {
+                "internalType": "bytes",
+                "name": "signature",
+                "type": "bytes"
+            }
+        ],
+        "name": "source",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "pure",
+        "type": "function"
+    }
+  ],
+
+  "PriceFeed": [
+    {
+        "inputs": [
+            {
+                "internalType": "contract OpenOraclePriceData",
+                "name": "priceData_",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "reporter_",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "anchorToleranceMantissa_",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "anchorPeriod_",
+                "type": "uint256"
+            },
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "cToken",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "underlying",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "symbolHash",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "baseUnit",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "enum UniswapConfig.PriceSource",
+                        "name": "priceSource",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "fixedPrice",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "uniswapMarket",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "isUniswapReversed",
+                        "type": "bool"
+                    }
+                ],
+                "internalType": "struct UniswapConfig.TokenConfig[]",
+                "name": "configs",
+                "type": "tuple[]"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "symbol",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "anchorPrice",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "oldTimestamp",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "newTimestamp",
+                "type": "uint256"
+            }
+        ],
+        "name": "AnchorPriceUpdated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "symbol",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "reporter",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "anchor",
+                "type": "uint256"
+            }
+        ],
+        "name": "PriceGuarded",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "symbol",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "price",
+                "type": "uint256"
+            }
+        ],
+        "name": "PriceUpdated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "reporter",
+                "type": "address"
+            }
+        ],
+        "name": "ReporterInvalidated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "symbolHash",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "oldTimestamp",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "newTimestamp",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "oldPrice",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "newPrice",
+                "type": "uint256"
+            }
+        ],
+        "name": "UniswapWindowUpdated",
+        "type": "event"
+    },
+    {
+        "inputs": [],
+        "name": "anchorPeriod",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "ethBaseUnit",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "expScale",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "i",
+                "type": "uint256"
+            }
+        ],
+        "name": "getTokenConfig",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "cToken",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "underlying",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "symbolHash",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "baseUnit",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "enum UniswapConfig.PriceSource",
+                        "name": "priceSource",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "fixedPrice",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "uniswapMarket",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "isUniswapReversed",
+                        "type": "bool"
+                    }
+                ],
+                "internalType": "struct UniswapConfig.TokenConfig",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "cToken",
+                "type": "address"
+            }
+        ],
+        "name": "getTokenConfigByCToken",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "cToken",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "underlying",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "symbolHash",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "baseUnit",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "enum UniswapConfig.PriceSource",
+                        "name": "priceSource",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "fixedPrice",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "uniswapMarket",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "isUniswapReversed",
+                        "type": "bool"
+                    }
+                ],
+                "internalType": "struct UniswapConfig.TokenConfig",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "symbol",
+                "type": "string"
+            }
+        ],
+        "name": "getTokenConfigBySymbol",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "cToken",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "underlying",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "symbolHash",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "baseUnit",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "enum UniswapConfig.PriceSource",
+                        "name": "priceSource",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "fixedPrice",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "uniswapMarket",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "isUniswapReversed",
+                        "type": "bool"
+                    }
+                ],
+                "internalType": "struct UniswapConfig.TokenConfig",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "symbolHash",
+                "type": "bytes32"
+            }
+        ],
+        "name": "getTokenConfigBySymbolHash",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "cToken",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "underlying",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "symbolHash",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "baseUnit",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "enum UniswapConfig.PriceSource",
+                        "name": "priceSource",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "fixedPrice",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "uniswapMarket",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "isUniswapReversed",
+                        "type": "bool"
+                    }
+                ],
+                "internalType": "struct UniswapConfig.TokenConfig",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "underlying",
+                "type": "address"
+            }
+        ],
+        "name": "getTokenConfigByUnderlying",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "cToken",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "underlying",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "symbolHash",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "baseUnit",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "enum UniswapConfig.PriceSource",
+                        "name": "priceSource",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "fixedPrice",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "uniswapMarket",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "isUniswapReversed",
+                        "type": "bool"
+                    }
+                ],
+                "internalType": "struct UniswapConfig.TokenConfig",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "cToken",
+                "type": "address"
+            }
+        ],
+        "name": "getUnderlyingPrice",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes",
+                "name": "message",
+                "type": "bytes"
+            },
+            {
+                "internalType": "bytes",
+                "name": "signature",
+                "type": "bytes"
+            }
+        ],
+        "name": "invalidateReporter",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "lowerBoundAnchorRatio",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "maxTokens",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "name": "newObservations",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "timestamp",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "acc",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "numTokens",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "name": "oldObservations",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "timestamp",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "acc",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes[]",
+                "name": "messages",
+                "type": "bytes[]"
+            },
+            {
+                "internalType": "bytes[]",
+                "name": "signatures",
+                "type": "bytes[]"
+            },
+            {
+                "internalType": "string[]",
+                "name": "symbols",
+                "type": "string[]"
+            }
+        ],
+        "name": "postPrices",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "symbol",
+                "type": "string"
+            }
+        ],
+        "name": "price",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "priceData",
+        "outputs": [
+            {
+                "internalType": "contract OpenOraclePriceData",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "name": "prices",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "reporter",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "reporterInvalidated",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes",
+                "name": "message",
+                "type": "bytes"
+            },
+            {
+                "internalType": "bytes",
+                "name": "signature",
+                "type": "bytes"
+            }
+        ],
+        "name": "source",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "pure",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "upperBoundAnchorRatio",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+  ]
 }

@@ -7,7 +7,7 @@ The Compound Protocol is an Ethereum smart contract for supplying or borrowing a
 
 Before getting started with this repo, please read:
 
-* The [Compound Whitepaper](https://github.com/compound-finance/compound-protocol/tree/master/docs/CompoundWhitepaper.pdf), describing how Compound works
+* The [Compound Whitepaper](https://compound.finance/documents/Compound.Whitepaper.pdf), describing how Compound works
 * The [Compound Protocol Specification](https://github.com/compound-finance/compound-protocol/tree/master/docs/CompoundProtocol.pdf), explaining in plain English how the protocol operates
 
 For questions about interacting with Compound, please visit [our Discord server](https://compound.finance/discord).
