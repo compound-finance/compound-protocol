@@ -18,7 +18,7 @@ function baseRoofRateFn(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves)
   const assumedOneMinusReserveFactor = 0.95;
   const stabilityFeePerBlock = (duty + mkrBase - 1) * 15;
   const dsrPerBlock = (dsr - 1) * 15;
-  const gapPerBlock = 0.02 / blocksPerYear;
+  const gapPerBlock = 0.04 / blocksPerYear;
   const jumpPerBlock = jump / blocksPerYear;
 
   let baseRatePerBlock = dsrPerBlock / assumedOneMinusReserveFactor, multiplierPerBlock;
@@ -52,7 +52,7 @@ function daiSupplyRate(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves, 
   return cashSupplyRate.plus(lendingSupplyRate).toNumber();
 }
 
-let fork = "https://kovan.infura.io/v3/e1a5d4d2c06a4e81945fca56d0d5d8ea@14764778";
+let fork = "https://kovan-eth.compound.finance/@14764778";
 
 async function getKovanFork() {
   const kovan = new web3.constructor(
@@ -68,19 +68,20 @@ async function getKovanFork() {
   return {kovan, root, accounts};
 }
 
-describe('DAIInterestRateModelV2', () => {
+describe('DAIInterestRateModelV3', () => {
   describe("constructor", () => {
-    it.skip("sets jug and ilk address and pokes", async () => {
+    it("sets jug and ilk address and pokes", async () => {
       // NB: Going back a certain distance requires an archive node, currently that add-on is $250/mo
       //  https://community.infura.io/t/error-returned-error-project-id-does-not-have-access-to-archive-state/847
       const {kovan, root, accounts} = await getKovanFork();
 
       // TODO: Get contract craz
-      let {contract: model} = await saddle.deployFull('DAIInterestRateModelV2', [
+      let {contract: model} = await saddle.deployFull('DAIInterestRateModelV3', [
         etherUnsigned(0.8e18),
         etherUnsigned(0.9e18),
         "0xea190dbdc7adf265260ec4da6e9675fd4f5a78bb",
-        "0xcbb7718c9f39d05aeede1c472ca8bf804b2f1ead"
+        "0xcbb7718c9f39d05aeede1c472ca8bf804b2f1ead",
+        "0xe3e07f4f3e2f5a5286a99b9b8deed08b8e07550b" // kovan timelock
       ], {gas: 20000000, gasPrice: 20000, from: root}, kovan);
 
       let args = [0.5e18, 0.45e18, 500].map(etherUnsigned);
@@ -151,11 +152,12 @@ describe('DAIInterestRateModelV2', () => {
             etherUnsigned(perSecondBase)
           ]);
 
-          const daiIRM = await deploy('DAIInterestRateModelV2', [
+          const daiIRM = await deploy('DAIInterestRateModelV3', [
             etherUnsigned(jump),
             etherUnsigned(kink),
             pot._address,
-            jug._address
+            jug._address,
+            "0x0000000000000000000000000000000000000000" // dummy Timelock
           ]);
 
           const expected = baseRoofRateFn(onePlusPerSecondDsr / 1e27, onePlusPerSecondDuty / 1e27, perSecondBase / 1e27, jump / 1e18, kink / 1e18, cash, borrows, reserves);
@@ -227,11 +229,12 @@ describe('DAIInterestRateModelV2', () => {
             etherUnsigned(perSecondBase)
           ]);
 
-          const daiIRM = await deploy('DAIInterestRateModelV2', [
+          const daiIRM = await deploy('DAIInterestRateModelV3', [
             etherUnsigned(jump),
             etherUnsigned(kink),
             pot._address,
-            jug._address
+            jug._address,
+            "0x0000000000000000000000000000000000000000" // dummy Timelock
           ]);
 
           const expected = daiSupplyRate(onePlusPerSecondDsr / 1e27, onePlusPerSecondDuty / 1e27, perSecondBase / 1e27, jump / 1e18, kink / 1e18, cash, borrows, reserves, reserveFactor / 1e18);

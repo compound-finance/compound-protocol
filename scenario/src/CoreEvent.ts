@@ -3,7 +3,6 @@ import {
   checkExpectations,
   checkInvariants,
   clearInvariants,
-  describeUser,
   holdInvariants,
   setEvent,
   World
