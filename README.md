@@ -36,7 +36,7 @@ We detail a few of the core contracts in the Compound protocol.
 
 <dl>
   <dt>Governor Alpha</dt>
-  <dd>The administrator of the Compound timelock contract. Holders of Comp token may create and vote on proposals which will be queued into the Compound timelock and then have effects on Compound cToken and Copmtroller contracts. This contract may be replaced in the future with a beta version.</dd>
+  <dd>The administrator of the Compound timelock contract. Holders of Comp token may create and vote on proposals which will be queued into the Compound timelock and then have effects on Compound cToken and Comptroller contracts. This contract may be replaced in the future with a beta version.</dd>
 </dl>
 
 <dl>
