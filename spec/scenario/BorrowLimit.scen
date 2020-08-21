@@ -161,6 +161,7 @@ Test "SetBorrowLimits works correctly too"
     Assert Revert
     Borrow Geoff 2e6 cUSDC
     Assert Revert
+    Successfully
     Borrow Geoff 1e6 cUSDC
     Assert Equal (cToken cBAT BorrowBalance Geoff) (Exactly 0)
     Assert Equal (Erc20 BAT TokenBalance Geoff) (Exactly 0)
