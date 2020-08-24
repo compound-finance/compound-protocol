@@ -58,8 +58,8 @@ interface ComptrollerMethods {
   compSpeeds(string): Callable<string>
   claimComp(string): Sendable<void>
   _setCompRate(encodedNumber): Sendable<void>
-  _setMarketBorrowLimits(cToken:string[], borrowLimit:encodedNumber[]): Sendable<number>
-  _setBorrowLimitGuardian(string): Sendable<number>
+  _setMarketBorrowLimits(cToken:string[], borrowLimit:encodedNumber[]): Sendable<void>
+  _setBorrowLimitGuardian(string): Sendable<void>
   borrowLimitGuardian(): Callable<string>
   borrowLimits(string): Callable<string>
 }
