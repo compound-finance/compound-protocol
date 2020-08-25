@@ -19,9 +19,9 @@ const {
 
 const exchangeRate = 50e3;
 const mintAmount = etherUnsigned(10e4);
-const mintTokens = mintAmount.div(exchangeRate);
+const mintTokens = mintAmount.dividedBy(exchangeRate);
 const redeemTokens = etherUnsigned(10e3);
-const redeemAmount = redeemTokens.mul(exchangeRate);
+const redeemAmount = redeemTokens.multipliedBy(exchangeRate);
 
 async function preMint(cToken, minter, mintAmount, mintTokens, exchangeRate) {
   await preApprove(cToken, minter, mintAmount);

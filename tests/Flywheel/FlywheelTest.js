@@ -24,7 +24,7 @@ async function compBalance(comptroller, user) {
 }
 
 async function totalCompAccrued(comptroller, user) {
-  return (await compAccrued(comptroller, user)).add(await compBalance(comptroller, user));
+  return (await compAccrued(comptroller, user)).plus(await compBalance(comptroller, user));
 }
 
 describe('Flywheel upgrade', () => {
@@ -223,7 +223,7 @@ describe('Flywheel', () => {
     });
 
     it('should not matter if the index is updated multiple times', async () => {
-      const compRemaining = compRate.mul(100)
+      const compRemaining = compRate.multipliedBy(100)
       await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
       await pretendBorrow(cLOW, a1, 1, 1, 100);
       await send(comptroller, 'refreshCompSpeeds');
@@ -238,7 +238,7 @@ describe('Flywheel', () => {
 
       await fastForward(comptroller, 20);
 
-      const txT1 = await send(cLOW, 'transfer', [a2, a3Balance0.sub(a2Balance0)], {from: a3});
+      const txT1 = await send(cLOW, 'transfer', [a2, a3Balance0.minus(a2Balance0)], {from: a3});
 
       const a2Accrued1 = await totalCompAccrued(comptroller, a2);
       const a3Accrued1 = await totalCompAccrued(comptroller, a3);
@@ -249,7 +249,7 @@ describe('Flywheel', () => {
       await send(comptroller, 'harnessUpdateCompSupplyIndex', [cLOW._address]);
       await fastForward(comptroller, 10);
 
-      const txT2 = await send(cLOW, 'transfer', [a3, a2Balance1.sub(a3Balance1)], {from: a2});
+      const txT2 = await send(cLOW, 'transfer', [a3, a2Balance1.minus(a3Balance1)], {from: a2});
 
       const a2Accrued2 = await totalCompAccrued(comptroller, a2);
       const a3Accrued2 = await totalCompAccrued(comptroller, a3);
@@ -258,8 +258,8 @@ describe('Flywheel', () => {
       expect(a3Accrued0).toEqualNumber(0);
       expect(a2Accrued1).not.toEqualNumber(0);
       expect(a3Accrued1).not.toEqualNumber(0);
-      expect(a2Accrued1).toEqualNumber(a3Accrued2.sub(a3Accrued1));
-      expect(a3Accrued1).toEqualNumber(a2Accrued2.sub(a2Accrued1));
+      expect(a2Accrued1).toEqualNumber(a3Accrued2.minus(a3Accrued1));
+      expect(a3Accrued1).toEqualNumber(a2Accrued2.minus(a2Accrued1));
 
       expect(txT1.gasUsed).toBeLessThan(200000);
       expect(txT1.gasUsed).toBeGreaterThan(150000);
@@ -464,7 +464,7 @@ describe('Flywheel', () => {
 
   describe('claimComp', () => {
     it('should accrue comp and then transfer comp accrued', async () => {
-      const compRemaining = compRate.mul(100), mintAmount = etherUnsigned(12e18), deltaBlocks = 10;
+      const compRemaining = compRate.multipliedBy(100), mintAmount = etherUnsigned(12e18), deltaBlocks = 10;
       await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
       await pretendBorrow(cLOW, a1, 1, 1, 100);
       await send(comptroller, 'refreshCompSpeeds');
@@ -481,11 +481,11 @@ describe('Flywheel', () => {
       expect(a2AccruedPre).toEqualNumber(0);
       expect(a2AccruedPost).toEqualNumber(0);
       expect(compBalancePre).toEqualNumber(0);
-      expect(compBalancePost).toEqualNumber(compRate.mul(deltaBlocks).sub(1)); // index is 8333...
+      expect(compBalancePost).toEqualNumber(compRate.multipliedBy(deltaBlocks).minus(1)); // index is 8333...
     });
 
     it('should accrue comp and then transfer comp accrued in a single market', async () => {
-      const compRemaining = compRate.mul(100), mintAmount = etherUnsigned(12e18), deltaBlocks = 10;
+      const compRemaining = compRate.multipliedBy(100), mintAmount = etherUnsigned(12e18), deltaBlocks = 10;
       await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
       await pretendBorrow(cLOW, a1, 1, 1, 100);
       await send(comptroller, 'refreshCompSpeeds');
@@ -502,7 +502,7 @@ describe('Flywheel', () => {
       expect(a2AccruedPre).toEqualNumber(0);
       expect(a2AccruedPost).toEqualNumber(0);
       expect(compBalancePre).toEqualNumber(0);
-      expect(compBalancePost).toEqualNumber(compRate.mul(deltaBlocks).sub(1)); // index is 8333...
+      expect(compBalancePost).toEqualNumber(compRate.multipliedBy(deltaBlocks).minus(1)); // index is 8333...
     });
 
     it('should claim when comp accrued is below threshold', async () => {
@@ -524,7 +524,7 @@ describe('Flywheel', () => {
 
   describe('claimComp batch', () => {
     it('should revert when claiming comp from non-listed market', async () => {
-      const compRemaining = compRate.mul(100), deltaBlocks = 10, mintAmount = etherExp(10);
+      const compRemaining = compRate.multipliedBy(100), deltaBlocks = 10, mintAmount = etherExp(10);
       await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
       let [_, __, ...claimAccts] = saddle.accounts;
 
@@ -544,7 +544,7 @@ describe('Flywheel', () => {
 
 
     it('should claim the expected amount when holders and ctokens arg is duplicated', async () => {
-      const compRemaining = compRate.mul(100), deltaBlocks = 10, mintAmount = etherExp(10);
+      const compRemaining = compRate.multipliedBy(100), deltaBlocks = 10, mintAmount = etherExp(10);
       await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
       let [_, __, ...claimAccts] = saddle.accounts;
       for(let from of claimAccts) {
@@ -566,7 +566,7 @@ describe('Flywheel', () => {
     });
 
     it('claims comp for multiple suppliers only', async () => {
-      const compRemaining = compRate.mul(100), deltaBlocks = 10, mintAmount = etherExp(10);
+      const compRemaining = compRate.multipliedBy(100), deltaBlocks = 10, mintAmount = etherExp(10);
       await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
       let [_, __, ...claimAccts] = saddle.accounts;
       for(let from of claimAccts) {
@@ -588,7 +588,7 @@ describe('Flywheel', () => {
     });
 
     it('claims comp for multiple borrowers only, primes uninitiated', async () => {
-      const compRemaining = compRate.mul(100), deltaBlocks = 10, mintAmount = etherExp(10), borrowAmt = etherExp(1), borrowIdx = etherExp(1)
+      const compRemaining = compRate.multipliedBy(100), deltaBlocks = 10, mintAmount = etherExp(10), borrowAmt = etherExp(1), borrowIdx = etherExp(1)
       await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
       let [_,__, ...claimAccts] = saddle.accounts;
 
@@ -648,9 +648,9 @@ describe('Flywheel', () => {
       const speed1 = await call(comptroller, 'compSpeeds', [cLOW._address]);
       const speed2 = await call(comptroller, 'compSpeeds', [cREP._address]);
       const speed3 = await call(comptroller, 'compSpeeds', [cZRX._address]);
-      expect(speed1).toEqualNumber(compRate.div(4));
+      expect(speed1).toEqualNumber(compRate.dividedBy(4));
       expect(speed2).toEqualNumber(0);
-      expect(speed3).toEqualNumber(compRate.div(4).mul(3));
+      expect(speed3).toEqualNumber(compRate.dividedBy(4).multipliedBy(3));
     });
 
     it('should not be callable inside a contract', async () => {
@@ -711,11 +711,11 @@ describe('Flywheel', () => {
 
       const supplyState = await call(comptroller, 'compSupplyState', [mkt]);
       expect(supplyState.block).toEqual(bn1.toString());
-      expect(supplyState.index).toEqual(idx.toString());
+      expect(supplyState.index).toEqual(idx.toFixed());
 
       const borrowState = await call(comptroller, 'compBorrowState', [mkt]);
       expect(borrowState.block).toEqual(bn1.toString());
-      expect(borrowState.index).toEqual(idx.toString());
+      expect(borrowState.index).toEqual(idx.toFixed());
     });
   });
 

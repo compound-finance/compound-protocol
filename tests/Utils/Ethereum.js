@@ -1,6 +1,6 @@
 "use strict";
 
-const BigNum = require('bignumber.js');
+const BigNumber = require('bignumber.js');
 const ethers = require('ethers');
 
 function address(n) {
@@ -13,26 +13,26 @@ function encodeParameters(types, values) {
 }
 
 async function etherBalance(addr) {
-  return ethers.utils.bigNumberify(new BigNum(await web3.eth.getBalance(addr)).toFixed());
+  return new BigNumber(await web3.eth.getBalance(addr));
 }
 
 async function etherGasCost(receipt) {
   const tx = await web3.eth.getTransaction(receipt.transactionHash);
-  const gasUsed = new BigNum(receipt.gasUsed);
-  const gasPrice = new BigNum(tx.gasPrice);
-  return ethers.utils.bigNumberify(gasUsed.times(gasPrice).toFixed());
+  const gasUsed = new BigNumber(receipt.gasUsed);
+  const gasPrice = new BigNumber(tx.gasPrice);
+  return gasUsed.times(gasPrice);
 }
 
 function etherExp(num) { return etherMantissa(num, 1e18) }
 function etherDouble(num) { return etherMantissa(num, 1e36) }
 function etherMantissa(num, scale = 1e18) {
   if (num < 0)
-    return ethers.utils.bigNumberify(new BigNum(2).pow(256).plus(num).toFixed());
-  return ethers.utils.bigNumberify(new BigNum(num).times(scale).toFixed());
+    return new BigNumber(2).pow(256).plus(num);
+  return new BigNumber(num).times(scale);
 }
 
 function etherUnsigned(num) {
-  return ethers.utils.bigNumberify(new BigNum(num).toFixed());
+  return new BigNumber(num);
 }
 
 function mergeInterface(into, from) {

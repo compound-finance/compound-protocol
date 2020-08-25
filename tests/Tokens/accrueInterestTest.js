@@ -112,7 +112,7 @@ describe('CToken', () => {
       expect(receipt).toSucceed();
       expect(receipt).toHaveLog('AccrueInterest', {
         cashPrior: 0,
-        interestAccumulated: etherUnsigned(expectedTotalBorrows).sub(etherUnsigned(startingTotalBorrows)),
+        interestAccumulated: etherUnsigned(expectedTotalBorrows).minus(etherUnsigned(startingTotalBorrows)),
         borrowIndex: etherUnsigned(expectedBorrowIndex),
         totalBorrows: etherUnsigned(expectedTotalBorrows)
       })

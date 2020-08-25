@@ -15,7 +15,7 @@ const {
 
 const repayAmount = etherUnsigned(10e2);
 const seizeAmount = repayAmount;
-const seizeTokens = seizeAmount.mul(4); // forced
+const seizeTokens = seizeAmount.multipliedBy(4); // forced
 
 async function preLiquidate(cToken, liquidator, borrower, repayAmount, cTokenCollateral) {
   // setup for success in liquidating
