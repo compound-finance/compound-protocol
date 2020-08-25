@@ -1,4 +1,4 @@
-const {etherUnsigned} = require('../Utils/Ethereum');
+const {etherUnsigned, UInt256Max} = require('../Utils/Ethereum');
 const {
   makeComptroller,
   makeCToken,
@@ -49,7 +49,7 @@ describe('Comptroller', () => {
 
     it("fails if the repayAmount causes overflow ", async () => {
       expect(
-        await calculateSeizeTokens(comptroller, cTokenBorrowed, cTokenCollateral, -1)
+        await calculateSeizeTokens(comptroller, cTokenBorrowed, cTokenCollateral, UInt256Max())
       ).toHaveTrollErrorTuple(['MATH_ERROR', 0]);
     });
 
@@ -83,8 +83,8 @@ describe('Comptroller', () => {
         await send(comptroller, '_setLiquidationIncentive', [liquidationIncentive]);
         await send(cTokenCollateral, 'harnessSetExchangeRate', [exchangeRate]);
 
-        const seizeAmount = repayAmount.mul(liquidationIncentive).mul(borrowedPrice).div(collateralPrice);
-        const seizeTokens = seizeAmount.div(exchangeRate);
+        const seizeAmount = repayAmount.multipliedBy(liquidationIncentive).multipliedBy(borrowedPrice).dividedBy(collateralPrice);
+        const seizeTokens = seizeAmount.dividedBy(exchangeRate);
 
         expect(
           await calculateSeizeTokens(comptroller, cTokenBorrowed, cTokenCollateral, repayAmount)

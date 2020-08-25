@@ -335,7 +335,7 @@ expect.extend({
   },
 
   toEqualNumber(actual, expected) {
-    return match.call(this, actual, expected, etherUnsigned(actual).eq(etherUnsigned(expected)), opts('toEqualNumber'));
+    return match.call(this, actual, expected, etherUnsigned(actual).isEqualTo(etherUnsigned(expected)), opts('toEqualNumber'));
   },
 
   toPartEqual(actual, expected) {

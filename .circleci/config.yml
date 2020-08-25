@@ -6,7 +6,7 @@ orbs:
 jobs:
   test:
     docker:
-      - image: circleci/node:11
+      - image: circleci/node:13
     working_directory: ~/repo
     steps:
       - run:
@@ -16,28 +16,26 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v2-dependencies-{{ checksum "package.json" }}
-          - v2-dependencies-
+          - v3-dependencies-{{ checksum "yarn.lock" }}
       - restore_cache:
           keys:
-          - v2-scenario/dependencies-{{ checksum "scenario/package.json" }}
-          - v2-scenario/dependencies-
+          - v3-scenario/dependencies-{{ checksum "scenario/yarn.lock" }}
       - restore_cache:
           keys:
-          - v2-solcache
+          - v3-solcache
       - restore_cache:
           keys:
-          - v2-scencache
-      - run: yarn install
-      - run: cd scenario && yarn install
+          - v3-scencache
+      - run: yarn install || (yarn cache clean && yarn install)
+      - run: cd scenario && (yarn install || (yarn cache clean && yarn install))
       - save_cache:
           paths:
             - node_modules
-          key: v2-dependencies-{{ checksum "package.json" }}
+          key: v3-dependencies-{{ checksum "yarn.lock" }}
       - save_cache:
           paths:
             - scenario/node_modules
-          key: v2-scenario-dependencies-{{ checksum "scenario/package.json" }}
+          key: v3-scenario-dependencies-{{ checksum "scenario/yarn.lock" }}
       - attach_workspace:
           at: ~/repo
       - run: mkdir ~/junit
@@ -50,12 +48,12 @@ jobs:
           paths:
             - .build
             - .solcache
-          key: v2-solcache
+          key: v3-solcache
       - save_cache:
           paths:
             - scenario/.tsbuilt
             - .scencache
-          key: v2-scencache
+          key: v3-scencache
       - store_test_results:
           path: ~/junit
       - store_artifacts:
@@ -76,7 +74,7 @@ jobs:
 
   coverage:
     docker:
-      - image: circleci/node:11
+      - image: circleci/node:13
     working_directory: ~/repo
     steps:
       - run:
@@ -86,24 +84,22 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v2-dependencies-{{ checksum "package.json" }}
-          - v2-dependencies-
+          - v3-dependencies-{{ checksum "yarn.lock" }}
       - restore_cache:
           keys:
-          - v2-scenario/dependencies-{{ checksum "scenario/package.json" }}
-          - v2-scenario/dependencies-
+          - v3-scenario-dependencies-{{ checksum "scenario/yarn.lock" }}
       - restore_cache:
           keys:
-          - v2-solcache
+          - v3-solcache
       - restore_cache:
           keys:
-          - v2-scencache
-      - run: yarn install
-      - run: cd scenario && yarn install
+          - v3-scencache
+      - run: yarn install || (yarn cache clean && yarn install)
+      - run: cd scenario && (yarn install || (yarn cache clean && yarn install))
       - save_cache:
           paths:
             - node_modules
-          key: v2-dependencies-{{ checksum "package.json" }}
+          key: v3-dependencies-{{ checksum "yarn.lock" }}
       - save_cache:
           paths:
             - scenario/node_modules
@@ -121,12 +117,12 @@ jobs:
           paths:
             - .build
             - .solcachecov
-          key: v2-solcache
+          key: v3-solcache
       - save_cache:
           paths:
             - scenario/.tsbuilt
             - .scencache
-          key: v2-scencache
+          key: v3-scencache
       - store_test_results:
           path: ~/junit
       - store_artifacts:
@@ -142,19 +138,18 @@ jobs:
 
   lint:
     docker:
-      - image: circleci/node:11
+      - image: circleci/node:13
     working_directory: ~/repo
     steps:
       - checkout
       - restore_cache:
           keys:
-          - v2-dependencies-{{ checksum "package.json" }}
-          - v2-dependencies-
-      - run: yarn install
+          - v3-dependencies-{{ checksum "yarn.lock" }}
+      - run: yarn install || (yarn cache clean && yarn install)
       - save_cache:
           paths:
             - node_modules
-          key: v2-dependencies-{{ checksum "package.json" }}
+          key: v3-dependencies-{{ checksum "yarn.lock" }}
       - attach_workspace:
           at: ~/repo
       - run: yarn run lint

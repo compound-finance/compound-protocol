@@ -18,14 +18,14 @@
   "author": "Compound Finance",
   "license": "UNLICENSED",
   "devDependencies": {
-    "bignumber.js": "8.0.1",
-    "jest-diff": "^24.9.0",
-    "jest-junit": "^6.4.0",
+    "bignumber.js": "9.0.0",
+    "jest-diff": "^26.4.2",
+    "jest-junit": "^11.1.0",
     "solium": "^1.2.5",
     "solparse": "^2.2.8"
   },
   "dependencies": {
-    "eth-saddle": "^0.1.17"
+    "eth-saddle": "^0.1.21"
   },
   "resolutions": {
     "scrypt.js": "https://registry.npmjs.org/@compound-finance/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz",
