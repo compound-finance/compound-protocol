@@ -3,6 +3,10 @@
 const BigNumber = require('bignumber.js');
 const ethers = require('ethers');
 
+function UInt256Max() {
+  return ethers.constants.MaxUint256;
+}
+
 function address(n) {
   return `0x${n.toString(16).padStart(40, '0')}`;
 }
@@ -150,5 +154,6 @@ module.exports = {
   setTime,
 
   both,
-  sendFallback
+  sendFallback,
+  UInt256Max
 };

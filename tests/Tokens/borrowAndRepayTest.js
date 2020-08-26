@@ -1,6 +1,7 @@
 const {
   etherUnsigned,
-  etherMantissa
+  etherMantissa,
+  UInt256Max
 } = require('../Utils/Ethereum');
 
 const {
@@ -104,12 +105,12 @@ describe('CToken', function () {
     });
 
     it("fails if calculating account new total borrow balance overflows", async () => {
-      await pretendBorrow(cToken, borrower, 1e-18, 1e-18, -1);
+      await pretendBorrow(cToken, borrower, 1e-18, 1e-18, UInt256Max());
       expect(await borrowFresh(cToken, borrower, borrowAmount)).toHaveTokenFailure('MATH_ERROR', 'BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED');
     });
 
     it("fails if calculation of new total borrow balance overflows", async () => {
-      await send(cToken, 'harnessSetTotalBorrows', [-1]);
+      await send(cToken, 'harnessSetTotalBorrows', [UInt256Max()]);
       expect(await borrowFresh(cToken, borrower, borrowAmount)).toHaveTokenFailure('MATH_ERROR', 'BORROW_NEW_TOTAL_BALANCE_CALCULATION_FAILED');
     });
 
@@ -284,7 +285,7 @@ describe('CToken', function () {
 
     it("repays the full amount owed if payer has enough", async () => {
       await fastForward(cToken);
-      expect(await repayBorrow(cToken, borrower, -1)).toSucceed();
+      expect(await repayBorrow(cToken, borrower, UInt256Max())).toSucceed();
       const afterAccountBorrowSnap = await borrowSnapshot(cToken, borrower);
       expect(afterAccountBorrowSnap.principal).toEqualNumber(0);
     });
@@ -292,7 +293,7 @@ describe('CToken', function () {
     it("fails gracefully if payer does not have enough", async () => {
       await setBalance(cToken.underlying, borrower, 3);
       await fastForward(cToken);
-      await expect(repayBorrow(cToken, borrower, -1)).rejects.toRevert('revert Insufficient balance');
+      await expect(repayBorrow(cToken, borrower, UInt256Max())).rejects.toRevert('revert Insufficient balance');
     });
   });
 

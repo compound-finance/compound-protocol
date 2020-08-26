@@ -7,19 +7,19 @@ const {
 
 const oneWeekInSeconds = etherUnsigned(7 * 24 * 60 * 60);
 const zero = etherUnsigned(0);
-const gracePeriod = oneWeekInSeconds.mul(2);
+const gracePeriod = oneWeekInSeconds.multipliedBy(2);
 
 describe('Timelock', () => {
   let root, notAdmin, newAdmin;
   let blockTimestamp;
   let timelock;
   let delay = oneWeekInSeconds;
-  let newDelay = delay.mul(2);
+  let newDelay = delay.multipliedBy(2);
   let target;
   let value = zero;
   let signature = 'setDelay(uint256)';
-  let data = encodeParameters(['uint256'], [newDelay]);
-  let revertData = encodeParameters(['uint256'], [etherUnsigned(60 * 60)]);
+  let data = encodeParameters(['uint256'], [newDelay.toFixed()]);
+  let revertData = encodeParameters(['uint256'], [etherUnsigned(60 * 60).toFixed()]);
   let eta;
   let queuedTxHash;
 
@@ -30,12 +30,12 @@ describe('Timelock', () => {
     blockTimestamp = etherUnsigned(100);
     await freezeTime(blockTimestamp.toNumber())
     target = timelock.options.address;
-    eta = blockTimestamp.add(delay);
+    eta = blockTimestamp.plus(delay);
 
     queuedTxHash = keccak256(
       encodeParameters(
         ['address', 'uint256', 'string', 'bytes', 'uint256'],
-        [target, value, signature, data, eta]
+        [target, value.toString(), signature, data, eta.toString()]
       )
     );
   });
@@ -103,7 +103,7 @@ describe('Timelock', () => {
     });
 
     it('requires eta to exceed delay', async () => {
-      const etaLessThanDelay = blockTimestamp.add(delay).sub(1);
+      const etaLessThanDelay = blockTimestamp.plus(delay).minus(1);
 
       await expect(
         send(timelock, 'queueTransaction', [target, value, signature, data, etaLessThanDelay], {
@@ -180,7 +180,7 @@ describe('Timelock', () => {
       const txHash = keccak256(
         encodeParameters(
           ['address', 'uint256', 'string', 'bytes', 'uint256'],
-          [target, value, '', '0x', eta]
+          [target, value.toString(), '', '0x', eta.toString()]
         )
       );
       expect(await call(timelock, 'queuedTransactions', [txHash])).toBeFalsy();
@@ -211,7 +211,7 @@ describe('Timelock', () => {
     });
 
     it('requires transaction to be queued', async () => {
-      const differentEta = eta.add(1);
+      const differentEta = eta.plus(1);
       await expect(
         send(timelock, 'executeTransaction', [target, value, signature, data, differentEta], { from: root })
       ).rejects.toRevert("revert Timelock::executeTransaction: Transaction hasn't been queued.");
@@ -228,7 +228,7 @@ describe('Timelock', () => {
     });
 
     it('requires timestamp to be less than eta plus gracePeriod', async () => {
-      await freezeTime(blockTimestamp.add(delay).add(gracePeriod).add(1).toNumber());
+      await freezeTime(blockTimestamp.plus(delay).plus(gracePeriod).plus(1).toNumber());
 
       await expect(
         send(timelock, 'executeTransaction', [target, value, signature, data, eta], {
@@ -254,7 +254,7 @@ describe('Timelock', () => {
       const queueTransactionsHashValueBefore = await call(timelock, 'queuedTransactions', [queuedTxHash]);
       expect(queueTransactionsHashValueBefore).toEqual(true);
 
-      const newBlockTimestamp = blockTimestamp.add(delay).add(1);
+      const newBlockTimestamp = blockTimestamp.plus(delay).plus(1);
       await freezeTime(newBlockTimestamp.toNumber());
 
       const result = await send(timelock, 'executeTransaction', [target, value, signature, data, eta], {
@@ -289,12 +289,12 @@ describe('Timelock', () => {
       delay = etherUnsigned(configuredDelay);
       signature = 'setPendingAdmin(address)';
       data = encodeParameters(['address'], [newAdmin]);
-      eta = blockTimestamp.add(delay);
+      eta = blockTimestamp.plus(delay);
 
       queuedTxHash = keccak256(
         encodeParameters(
           ['address', 'uint256', 'string', 'bytes', 'uint256'],
-          [target, value, signature, data, eta]
+          [target, value.toString(), signature, data, eta.toString()]
         )
       );
 
@@ -310,7 +310,7 @@ describe('Timelock', () => {
     });
 
     it('requires transaction to be queued', async () => {
-      const differentEta = eta.add(1);
+      const differentEta = eta.plus(1);
       await expect(
         send(timelock, 'executeTransaction', [target, value, signature, data, differentEta], { from: root })
       ).rejects.toRevert("revert Timelock::executeTransaction: Transaction hasn't been queued.");
@@ -327,7 +327,7 @@ describe('Timelock', () => {
     });
 
     it('requires timestamp to be less than eta plus gracePeriod', async () => {
-      await freezeTime(blockTimestamp.add(delay).add(gracePeriod).add(1).toNumber());
+      await freezeTime(blockTimestamp.plus(delay).plus(gracePeriod).plus(1).toNumber());
 
       await expect(
         send(timelock, 'executeTransaction', [target, value, signature, data, eta], {
@@ -343,7 +343,7 @@ describe('Timelock', () => {
       const queueTransactionsHashValueBefore = await call(timelock, 'queuedTransactions', [queuedTxHash]);
       expect(queueTransactionsHashValueBefore).toEqual(true);
 
-      const newBlockTimestamp = blockTimestamp.add(delay).add(1);
+      const newBlockTimestamp = blockTimestamp.plus(delay).plus(1);
       await freezeTime(newBlockTimestamp.toNumber())
 
       const result = await send(timelock, 'executeTransaction', [target, value, signature, data, eta], {

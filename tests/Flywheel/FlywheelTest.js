@@ -303,8 +303,8 @@ describe('Flywheel', () => {
       expect(tx).toHaveLog('DistributedBorrowerComp', {
         cToken: mkt._address,
         borrower: a1,
-        compDelta: etherUnsigned(25e18).toString(),
-        compBorrowIndex: etherDouble(6).toString()
+        compDelta: etherUnsigned(25e18).toFixed(),
+        compBorrowIndex: etherDouble(6).toFixed()
       });
     });
 
@@ -365,8 +365,8 @@ describe('Flywheel', () => {
       expect(tx).toHaveLog('DistributedSupplierComp', {
         cToken: mkt._address,
         supplier: a1,
-        compDelta: etherUnsigned(25e18).toString(),
-        compSupplyIndex: etherDouble(6).toString()
+        compDelta: etherUnsigned(25e18).toFixed(),
+        compSupplyIndex: etherDouble(6).toFixed()
       });
     });
 
