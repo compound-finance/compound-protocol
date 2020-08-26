@@ -26,8 +26,8 @@ jobs:
       - restore_cache:
           keys:
           - v3-scencache
-      - run: yarn cache clean && yarn install
-      - run: cd scenario && yarn install
+      - run: yarn install || (yarn cache clean && yarn install)
+      - run: cd scenario && (yarn install || (yarn cache clean && yarn install))
       - save_cache:
           paths:
             - node_modules
@@ -94,8 +94,8 @@ jobs:
       - restore_cache:
           keys:
           - v3-scencache
-      - run: yarn install
-      - run: cd scenario && yarn install
+      - run: yarn install || (yarn cache clean && yarn install)
+      - run: cd scenario && (yarn install || (yarn cache clean && yarn install))
       - save_cache:
           paths:
             - node_modules
@@ -145,7 +145,7 @@ jobs:
       - restore_cache:
           keys:
           - v3-dependencies-{{ checksum "yarn.lock" }}
-      - run: yarn install
+      - run: yarn install || (yarn cache clean && yarn install)
       - save_cache:
           paths:
             - node_modules
