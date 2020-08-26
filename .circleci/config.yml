@@ -26,7 +26,7 @@ jobs:
       - restore_cache:
           keys:
           - v3-scencache
-      - run: yarn install
+      - run: yarn cache clean && yarn install
       - run: cd scenario && yarn install
       - save_cache:
           paths:
