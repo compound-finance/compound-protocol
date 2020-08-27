@@ -14,6 +14,11 @@ For questions about interacting with Compound, please visit [our Discord server]
 
 For security concerns, please visit [https://compound.finance/security](https://compound.finance/security) or email [security@compound.finance](mailto:security@compound.finance).
 
+Contributing
+============
+
+Contributing to the Compound protocol is a bit different than most open-source projects -- check out the [community guide on Contributing](https://www.comp.xyz/t/contributing-to-compound-protocol/48).
+
 Contracts
 =========
 
