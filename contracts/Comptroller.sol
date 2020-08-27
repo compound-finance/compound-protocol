@@ -63,7 +63,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     event DistributedBorrowerComp(CToken indexed cToken, address indexed borrower, uint compDelta, uint compBorrowIndex);
 
     /// @notice Emitted when borrow limit for a cToken is changed
-    event NewBorrowLimit(CToken cToken, uint limit);
+    event NewBorrowLimit(CToken indexed cToken, uint limit);
 
     /// @notice Emitted when borrow limit guardian is changed
     event NewBorrowLimitGuardian(address oldBorrowLimitGuardian, address newBorrowLimitGuardian);
@@ -376,8 +376,8 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         if (borrowLimit != 0) {
             uint totalBorrows = CToken(cToken).totalBorrows();
             (MathError mathErr, uint nextTotalBorrows) = addUInt(totalBorrows, borrowAmount);
-            require(mathErr == MathError.NO_ERROR, "borrow limit overflow");
-            require(nextTotalBorrows <= borrowLimit, "market borrow limit reached");
+            require(mathErr == MathError.NO_ERROR, "total borrows overflow");
+            require(nextTotalBorrows < borrowLimit, "market borrow limit reached");
         }
 
         (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(borrower, CToken(cToken), 0, borrowAmount);
@@ -1039,19 +1039,19 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /**
       * @notice Set the given borrow limits for the given cToken markets
-      * @dev Admin or borrowLimitGuardian function to set the borrow limits
+      * @dev Admin or borrowLimitGuardian function to set the borrow limits. A borrow limit of 0 corresponds to unlimited borrowing.
       * @param cTokens The addresses of the markets (tokens) to change the borrow limits for
-      * @param newBorrowLimits The new borrow limit values in underlying (maximum borrowing) to be set
+      * @param newBorrowLimits The new borrow limit values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
       */
-    function _setMarketBorrowLimits(CToken[] calldata cTokens, uint256[] calldata newBorrowLimits) external {
-    	require(msg.sender == admin || msg.sender == borrowLimitGuardian, "only admin or borrow limit guardian"); 
+    function _setMarketBorrowLimits(CToken[] calldata cTokens, uint[] calldata newBorrowLimits) external {
+    	require(msg.sender == admin || msg.sender == borrowLimitGuardian, "only admin or borrow limit guardian can set limits"); 
 
         uint numMarkets = cTokens.length;
         uint numLimits = newBorrowLimits.length;
 
         require(numMarkets != 0 && numMarkets == numLimits, "invalid input");
 
-        for(uint8 i = 0; i < numMarkets; i++) {
+        for(uint i = 0; i < numMarkets; i++) {
             borrowLimits[address(cTokens[i])] = newBorrowLimits[i];
             emit NewBorrowLimit(cTokens[i], newBorrowLimits[i]);
         }
@@ -1062,7 +1062,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
      * @param newBorrowLimitGuardian The address of the new Borrow Limit Guardian
      */
     function _setBorrowLimitGuardian(address newBorrowLimitGuardian) external {
-        require(msg.sender == admin, "only admin");
+        require(msg.sender == admin, "only admin can set borrow limit guardian");
 
         // Save current value for inclusion in log
         address oldBorrowLimitGuardian = borrowLimitGuardian;

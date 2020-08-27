@@ -132,6 +132,6 @@ contract ComptrollerV4Storage is ComptrollerV3Storage {
     // @notice The borrowLimitGuardian can set borrowLimits to any number for any market. Lowering the borrow limit could disable borrowing of the given asset.
     address public borrowLimitGuardian;
 
-    // @notice max borrow limits enforced by borrowAllowed for each cToken address. Defaults to zero which signifies unlimited borrowing.
-    mapping(address => uint256) public borrowLimits;
+    // @notice Borrow limits enforced by borrowAllowed for each cToken address. Defaults to zero which corresponds to unlimited borrowing.
+    mapping(address => uint) public borrowLimits;
 }
