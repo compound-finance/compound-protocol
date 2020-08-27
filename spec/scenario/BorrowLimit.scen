@@ -22,7 +22,7 @@ Test "Attempt to borrow at set limit ERC20"
     NewComptroller price:1.0
     NewCToken ZRX cZRX
     NewCToken BAT cBAT
-    Comptroller SetMarketBorrowLimits (cBAT) (1.0e18)
+    Comptroller SetMarketBorrowLimits (cBAT) (1000000000000000001)
     Give cBAT 10e18 BAT -- Faucet some bat to borrow
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
@@ -78,7 +78,7 @@ Test "Borrow some Eth enters Eth and succeeds when Eth not entered. At borrow li
     ListedEtherToken cETH initialExchangeRate:0.005e9
     SetCollateralFactor cZRX collateralFactor:0.5
     SetCollateralFactor cETH collateralFactor:0.5
-    Comptroller SetMarketBorrowLimits (cETH) (0.001e18)
+    Comptroller SetMarketBorrowLimits (cETH) (1000000000000001)
     Donate cETH 0.003e18
     Prep Geoff Some ZRX cZRX
     Mint Geoff 1e18 cZRX
@@ -145,9 +145,9 @@ Test "SetBorrowLimits works correctly too"
     NewCToken ZRX cZRX
     NewCToken BAT cBAT
     NewCToken USDC cUSDC
-    Comptroller SetMarketBorrowLimits (cBAT cUSDC) (0.5e18 1e6)
+    Comptroller SetMarketBorrowLimits (cBAT cUSDC) (0.5e18 1000001)
     Assert Equal (Comptroller BorrowLimits cBAT) (Exactly 0.5e18)
-    Assert Equal (Comptroller BorrowLimits cUSDC) (Exactly 1e6)
+    Assert Equal (Comptroller BorrowLimits cUSDC) (Exactly 1000001)
     Give cBAT 10e18 BAT -- Faucet some bat to borrow
     Give cUSDC 20e6 USDC
     Support cZRX collateralFactor:0.5
