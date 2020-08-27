@@ -1,10 +1,10 @@
 "use strict";
 
 const BigNumber = require('bignumber.js');
-const ethers = require('ethers');
 
 function UInt256Max() {
-  return ethers.constants.MaxUint256;
+  // alternatively use `ethers.constants.MaxUint256`
+  return '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
 }
 
 function address(n) {
@@ -12,8 +12,8 @@ function address(n) {
 }
 
 function encodeParameters(types, values) {
-  const abi = new ethers.utils.AbiCoder();
-  return abi.encode(types, values);
+  // alternatively use `new ethers.utils.AbiCoder().encode(types, values)`
+  return web3.eth.abi.encodeParameters(types, values);
 }
 
 async function etherBalance(addr) {
@@ -59,7 +59,8 @@ function getContractDefaults() {
 }
 
 function keccak256(values) {
-  return ethers.utils.keccak256(values);
+  // alternatively use `return ethers.utils.keccak256(values)`
+  return web3.utils.soliditySha3(values);
 }
 
 function unlockedAccounts() {

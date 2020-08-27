@@ -72,7 +72,7 @@ describe('CToken', () => {
       expect(await send(cToken, 'accrueInterest')).toHaveTokenFailure('MATH_ERROR', 'ACCRUE_INTEREST_ACCUMULATED_INTEREST_CALCULATION_FAILED');
     });
 
-    it('fails if new total borrows calculation fails', async () => {
+    it.only('fails if new total borrows calculation fails', async () => {
       await setBorrowRate(cToken, 1e-18);
       await pretendBlock(cToken)
       await send(cToken, 'harnessExchangeRateDetails', [0, UInt256Max(), 0]);
