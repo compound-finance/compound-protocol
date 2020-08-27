@@ -129,9 +129,9 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
 }
 
 contract ComptrollerV4Storage is ComptrollerV3Storage {
-    // @notice The borrowLimitGuardian can set borrowLimits to any number for any market. Lowering the borrow limit could disable borrowing of the given asset.
-    address public borrowLimitGuardian;
+    // @notice The borrowCapGuardian can set borrowCaps to any number for any market. Lowering the borrow cap could disable borrowing of the given asset.
+    address public borrowCapGuardian;
 
-    // @notice Borrow limits enforced by borrowAllowed for each cToken address. Defaults to zero which corresponds to unlimited borrowing.
-    mapping(address => uint) public borrowLimits;
+    // @notice Borrow caps enforced by borrowAllowed for each cToken address. Defaults to zero which corresponds to unlimited borrowing.
+    mapping(address => uint) public borrowCaps;
 }

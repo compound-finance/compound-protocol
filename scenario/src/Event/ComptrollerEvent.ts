@@ -358,24 +358,24 @@ async function setGuardianMarketPaused(world: World, from: string, comptroller: 
   return world;
 }
 
-async function setMarketBorrowLimits(world: World, from: string, comptroller: Comptroller, cTokens: CToken[], borrowLimits: NumberV[]): Promise<World> {
-  let invokation = await invoke(world, comptroller.methods._setMarketBorrowLimits(cTokens.map(c => c._address), borrowLimits.map(c => c.encode())), from, ComptrollerErrorReporter);
+async function setMarketBorrowCaps(world: World, from: string, comptroller: Comptroller, cTokens: CToken[], borrowCaps: NumberV[]): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setMarketBorrowCaps(cTokens.map(c => c._address), borrowCaps.map(c => c.encode())), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,
-    `Borrow limits on ${cTokens} set to ${borrowLimits}`,
+    `Borrow caps on ${cTokens} set to ${borrowCaps}`,
     invokation
   );
 
   return world;
 }
 
-async function setBorrowLimitGuardian(world: World, from: string, comptroller: Comptroller, newBorrowLimitGuardian: string): Promise<World> {
-  let invokation = await invoke(world, comptroller.methods._setBorrowLimitGuardian(newBorrowLimitGuardian), from, ComptrollerErrorReporter);
+async function setBorrowCapGuardian(world: World, from: string, comptroller: Comptroller, newBorrowCapGuardian: string): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setBorrowCapGuardian(newBorrowCapGuardian), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,
-    `Comptroller: ${describeUser(world, from)} sets borrow limit guardian to ${newBorrowLimitGuardian}`,
+    `Comptroller: ${describeUser(world, from)} sets borrow cap guardian to ${newBorrowCapGuardian}`,
     invokation
   );
 
@@ -713,32 +713,32 @@ export function comptrollerCommands() {
       ],
       (world, from, {comptroller, rate}) => setCompRate(world, from, comptroller, rate)
     ),
-    new Command<{comptroller: Comptroller, cTokens: CToken[], borrowLimits: NumberV[]}>(`
-      #### SetMarketBorrowLimits
+    new Command<{comptroller: Comptroller, cTokens: CToken[], borrowCaps: NumberV[]}>(`
+      #### SetMarketBorrowCaps
 
-      * "Comptroller SetMarketBorrowLimit (<CToken> ...) (<borrowLimit> ...)" - Sets Market Borrow Limit
-      * E.g "Comptroller SetMarketBorrowLimits (cZRX cUSDC) (10000.0e18, 1000.0e6)
+      * "Comptroller SetMarketBorrowCaps (<CToken> ...) (<borrowCap> ...)" - Sets Market Borrow Caps
+      * E.g "Comptroller SetMarketBorrowCaps (cZRX cUSDC) (10000.0e18, 1000.0e6)
       `,
-      "SetMarketBorrowLimits",
+      "SetMarketBorrowCaps",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
         new Arg("cTokens", getCTokenV, {mapped: true}),
-        new Arg("borrowLimits", getNumberV, {mapped: true})
+        new Arg("borrowCaps", getNumberV, {mapped: true})
       ],
-      (world, from, {comptroller,cTokens,borrowLimits}) => setMarketBorrowLimits(world, from, comptroller, cTokens, borrowLimits)
+      (world, from, {comptroller,cTokens,borrowCaps}) => setMarketBorrowCaps(world, from, comptroller, cTokens, borrowCaps)
     ),
-    new Command<{comptroller: Comptroller, newBorrowLimitGuardian: AddressV}>(`
-        #### SetBorrowLimitGuardian
+    new Command<{comptroller: Comptroller, newBorrowCapGuardian: AddressV}>(`
+        #### SetBorrowCapGuardian
 
-        * "Comptroller SetBorrowLimitGuardian newBorrowLimitGuardian:<Address>" - Sets the Borrow Limit Guardian for the Comptroller
-          * E.g. "Comptroller SetBorrowLimitGuardian Geoff"
+        * "Comptroller SetBorrowCapGuardian newBorrowCapGuardian:<Address>" - Sets the Borrow Cap Guardian for the Comptroller
+          * E.g. "Comptroller SetBorrowCapGuardian Geoff"
       `,
-      "SetBorrowLimitGuardian",
+      "SetBorrowCapGuardian",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("newBorrowLimitGuardian", getAddressV)
+        new Arg("newBorrowCapGuardian", getAddressV)
       ],
-      (world, from, {comptroller, newBorrowLimitGuardian}) => setBorrowLimitGuardian(world, from, comptroller, newBorrowLimitGuardian.val)
+      (world, from, {comptroller, newBorrowCapGuardian}) => setBorrowCapGuardian(world, from, comptroller, newBorrowCapGuardian.val)
     )
   ];
 }

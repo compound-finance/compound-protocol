@@ -62,11 +62,11 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     /// @notice Emitted when COMP is distributed to a borrower
     event DistributedBorrowerComp(CToken indexed cToken, address indexed borrower, uint compDelta, uint compBorrowIndex);
 
-    /// @notice Emitted when borrow limit for a cToken is changed
-    event NewBorrowLimit(CToken indexed cToken, uint limit);
+    /// @notice Emitted when borrow cap for a cToken is changed
+    event NewBorrowCap(CToken indexed cToken, uint cap);
 
-    /// @notice Emitted when borrow limit guardian is changed
-    event NewBorrowLimitGuardian(address oldBorrowLimitGuardian, address newBorrowLimitGuardian);
+    /// @notice Emitted when borrow cap guardian is changed
+    event NewBorrowCapGuardian(address oldBorrowCapGuardian, address newBorrowCapGuardian);
 
     /// @notice The threshold above which the flywheel transfers COMP, in wei
     uint public constant compClaimThreshold = 0.001e18;
@@ -372,12 +372,12 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         }
 
 
-        uint borrowLimit = borrowLimits[cToken];
-        if (borrowLimit != 0) {
+        uint borrowCap = borrowCaps[cToken];
+        if (borrowCap != 0) {
             uint totalBorrows = CToken(cToken).totalBorrows();
             (MathError mathErr, uint nextTotalBorrows) = addUInt(totalBorrows, borrowAmount);
             require(mathErr == MathError.NO_ERROR, "total borrows overflow");
-            require(nextTotalBorrows < borrowLimit, "market borrow limit reached");
+            require(nextTotalBorrows < borrowCap, "market borrow cap reached");
         }
 
         (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(borrower, CToken(cToken), 0, borrowAmount);
@@ -1038,40 +1038,40 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
 
     /**
-      * @notice Set the given borrow limits for the given cToken markets
-      * @dev Admin or borrowLimitGuardian function to set the borrow limits. A borrow limit of 0 corresponds to unlimited borrowing.
-      * @param cTokens The addresses of the markets (tokens) to change the borrow limits for
-      * @param newBorrowLimits The new borrow limit values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
+      * @notice Set the given borrow caps for the given cToken markets
+      * @dev Admin or borrowCapGuardian function to set the borrow caps. A borrow cap of 0 corresponds to unlimited borrowing.
+      * @param cTokens The addresses of the markets (tokens) to change the borrow caps for
+      * @param newBorrowCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
       */
-    function _setMarketBorrowLimits(CToken[] calldata cTokens, uint[] calldata newBorrowLimits) external {
-    	require(msg.sender == admin || msg.sender == borrowLimitGuardian, "only admin or borrow limit guardian can set limits"); 
+    function _setMarketBorrowCaps(CToken[] calldata cTokens, uint[] calldata newBorrowCaps) external {
+    	require(msg.sender == admin || msg.sender == borrowCapGuardian, "only admin or borrow cap guardian can set caps"); 
 
         uint numMarkets = cTokens.length;
-        uint numLimits = newBorrowLimits.length;
+        uint numCaps = newBorrowCaps.length;
 
-        require(numMarkets != 0 && numMarkets == numLimits, "invalid input");
+        require(numMarkets != 0 && numMarkets == numCaps, "invalid input");
 
         for(uint i = 0; i < numMarkets; i++) {
-            borrowLimits[address(cTokens[i])] = newBorrowLimits[i];
-            emit NewBorrowLimit(cTokens[i], newBorrowLimits[i]);
+            borrowCaps[address(cTokens[i])] = newBorrowCaps[i];
+            emit NewBorrowCap(cTokens[i], newBorrowCaps[i]);
         }
     }
 
     /**
-     * @notice Admin function to change the Borrow Limit Guardian
-     * @param newBorrowLimitGuardian The address of the new Borrow Limit Guardian
+     * @notice Admin function to change the Borrow Cap Guardian
+     * @param newBorrowCapGuardian The address of the new Borrow Cap Guardian
      */
-    function _setBorrowLimitGuardian(address newBorrowLimitGuardian) external {
-        require(msg.sender == admin, "only admin can set borrow limit guardian");
+    function _setBorrowCapGuardian(address newBorrowCapGuardian) external {
+        require(msg.sender == admin, "only admin can set borrow cap guardian");
 
         // Save current value for inclusion in log
-        address oldBorrowLimitGuardian = borrowLimitGuardian;
+        address oldBorrowCapGuardian = borrowCapGuardian;
 
-        // Store borrowLimitGuardian with value newBorrowLimitGuardian
-        borrowLimitGuardian = newBorrowLimitGuardian;
+        // Store borrowCapGuardian with value newBorrowCapGuardian
+        borrowCapGuardian = newBorrowCapGuardian;
 
-        // Emit NewBorrowLimitGuardian(OldBorrowLimitGuardian, NewBorrowLimitGuardian)
-        emit NewBorrowLimitGuardian(oldBorrowLimitGuardian, newBorrowLimitGuardian);
+        // Emit NewBorrowCapGuardian(OldBorrowCapGuardian, NewBorrowCapGuardian)
+        emit NewBorrowCapGuardian(oldBorrowCapGuardian, newBorrowCapGuardian);
     }
 
     /**
