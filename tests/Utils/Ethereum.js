@@ -60,7 +60,7 @@ function getContractDefaults() {
 
 function keccak256(values) {
   // alternatively use `return ethers.utils.keccak256(values)`
-  return web3.utils.soliditySha3(values);
+  return web3.utils.keccak256(values);
 }
 
 function unlockedAccounts() {
