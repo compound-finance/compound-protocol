@@ -9,7 +9,7 @@ UseConfigs mainnet
 
 -- Deploy the flywheel impl
 
-ComptrollerImpl Deploy ComptrollerG5
+ComptrollerImpl Deploy Standard ComptrollerG5
 
 -- Propose to apply the patch
 
