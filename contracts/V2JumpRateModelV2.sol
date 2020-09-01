@@ -5,9 +5,9 @@ import "./InterestRateModelV2.sol";
 
 
 /**
-  * @title Compound's JumpRateModel Contract V2
-  * @author Compound (modified by Dharma Labs)
-  * @notice Version 2 modifies Version 1 by enabling updateable parameters.
+  * @title Compound's JumpRateModel Contract V2 for V2 cTokens
+  * @author Arr00
+  * @notice Version 2 modifies Version 1 by enabling updateable parameters. Prepended V2 indicates functionality for V2 cTokens
   */
 contract V2JumpRateModelV2 is InterestRateModelV2, BaseJumpRateModelV2  {
     function getBorrowRate(uint cash, uint borrows, uint reserves) external view returns (uint) {
