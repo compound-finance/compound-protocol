@@ -4,7 +4,7 @@ import "./SafeMath.sol";
 
 /**
   * @title Compound's JumpRateModel Contract V2
-  * @author Compound (modified by Dharma Labs refactored by Arr00)
+  * @author Compound (modified by Dharma Labs, refactored by Arr00)
   * @notice Version 2 modifies Version 1 by enabling updateable parameters.
   */
 contract BaseJumpRateModelV2 {
@@ -50,7 +50,7 @@ contract BaseJumpRateModelV2 {
      * @param kink_ The utilization point at which the jump multiplier is applied
      * @param owner_ The address of the owner, i.e. the Timelock contract (which has the ability to update parameters directly)
      */
-    constructor(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_, address owner_) public {
+    constructor(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_, address owner_) internal {
         owner = owner_;
 
         updateJumpRateModelInternal(baseRatePerYear,  multiplierPerYear, jumpMultiplierPerYear, kink_);
@@ -112,7 +112,7 @@ contract BaseJumpRateModelV2 {
      * @param reserveFactorMantissa The current reserve factor for the market
      * @return The supply rate percentage per block as a mantissa (scaled by 1e18)
      */
-    function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) external view returns (uint) {
+    function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) public view returns (uint) {
         uint oneMinusReserveFactor = uint(1e18).sub(reserveFactorMantissa);
         uint borrowRate = getBorrowRateInternal(cash, borrows, reserves);
         uint rateToPool = borrowRate.mul(oneMinusReserveFactor).div(1e18);
