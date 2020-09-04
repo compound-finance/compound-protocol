@@ -10,9 +10,9 @@ import "./InterestRateModel.sol";
   * @notice Supports only for V2 cTokens
   */
 contract JumpRateModelV2 is InterestRateModel, BaseJumpRateModelV2  {
-	
+
 	/**
-     * @notice Calculates the current borrow rate per block, with the error code expected by the market
+     * @notice Calculates the current borrow rate per block
      * @param cash The amount of cash in the market
      * @param borrows The amount of borrows in the market
      * @param reserves The amount of reserves in the market
