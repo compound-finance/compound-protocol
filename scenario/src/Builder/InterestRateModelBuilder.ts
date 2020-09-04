@@ -23,6 +23,8 @@ const FixedInterestRateModel = getTestContract('InterestRateModelHarness');
 const WhitePaperInterestRateModel = getContract('WhitePaperInterestRateModel');
 const JumpRateModel = getContract('JumpRateModel');
 const DAIInterestRateModel = getContract('DAIInterestRateModelV3');
+const JumpRateModelV2 = getContract('JumpRateModelV2');
+const LegacyJumpRateModelV2 = getContract('LegacyJumpRateModelV2');
 
 export interface InterestRateModelData {
   invokation: Invokation<InterestRateModel>
@@ -102,6 +104,62 @@ export async function buildInterestRateModel(world: World, from: string, event: 
          slope: multiplier.encode().toString(),
          jump: jump.encode().toString(),
          kink: kink.encode().toString()
+       })
+    ),
+
+    new Fetcher<{name: StringV, baseRate: NumberV, multiplier: NumberV, jump: NumberV, kink: NumberV, owner: AddressV}, InterestRateModelData>(`
+         #### JumpRateModelV2
+
+         * "JumpRateModelV2 name:<String> baseRate:<Number> multiplier:<Number> jump:<Number> kink:<Number> owner:<Address>" - The v2 Jump interest rate model
+           * E.g. "InterestRateModel Deploy JumpRateModelV2 MyInterestRateModel 0.05 0.2 2 0.90 (Address Timelock)" - 5% base rate and 20% + 5% interest at kink and 200% multiplier starting at the kink of 90% utilization
+       `,
+       "JumpRateModelV2",
+       [
+         new Arg("name", getStringV),
+         new Arg("baseRate", getExpNumberV),
+         new Arg("multiplier", getExpNumberV),
+         new Arg("jump", getExpNumberV),
+         new Arg("kink", getExpNumberV),
+         new Arg("owner", getAddressV),
+       ],
+       async (world, {name, baseRate, multiplier, jump, kink, owner}) => ({
+         invokation: await JumpRateModelV2.deploy<InterestRateModel>(world, from, [baseRate.encode(), multiplier.encode(), jump.encode(), kink.encode(), owner.val]),
+         name: name.val,
+         contract: "JumpRateModelV2",
+         description: `JumpRateModelV2 baseRate=${baseRate.encode().toString()} multiplier=${multiplier.encode().toString()} jump=${jump.encode().toString()} kink=${kink.encode().toString()}`,
+         base: baseRate.encode().toString(),
+         slope: multiplier.encode().toString(),
+         jump: jump.encode().toString(),
+         kink: kink.encode().toString(),
+         owner: owner.val,
+       })
+    ),
+
+    new Fetcher<{name: StringV, baseRate: NumberV, multiplier: NumberV, jump: NumberV, kink: NumberV, owner: AddressV}, InterestRateModelData>(`
+         #### LegacyJumpRateModelV2
+
+         * "LegacyJumpRateModelV2 name:<String> baseRate:<Number> multiplier:<Number> jump:<Number> kink:<Number> owner:<Address>" - The legacy v2 Jump interest rate model
+           * E.g. "InterestRateModel Deploy LegacyJumpRateModelV2 MyInterestRateModel 0.05 0.2 2 0.90 (Address Timelock)" - 5% base rate and 20% + 5% interest at kink and 200% multiplier starting at the kink of 90% utilization
+       `,
+       "LegacyJumpRateModelV2",
+       [
+         new Arg("name", getStringV),
+         new Arg("baseRate", getExpNumberV),
+         new Arg("multiplier", getExpNumberV),
+         new Arg("jump", getExpNumberV),
+         new Arg("kink", getExpNumberV),
+         new Arg("owner", getAddressV),
+       ],
+       async (world, {name, baseRate, multiplier, jump, kink, owner}) => ({
+         invokation: await LegacyJumpRateModelV2.deploy<InterestRateModel>(world, from, [baseRate.encode(), multiplier.encode(), jump.encode(), kink.encode(), owner.val]),
+         name: name.val,
+         contract: "LegacyJumpRateModelV2",
+         description: `LegacyJumpRateModelV2 baseRate=${baseRate.encode().toString()} multiplier=${multiplier.encode().toString()} jump=${jump.encode().toString()} kink=${kink.encode().toString()}`,
+         base: baseRate.encode().toString(),
+         slope: multiplier.encode().toString(),
+         jump: jump.encode().toString(),
+         kink: kink.encode().toString(),
+         owner: owner.val,
        })
     ),
 
