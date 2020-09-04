@@ -7,7 +7,7 @@ import "./LegacyInterestRateModel.sol";
 /**
   * @title Compound's JumpRateModel Contract V2 for legacy cTokens
   * @author Arr00
-  * @notice Version 2 modifies Version 1 by enabling updateable parameters. Works only for legacy cTokens
+  * @notice Supports only legacy cTokens
   */
 contract LegacyJumpRateModelV2 is LegacyInterestRateModel, BaseJumpRateModelV2  {
     function getBorrowRate(uint cash, uint borrows, uint reserves) external view returns (uint, uint) {
