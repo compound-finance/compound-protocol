@@ -76,13 +76,13 @@
         "StdComptrollerG3": 10228864,
         "Timelock": 8722895,
         "Base200bps_Slope3000bps": 7710728,
-        "StdComptrollerG4": 10348750,
-        "StdComptrollerG5": 10809458,
         "cREP": 7710755,
         "Base200bps_Slope2000bps_Jump8000bps_Kink90": 9847407,
         "Base200bps_Slope222bps_Kink90_Jump40": 8983555,
+        "StdComptrollerG4": 10348750,
         "cZRX": 7710733,
         "cWBTC": 8163813,
+        "StdComptrollerG5": 10809458
     },
     "PriceOracleProxy": {
         "description": "Price Oracle Proxy",
