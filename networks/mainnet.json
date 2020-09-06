@@ -45,7 +45,7 @@
         "cZRX": "0xB3319f5D18Bc0D84dD1b4825Dcde5d5f7266d407",
         "cWBTC": "0xC11b1268C1A384e55C48c2391d8d480264A3A7F4",
         "USDC": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        "StdComptrollerG5": "0x707B501cBce95c5fDB25005A51F33c5B1Aa30607"
+        "StdComptrollerG5": "0x7b5e3521a049C8fF88e6349f33044c6Cc33c113c"
     },
     "Blocks": {
         "cUSDC": 7710760,
@@ -76,13 +76,13 @@
         "StdComptrollerG3": 10228864,
         "Timelock": 8722895,
         "Base200bps_Slope3000bps": 7710728,
+        "StdComptrollerG4": 10348750,
+        "StdComptrollerG5": 10809458,
         "cREP": 7710755,
         "Base200bps_Slope2000bps_Jump8000bps_Kink90": 9847407,
         "Base200bps_Slope222bps_Kink90_Jump40": 8983555,
-        "StdComptrollerG4": 10348750,
         "cZRX": 7710733,
         "cWBTC": 8163813,
-        "StdComptrollerG5": 10713545
     },
     "PriceOracleProxy": {
         "description": "Price Oracle Proxy",
@@ -137,7 +137,7 @@
             "description": "Standard Comptroller Impl"
         },
         "StdComptrollerG5": {
-            "address": "0x707B501cBce95c5fDB25005A51F33c5B1Aa30607",
+            "address": "0x7b5e3521a049C8fF88e6349f33044c6Cc33c113c",
             "contract": "Comptroller",
             "description": "Standard Comptroller Impl"
         }
