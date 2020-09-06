@@ -11,7 +11,7 @@ UseConfigs mainnet
 -- Propose to apply the patch
 
 From CompHolder (Comp Delegate CompHolder)
-From CompHolder (Governor GovernorAlpha Propose "Borrow Limit Comptroller Patch" [(Address Unitroller) (Address StdComptrollerG5) (Address Unitroller) (Address cSAI) (Address SAI)] [0 0 0 0 0] ["_setPendingImplementation(address)" "_become(address)" "_setBorrowLimitGuardian(address)" "_reduceReserves(uint256)" "transfer(address,uint256)"] [[(Address StdComptrollerG5)] [(Address Unitroller)] [(Address CompHolder)] [2360000000000000000000] [(Address Arr00) 2360000000000000000000]])
+From CompHolder (Governor GovernorAlpha Propose "Borrow Limit Comptroller Patch" [(Address Unitroller) (Address StdComptrollerG5) (Address Unitroller) (Address cSAI) (Address SAI)] [0 0 0 0 0] ["_setPendingImplementation(address)" "_become(address)" "_setBorrowCapGuardian(address)" "_reduceReserves(uint256)" "transfer(address,uint256)"] [[(Address StdComptrollerG5)] [(Address Unitroller)] [(Address CompHolder)] [2360000000000000000000] [(Address Arr00) 2360000000000000000000]])
 
 -- Vote for, queue, and execute the proposal
 
@@ -27,11 +27,11 @@ Assert Equal (Address (Unitroller Implementation)) (Address StdComptrollerG5)
 Assert Equal (Erc20 SAI TokenBalance (Address Arr00)) (2360000000000000000000)
 
 From USDCWhale (Trx GasPrice 0 (Erc20 USDC Approve cUSDC UInt256Max))
-From USDCWhale (Trx GasPrice 0 (CToken cUSDC Mint 183000000e6))
+From USDCWhale (Trx GasPrice 0 (CToken cUSDC Mint 100000000e6))
 From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 1000000e6))
 
 -- Market borrows were just under 81M at this block
-From CompHolder (Comptroller SetMarketBorrowLimits (cUSDC) (81000000e6))
+From CompHolder (Comptroller SetMarketBorrowCaps (cUSDC) (68000000e6))
 
 AllowFailures
 From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 1000000e6))
