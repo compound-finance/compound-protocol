@@ -58,6 +58,10 @@ interface ComptrollerMethods {
   compSpeeds(string): Callable<string>
   claimComp(string): Sendable<void>
   _setCompRate(encodedNumber): Sendable<void>
+  _setMarketBorrowCaps(cTokens:string[], borrowCaps:encodedNumber[]): Sendable<void>
+  _setBorrowCapGuardian(string): Sendable<void>
+  borrowCapGuardian(): Callable<string>
+  borrowCaps(string): Callable<string>
 }
 
 export interface Comptroller extends Contract {

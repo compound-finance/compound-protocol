@@ -547,6 +547,32 @@ export function comptrollerFetchers() {
       async (world, {comptroller, CToken}) => {
         return new NumberV(await comptroller.methods.compSpeeds(CToken._address).call());
       }
+    ),
+    new Fetcher<{comptroller: Comptroller}, AddressV>(`
+        #### BorrowCapGuardian
+
+        * "BorrowCapGuardian" - Returns the Comptrollers's BorrowCapGuardian
+        * E.g. "Comptroller BorrowCapGuardian"
+        `,
+        "BorrowCapGuardian",
+        [
+          new Arg("comptroller", getComptroller, {implicit: true})
+        ],
+        async (world, {comptroller}) => new AddressV(await comptroller.methods.borrowCapGuardian().call())
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken}, NumberV>(`
+        #### BorrowCaps
+
+        * "Comptroller BorrowCaps cZRX
+      `,
+      "BorrowCaps",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+      ],
+      async (world, {comptroller, CToken}) => {
+        return new NumberV(await comptroller.methods.borrowCaps(CToken._address).call());
+      }
     )
   ];
 }

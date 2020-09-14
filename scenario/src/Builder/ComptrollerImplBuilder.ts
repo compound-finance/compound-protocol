@@ -17,6 +17,9 @@ const ComptrollerScenarioG2Contract = getContract('ComptrollerScenarioG2');
 const ComptrollerG3Contract = getContract('ComptrollerG3');
 const ComptrollerScenarioG3Contract = getContract('ComptrollerScenarioG3');
 
+const ComptrollerG4Contract = getContract('ComptrollerG4');
+const ComptrollerScenarioG4Contract = getContract('ComptrollerScenarioG4');
+
 const ComptrollerScenarioContract = getTestContract('ComptrollerScenario');
 const ComptrollerContract = getContract('Comptroller');
 
@@ -145,7 +148,7 @@ export async function buildComptrollerImpl(
       `
         #### StandardG3
 
-        * "StandardG3 name:<String>" - The standard generation 2 Comptroller contract
+        * "StandardG3 name:<String>" - The standard generation 3 Comptroller contract
           * E.g. "Comptroller Deploy StandardG3 MyStandard"
       `,
       'StandardG3',
@@ -156,6 +159,25 @@ export async function buildComptrollerImpl(
           name: name.val,
           contract: 'ComptrollerG3',
           description: 'StandardG3 Comptroller Impl'
+        };
+      }
+    ),
+
+    new Fetcher<{ name: StringV }, ComptrollerImplData>(
+      `
+        #### StandardG4
+
+        * "StandardG4 name:<String>" - The standard generation 4 Comptroller contract
+          * E.g. "Comptroller Deploy StandardG4 MyStandard"
+      `,
+      'StandardG4',
+      [new Arg('name', getStringV)],
+      async (world, { name }) => {
+        return {
+          invokation: await ComptrollerG4Contract.deploy<ComptrollerImpl>(world, from, []),
+          name: name.val,
+          contract: 'ComptrollerG4',
+          description: 'StandardG4 Comptroller Impl'
         };
       }
     ),

@@ -358,6 +358,30 @@ async function setGuardianMarketPaused(world: World, from: string, comptroller: 
   return world;
 }
 
+async function setMarketBorrowCaps(world: World, from: string, comptroller: Comptroller, cTokens: CToken[], borrowCaps: NumberV[]): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setMarketBorrowCaps(cTokens.map(c => c._address), borrowCaps.map(c => c.encode())), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Borrow caps on ${cTokens} set to ${borrowCaps}`,
+    invokation
+  );
+
+  return world;
+}
+
+async function setBorrowCapGuardian(world: World, from: string, comptroller: Comptroller, newBorrowCapGuardian: string): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setBorrowCapGuardian(newBorrowCapGuardian), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Comptroller: ${describeUser(world, from)} sets borrow cap guardian to ${newBorrowCapGuardian}`,
+    invokation
+  );
+
+  return world;
+}
+
 export function comptrollerCommands() {
   return [
     new Command<{comptrollerParams: EventV}>(`
@@ -689,6 +713,33 @@ export function comptrollerCommands() {
       ],
       (world, from, {comptroller, rate}) => setCompRate(world, from, comptroller, rate)
     ),
+    new Command<{comptroller: Comptroller, cTokens: CToken[], borrowCaps: NumberV[]}>(`
+      #### SetMarketBorrowCaps
+
+      * "Comptroller SetMarketBorrowCaps (<CToken> ...) (<borrowCap> ...)" - Sets Market Borrow Caps
+      * E.g "Comptroller SetMarketBorrowCaps (cZRX cUSDC) (10000.0e18, 1000.0e6)
+      `,
+      "SetMarketBorrowCaps",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("cTokens", getCTokenV, {mapped: true}),
+        new Arg("borrowCaps", getNumberV, {mapped: true})
+      ],
+      (world, from, {comptroller,cTokens,borrowCaps}) => setMarketBorrowCaps(world, from, comptroller, cTokens, borrowCaps)
+    ),
+    new Command<{comptroller: Comptroller, newBorrowCapGuardian: AddressV}>(`
+        #### SetBorrowCapGuardian
+
+        * "Comptroller SetBorrowCapGuardian newBorrowCapGuardian:<Address>" - Sets the Borrow Cap Guardian for the Comptroller
+          * E.g. "Comptroller SetBorrowCapGuardian Geoff"
+      `,
+      "SetBorrowCapGuardian",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("newBorrowCapGuardian", getAddressV)
+      ],
+      (world, from, {comptroller, newBorrowCapGuardian}) => setBorrowCapGuardian(world, from, comptroller, newBorrowCapGuardian.val)
+    )
   ];
 }
 
