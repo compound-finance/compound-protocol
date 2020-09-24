@@ -1,6 +1,6 @@
 const { last } = require('./Utils/JS');
 const { address, etherUnsigned } = require('./Utils/Ethereum');
-const diff = require('jest-diff');
+const { default: diff } = require('jest-diff');
 const { ComptrollerErr, TokenErr, IRErr, MathErr } = require('./Errors');
 
 function opts(comment) {
