@@ -85,7 +85,7 @@ describe('Comptroller', () => {
       expect(liquidity).toEqualNumber(Math.floor(c2));
       expect(shortfall).toEqualNumber(0);
     });
-  }, 20000);
+  });
 
   describe("getAccountLiquidity", () => {
     it("returns 0 if not 'in' any markets", async () => {

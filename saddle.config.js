@@ -110,6 +110,7 @@ module.exports = {
       providers: [
         {env: "PROVIDER"},
         {file: "~/.ethereum/ropsten-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
+        {http: "https://ropsten-eth.compound.finance"}
       ],
       web3: {
         gas: [

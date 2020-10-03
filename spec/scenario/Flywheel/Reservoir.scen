@@ -68,7 +68,7 @@ Test "Reservoir handles not having enough to drip"
 
 Test "Revert on dripTotal overflow"
     Comp Deploy Admin
-    Block 100 (Reservoir Deploy 10e77 Comp Bank)
+    Block 100 (Reservoir Deploy UInt256Max Comp Bank)
     AllowFailures
     Block 200 (Reservoir Drip)
     Assert Revert "revert dripTotal overflow"

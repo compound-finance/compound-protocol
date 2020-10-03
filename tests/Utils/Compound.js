@@ -8,6 +8,7 @@ const {
   etherUnsigned,
   mergeInterface
 } = require('./Ethereum');
+const BigNumber = require('bignumber.js');
 
 async function makeComptroller(opts = {}) {
   const {
@@ -150,7 +151,27 @@ async function makeCToken(opts = {}) {
           encodeParameters(['address', 'address'], [cDaiMaker._address, cDaiMaker._address])
         ]
       );
-      cToken = await saddle.getContractAt('CDaiDelegateHarness', cDelegator._address); // XXXS at
+      cToken = await saddle.getContractAt('CDaiDelegateHarness', cDelegator._address);
+      break;
+
+    case 'ccomp':
+      underlying = await deploy('Comp', [opts.compHolder || root]);
+      cDelegatee = await deploy('CCompLikeDelegate');
+      cDelegator = await deploy('CErc20Delegator',
+        [
+          underlying._address,
+          comptroller._address,
+          interestRateModel._address,
+          exchangeRate,
+          name,
+          symbol,
+          decimals,
+          admin,
+          cDelegatee._address,
+          "0x0"
+        ]
+      );
+      cToken = await saddle.getContractAt('CCompLikeDelegate', cDelegator._address);
       break;
 
     case 'cerc20':
@@ -171,7 +192,7 @@ async function makeCToken(opts = {}) {
           "0x0"
         ]
       );
-      cToken = await saddle.getContractAt('CErc20DelegateHarness', cDelegator._address); // XXXS at
+      cToken = await saddle.getContractAt('CErc20DelegateHarness', cDelegator._address);
       break;
   }
 
@@ -325,7 +346,8 @@ async function adjustBalances(balances, deltas) {
       ([cToken, key, diff] = delta);
       account = cToken._address;
     }
-    balances[cToken._address][account][key] = balances[cToken._address][account][key].add(diff);
+
+    balances[cToken._address][account][key] = new BigNumber(balances[cToken._address][account][key]).plus(diff);
   }
   return balances;
 }

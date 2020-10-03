@@ -17,9 +17,9 @@ const {
 
 const exchangeRate = 5;
 const mintAmount = etherUnsigned(1e5);
-const mintTokens = mintAmount.div(exchangeRate);
+const mintTokens = mintAmount.dividedBy(exchangeRate);
 const redeemTokens = etherUnsigned(10e3);
-const redeemAmount = redeemTokens.mul(exchangeRate);
+const redeemAmount = redeemTokens.multipliedBy(exchangeRate);
 
 async function preMint(cToken, minter, mintAmount, mintTokens, exchangeRate) {
   await send(cToken.comptroller, 'setMintAllowed', [true]);
@@ -84,7 +84,7 @@ describe('CEther', () => {
         expect(afterBalances).toEqual(await adjustBalances(beforeBalances, [
           [cToken, 'eth', mintAmount],
           [cToken, 'tokens', mintTokens],
-          [cToken, minter, 'eth', -mintAmount.add(await etherGasCost(receipt))],
+          [cToken, minter, 'eth', -mintAmount.plus(await etherGasCost(receipt))],
           [cToken, minter, 'tokens', mintTokens]
         ]));
       });
@@ -103,7 +103,7 @@ describe('CEther', () => {
       });
 
       it("returns error from redeemFresh without emitting any extra logs", async () => {
-        expect(await redeem(cToken, redeemer, redeemTokens.mul(5), redeemAmount.mul(5))).toHaveTokenFailure('MATH_ERROR', 'REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED');
+        expect(await redeem(cToken, redeemer, redeemTokens.multipliedBy(5), redeemAmount.multipliedBy(5))).toHaveTokenFailure('MATH_ERROR', 'REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED');
       });
 
       it("returns success from redeemFresh and redeems the correct amount", async () => {
@@ -116,7 +116,7 @@ describe('CEther', () => {
         expect(afterBalances).toEqual(await adjustBalances(beforeBalances, [
           [cToken, 'eth', -redeemAmount],
           [cToken, 'tokens', -redeemTokens],
-          [cToken, redeemer, 'eth', redeemAmount.sub(await etherGasCost(receipt))],
+          [cToken, redeemer, 'eth', redeemAmount.minus(await etherGasCost(receipt))],
           [cToken, redeemer, 'tokens', -redeemTokens]
         ]));
       });
