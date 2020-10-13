@@ -38264,7 +38264,8 @@
         "type": "function"
     }
   ],
-"IRM_USDC_Updateable": [
+
+  "LegacyJumpRateModelV2": [
         {
             "inputs": [
                 {
@@ -38580,7 +38581,8 @@
             "signature": "0x6e71e2d8"
         }
     ],
-"IRM_USDT_Updateable": [
+
+  "JumpRateModelV2": [
         {
             "inputs": [
                 {
