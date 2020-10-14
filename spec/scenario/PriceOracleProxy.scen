@@ -17,7 +17,7 @@ Macro SetupPriceOracleProxy
     -- Update to G*
     ComptrollerImpl Deploy Scenario ScenComptroller
     Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become
+    ComptrollerImpl ScenComptroller Become 2000
     NewEtherToken cETH
     NewCToken USDC cUSDC
     NewCToken SAI cSAI

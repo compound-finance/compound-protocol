@@ -35,6 +35,16 @@ contract ComptrollerHarness is Comptroller {
         compBorrowState[cToken].block = blockNumber_;
     }
 
+    function setCompSupplyVestingState(address cToken, uint224 index, uint32 blockNumber_) public {
+        compSupplyVestingState[cToken].index = index;
+        compSupplyVestingState[cToken].block = blockNumber_;
+    }
+
+    function setCompBorrowVestingState(address cToken, uint224 index, uint32 blockNumber_) public {
+        compBorrowVestingState[cToken].index = index;
+        compBorrowVestingState[cToken].block = blockNumber_;
+    }
+
     function setCompAccrued(address user, uint userAccrued) public {
         compAccrued[user] = userAccrued;
     }
@@ -73,6 +83,18 @@ contract ComptrollerHarness is Comptroller {
 
     function harnessDistributeSupplierComp(address cToken, address supplier) public {
         distributeSupplierComp(cToken, supplier, false);
+    }
+
+    function setLastVestingBlock(uint lastVestingBlock_) public {
+        lastVestingBlock = lastVestingBlock_;
+    }
+
+    function harnessUpdateLastVestingBlock() public {
+        updateLastVestingBlockInternal();
+    }
+
+    function lastVestingBlockBefore(uint blockNumber_) public view returns (uint) {
+        return lastVestingBlockBeforeInternal(blockNumber_);
     }
 
     function harnessTransferComp(address user, uint userAccrued, uint threshold) public returns (uint) {

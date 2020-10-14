@@ -1,12 +1,12 @@
 pragma solidity ^0.5.16;
 
-import "../../contracts/ComptrollerG4.sol";
+import "../../contracts/ComptrollerG5.sol";
 
-contract ComptrollerScenarioG4 is ComptrollerG4 {
+contract ComptrollerScenarioG5 is ComptrollerG5 {
     uint public blockNumber;
     address public compAddress;
 
-    constructor() ComptrollerG4() public {}
+    constructor() ComptrollerG5() public {}
 
     function setCompAddress(address compAddress_) public {
         compAddress = compAddress_;

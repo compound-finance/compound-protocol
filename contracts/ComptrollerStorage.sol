@@ -118,7 +118,7 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
     /// @notice The COMP market borrow state for each market
     mapping(address => CompMarketState) public compBorrowState;
 
-    /// @notice The COMP borrow index for each market for each supplier as of the last time they accrued COMP
+    /// @notice The COMP supply index for each market for each supplier as of the last time they accrued COMP
     mapping(address => mapping(address => uint)) public compSupplierIndex;
 
     /// @notice The COMP borrow index for each market for each borrower as of the last time they accrued COMP
@@ -134,4 +134,30 @@ contract ComptrollerV4Storage is ComptrollerV3Storage {
 
     // @notice Borrow caps enforced by borrowAllowed for each cToken address. Defaults to zero which corresponds to unlimited borrowing.
     mapping(address => uint) public borrowCaps;
+}
+
+contract ComptrollerV5Storage is ComptrollerV4Storage {
+    /// @notice The vesting period at which all vested COMP is distributed, in blocks
+    uint public vestingPeriod;
+
+    /**
+     * @notice Last block at which COMP vested
+     * @dev This is the "precise" vesting block and may not contain any Compound interactions
+     */
+    uint public lastVestingBlock;
+
+    /// @notice The COMP market supply state for each market (only fully vested)
+    mapping(address => CompMarketState) public compSupplyVestingState;
+
+    /// @notice The COMP market borrow state for each market (only fully vested)
+    mapping(address => CompMarketState) public compBorrowVestingState;
+
+    /**
+     * @notice The last block where each user accrued vested COMP
+     * @dev This is the "precise" vesting block and may not contain any Compound interactions
+     */
+    mapping(address => uint) public vestingBlock;
+
+    /// @notice The COMP that has been earned but not yet accrued to each user
+    mapping(address => uint) public compVesting;
 }

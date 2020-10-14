@@ -17,6 +17,11 @@ interface ComptrollerImplMethods {
     compMarkets: string[],
     otherMarkets: string[]
   ): Sendable<string>;
+
+  _become(
+    comptroller: string,
+    vestingPeriod: encodedNumber
+  ): Sendable<string>;
 }
 
 export interface ComptrollerImpl extends Contract {

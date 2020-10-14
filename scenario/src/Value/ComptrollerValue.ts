@@ -435,6 +435,17 @@ export function comptrollerFetchers() {
       async(world, {comptroller}) => new NumberV(await comptroller.methods.compRate().call())
     ),
 
+    new Fetcher<{comptroller: Comptroller}, NumberV>(`
+      #### VestingPeriod
+
+      * "VestingPeriod" - Returns the current vesting period.
+      * E.g. "Comptroller VestingPeriod"
+      `,
+      "VestingPeriod",
+      [new Arg("comptroller", getComptroller, {implicit: true})],
+      async(world, {comptroller}) => new NumberV(await comptroller.methods.vestingPeriod().call())
+    ),
+
     new Fetcher<{comptroller: Comptroller, signature: StringV, callArgs: StringV[]}, NumberV>(`
         #### CallNum
 
@@ -501,6 +512,21 @@ export function comptrollerFetchers() {
       ],
       async (world, {comptroller,account}) => {
         const result = await comptroller.methods.compAccrued(account.val).call();
+        return new NumberV(result);
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, account: AddressV, key: StringV}, NumberV>(`
+        #### CompVesting(address)
+
+        * "Comptroller CompVesting Coburn
+      `,
+      "CompVesting",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("account", getAddressV),
+      ],
+      async (world, {comptroller,account}) => {
+        const result = await comptroller.methods.compVesting(account.val).call();
         return new NumberV(result);
       }
     ),

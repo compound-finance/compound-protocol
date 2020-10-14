@@ -1,4 +1,3 @@
--- NewComptroller, but with markets listed so that we can make them comp markets in constructor
 Macro FlywheelComptroller price=1.0 borrowRate=0.000005 compInitAmount=5000000e18
     Unitroller Deploy
     PriceOracle Deploy Fixed price

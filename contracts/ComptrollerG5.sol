@@ -11,9 +11,9 @@ import "./Governance/Comp.sol";
 
 /**
  * @title Compound's Comptroller Contract
- * @author Compound
+ * @author Compound (modified by Arr00)
  */
-contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerErrorReporter, Exponential {
+contract ComptrollerG5 is ComptrollerV4Storage, ComptrollerInterface, ComptrollerErrorReporter, Exponential {
     /// @notice Emitted when an admin supports a market
     event MarketListed(CToken cToken);
 
@@ -32,6 +32,9 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
     /// @notice Emitted when liquidation incentive is changed by admin
     event NewLiquidationIncentive(uint oldLiquidationIncentiveMantissa, uint newLiquidationIncentiveMantissa);
 
+    /// @notice Emitted when maxAssets is changed by admin
+    event NewMaxAssets(uint oldMaxAssets, uint newMaxAssets);
+
     /// @notice Emitted when price oracle is changed
     event NewPriceOracle(PriceOracle oldPriceOracle, PriceOracle newPriceOracle);
 
@@ -49,9 +52,6 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
 
     /// @notice Emitted when COMP rate is changed
     event NewCompRate(uint oldCompRate, uint newCompRate);
-
-    /// @notice Emitted when COMP vesting period is changed
-    event NewVestingPeriod(uint oldVestingPeriod, uint newVestingPeriod);
 
     /// @notice Emitted when a new COMP speed is calculated for a market
     event CompSpeedUpdated(CToken indexed cToken, uint newSpeed);
@@ -153,6 +153,11 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
             return Error.NO_ERROR;
         }
 
+        if (accountAssets[borrower].length >= maxAssets)  {
+            // no space, cannot join
+            return Error.TOO_MANY_ASSETS;
+        }
+
         // survived the gauntlet, add to list
         // NOTE: we store these somewhat redundantly as a significant optimization
         //  this avoids having to iterate through the list for the most common use cases
@@ -247,7 +252,6 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        updateLastVestingBlockInternal();
         updateCompSupplyIndex(cToken);
         distributeSupplierComp(cToken, minter, false);
 
@@ -288,7 +292,6 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        updateLastVestingBlockInternal();
         updateCompSupplyIndex(cToken);
         distributeSupplierComp(cToken, redeemer, false);
 
@@ -373,7 +376,8 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         // Borrow cap of 0 corresponds to unlimited borrowing
         if (borrowCap != 0) {
             uint totalBorrows = CToken(cToken).totalBorrows();
-            uint nextTotalBorrows = add_(totalBorrows, borrowAmount);
+            (MathError mathErr, uint nextTotalBorrows) = addUInt(totalBorrows, borrowAmount);
+            require(mathErr == MathError.NO_ERROR, "total borrows overflow");
             require(nextTotalBorrows < borrowCap, "market borrow cap reached");
         }
 
@@ -387,7 +391,6 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
 
         // Keep the flywheel moving
         Exp memory borrowIndex = Exp({mantissa: CToken(cToken).borrowIndex()});
-        updateLastVestingBlockInternal();
         updateCompBorrowIndex(cToken, borrowIndex);
         distributeBorrowerComp(cToken, borrower, borrowIndex, false);
 
@@ -436,7 +439,6 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
 
         // Keep the flywheel moving
         Exp memory borrowIndex = Exp({mantissa: CToken(cToken).borrowIndex()});
-        updateLastVestingBlockInternal();
         updateCompBorrowIndex(cToken, borrowIndex);
         distributeBorrowerComp(cToken, borrower, borrowIndex, false);
 
@@ -501,7 +503,10 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
 
         /* The liquidator may not repay more than what is allowed by the closeFactor */
         uint borrowBalance = CToken(cTokenBorrowed).borrowBalanceStored(borrower);
-        uint maxClose = mul_ScalarTruncate(Exp({mantissa: closeFactorMantissa}), borrowBalance);
+        (MathError mathErr, uint maxClose) = mulScalarTruncate(Exp({mantissa: closeFactorMantissa}), borrowBalance);
+        if (mathErr != MathError.NO_ERROR) {
+            return uint(Error.MATH_ERROR);
+        }
         if (repayAmount > maxClose) {
             return uint(Error.TOO_MUCH_REPAY);
         }
@@ -567,7 +572,6 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        updateLastVestingBlockInternal();
         updateCompSupplyIndex(cTokenCollateral);
         distributeSupplierComp(cTokenCollateral, borrower, false);
         distributeSupplierComp(cTokenCollateral, liquidator, false);
@@ -622,7 +626,6 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        updateLastVestingBlockInternal();
         updateCompSupplyIndex(cToken);
         distributeSupplierComp(cToken, src, false);
         distributeSupplierComp(cToken, dst, false);
@@ -731,6 +734,7 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
 
         AccountLiquidityLocalVars memory vars; // Holds all our calculation results
         uint oErr;
+        MathError mErr;
 
         // For each asset the account is in
         CToken[] memory assets = accountAssets[account];
@@ -753,23 +757,38 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
             vars.oraclePrice = Exp({mantissa: vars.oraclePriceMantissa});
 
             // Pre-compute a conversion factor from tokens -> ether (normalized price value)
-            vars.tokensToDenom = mul_(mul_(vars.collateralFactor, vars.exchangeRate), vars.oraclePrice);
+            (mErr, vars.tokensToDenom) = mulExp3(vars.collateralFactor, vars.exchangeRate, vars.oraclePrice);
+            if (mErr != MathError.NO_ERROR) {
+                return (Error.MATH_ERROR, 0, 0);
+            }
 
             // sumCollateral += tokensToDenom * cTokenBalance
-            vars.sumCollateral = mul_ScalarTruncateAddUInt(vars.tokensToDenom, vars.cTokenBalance, vars.sumCollateral);
+            (mErr, vars.sumCollateral) = mulScalarTruncateAddUInt(vars.tokensToDenom, vars.cTokenBalance, vars.sumCollateral);
+            if (mErr != MathError.NO_ERROR) {
+                return (Error.MATH_ERROR, 0, 0);
+            }
 
             // sumBorrowPlusEffects += oraclePrice * borrowBalance
-            vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(vars.oraclePrice, vars.borrowBalance, vars.sumBorrowPlusEffects);
+            (mErr, vars.sumBorrowPlusEffects) = mulScalarTruncateAddUInt(vars.oraclePrice, vars.borrowBalance, vars.sumBorrowPlusEffects);
+            if (mErr != MathError.NO_ERROR) {
+                return (Error.MATH_ERROR, 0, 0);
+            }
 
             // Calculate effects of interacting with cTokenModify
             if (asset == cTokenModify) {
                 // redeem effect
                 // sumBorrowPlusEffects += tokensToDenom * redeemTokens
-                vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(vars.tokensToDenom, redeemTokens, vars.sumBorrowPlusEffects);
+                (mErr, vars.sumBorrowPlusEffects) = mulScalarTruncateAddUInt(vars.tokensToDenom, redeemTokens, vars.sumBorrowPlusEffects);
+                if (mErr != MathError.NO_ERROR) {
+                    return (Error.MATH_ERROR, 0, 0);
+                }
 
                 // borrow effect
                 // sumBorrowPlusEffects += oraclePrice * borrowAmount
-                vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(vars.oraclePrice, borrowAmount, vars.sumBorrowPlusEffects);
+                (mErr, vars.sumBorrowPlusEffects) = mulScalarTruncateAddUInt(vars.oraclePrice, borrowAmount, vars.sumBorrowPlusEffects);
+                if (mErr != MathError.NO_ERROR) {
+                    return (Error.MATH_ERROR, 0, 0);
+                }
             }
         }
 
@@ -808,12 +827,27 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         Exp memory numerator;
         Exp memory denominator;
         Exp memory ratio;
+        MathError mathErr;
 
-        numerator = mul_(Exp({mantissa: liquidationIncentiveMantissa}), Exp({mantissa: priceBorrowedMantissa}));
-        denominator = mul_(Exp({mantissa: priceCollateralMantissa}), Exp({mantissa: exchangeRateMantissa}));
-        ratio = div_(numerator, denominator);
+        (mathErr, numerator) = mulExp(liquidationIncentiveMantissa, priceBorrowedMantissa);
+        if (mathErr != MathError.NO_ERROR) {
+            return (uint(Error.MATH_ERROR), 0);
+        }
 
-        seizeTokens = mul_ScalarTruncate(ratio, actualRepayAmount);
+        (mathErr, denominator) = mulExp(priceCollateralMantissa, exchangeRateMantissa);
+        if (mathErr != MathError.NO_ERROR) {
+            return (uint(Error.MATH_ERROR), 0);
+        }
+
+        (mathErr, ratio) = divExp(numerator, denominator);
+        if (mathErr != MathError.NO_ERROR) {
+            return (uint(Error.MATH_ERROR), 0);
+        }
+
+        (mathErr, seizeTokens) = mulScalarTruncate(ratio, actualRepayAmount);
+        if (mathErr != MathError.NO_ERROR) {
+            return (uint(Error.MATH_ERROR), 0);
+        }
 
         return (uint(Error.NO_ERROR), seizeTokens);
     }
@@ -847,11 +881,24 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
       * @notice Sets the closeFactor used when liquidating borrows
       * @dev Admin function to set closeFactor
       * @param newCloseFactorMantissa New close factor, scaled by 1e18
-      * @return uint 0=success, otherwise a failure
+      * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
       */
     function _setCloseFactor(uint newCloseFactorMantissa) external returns (uint) {
         // Check caller is admin
-    	require(msg.sender == admin, "only admin can set close factor");
+        if (msg.sender != admin) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_CLOSE_FACTOR_OWNER_CHECK);
+        }
+
+        Exp memory newCloseFactorExp = Exp({mantissa: newCloseFactorMantissa});
+        Exp memory lowLimit = Exp({mantissa: closeFactorMinMantissa});
+        if (lessThanOrEqualExp(newCloseFactorExp, lowLimit)) {
+            return fail(Error.INVALID_CLOSE_FACTOR, FailureInfo.SET_CLOSE_FACTOR_VALIDATION);
+        }
+
+        Exp memory highLimit = Exp({mantissa: closeFactorMaxMantissa});
+        if (lessThanExp(highLimit, newCloseFactorExp)) {
+            return fail(Error.INVALID_CLOSE_FACTOR, FailureInfo.SET_CLOSE_FACTOR_VALIDATION);
+        }
 
         uint oldCloseFactorMantissa = closeFactorMantissa;
         closeFactorMantissa = newCloseFactorMantissa;
@@ -879,6 +926,14 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
             return fail(Error.MARKET_NOT_LISTED, FailureInfo.SET_COLLATERAL_FACTOR_NO_EXISTS);
         }
 
+        Exp memory newCollateralFactorExp = Exp({mantissa: newCollateralFactorMantissa});
+
+        // Check collateral factor <= 0.9
+        Exp memory highLimit = Exp({mantissa: collateralFactorMaxMantissa});
+        if (lessThanExp(highLimit, newCollateralFactorExp)) {
+            return fail(Error.INVALID_COLLATERAL_FACTOR, FailureInfo.SET_COLLATERAL_FACTOR_VALIDATION);
+        }
+
         // If collateral factor != 0, fail if price == 0
         if (newCollateralFactorMantissa != 0 && oracle.getUnderlyingPrice(cToken) == 0) {
             return fail(Error.PRICE_ERROR, FailureInfo.SET_COLLATERAL_FACTOR_WITHOUT_PRICE);
@@ -895,6 +950,25 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
+      * @notice Sets maxAssets which controls how many markets can be entered
+      * @dev Admin function to set maxAssets
+      * @param newMaxAssets New max assets
+      * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
+      */
+    function _setMaxAssets(uint newMaxAssets) external returns (uint) {
+        // Check caller is admin
+        if (msg.sender != admin) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_MAX_ASSETS_OWNER_CHECK);
+        }
+
+        uint oldMaxAssets = maxAssets;
+        maxAssets = newMaxAssets;
+        emit NewMaxAssets(oldMaxAssets, newMaxAssets);
+
+        return uint(Error.NO_ERROR);
+    }
+
+    /**
       * @notice Sets liquidationIncentive
       * @dev Admin function to set liquidationIncentive
       * @param newLiquidationIncentiveMantissa New liquidationIncentive scaled by 1e18
@@ -904,6 +978,18 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         // Check caller is admin
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_LIQUIDATION_INCENTIVE_OWNER_CHECK);
+        }
+
+        // Check de-scaled min <= newLiquidationIncentive <= max
+        Exp memory newLiquidationIncentive = Exp({mantissa: newLiquidationIncentiveMantissa});
+        Exp memory minLiquidationIncentive = Exp({mantissa: liquidationIncentiveMinMantissa});
+        if (lessThanExp(newLiquidationIncentive, minLiquidationIncentive)) {
+            return fail(Error.INVALID_LIQUIDATION_INCENTIVE, FailureInfo.SET_LIQUIDATION_INCENTIVE_VALIDATION);
+        }
+
+        Exp memory maxLiquidationIncentive = Exp({mantissa: liquidationIncentiveMaxMantissa});
+        if (lessThanExp(maxLiquidationIncentive, newLiquidationIncentive)) {
+            return fail(Error.INVALID_LIQUIDATION_INCENTIVE, FailureInfo.SET_LIQUIDATION_INCENTIVE_VALIDATION);
         }
 
         // Save current value for use in log
@@ -1049,23 +1135,9 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         return state;
     }
 
-    function _become(Unitroller unitroller, uint vestingPeriod_) public {
+    function _become(Unitroller unitroller) public {
         require(msg.sender == unitroller.admin(), "only unitroller admin can change brains");
         require(unitroller._acceptImplementation() == 0, "change not authorized");
-
-        Comptroller(address(unitroller))._becomeG6(vestingPeriod_);
-    }
-
-    function _becomeG6(uint vestingPeriod_) public {
-        require(msg.sender == comptrollerImplementation, "only brains can become itself");
-
-        for (uint i = 0; i < allMarkets.length; i++) {
-            address cToken = address(allMarkets[i]);
-            compSupplyVestingState[cToken] = compSupplyState[cToken];
-            compBorrowVestingState[cToken] = compBorrowState[cToken];
-        }
-
-        _setVestingPeriod(vestingPeriod_);
     }
 
     /**
@@ -1120,7 +1192,22 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @param cToken The market whose supply index to update
      */
     function updateCompSupplyIndex(address cToken) internal {
-        updateCompMarketIndex(cToken, compSupplyState[cToken], compSupplyVestingState[cToken], true, Exp({mantissa: 0}));
+        CompMarketState storage supplyState = compSupplyState[cToken];
+        uint supplySpeed = compSpeeds[cToken];
+        uint blockNumber = getBlockNumber();
+        uint deltaBlocks = sub_(blockNumber, uint(supplyState.block));
+        if (deltaBlocks > 0 && supplySpeed > 0) {
+            uint supplyTokens = CToken(cToken).totalSupply();
+            uint compAccrued = mul_(deltaBlocks, supplySpeed);
+            Double memory ratio = supplyTokens > 0 ? fraction(compAccrued, supplyTokens) : Double({mantissa: 0});
+            Double memory index = add_(Double({mantissa: supplyState.index}), ratio);
+            compSupplyState[cToken] = CompMarketState({
+                index: safe224(index.mantissa, "new index exceeds 224 bits"),
+                block: safe32(blockNumber, "block number exceeds 32 bits")
+            });
+        } else if (deltaBlocks > 0) {
+            supplyState.block = safe32(blockNumber, "block number exceeds 32 bits");
+        }
     }
 
     /**
@@ -1128,51 +1215,21 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @param cToken The market whose borrow index to update
      */
     function updateCompBorrowIndex(address cToken, Exp memory marketBorrowIndex) internal {
-        updateCompMarketIndex(cToken, compBorrowState[cToken], compBorrowVestingState[cToken], false, marketBorrowIndex);
-    }
-
-    /**
-     * @notice Accrue COMP to the market by updating the supply or borrow index
-     * @param cToken The market whose index to update
-     * @param marketState The market state whose index to update
-     * @param vestingState The market vesting state whose index to update
-     * @param isSupply True if this implements the supply update, false if the borrow update
-     */
-    function updateCompMarketIndex(address cToken, CompMarketState storage marketState, CompMarketState storage vestingState, bool isSupply, Exp memory marketBorrowIndex) internal {
-        uint compSpeed = compSpeeds[cToken];
+        CompMarketState storage borrowState = compBorrowState[cToken];
+        uint borrowSpeed = compSpeeds[cToken];
         uint blockNumber = getBlockNumber();
-        uint deltaBlocks = sub_(blockNumber, uint(marketState.block));
-        if (deltaBlocks > 0 && compSpeed > 0) {
-            uint marketSize;
-            if (isSupply) {
-                marketSize = CToken(cToken).totalSupply();
-            } else {
-                marketSize = div_(CToken(cToken).totalBorrows(), marketBorrowIndex);
-            }
-            uint compAccrued;
-            Double memory ratio;
-            Double memory index;
-
-            if (lastVestingBlock > vestingState.block) {
-                uint deltaVestingBlocks = sub_(lastVestingBlock, uint(marketState.block));
-                compAccrued = mul_(deltaVestingBlocks, compSpeed);
-                ratio = marketSize > 0 ? fraction(compAccrued, marketSize) : Double({mantissa: 0});
-                // important reference to marketState index below as vesting index is not kept "up to date"
-                index = add_(Double({mantissa: marketState.index}), ratio);
-                vestingState.index = safe224(index.mantissa, "new index exceeds 224 bits");
-                vestingState.block = safe32(lastVestingBlock, "block number exceeds 32 bits");
-            }
-
-            compAccrued = mul_(deltaBlocks, compSpeed);
-            ratio = marketSize > 0 ? fraction(compAccrued, marketSize) : Double({mantissa: 0});
-            index = add_(Double({mantissa: marketState.index}), ratio);
-            marketState.index = safe224(index.mantissa, "new index exceeds 224 bits");
-            marketState.block = safe32(blockNumber, "block number exceeds 32 bits");
+        uint deltaBlocks = sub_(blockNumber, uint(borrowState.block));
+        if (deltaBlocks > 0 && borrowSpeed > 0) {
+            uint borrowAmount = div_(CToken(cToken).totalBorrows(), marketBorrowIndex);
+            uint compAccrued = mul_(deltaBlocks, borrowSpeed);
+            Double memory ratio = borrowAmount > 0 ? fraction(compAccrued, borrowAmount) : Double({mantissa: 0});
+            Double memory index = add_(Double({mantissa: borrowState.index}), ratio);
+            compBorrowState[cToken] = CompMarketState({
+                index: safe224(index.mantissa, "new index exceeds 224 bits"),
+                block: safe32(blockNumber, "block number exceeds 32 bits")
+            });
         } else if (deltaBlocks > 0) {
-            if (lastVestingBlock > vestingState.block) {
-                vestingState.block = safe32(blockNumber, "block number exceeds 32 bits");
-            }
-            marketState.block = safe32(blockNumber, "block number exceeds 32 bits");
+            borrowState.block = safe32(blockNumber, "block number exceeds 32 bits");
         }
     }
 
@@ -1182,84 +1239,42 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @param supplier The address of the supplier to distribute COMP to
      */
     function distributeSupplierComp(address cToken, address supplier, bool distributeAll) internal {
-        distributeMarketComp(cToken, supplier, distributeAll, compSupplyState[cToken], compSupplyVestingState[cToken], true, Exp({mantissa: 0}));
+        CompMarketState storage supplyState = compSupplyState[cToken];
+        Double memory supplyIndex = Double({mantissa: supplyState.index});
+        Double memory supplierIndex = Double({mantissa: compSupplierIndex[cToken][supplier]});
+        compSupplierIndex[cToken][supplier] = supplyIndex.mantissa;
+
+        if (supplierIndex.mantissa == 0 && supplyIndex.mantissa > 0) {
+            supplierIndex.mantissa = compInitialIndex;
+        }
+
+        Double memory deltaIndex = sub_(supplyIndex, supplierIndex);
+        uint supplierTokens = CToken(cToken).balanceOf(supplier);
+        uint supplierDelta = mul_(supplierTokens, deltaIndex);
+        uint supplierAccrued = add_(compAccrued[supplier], supplierDelta);
+        compAccrued[supplier] = transferComp(supplier, supplierAccrued, distributeAll ? 0 : compClaimThreshold);
+        emit DistributedSupplierComp(CToken(cToken), supplier, supplierDelta, supplyIndex.mantissa);
     }
 
     /**
      * @notice Calculate COMP accrued by a borrower and possibly transfer it to them
-     * @dev Borrowers will not begin to vest & accrue until after the first interaction with the protocol.
+     * @dev Borrowers will not begin to accrue until after the first interaction with the protocol.
      * @param cToken The market in which the borrower is interacting
      * @param borrower The address of the borrower to distribute COMP to
      */
     function distributeBorrowerComp(address cToken, address borrower, Exp memory marketBorrowIndex, bool distributeAll) internal {
-        distributeMarketComp(cToken, borrower, distributeAll, compBorrowState[cToken], compBorrowVestingState[cToken], false, marketBorrowIndex);
-    }
+        CompMarketState storage borrowState = compBorrowState[cToken];
+        Double memory borrowIndex = Double({mantissa: borrowState.index});
+        Double memory borrowerIndex = Double({mantissa: compBorrowerIndex[cToken][borrower]});
+        compBorrowerIndex[cToken][borrower] = borrowIndex.mantissa;
 
-    /**
-     * @notice Calculate COMP accrued by a holder (supplier or borrower) and possibly transfer it to them
-     * @param cToken The market in which the holder is interacting
-     * @param holder The address of the holder to distribute COMP to
-     */
-    function distributeMarketComp(address cToken, address holder, bool distributeAll, CompMarketState storage marketState, CompMarketState storage vestingState, bool isSupply,
-            Exp memory marketBorrowIndex) internal {
-        Double memory marketIndex = Double({mantissa: marketState.index});
-        Double memory holderIndex;
-        if (isSupply) {
-            holderIndex = Double({mantissa: compSupplierIndex[cToken][holder]});
-            compSupplierIndex[cToken][holder] = marketIndex.mantissa;
-
-            if (holderIndex.mantissa == 0 && marketIndex.mantissa > 0) {
-                holderIndex.mantissa = compInitialIndex;
-            }
-        } else {
-            holderIndex = Double({mantissa: compBorrowerIndex[cToken][holder]});
-            compBorrowerIndex[cToken][holder] = marketIndex.mantissa;
-        }
-
-        // Accrue vested COMP
-        uint holderAccrued = compAccrued[holder];
-        if (lastVestingBlock > vestingBlock[holder]) {
-            vestingBlock[holder] = lastVestingBlock;
-
-            holderAccrued = add_(holderAccrued, compVesting[holder]);
-            compVesting[holder] = 0;
-        }
-
-        Double memory marketVestingIndex = holderIndex;
-        if (vestingState.index > holderIndex.mantissa) {
-            marketVestingIndex = Double({mantissa: vestingState.index});
-        }
-
-        if (isSupply || holderIndex.mantissa > 0) {
-            // Accrue COMP that was earned leading up to vesting event
-            Double memory deltaIndex;
-            uint holderDelta;
-            uint holderHoldings;
-            if (isSupply) {
-                holderHoldings = CToken(cToken).balanceOf(holder);
-            } else {
-                holderHoldings = div_(CToken(cToken).borrowBalanceStored(holder), marketBorrowIndex);
-            }
-
-            if (marketVestingIndex.mantissa > holderIndex.mantissa) {
-                deltaIndex = sub_(marketVestingIndex, holderIndex);
-                holderDelta = mul_(holderHoldings, deltaIndex);
-                holderAccrued = add_(holderAccrued, holderDelta);
-            }
-
-            // Vest any new COMP earned after vesting event
-            deltaIndex = sub_(marketIndex, marketVestingIndex);
-            holderDelta = mul_(holderHoldings, deltaIndex);
-            compVesting[holder] = add_(compVesting[holder], holderDelta);
-        }
-
-        // Finalise and distribute accrued COMP
-        uint compDelta = holderAccrued - compAccrued[holder];
-        compAccrued[holder] = transferComp(holder, holderAccrued, distributeAll ? 0 : compClaimThreshold);
-        if (isSupply) {
-            emit DistributedSupplierComp(CToken(cToken), holder, compDelta, marketIndex.mantissa);
-        } else {
-            emit DistributedBorrowerComp(CToken(cToken), holder, compDelta, marketIndex.mantissa);
+        if (borrowerIndex.mantissa > 0) {
+            Double memory deltaIndex = sub_(borrowIndex, borrowerIndex);
+            uint borrowerAmount = div_(CToken(cToken).borrowBalanceStored(borrower), marketBorrowIndex);
+            uint borrowerDelta = mul_(borrowerAmount, deltaIndex);
+            uint borrowerAccrued = add_(compAccrued[borrower], borrowerDelta);
+            compAccrued[borrower] = transferComp(borrower, borrowerAccrued, distributeAll ? 0 : compClaimThreshold);
+            emit DistributedBorrowerComp(CToken(cToken), borrower, borrowerDelta, borrowIndex.mantissa);
         }
     }
 
@@ -1309,7 +1324,6 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @param suppliers Whether or not to claim COMP earned by supplying
      */
     function claimComp(address[] memory holders, CToken[] memory cTokens, bool borrowers, bool suppliers) public {
-        updateLastVestingBlockInternal();
         for (uint i = 0; i < cTokens.length; i++) {
             CToken cToken = cTokens[i];
             require(markets[address(cToken)].isListed, "market must be listed");
@@ -1343,23 +1357,6 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         emit NewCompRate(oldRate, compRate_);
 
         refreshCompSpeedsInternal();
-    }
-
-    /**
-     * @notice Set the time period at which COMP becomes vested
-     * @param vestingPeriod_ The time period at which COMP will be vested in blocks
-     */
-    function _setVestingPeriod(uint vestingPeriod_) public {
-        require(adminOrInitializing(), "only admin can change vesting period");
-        require(vestingPeriod_ > 0, "vesting period cannot be 0");
-
-        uint oldVestingPeriod = vestingPeriod;
-        vestingPeriod = vestingPeriod_;
-        emit NewVestingPeriod(oldVestingPeriod, vestingPeriod_);
-
-        // Change vesting offset to current block - this has the side effect of vesting all COMP
-        uint blockNumber = getBlockNumber();
-        lastVestingBlock = blockNumber;
     }
 
     /**
@@ -1413,29 +1410,6 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         emit MarketComped(CToken(cToken), false);
 
         refreshCompSpeedsInternal();
-    }
-
-    /**
-     * @notice Update the last block where a vesting event happened
-     */
-    function updateLastVestingBlockInternal() internal {
-        uint blockNumber = getBlockNumber();
-        uint newLastVestingBlock = lastVestingBlockBeforeInternal(blockNumber);
-        lastVestingBlock = newLastVestingBlock;
-    }
-
-    /**
-     * @notice Return last block where vesting happened before or at the provided block
-     * @return Last block which was vested
-     */
-    function lastVestingBlockBeforeInternal(uint blockNumber) internal view returns (uint) {
-        uint vestingOffset = mod_(lastVestingBlock, vestingPeriod);
-        uint currentBlockOffset = mod_(blockNumber, vestingPeriod);
-        uint vestingBlock = add_(sub_(blockNumber, currentBlockOffset), vestingOffset);
-        if (currentBlockOffset < vestingOffset) {
-            vestingBlock = sub_(vestingBlock, vestingPeriod);
-        }
-        return vestingBlock;
     }
 
     /**

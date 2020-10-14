@@ -260,6 +260,18 @@ async function setCompRate(world: World, from: string, comptroller: Comptroller,
   return world;
 }
 
+async function setVestingPeriod(world: World, from: string, comptroller: Comptroller, vestingPeriod: NumberV): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setVestingPeriod(vestingPeriod.encode()), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Comp vesting period set to ${vestingPeriod.show()}`,
+    invokation
+  );
+
+  return world;
+}
+
 async function printLiquidity(world: World, comptroller: Comptroller): Promise<World> {
   let enterEvents = await getPastEvents(world, comptroller, 'StdComptroller', 'MarketEntered');
   let addresses = enterEvents.map((event) => event.returnValues['account']);
@@ -712,6 +724,18 @@ export function comptrollerCommands() {
         new Arg("rate", getNumberV)
       ],
       (world, from, {comptroller, rate}) => setCompRate(world, from, comptroller, rate)
+    ),
+    new Command<{comptroller: Comptroller, vestingPeriod: NumberV}>(`
+      #### SetVestingPeriod
+      * "Comptroller SetVestingPeriod <vestingPeriod>" - Sets COMP vesting period
+      * E.g. "Comptroller SetVestingPeriod 46523
+      `,
+      "SetVestingPeriod",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("vestingPeriod", getNumberV)
+      ],
+      (world, from, {comptroller, vestingPeriod}) => setVestingPeriod(world, from, comptroller, vestingPeriod)
     ),
     new Command<{comptroller: Comptroller, cTokens: CToken[], borrowCaps: NumberV[]}>(`
       #### SetMarketBorrowCaps

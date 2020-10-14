@@ -97,6 +97,22 @@ contract Exponential is CarefulMath {
     }
 
     /**
+     * @dev Multiply an Exp by a scalar, then truncate to return an unsigned integer.
+     */
+    function mul_ScalarTruncate(Exp memory a, uint scalar) pure internal returns (uint) {
+        Exp memory product = mul_(a, scalar);
+        return truncate(product);
+    }
+
+    /**
+     * @dev Multiply an Exp by a scalar, truncate, then add an to an unsigned integer, returning an unsigned integer.
+     */
+    function mul_ScalarTruncateAddUInt(Exp memory a, uint scalar, uint addend) pure internal returns (uint) {
+        Exp memory product = mul_(a, scalar);
+        return add_(truncate(product), addend);
+    }
+
+    /**
      * @dev Divide an Exp by a scalar, returning a new Exp.
      */
     function divScalar(Exp memory a, uint scalar) pure internal returns (MathError, Exp memory) {
@@ -213,13 +229,6 @@ contract Exponential is CarefulMath {
      */
     function lessThanOrEqualExp(Exp memory left, Exp memory right) pure internal returns (bool) {
         return left.mantissa <= right.mantissa;
-    }
-
-    /**
-     * @dev Checks if left Exp > right Exp.
-     */
-    function greaterThanExp(Exp memory left, Exp memory right) pure internal returns (bool) {
-        return left.mantissa > right.mantissa;
     }
 
     /**
@@ -342,6 +351,15 @@ contract Exponential is CarefulMath {
     function div_(uint a, uint b, string memory errorMessage) pure internal returns (uint) {
         require(b > 0, errorMessage);
         return a / b;
+    }
+
+    function mod_(uint a, uint b) pure internal returns (uint) {
+        return mod_(a, b, "modulo by zero");
+    }
+
+    function mod_(uint a, uint b, string memory errorMessage) pure internal returns (uint) {
+        require(b > 0, errorMessage);
+        return a % b;
     }
 
     function fraction(uint a, uint b) pure internal returns (Double memory) {

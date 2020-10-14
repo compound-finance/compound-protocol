@@ -150,7 +150,7 @@ async function becomeG3(
   return world;
 }
 
-async function become(
+async function becomeG4(
   world: World,
   from: string,
   comptrollerImpl: ComptrollerImpl,
@@ -159,6 +159,53 @@ async function become(
   let invokation = await invoke(
     world,
     comptrollerImpl.methods._become(unitroller._address),
+    from,
+    ComptrollerErrorReporter
+  );
+
+  if (!world.dryRun) {
+    // Skip this specifically on dry runs since it's likely to crash due to a number of reasons
+    world = await mergeContractABI(world, 'Comptroller', unitroller, unitroller.name, comptrollerImpl.name);
+  }
+
+  world = addAction(world, `Become ${unitroller._address}'s Comptroller Impl`, invokation);
+
+  return world;
+}
+
+async function becomeG5(
+  world: World,
+  from: string,
+  comptrollerImpl: ComptrollerImpl,
+  unitroller: Unitroller
+): Promise<World> {
+  let invokation = await invoke(
+    world,
+    comptrollerImpl.methods._become(unitroller._address),
+    from,
+    ComptrollerErrorReporter
+  );
+
+  if (!world.dryRun) {
+    // Skip this specifically on dry runs since it's likely to crash due to a number of reasons
+    world = await mergeContractABI(world, 'Comptroller', unitroller, unitroller.name, comptrollerImpl.name);
+  }
+
+  world = addAction(world, `Become ${unitroller._address}'s Comptroller Impl`, invokation);
+
+  return world;
+}
+
+async function become(
+  world: World,
+  from: string,
+  comptrollerImpl: ComptrollerImpl,
+  unitroller: Unitroller,
+  vestingPeriod: encodedNumber
+): Promise<World> {
+  let invokation = await invoke(
+    world,
+    comptrollerImpl.methods._become(unitroller._address, vestingPeriod),
     from,
     ComptrollerErrorReporter
   );
@@ -303,18 +350,62 @@ export function comptrollerImplCommands() {
       comptrollerImpl: ComptrollerImpl;
     }>(
       `
-        #### Become
+        #### BecomeG4
 
-        * "ComptrollerImpl <Impl> Become <Rate> <CompMarkets> <OtherMarkets>" - Become the comptroller, if possible.
-          * E.g. "ComptrollerImpl MyImpl Become 0.1e18 [cDAI, cETH, cUSDC]
+        * "ComptrollerImpl <Impl> BecomeG4" - Become the comptroller, if possible.
+          * E.g. "ComptrollerImpl MyImpl BecomeG4
       `,
-      'Become',
+      'BecomeG4',
       [
         new Arg('unitroller', getUnitroller, { implicit: true }),
         new Arg('comptrollerImpl', getComptrollerImpl)
       ],
       (world, from, { unitroller, comptrollerImpl }) => {
-        return become(world, from, comptrollerImpl, unitroller)
+        return becomeG4(world, from, comptrollerImpl, unitroller)
+      },
+      { namePos: 1 }
+    ),
+
+    new Command<{
+      unitroller: Unitroller;
+      comptrollerImpl: ComptrollerImpl;
+    }>(
+      `
+        #### BecomeG5
+
+        * "ComptrollerImpl <Impl> BecomeG5" - Become the comptroller, if possible.
+          * E.g. "ComptrollerImpl MyImpl BecomeG5
+      `,
+      'BecomeG5',
+      [
+        new Arg('unitroller', getUnitroller, { implicit: true }),
+        new Arg('comptrollerImpl', getComptrollerImpl)
+      ],
+      (world, from, { unitroller, comptrollerImpl }) => {
+        return becomeG5(world, from, comptrollerImpl, unitroller)
+      },
+      { namePos: 1 }
+    ),
+
+    new Command<{
+      unitroller: Unitroller;
+      comptrollerImpl: ComptrollerImpl;
+      vestingPeriod: NumberV;
+    }>(
+      `
+        #### Become
+
+        * "ComptrollerImpl <Impl> Become <VestingPeriod>" - Become the comptroller, if possible.
+          * E.g. "ComptrollerImpl MyImpl Become 4000
+      `,
+      'Become',
+      [
+        new Arg('unitroller', getUnitroller, { implicit: true }),
+        new Arg('comptrollerImpl', getComptrollerImpl),
+        new Arg('vestingPeriod', getNumberV, {})
+      ],
+      (world, from, { unitroller, comptrollerImpl, vestingPeriod }) => {
+        return become(world, from, comptrollerImpl, unitroller, vestingPeriod.encode())
       },
       { namePos: 1 }
     ),

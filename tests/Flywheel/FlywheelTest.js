@@ -4,7 +4,8 @@ const {
   balanceOf,
   fastForward,
   pretendBorrow,
-  quickMint
+  quickMint,
+  vestAll
 } = require('../Utils/Compound');
 const {
   etherExp,
@@ -23,8 +24,18 @@ async function compBalance(comptroller, user) {
   return etherUnsigned(await call(comptroller.comp, 'balanceOf', [user]))
 }
 
+async function compEarned(comptroller, user) {
+  let vested = await compAccrued(comptroller, user);
+  let vesting = etherUnsigned(await call(comptroller, 'compVesting', [user]));
+  return vested.plus(vesting);
+}
+
 async function totalCompAccrued(comptroller, user) {
   return (await compAccrued(comptroller, user)).plus(await compBalance(comptroller, user));
+}
+
+async function totalCompEarned(comptroller, user) {
+  return (await compEarned(comptroller, user)).plus(await compBalance(comptroller, user));
 }
 
 describe('Flywheel upgrade', () => {
@@ -210,6 +221,51 @@ describe('Flywheel', () => {
       // this logic could also possibly be implemented in the allowed hook
     });
 
+    it('should earn but not accrue', async () => {
+      const compRemaining = compRate.multipliedBy(100)
+      const a2Balance0 = await balanceOf(cLOW, a2);
+      const a3Balance0 = await balanceOf(cLOW, a3);
+
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      await pretendBorrow(cLOW, a1, 1, 1, 100);
+      await send(comptroller, 'refreshCompSpeeds');
+
+      await quickMint(cLOW, a2, etherUnsigned(10e18));
+      await quickMint(cLOW, a3, etherUnsigned(15e18));
+
+      await fastForward(comptroller, 20);
+      await send(cLOW, 'transfer', [a2, a3Balance0.minus(a2Balance0)], {from: a3});
+
+      const aAccrued1 = await compEarned(comptroller, a2);
+      const aAccruedActual1 = await compAccrued(comptroller, a2);
+
+      expect(aAccrued1).not.toEqualNumber(0);
+      expect(aAccruedActual1).toEqualNumber(0);
+    });
+
+    it('should vest all when vesting period changed', async () => {
+      const compRemaining = compRate.multipliedBy(100)
+      const a2Balance0 = await balanceOf(cLOW, a2);
+      const a3Balance0 = await balanceOf(cLOW, a3);
+
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      await pretendBorrow(cLOW, a1, 1, 1, 100);
+      await send(comptroller, 'refreshCompSpeeds');
+
+      await quickMint(cLOW, a2, etherUnsigned(10e18));
+      await quickMint(cLOW, a3, etherUnsigned(15e18));
+
+      await fastForward(comptroller, 20);
+      await vestAll(comptroller);
+      await send(cLOW, 'transfer', [a2, a3Balance0.minus(a2Balance0)], {from: a3});
+
+      const aAccrued1 = await totalCompEarned(comptroller, a2);
+      const aAccruedActual1 = await totalCompAccrued(comptroller, a2);
+
+      expect(aAccrued1).not.toEqualNumber(0);
+      expect(aAccrued1).toEqualNumber(aAccruedActual1);
+    });
+
     it('should not update index if no blocks passed since last accrual', async () => {
       const mkt = cREP;
       await send(comptroller, 'setBlockNumber', [0]);
@@ -222,6 +278,51 @@ describe('Flywheel', () => {
       expect(block).toEqualNumber(0);
     });
 
+    it('should earn but not accrue', async () => {
+      const compRemaining = compRate.multipliedBy(100)
+      const a2Balance0 = await balanceOf(cLOW, a2);
+      const a3Balance0 = await balanceOf(cLOW, a3);
+
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      await pretendBorrow(cLOW, a1, 1, 1, 100);
+      await send(comptroller, 'refreshCompSpeeds');
+
+      await quickMint(cLOW, a2, etherUnsigned(10e18));
+      await quickMint(cLOW, a3, etherUnsigned(15e18));
+
+      await fastForward(comptroller, 20);
+      await send(cLOW, 'transfer', [a2, a3Balance0.minus(a2Balance0)], {from: a3});
+
+      const aAccrued1 = await compEarned(comptroller, a2);
+      const aAccruedActual1 = await compAccrued(comptroller, a2);
+
+      expect(aAccrued1).not.toEqualNumber(0);
+      expect(aAccruedActual1).toEqualNumber(0);
+    });
+
+    it('should vest all when vesting period changed', async () => {
+      const compRemaining = compRate.multipliedBy(100)
+      const a2Balance0 = await balanceOf(cLOW, a2);
+      const a3Balance0 = await balanceOf(cLOW, a3);
+
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      await pretendBorrow(cLOW, a1, 1, 1, 100);
+      await send(comptroller, 'refreshCompSpeeds');
+
+      await quickMint(cLOW, a2, etherUnsigned(10e18));
+      await quickMint(cLOW, a3, etherUnsigned(15e18));
+
+      await fastForward(comptroller, 20);
+      await vestAll(comptroller);
+      await send(cLOW, 'transfer', [a2, a3Balance0.minus(a2Balance0)], {from: a3});
+
+      const aAccrued1 = await totalCompEarned(comptroller, a2);
+      const aAccruedActual1 = await totalCompAccrued(comptroller, a2);
+
+      expect(aAccrued1).not.toEqualNumber(0);
+      expect(aAccrued1).toEqualNumber(aAccruedActual1);
+    });
+
     it('should not matter if the index is updated multiple times', async () => {
       const compRemaining = compRate.multipliedBy(100)
       await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
@@ -231,8 +332,8 @@ describe('Flywheel', () => {
       await quickMint(cLOW, a2, etherUnsigned(10e18));
       await quickMint(cLOW, a3, etherUnsigned(15e18));
 
-      const a2Accrued0 = await totalCompAccrued(comptroller, a2);
-      const a3Accrued0 = await totalCompAccrued(comptroller, a3);
+      const a2Accrued0 = await compEarned(comptroller, a2);
+      const a3Accrued0 = await compEarned(comptroller, a3);
       const a2Balance0 = await balanceOf(cLOW, a2);
       const a3Balance0 = await balanceOf(cLOW, a3);
 
@@ -240,8 +341,8 @@ describe('Flywheel', () => {
 
       const txT1 = await send(cLOW, 'transfer', [a2, a3Balance0.minus(a2Balance0)], {from: a3});
 
-      const a2Accrued1 = await totalCompAccrued(comptroller, a2);
-      const a3Accrued1 = await totalCompAccrued(comptroller, a3);
+      const a2Accrued1 = await compEarned(comptroller, a2);
+      const a3Accrued1 = await compEarned(comptroller, a3);
       const a2Balance1 = await balanceOf(cLOW, a2);
       const a3Balance1 = await balanceOf(cLOW, a3);
 
@@ -251,8 +352,8 @@ describe('Flywheel', () => {
 
       const txT2 = await send(cLOW, 'transfer', [a3, a2Balance1.minus(a3Balance1)], {from: a2});
 
-      const a2Accrued2 = await totalCompAccrued(comptroller, a2);
-      const a3Accrued2 = await totalCompAccrued(comptroller, a3);
+      const a2Accrued2 = await compEarned(comptroller, a2);
+      const a3Accrued2 = await compEarned(comptroller, a3);
 
       expect(a2Accrued0).toEqualNumber(0);
       expect(a3Accrued0).toEqualNumber(0);
@@ -263,8 +364,8 @@ describe('Flywheel', () => {
 
       expect(txT1.gasUsed).toBeLessThan(200000);
       expect(txT1.gasUsed).toBeGreaterThan(150000);
-      expect(txT2.gasUsed).toBeLessThan(200000);
-      expect(txT2.gasUsed).toBeGreaterThan(150000);
+      expect(txT2.gasUsed).toBeLessThan(150000);
+      expect(txT2.gasUsed).toBeGreaterThan(100000);
     });
   });
 
@@ -297,6 +398,8 @@ describe('Flywheel', () => {
         borrowerAccrued= borrowerAmount * deltaIndex / 1e36
                        = 5e18 * 5e36 / 1e36 = 25e18
       */
+      await send(comptroller, "setCompBorrowVestingState", [mkt._address, etherDouble(6), 10]);
+      await send(comptroller, "setLastVestingBlock", [10]);
       const tx = await send(comptroller, "harnessDistributeBorrowerComp", [mkt._address, a1, etherUnsigned(1.1e18)]);
       expect(await compAccrued(comptroller, a1)).toEqualNumber(0);
       expect(await compBalance(comptroller, a1)).toEqualNumber(25e18);
@@ -323,7 +426,10 @@ describe('Flywheel', () => {
                        = 5e17 * 0.0019e36 / 1e36 = 0.00095e18
         0.00095e18 < compClaimThreshold of 0.001e18
       */
+      await send(comptroller, "setCompBorrowVestingState", [mkt._address, etherDouble(1.0019), 10]);
+      await send(comptroller, "setLastVestingBlock", [10]);
       await send(comptroller, "harnessDistributeBorrowerComp", [mkt._address, a1, etherExp(1.1)]);
+      expect(await compEarned(comptroller, a1)).toEqualNumber(0.00095e18);
       expect(await compAccrued(comptroller, a1)).toEqualNumber(0.00095e18);
       expect(await compBalance(comptroller, a1)).toEqualNumber(0);
     });
@@ -359,6 +465,8 @@ describe('Flywheel', () => {
                         = 5e18 * 5e36 / 1e36 = 25e18
       */
 
+      await send(comptroller, "setCompSupplyVestingState", [mkt._address, etherDouble(6), 10]);
+      await send(comptroller, "setLastVestingBlock", [10]);
       const tx = await send(comptroller, "harnessDistributeSupplierComp", [mkt._address, a1]);
       expect(await compAccrued(comptroller, a1)).toEqualNumber(0);
       expect(await compBalance(comptroller, a1)).toEqualNumber(25e18);
@@ -385,6 +493,8 @@ describe('Flywheel', () => {
                         = 5e18 * 4e36 / 1e36 = 20e18
       */
 
+      await send(comptroller, "setCompSupplyVestingState", [mkt._address, etherDouble(6), 10]);
+      await send(comptroller, "setLastVestingBlock", [10]);
       await send(comptroller, "harnessDistributeSupplierComp", [mkt._address, a1]);
       expect(await compAccrued(comptroller, a1)).toEqualNumber(0);
       expect(await compBalance(comptroller, a1)).toEqualNumber(20e18);
@@ -405,7 +515,7 @@ describe('Flywheel', () => {
       */
 
       await send(comptroller, "harnessDistributeSupplierComp", [mkt._address, a1]);
-      expect(await compAccrued(comptroller, a1)).toEqualNumber(0.00095e18);
+      expect(await totalCompEarned(comptroller, a1)).toEqualNumber(0.00095e18);
       expect(await compBalance(comptroller, a1)).toEqualNumber(0);
     });
 
@@ -417,7 +527,7 @@ describe('Flywheel', () => {
       });
 
       await send(comptroller, "harnessDistributeSupplierComp", [mkt._address, a1]);
-      expect(await compAccrued(comptroller, a1)).toEqualNumber(0);
+      expect(await totalCompEarned(comptroller, a1)).toEqualNumber(0);
       expect(await compBalance(comptroller, a1)).toEqualNumber(0);
       expect(await call(comptroller, 'compBorrowerIndex', [mkt._address, a1])).toEqualNumber(0);
     });
@@ -473,10 +583,11 @@ describe('Flywheel', () => {
       const compBalancePre = await compBalance(comptroller, a2);
       await quickMint(cLOW, a2, mintAmount);
       await fastForward(comptroller, deltaBlocks);
+      await vestAll(comptroller);
       const tx = await send(comptroller, 'claimComp', [a2]);
       const a2AccruedPost = await compAccrued(comptroller, a2);
       const compBalancePost = await compBalance(comptroller, a2);
-      expect(tx.gasUsed).toBeLessThan(330000);
+      expect(tx.gasUsed).toBeLessThan(540000);
       expect(speed).toEqualNumber(compRate);
       expect(a2AccruedPre).toEqualNumber(0);
       expect(a2AccruedPost).toEqualNumber(0);
@@ -494,10 +605,11 @@ describe('Flywheel', () => {
       const compBalancePre = await compBalance(comptroller, a2);
       await quickMint(cLOW, a2, mintAmount);
       await fastForward(comptroller, deltaBlocks);
+      await vestAll(comptroller);
       const tx = await send(comptroller, 'claimComp', [a2, [cLOW._address]]);
       const a2AccruedPost = await compAccrued(comptroller, a2);
       const compBalancePost = await compBalance(comptroller, a2);
-      expect(tx.gasUsed).toBeLessThan(160000);
+      expect(tx.gasUsed).toBeLessThan(250000);
       expect(speed).toEqualNumber(compRate);
       expect(a2AccruedPre).toEqualNumber(0);
       expect(a2AccruedPost).toEqualNumber(0);
@@ -557,6 +669,7 @@ describe('Flywheel', () => {
 
       await fastForward(comptroller, deltaBlocks);
 
+      await vestAll(comptroller);
       const tx = await send(comptroller, 'claimComp', [[...claimAccts, ...claimAccts], [cLOW._address, cLOW._address], false, true]);
       // comp distributed => 10e18
       for(let acct of claimAccts) {
@@ -579,6 +692,7 @@ describe('Flywheel', () => {
 
       await fastForward(comptroller, deltaBlocks);
 
+      await vestAll(comptroller);
       const tx = await send(comptroller, 'claimComp', [claimAccts, [cLOW._address], false, true]);
       // comp distributed => 10e18
       for(let acct of claimAccts) {
@@ -769,6 +883,75 @@ describe('Flywheel', () => {
       await expect(
         send(comptroller, '_setCompRate', [cLOW._address], {from: a1})
       ).rejects.toRevert('revert only admin can change comp rate');
+    });
+  });
+
+  describe('_setVestingPeriod', () => {
+    const oneWeek = 46523 // 604800 / 13 seconds per block
+
+    it('should correctly change vesting period if called by admin', async () => {
+      expect(await call(comptroller, 'vestingPeriod')).toEqualNumber(etherUnsigned(oneWeek));
+      const tx1 = await send(comptroller, '_setVestingPeriod', [etherUnsigned(oneWeek).multipliedBy(2)]);
+      expect(await call(comptroller, 'vestingPeriod')).toEqualNumber(etherUnsigned(oneWeek).multipliedBy(2));
+      const tx2 = await send(comptroller, '_setVestingPeriod', [etherUnsigned(oneWeek).multipliedBy(3)]);
+      expect(await call(comptroller, 'vestingPeriod')).toEqualNumber(etherUnsigned(oneWeek).multipliedBy(3));
+      expect(tx2).toHaveLog('NewVestingPeriod', {
+        oldVestingPeriod: etherUnsigned(oneWeek).multipliedBy(2),
+        newVestingPeriod: etherUnsigned(oneWeek).multipliedBy(3)
+      });
+    });
+
+    it('should not change vesting period unless called by admin', async () => {
+      await expect(
+        send(comptroller, '_setVestingPeriod', [cLOW._address], {from: a1})
+      ).rejects.toRevert('revert only admin can change vesting period');
+    });
+  });
+
+  describe('updateLastVestingBlock', () => {
+    it('should correctly update last vesting block with different periods', async () => {
+      await fastForward(comptroller, 1); // at block 1 now
+      expect(await call(comptroller, 'blockNumber')).toEqualNumber(etherUnsigned(1));
+
+      const tx1 = await send(comptroller, '_setVestingPeriod', [etherUnsigned(5)]);
+      await send(comptroller, 'harnessUpdateLastVestingBlock');
+      expect(await call(comptroller, 'lastVestingBlock')).toEqualNumber(etherUnsigned(1));
+      await fastForward(comptroller, 4); // at block 5 now
+      await send(comptroller, 'harnessUpdateLastVestingBlock');
+      expect(await call(comptroller, 'lastVestingBlock')).toEqualNumber(etherUnsigned(1));
+      await fastForward(comptroller, 1); // at block 6 now
+      await send(comptroller, 'harnessUpdateLastVestingBlock');
+      expect(await call(comptroller, 'lastVestingBlock')).toEqualNumber(etherUnsigned(6));
+
+      await fastForward(comptroller, 36); // at block 42 now
+      const tx2 = await send(comptroller, '_setVestingPeriod', [etherUnsigned(11)]);
+      await send(comptroller, 'harnessUpdateLastVestingBlock');
+      expect(await call(comptroller, 'lastVestingBlock')).toEqualNumber(etherUnsigned(42));
+      await fastForward(comptroller, 10); // at block 50 now
+      await send(comptroller, 'harnessUpdateLastVestingBlock');
+      expect(await call(comptroller, 'lastVestingBlock')).toEqualNumber(etherUnsigned(42));
+      await fastForward(comptroller, 10); // at block 60 now
+      await send(comptroller, 'harnessUpdateLastVestingBlock');
+      expect(await call(comptroller, 'lastVestingBlock')).toEqualNumber(etherUnsigned(53));
+    });
+  });
+
+  describe('lastVestingBlockBeforeInternal', () => {
+    it('should correctly calculate last vesting block with different periods', async () => {
+      await fastForward(comptroller, 1); // at block 1 now
+      expect(await call(comptroller, 'blockNumber')).toEqualNumber(etherUnsigned(1));
+
+      const tx1 = await send(comptroller, '_setVestingPeriod', [etherUnsigned(5)]);
+      expect(await call(comptroller, 'lastVestingBlockBefore', [1])).toEqualNumber(etherUnsigned(1));
+      expect(await call(comptroller, 'lastVestingBlockBefore', [5])).toEqualNumber(etherUnsigned(1));
+      expect(await call(comptroller, 'lastVestingBlockBefore', [6])).toEqualNumber(etherUnsigned(6));
+
+      await fastForward(comptroller, 41); // at block 42 now
+
+      const tx2 = await send(comptroller, '_setVestingPeriod', [etherUnsigned(11)]);
+      expect(await call(comptroller, 'lastVestingBlockBefore', [40])).toEqualNumber(etherUnsigned(31));
+      expect(await call(comptroller, 'lastVestingBlockBefore', [50])).toEqualNumber(etherUnsigned(42));
+      expect(await call(comptroller, 'lastVestingBlockBefore', [60])).toEqualNumber(etherUnsigned(53));
     });
   });
 });
