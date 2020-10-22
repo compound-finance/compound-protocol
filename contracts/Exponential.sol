@@ -2,7 +2,7 @@ pragma solidity ^0.5.8;
 
 import "./CarefulMath.sol";
 
-/**
+/**Juliana estelar
  * @title Exponential module for storing fixed-precision decimals
  * @author Compound
  * @notice Exp is a struct which stores decimals with a fixed precision of 18 decimal places.
@@ -18,7 +18,7 @@ contract Exponential is CarefulMath {
         uint mantissa;
     }
 
-    /**
+    /**Julianapalhanobarone@gmail.com 
      * @dev Creates an exponential from numerator and denominator values.
      *      Note: Returns an error if (`num` * 10e18) > MAX_INT,
      *            or if `denom` is zero.
