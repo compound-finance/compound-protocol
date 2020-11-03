@@ -68,6 +68,9 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
     /// @notice Emitted when borrow cap guardian is changed
     event NewBorrowCapGuardian(address oldBorrowCapGuardian, address newBorrowCapGuardian);
 
+    /// @notice Emitted when COMP is granted by admin
+    event CompGranted(address recipient, uint amount);
+
     /// @notice The threshold above which the flywheel transfers COMP, in wei
     uint public constant compClaimThreshold = 0.001e18;
 
@@ -1078,41 +1081,14 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
     /*** Comp Distribution ***/
 
     /**
-     * @notice Recalculate and update COMP speeds for all COMP markets
+     * @notice Set COMP speed for a single market
+     * @param cToken The market whose COMP speed to update
+     * @param compSpeed New COMP speed for market
      */
-    function refreshCompSpeeds() public {
-        require(msg.sender == tx.origin, "only externally owned accounts may refresh speeds");
-        refreshCompSpeedsInternal();
-    }
-
-    function refreshCompSpeedsInternal() internal {
-        CToken[] memory allMarkets_ = allMarkets;
-
-        for (uint i = 0; i < allMarkets_.length; i++) {
-            CToken cToken = allMarkets_[i];
-            Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
-            updateCompSupplyIndex(address(cToken));
-            updateCompBorrowIndex(address(cToken), borrowIndex);
-        }
-
-        Exp memory totalUtility = Exp({mantissa: 0});
-        Exp[] memory utilities = new Exp[](allMarkets_.length);
-        for (uint i = 0; i < allMarkets_.length; i++) {
-            CToken cToken = allMarkets_[i];
-            if (markets[address(cToken)].isComped) {
-                Exp memory assetPrice = Exp({mantissa: oracle.getUnderlyingPrice(cToken)});
-                Exp memory utility = mul_(assetPrice, cToken.totalBorrows());
-                utilities[i] = utility;
-                totalUtility = add_(totalUtility, utility);
-            }
-        }
-
-        for (uint i = 0; i < allMarkets_.length; i++) {
-            CToken cToken = allMarkets[i];
-            uint newSpeed = totalUtility.mantissa > 0 ? mul_(compRate, div_(utilities[i], totalUtility)) : 0;
-            compSpeeds[address(cToken)] = newSpeed;
-            emit CompSpeedUpdated(cToken, newSpeed);
-        }
+    function setCompSpeedInternal(CToken cToken, uint compSpeed) internal {
+        // note that COMP speed could be set to 0 to halt liquidity rewards for a market
+        compSpeeds[address(cToken)] = compSpeed;
+        emit CompSpeedUpdated(cToken, compSpeed);
     }
 
     /**
@@ -1180,9 +1156,10 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @notice Calculate COMP accrued by a supplier and possibly transfer it to them
      * @param cToken The market in which the supplier is interacting
      * @param supplier The address of the supplier to distribute COMP to
+     * @param distribute Whether to distribute accrued COMP
      */
-    function distributeSupplierComp(address cToken, address supplier, bool distributeAll) internal {
-        distributeMarketComp(cToken, supplier, distributeAll, compSupplyState[cToken], compSupplyVestingState[cToken], true, Exp({mantissa: 0}));
+    function distributeSupplierComp(address cToken, address supplier, bool distribute) internal {
+        distributeMarketComp(cToken, supplier, distribute, compSupplyState[cToken], compSupplyVestingState[cToken], true, Exp({mantissa: 0}));
     }
 
     /**
@@ -1190,9 +1167,10 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @dev Borrowers will not begin to vest & accrue until after the first interaction with the protocol.
      * @param cToken The market in which the borrower is interacting
      * @param borrower The address of the borrower to distribute COMP to
+     * @param distribute Whether to distribute accrued COMP
      */
-    function distributeBorrowerComp(address cToken, address borrower, Exp memory marketBorrowIndex, bool distributeAll) internal {
-        distributeMarketComp(cToken, borrower, distributeAll, compBorrowState[cToken], compBorrowVestingState[cToken], false, marketBorrowIndex);
+    function distributeBorrowerComp(address cToken, address borrower, Exp memory marketBorrowIndex, bool distribute) internal {
+        distributeMarketComp(cToken, borrower, distribute, compBorrowState[cToken], compBorrowVestingState[cToken], false, marketBorrowIndex);
     }
 
     /**
@@ -1200,7 +1178,7 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @param cToken The market in which the holder is interacting
      * @param holder The address of the holder to distribute COMP to
      */
-    function distributeMarketComp(address cToken, address holder, bool distributeAll, CompMarketState storage marketState, CompMarketState storage vestingState, bool isSupply,
+    function distributeMarketComp(address cToken, address holder, bool distribute, CompMarketState storage marketState, CompMarketState storage vestingState, bool isSupply,
             Exp memory marketBorrowIndex) internal {
         Double memory marketIndex = Double({mantissa: marketState.index});
         Double memory holderIndex;
@@ -1253,33 +1231,17 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
             compVesting[holder] = add_(compVesting[holder], holderDelta);
         }
 
-        // Finalise and distribute accrued COMP
         uint compDelta = holderAccrued - compAccrued[holder];
-        compAccrued[holder] = transferComp(holder, holderAccrued, distributeAll ? 0 : compClaimThreshold);
+        if (distribute) {
+            compAccrued[holder] = grantCompInternal(holder, holderAccrued);
+        } else {
+            compAccrued[holder] = holderAccrued;
+        }
         if (isSupply) {
             emit DistributedSupplierComp(CToken(cToken), holder, compDelta, marketIndex.mantissa);
         } else {
             emit DistributedBorrowerComp(CToken(cToken), holder, compDelta, marketIndex.mantissa);
         }
-    }
-
-    /**
-     * @notice Transfer COMP to the user, if they are above the threshold
-     * @dev Note: If there is not enough COMP, we do not perform the transfer all.
-     * @param user The address of the user to transfer COMP to
-     * @param userAccrued The amount of COMP to (possibly) transfer
-     * @return The amount of COMP which was NOT transferred to the user
-     */
-    function transferComp(address user, uint userAccrued, uint threshold) internal returns (uint) {
-        if (userAccrued >= threshold && userAccrued > 0) {
-            Comp comp = Comp(getCompAddress());
-            uint compRemaining = comp.balanceOf(address(this));
-            if (userAccrued <= compRemaining) {
-                comp.transfer(user, userAccrued);
-                return 0;
-            }
-        }
-        return userAccrued;
     }
 
     /**
@@ -1329,20 +1291,48 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         }
     }
 
+    /**
+     * @notice Transfer COMP to the user
+     * @dev Note: If there is not enough COMP, we do not perform the transfer all.
+     * @param user The address of the user to transfer COMP to
+     * @param amount The amount of COMP to (possibly) transfer
+     * @return The amount of COMP which was NOT transferred to the user
+     */
+    function grantCompInternal(address user, uint amount) internal returns (uint) {
+        Comp comp = Comp(getCompAddress());
+        uint compRemaining = comp.balanceOf(address(this));
+        if (amount <= compRemaining) {
+            comp.transfer(user, amount);
+            return 0;
+        }
+        return amount;
+    }
+
     /*** Comp Distribution Admin ***/
 
     /**
-     * @notice Set the amount of COMP distributed per block
-     * @param compRate_ The amount of COMP wei per block to distribute
+     * @notice Transfer COMP to the recipient
+     * @dev Note: If there is not enough COMP, we do not perform the transfer all.
+     * @param recipient The address of the recipient to transfer COMP to
+     * @param amount The amount of COMP to (possibly) transfer
+     * @return The amount of COMP which was NOT transferred to the recipient
      */
-    function _setCompRate(uint compRate_) public {
-        require(adminOrInitializing(), "only admin can change comp rate");
+    function _grantComp(address recipient, uint amount) public returns (uint) {
+        require(adminOrInitializing(), "only admin can grant comp");
+        uint amountLeft = grantCompInternal(recipient, amount);
+        if (amountLeft == 0) {
+            emit CompGranted(recipient, amount);
+        }
+    }
 
-        uint oldRate = compRate;
-        compRate = compRate_;
-        emit NewCompRate(oldRate, compRate_);
-
-        refreshCompSpeedsInternal();
+    /**
+     * @notice Set COMP speed for a single market
+     * @param cToken The market whose COMP speed to update
+     * @param compSpeed New COMP speed for market
+     */
+    function _setCompSpeed(CToken cToken, uint compSpeed) public {
+        require(adminOrInitializing(), "only admin can set comp speed");
+        setCompSpeedInternal(cToken, compSpeed);
     }
 
     /**
@@ -1372,8 +1362,6 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         for (uint i = 0; i < cTokens.length; i++) {
             _addCompMarketInternal(cTokens[i]);
         }
-
-        refreshCompSpeedsInternal();
     }
 
     function _addCompMarketInternal(address cToken) internal {
@@ -1412,7 +1400,7 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         market.isComped = false;
         emit MarketComped(CToken(cToken), false);
 
-        refreshCompSpeedsInternal();
+        setCompSpeedInternal(CToken(cToken), 0);
     }
 
     /**

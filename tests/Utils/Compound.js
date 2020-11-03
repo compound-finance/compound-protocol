@@ -128,7 +128,6 @@ async function makeComptroller(opts = {}) {
     const maxAssets = etherUnsigned(dfn(opts.maxAssets, 10));
     const liquidationIncentive = etherMantissa(1);
     const comp = opts.comp || await deploy('Comp', [opts.compOwner || root]);
-    const compRate = etherUnsigned(dfn(opts.compRate, 1e18));
     const vestingPeriod = etherUnsigned(dfn(opts.vestingPeriod, oneWeek));
 
     await send(unitroller, '_setPendingImplementation', [comptroller._address]);
@@ -138,7 +137,6 @@ async function makeComptroller(opts = {}) {
     await send(unitroller, '_setCloseFactor', [closeFactor]);
     await send(unitroller, '_setPriceOracle', [priceOracle._address]);
     await send(unitroller, 'setCompAddress', [comp._address]); // harness only
-    await send(unitroller, '_setCompRate', [compRate]);
     await send(unitroller, '_setVestingPeriod', [vestingPeriod]);
 
     return Object.assign(unitroller, { priceOracle, comp });

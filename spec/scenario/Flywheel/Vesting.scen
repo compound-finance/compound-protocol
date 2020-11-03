@@ -44,7 +44,8 @@ Macro InitSpeeds
     Mint Coburn 6e18 cBAT--tokenbalance = 6e18 / 2e9 = 3e9
     EnterMarkets Coburn cBAT
     Borrow Coburn 1e18 cZRX
-    Comptroller RefreshCompSpeeds
+    Comptroller SetCompSpeed cZRX 1e18
+    Comptroller SetCompSpeed cBAT 0
 
 Macro InitVestingSpeeds
     InitSpeeds
