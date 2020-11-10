@@ -166,6 +166,17 @@ contract CDaiDelegate is CErc20Delegate {
         daiJoin.exit(to, amount);
     }
 
+
+     /**
+      * @notice Sender receives flashloan
+      */
+    function flashloan(uint256 amount) public {
+        PotLike pot = PotLike(potAddress);
+        doTransferOut(msg.sender, amount);
+        pot.drip();
+        doTransferIn(msg.sender, amount);
+    }
+
     /*** Maker Internals ***/
 
     uint256 constant RAY = 10 ** 27;
