@@ -56,6 +56,9 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
     /// @notice Emitted when a new COMP speed is calculated for a market
     event CompSpeedUpdated(CToken indexed cToken, uint newSpeed);
 
+    /// @notice Emitted when a new COMP speed is calculated for a contributor
+    event ContributorCompSpeedUpdated(address indexed contributor, uint newSpeed);
+
     /// @notice Emitted when COMP is distributed to a supplier
     event DistributedSupplierComp(CToken indexed cToken, address indexed supplier, uint compDelta, uint compSupplyIndex);
 
@@ -1245,6 +1248,23 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
+     * @notice Calculate additional accrued COMP for a contributor since last accrual
+     * @param contributor The address to calculate contributor rewards for
+     */
+    function updateContributorRewards(address contributor) public {
+        uint compSpeed = compContributorSpeeds[contributor];
+        uint blockNumber = getBlockNumber();
+        uint deltaBlocks = sub_(blockNumber, lastContributorBlock[contributor]);
+        if (deltaBlocks > 0 && compSpeed > 0) {
+            uint newAccrued = mul_(deltaBlocks, compSpeed);
+            uint contributorAccrued = add_(compAccrued[contributor], newAccrued);
+
+            compAccrued[contributor] = contributorAccrued;
+            lastContributorBlock[contributor] = blockNumber;
+        }
+    }
+
+    /**
      * @notice Claim all the comp accrued by holder in all markets
      * @param holder The address to claim COMP for
      */
@@ -1271,6 +1291,9 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @param suppliers Whether or not to claim COMP earned by supplying
      */
     function claimComp(address[] memory holders, CToken[] memory cTokens, bool borrowers, bool suppliers) public {
+        for (uint i = 0; i < holders.length; i++) {
+            updateContributorRewards(holders[i]);
+        }
         updateLastVestingBlockInternal();
         for (uint i = 0; i < cTokens.length; i++) {
             CToken cToken = cTokens[i];
@@ -1333,6 +1356,26 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
     function _setCompSpeed(CToken cToken, uint compSpeed) public {
         require(adminOrInitializing(), "only admin can set comp speed");
         setCompSpeedInternal(cToken, compSpeed);
+    }
+
+    /**
+     * @notice Set COMP speed for a single contributor
+     * @param contributor The contributor whose COMP speed to update
+     * @param compSpeed New COMP speed for contributor
+     */
+    function _setContributorCompSpeed(address contributor, uint compSpeed) public {
+        require(adminOrInitializing(), "only admin can set comp speed");
+
+        // note that COMP speed could be set to 0 to halt liquidity rewards for a contributor
+        updateContributorRewards(contributor);
+        if (compSpeed == 0) {
+            // release storage
+            delete lastContributorBlock[contributor];
+        }
+        lastContributorBlock[contributor] = getBlockNumber();
+        compContributorSpeeds[contributor] = compSpeed;
+        
+        emit ContributorCompSpeedUpdated(contributor, compSpeed);
     }
 
     /**

@@ -119,3 +119,25 @@ Test "Double vesting cannot happen"
     Comptroller ClaimComp Coburn
     Assert Equal (Comptroller CompAccrued Coburn) 0
     Assert Equal (Erc20 COMP TokenBalance Coburn) 3e23
+
+Test "A holder can receive both liquidity and contributor rewards"
+    VestingComptroller
+    InitVestingSpeeds
+    Comptroller SetContributorCompSpeed Geoff 1e18
+    -- first 2000 blocks 
+    FastForward 2000 Blocks
+    Comptroller ClaimComp Geoff
+    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 4e21
+    Comptroller SetContributorCompSpeed Geoff 0
+    -- second 2000 blocks
+    FastForward 2000 Blocks
+    Comptroller ClaimComp Geoff
+    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 6e21
+    Comptroller SetContributorCompSpeed Geoff 2e18
+    -- third 2000 blocks
+    FastForward 2000 Blocks
+    Comptroller ClaimComp Geoff
+    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 12e21

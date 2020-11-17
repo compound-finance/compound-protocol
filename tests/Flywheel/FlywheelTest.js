@@ -653,6 +653,18 @@ describe('Flywheel', () => {
         send(comptroller, 'claimComp', [a1, [cNOT._address]])
       ).rejects.toRevert('revert market must be listed');
     });
+
+    it('should claim comp accrued to contributors', async () => {
+      const compRemaining = etherExp(1);
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+
+      const tx1 = await send(comptroller, '_setContributorCompSpeed', [a1, 2000]);
+      await fastForward(comptroller, 50);
+
+      const tx2 = await send(comptroller, 'claimComp', [a1]);
+      expect(await compBalance(comptroller, a1)).toEqualNumber(50 * 2000);
+      expect(await compAccrued(comptroller, a1)).toEqualNumber(0);
+    });
   });
 
   describe('claimComp batch', () => {
@@ -948,6 +960,62 @@ describe('Flywheel', () => {
       expect(await call(comptroller, 'lastVestingBlockBefore', [40])).toEqualNumber(etherUnsigned(31));
       expect(await call(comptroller, 'lastVestingBlockBefore', [50])).toEqualNumber(etherUnsigned(42));
       expect(await call(comptroller, 'lastVestingBlockBefore', [60])).toEqualNumber(etherUnsigned(53));
+    });
+  });
+
+  describe('updateContributorRewards', () => {
+    it('should not fail when contributor rewards called on non-contributor', async () => {
+      const tx1 = await send(comptroller, 'updateContributorRewards', [a1]);
+    });
+
+    it('should accrue comp to contributors', async () => {
+      const tx1 = await send(comptroller, '_setContributorCompSpeed', [a1, 2000]);
+      await fastForward(comptroller, 50);
+
+      const a1Accrued = await compAccrued(comptroller, a1);
+      expect(a1Accrued).toEqualNumber(0);
+
+      const tx2 = await send(comptroller, 'updateContributorRewards', [a1], {from: a1});
+      const a1Accrued2 = await compAccrued(comptroller, a1);
+      expect(a1Accrued2).toEqualNumber(50 * 2000);
+    });
+
+    it('should accrue comp with late set', async () => {
+      await fastForward(comptroller, 1000);
+      const tx1 = await send(comptroller, '_setContributorCompSpeed', [a1, 2000]);
+      await fastForward(comptroller, 50);
+
+      const tx2 = await send(comptroller, 'updateContributorRewards', [a1], {from: a1});
+      const a1Accrued2 = await compAccrued(comptroller, a1);
+      expect(a1Accrued2).toEqualNumber(50 * 2000);
+    });
+  });
+
+  describe('_setContributorCompSpeed', () => {
+    it('should revert if not called by admin', async () => {
+      await expect(
+        send(comptroller, '_setContributorCompSpeed', [a1, 1000], {from: a1})
+      ).rejects.toRevert('revert only admin can set comp speed');
+    });
+
+    it('should start comp stream if called by admin', async () => {
+      const tx = await send(comptroller, '_setContributorCompSpeed', [a1, 1000]);
+      expect(tx).toHaveLog('ContributorCompSpeedUpdated', {
+        contributor: a1,
+        newSpeed: 1000
+      });
+    });
+
+    it('should reset comp stream if set to 0', async () => {
+      const tx1 = await send(comptroller, '_setContributorCompSpeed', [a1, 2000]);
+      await fastForward(comptroller, 50);
+
+      const tx2 = await send(comptroller, '_setContributorCompSpeed', [a1, 0]);
+      await fastForward(comptroller, 50);
+
+      const tx3 = await send(comptroller, 'updateContributorRewards', [a1], {from: a1});
+      const a1Accrued = await compAccrued(comptroller, a1);
+      expect(a1Accrued).toEqualNumber(50 * 2000);
     });
   });
 });

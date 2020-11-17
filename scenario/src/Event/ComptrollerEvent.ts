@@ -272,6 +272,18 @@ async function setCompSpeed(world: World, from: string, comptroller: Comptroller
   return world;
 }
 
+async function setContributorCompSpeed(world: World, from: string, comptroller: Comptroller, contributor: string, speed: NumberV): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setContributorCompSpeed(contributor, speed.encode()), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Comp speed for contributor ${contributor} set to ${speed.show()}`,
+    invokation
+  );
+
+  return world;
+}
+
 async function setVestingPeriod(world: World, from: string, comptroller: Comptroller, vestingPeriod: NumberV): Promise<World> {
   let invokation = await invoke(world, comptroller.methods._setVestingPeriod(vestingPeriod.encode()), from, ComptrollerErrorReporter);
 
@@ -750,6 +762,20 @@ export function comptrollerCommands() {
         new Arg("speed", getNumberV)
       ],
       (world, from, {comptroller, cToken, speed}) => setCompSpeed(world, from, comptroller, cToken, speed)
+    ),
+    new Command<{comptroller: Comptroller, contributor: AddressV, speed: NumberV}>(`
+      #### SetContributorCompSpeed
+
+      * "Comptroller SetContributorCompSpeed <contributor> <rate>" - Sets COMP speed for contributor
+      * E.g. "Comptroller SetContributorCompSpeed contributor 1000
+      `,
+      "SetContributorCompSpeed",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("contributor", getAddressV),
+        new Arg("speed", getNumberV)
+      ],
+      (world, from, {comptroller, contributor, speed}) => setContributorCompSpeed(world, from, comptroller, contributor.val, speed)
     ),
     new Command<{comptroller: Comptroller, vestingPeriod: NumberV}>(`
       #### SetVestingPeriod

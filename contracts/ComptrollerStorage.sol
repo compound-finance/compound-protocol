@@ -160,4 +160,12 @@ contract ComptrollerV5Storage is ComptrollerV4Storage {
 
     /// @notice The COMP that has been earned but not yet accrued to each user
     mapping(address => uint) public compVesting;
+
+    // New continuous rewards patch
+
+    /// @notice The portion of COMP that each contributor receives per block
+    mapping(address => uint) public compContributorSpeeds;
+
+    /// @notice Last block at which a contributor's COMP rewards have been allocated
+    mapping(address => uint) public lastContributorBlock;
 }
