@@ -120,6 +120,12 @@ describe('Flywheel', () => {
         send(comptroller, '_grantComp', [a1, 100], {from: a1})
       ).rejects.toRevert('revert only admin can grant comp');
     });
+
+    it('should revert if insufficient comp', async () => {
+      await expect(
+        send(comptroller, '_grantComp', [a1, etherUnsigned(1e20)])
+      ).rejects.toRevert('revert insufficient comp for grant');
+    });
   });
 
   describe('getCompMarkets()', () => {
@@ -130,12 +136,28 @@ describe('Flywheel', () => {
     });
   });
 
+  describe('_setCompSpeed()', () => {
+    it('should update market index when calling setCompSpeed', async () => {
+      const mkt = cREP;
+      await send(comptroller, 'setBlockNumber', [0]);
+      await send(mkt, 'harnessSetTotalSupply', [etherUnsigned(10e18)]);
+
+      await send(comptroller, '_setCompSpeed', [mkt._address, etherExp(0.5)]);
+      await fastForward(comptroller, 20);
+      await send(comptroller, '_setCompSpeed', [mkt._address, etherExp(1)]);
+
+      const {index, block} = await call(comptroller, 'compSupplyState', [mkt._address]);
+      expect(index).toEqualNumber(2e36);
+      expect(block).toEqualNumber(20);
+    });
+  });
+
   describe('updateCompBorrowIndex()', () => {
     it('should calculate comp borrower index correctly', async () => {
       const mkt = cREP;
+      await send(comptroller, '_setCompSpeed', [mkt._address, etherExp(0.5)]);
       await send(comptroller, 'setBlockNumber', [100]);
       await send(mkt, 'harnessSetTotalBorrows', [etherUnsigned(11e18)]);
-      await send(comptroller, '_setCompSpeed', [mkt._address, etherExp(0.5)]);
       await send(comptroller, 'harnessUpdateCompBorrowIndex', [
         mkt._address,
         etherExp(1.1),
@@ -206,9 +228,9 @@ describe('Flywheel', () => {
   describe('updateCompSupplyIndex()', () => {
     it('should calculate comp supplier index correctly', async () => {
       const mkt = cREP;
+      await send(comptroller, '_setCompSpeed', [mkt._address, etherExp(0.5)]);
       await send(comptroller, 'setBlockNumber', [100]);
       await send(mkt, 'harnessSetTotalSupply', [etherUnsigned(10e18)]);
-      await send(comptroller, '_setCompSpeed', [mkt._address, etherExp(0.5)]);
       await send(comptroller, 'harnessUpdateCompSupplyIndex', [mkt._address]);
       /*
         suppyTokens = 10e18

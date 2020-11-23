@@ -1090,6 +1090,11 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      */
     function setCompSpeedInternal(CToken cToken, uint compSpeed) internal {
         // note that COMP speed could be set to 0 to halt liquidity rewards for a market
+        Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
+        updateLastVestingBlockInternal();
+        updateCompSupplyIndex(address(cToken));
+        updateCompBorrowIndex(address(cToken), borrowIndex);
+
         compSpeeds[address(cToken)] = compSpeed;
         emit CompSpeedUpdated(cToken, compSpeed);
     }
@@ -1116,6 +1121,7 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @param marketState The market state whose index to update
      * @param vestingState The market vesting state whose index to update
      * @param isSupply True if this implements the supply update, false if the borrow update
+     * @param marketBorrowIndex The given market's borrow index
      */
     function updateCompMarketIndex(address cToken, CompMarketState storage marketState, CompMarketState storage vestingState, bool isSupply, Exp memory marketBorrowIndex) internal {
         uint compSpeed = compSpeeds[cToken];
@@ -1170,6 +1176,7 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @dev Borrowers will not begin to vest & accrue until after the first interaction with the protocol.
      * @param cToken The market in which the borrower is interacting
      * @param borrower The address of the borrower to distribute COMP to
+     * @param marketBorrowIndex The given market's borrow index
      * @param distribute Whether to distribute accrued COMP
      */
     function distributeBorrowerComp(address cToken, address borrower, Exp memory marketBorrowIndex, bool distribute) internal {
@@ -1180,6 +1187,11 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @notice Calculate COMP accrued by a holder (supplier or borrower) and possibly transfer it to them
      * @param cToken The market in which the holder is interacting
      * @param holder The address of the holder to distribute COMP to
+     * @param distribute Whether to distribute accrued COMP
+     * @param marketBorrowIndex The given market's borrow index
+     * @param marketState Supply or borrow state for the market (depending on isSupply)
+     * @param vestingState Supply or borrow vesting state for the market (depending on isSupply)
+     * @param isSupply True if distributeMarketComp called by distributeSupplierComp
      */
     function distributeMarketComp(address cToken, address holder, bool distribute, CompMarketState storage marketState, CompMarketState storage vestingState, bool isSupply,
             Exp memory marketBorrowIndex) internal {
@@ -1343,9 +1355,8 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
     function _grantComp(address recipient, uint amount) public returns (uint) {
         require(adminOrInitializing(), "only admin can grant comp");
         uint amountLeft = grantCompInternal(recipient, amount);
-        if (amountLeft == 0) {
-            emit CompGranted(recipient, amount);
-        }
+        require(amountLeft == 0, "insufficient comp for grant");
+        emit CompGranted(recipient, amount);
     }
 
     /**
