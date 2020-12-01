@@ -12,7 +12,8 @@
     "repl": "./scenario/script/repl",
     "profile": "yarn test tests/gasProfiler.js",
     "test": "./script/test",
-    "test:prepare": "NO_RUN=true ./script/test"
+    "test:prepare": "NO_RUN=true ./script/test",
+    "checksize": "npx run ./script/saddle/comptrollerSize.js"
   },
   "repository": "git@github.com:compound-finance/compound-protocol.git",
   "author": "Compound Finance",

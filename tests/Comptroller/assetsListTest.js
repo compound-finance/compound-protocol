@@ -18,21 +18,6 @@ describe('assetListTest', () => {
     );
   });
 
-  describe('_setMaxAssets', () => {
-    it("fails if called by a non-admin", async () => {
-      expect(await send(comptroller, '_setMaxAssets', [15], {from: customer})).toHaveTrollFailure('UNAUTHORIZED', 'SET_MAX_ASSETS_OWNER_CHECK');
-      expect(await call(comptroller, 'maxAssets')).toEqualNumber(10);
-    });
-
-    it("succeeds if called by an admin", async() => {
-      expect(await send(comptroller, '_setMaxAssets', [15])).toHaveLog('NewMaxAssets', {
-          oldMaxAssets: "10",
-          newMaxAssets: "15"
-        });
-      expect(await call(comptroller, 'maxAssets')).toEqualNumber(15);
-    });
-  });
-
   async function checkMarkets(expectedTokens) {
     for (let token of allTokens) {
       const isExpected = expectedTokens.some(e => e.symbol == token.symbol);
@@ -98,37 +83,6 @@ describe('assetListTest', () => {
     it("returns a list of codes mapping to user's ultimate membership in given addresses", async () => {
       await enterAndCheckMarkets([OMG, ZRX, BAT], [OMG, ZRX, BAT], ['NO_ERROR', 'NO_ERROR', 'NO_ERROR'], "success if can enter markets");
       await enterAndCheckMarkets([OMG, SKT], [OMG, ZRX, BAT], ['NO_ERROR', 'MARKET_NOT_LISTED'], "error for unlisted markets");
-    });
-
-    it("can enter one + asset cap reached", async () => {
-      await send(comptroller, '_setMaxAssets', [1]);
-      await enterAndCheckMarkets([ZRX, OMG], [ZRX], ['NO_ERROR', 'TOO_MANY_ASSETS'], "error if asset cap reached");
-    });
-
-    it("reaches asset cap + already in asset", async () => {
-      await send(comptroller, '_setMaxAssets', [1]);
-      await enterAndCheckMarkets([ZRX], [ZRX]);
-      await enterAndCheckMarkets([OMG, ZRX], [ZRX], ['TOO_MANY_ASSETS', 'NO_ERROR'], "error if already in asset");
-    });
-
-    describe('reaching the asset cap', () => {
-      beforeEach(async () => {
-        await send(comptroller, '_setMaxAssets', [3]);
-        await enterAndCheckMarkets([OMG, ZRX, BAT], [OMG, ZRX, BAT]);
-      });
-
-      it("does not grow if user exactly at asset cap", async () => {
-        await send(comptroller, '_setMaxAssets', [3]);
-        await enterAndCheckMarkets([REP], [OMG, ZRX, BAT], ['TOO_MANY_ASSETS']);
-        await send(comptroller, '_setMaxAssets', [4]);
-        await enterAndCheckMarkets([REP], [OMG, ZRX, BAT, REP]);
-        await enterAndCheckMarkets([DAI], [OMG, ZRX, BAT, REP], ['TOO_MANY_ASSETS']);
-      });
-
-      it("does not grow if user is well beyond asset cap", async () => {
-        await send(comptroller, '_setMaxAssets', [1]);
-        await enterAndCheckMarkets([REP], [OMG, ZRX, BAT], ['TOO_MANY_ASSETS']);
-      });
     });
   });
 

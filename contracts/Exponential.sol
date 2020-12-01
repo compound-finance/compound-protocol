@@ -97,6 +97,22 @@ contract Exponential is CarefulMath {
     }
 
     /**
+     * @dev Multiply an Exp by a scalar, then truncate to return an unsigned integer.
+     */
+    function mul_ScalarTruncate(Exp memory a, uint scalar) pure internal returns (uint) {
+        Exp memory product = mul_(a, scalar);
+        return truncate(product);
+    }
+
+    /**
+     * @dev Multiply an Exp by a scalar, truncate, then add an to an unsigned integer, returning an unsigned integer.
+     */
+    function mul_ScalarTruncateAddUInt(Exp memory a, uint scalar, uint addend) pure internal returns (uint) {
+        Exp memory product = mul_(a, scalar);
+        return add_(truncate(product), addend);
+    }
+
+    /**
      * @dev Divide an Exp by a scalar, returning a new Exp.
      */
     function divScalar(Exp memory a, uint scalar) pure internal returns (MathError, Exp memory) {
