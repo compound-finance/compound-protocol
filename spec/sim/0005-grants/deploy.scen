@@ -3,6 +3,6 @@
 PrintTransactionLogs
 
 -- Deploy the flywheel impl
-ComptrollerImpl Deploy Standard StdComptrollerG5
+ComptrollerImpl Deploy Standard StdComptrollerG6
 
 Print "Deployed OK!"
