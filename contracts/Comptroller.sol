@@ -1296,9 +1296,8 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @dev Note: If there is not enough COMP, we do not perform the transfer all.
      * @param recipient The address of the recipient to transfer COMP to
      * @param amount The amount of COMP to (possibly) transfer
-     * @return The amount of COMP which was NOT transferred to the recipient
      */
-    function _grantComp(address recipient, uint amount) public returns (uint) {
+    function _grantComp(address recipient, uint amount) public {
         require(adminOrInitializing(), "only admin can grant comp");
         uint amountLeft = grantCompInternal(recipient, amount);
         require(amountLeft == 0, "insufficient comp for grant");
