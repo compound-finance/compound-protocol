@@ -4,6 +4,7 @@ import "../../contracts/Comptroller.sol";
 
 contract ComptrollerScenario is Comptroller {
     uint public blockNumber;
+    address public compAddress;
 
     constructor() Comptroller() public {}
 
@@ -12,8 +13,20 @@ contract ComptrollerScenario is Comptroller {
         return blockNumber;
     }
 
+    function setCompAddress(address compAddress_) public {
+        compAddress = compAddress_;
+    }
+
+    function getCompAddress() public view returns (address) {
+        return compAddress;
+    }
+
     function setBlockNumber(uint number) public {
         blockNumber = number;
+    }
+
+    function getBlockNumber() public view returns (uint) {
+        return blockNumber;
     }
 
     function membershipLength(CToken cToken) public view returns (uint) {
