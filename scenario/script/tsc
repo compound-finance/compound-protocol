@@ -16,7 +16,6 @@ else
     checksum="$(echo $scenario_dir/src/{*,**/}*.* | xargs shasum -p | shasum -p | cut -d' ' -f 1)"
 fi
 
-
 if [ ! -d "$scenario_dir/node_modules" ]; then
 	echo "Getting scenario packages..."
 	cd "$scenario_dir" && yarn
