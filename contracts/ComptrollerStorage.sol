@@ -135,3 +135,11 @@ contract ComptrollerV4Storage is ComptrollerV3Storage {
     // @notice Borrow caps enforced by borrowAllowed for each cToken address. Defaults to zero which corresponds to unlimited borrowing.
     mapping(address => uint) public borrowCaps;
 }
+
+contract ComptrollerV5Storage is ComptrollerV4Storage {
+    /// @notice The portion of COMP that each contributor receives per block
+    mapping(address => uint) public compContributorSpeeds;
+
+    /// @notice Last block at which a contributor's COMP rewards have been allocated
+    mapping(address => uint) public lastContributorBlock;
+}

@@ -240,7 +240,7 @@ Test "When price oracle for collateral token is whack"
     PriceOracle SetPrice cBAT 1.15792e59
     AllowFailures
     Liquidate Torrey "->" Geoff 2e18 cBAT "Seizing" cBAT
-    Assert Failure COMPTROLLER_REJECTION LIQUIDATE_COMPTROLLER_REJECTION MATH_ERROR
+    Assert Revert "revert multiplication overflow"
 
 Test "When repay borrow fails"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005

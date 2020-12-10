@@ -90,6 +90,32 @@ describe('Flywheel', () => {
     await send(comptroller, '_addCompMarkets', [[cLOW, cREP, cZRX].map(c => c._address)]);
   });
 
+  describe('_grantComp()', () => {
+    beforeEach(async () => {
+      await send(comptroller.comp, 'transfer', [comptroller._address, etherUnsigned(50e18)], {from: root});
+    });
+
+    it('should award comp if called by admin', async () => {
+      const tx = await send(comptroller, '_grantComp', [a1, 100]);
+      expect(tx).toHaveLog('CompGranted', {
+        recipient: a1,
+        amount: 100
+      });
+    });
+
+    it('should revert if not called by admin', async () => {
+      await expect(
+        send(comptroller, '_grantComp', [a1, 100], {from: a1})
+      ).rejects.toRevert('revert only admin can grant comp');
+    });
+
+    it('should revert if insufficient comp', async () => {
+      await expect(
+        send(comptroller, '_grantComp', [a1, etherUnsigned(1e20)])
+      ).rejects.toRevert('revert insufficient comp for grant');
+    });
+  });
+
   describe('getCompMarkets()', () => {
     it('should return the comp markets', async () => {
       expect(await call(comptroller, 'getCompMarkets')).toEqual(
@@ -769,6 +795,62 @@ describe('Flywheel', () => {
       await expect(
         send(comptroller, '_setCompRate', [cLOW._address], {from: a1})
       ).rejects.toRevert('revert only admin can change comp rate');
+    });
+  });
+
+  describe('updateContributorRewards', () => {
+    it('should not fail when contributor rewards called on non-contributor', async () => {
+      const tx1 = await send(comptroller, 'updateContributorRewards', [a1]);
+    });
+
+    it('should accrue comp to contributors', async () => {
+      const tx1 = await send(comptroller, '_setContributorCompSpeed', [a1, 2000]);
+      await fastForward(comptroller, 50);
+
+      const a1Accrued = await compAccrued(comptroller, a1);
+      expect(a1Accrued).toEqualNumber(0);
+
+      const tx2 = await send(comptroller, 'updateContributorRewards', [a1], {from: a1});
+      const a1Accrued2 = await compAccrued(comptroller, a1);
+      expect(a1Accrued2).toEqualNumber(50 * 2000);
+    });
+
+    it('should accrue comp with late set', async () => {
+      await fastForward(comptroller, 1000);
+      const tx1 = await send(comptroller, '_setContributorCompSpeed', [a1, 2000]);
+      await fastForward(comptroller, 50);
+
+      const tx2 = await send(comptroller, 'updateContributorRewards', [a1], {from: a1});
+      const a1Accrued2 = await compAccrued(comptroller, a1);
+      expect(a1Accrued2).toEqualNumber(50 * 2000);
+    });
+  });
+
+  describe('_setContributorCompSpeed', () => {
+    it('should revert if not called by admin', async () => {
+      await expect(
+        send(comptroller, '_setContributorCompSpeed', [a1, 1000], {from: a1})
+      ).rejects.toRevert('revert only admin can set comp speed');
+    });
+
+    it('should start comp stream if called by admin', async () => {
+      const tx = await send(comptroller, '_setContributorCompSpeed', [a1, 1000]);
+      expect(tx).toHaveLog('ContributorCompSpeedUpdated', {
+        contributor: a1,
+        newSpeed: 1000
+      });
+    });
+
+    it('should reset comp stream if set to 0', async () => {
+      const tx1 = await send(comptroller, '_setContributorCompSpeed', [a1, 2000]);
+      await fastForward(comptroller, 50);
+
+      const tx2 = await send(comptroller, '_setContributorCompSpeed', [a1, 0]);
+      await fastForward(comptroller, 50);
+
+      const tx3 = await send(comptroller, 'updateContributorRewards', [a1], {from: a1});
+      const a1Accrued = await compAccrued(comptroller, a1);
+      expect(a1Accrued).toEqualNumber(50 * 2000);
     });
   });
 });
