@@ -34,6 +34,10 @@ Macro GrantsComptroller
     ComptrollerImpl Deploy ScenarioG5 ComptrollerScen
     Unitroller SetPendingImpl ComptrollerScen
     ComptrollerImpl ComptrollerScen BecomeG5
+    -- g6
+    ComptrollerImpl Deploy ScenarioG6 ComptrollerScen
+    Unitroller SetPendingImpl ComptrollerScen
+    ComptrollerImpl ComptrollerScen BecomeG6
     -- current
     ComptrollerImpl Deploy Scenario ComptrollerScen
     Unitroller SetPendingImpl ComptrollerScen
@@ -46,6 +50,8 @@ Macro InitSpeeds
     Mint Coburn 6e18 cBAT--tokenbalance = 6e18 / 2e9 = 3e9
     EnterMarkets Coburn cBAT
     Borrow Coburn 1e18 cZRX
+    Comptroller SetCompSpeed cZRX 1
+    Comptroller SetCompSpeed cBAT 1
     Comptroller RefreshCompSpeeds
     Comptroller Send "setCompAddress(address)" (Address COMP)
 

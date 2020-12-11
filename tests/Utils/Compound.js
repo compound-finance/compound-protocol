@@ -92,7 +92,7 @@ async function makeComptroller(opts = {}) {
     await send(unitroller, '_setCloseFactor', [closeFactor]);
     await send(unitroller, '_setPriceOracle', [priceOracle._address]);
     await send(unitroller, 'setCompAddress', [comp._address]); // harness only
-    await send(unitroller, '_setCompRate', [compRate]);
+    await send(unitroller, 'harnessSetCompRate', [compRate]);
 
     return Object.assign(unitroller, { priceOracle, comp });
   }
