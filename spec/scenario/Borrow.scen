@@ -49,20 +49,6 @@ Test "Borrow some BAT fails when no BAT available"
     Borrow Geoff 1e18 cBAT
     Assert Failure TOKEN_INSUFFICIENT_CASH BORROW_CASH_NOT_AVAILABLE
 
-Test "Borrow some BAT fails when already entered max assets"
-    NewComptroller price:1.0 maxAssets:1
-    NewCToken ZRX cZRX
-    NewCToken BAT cBAT
-    Give cBAT 10e18 BAT -- Faucet some bat to borrow
-    Support cZRX collateralFactor:0.5
-    Support cBAT collateralFactor:0.5
-    Prep Geoff Some ZRX cZRX
-    Mint Geoff 100e18 cZRX
-    EnterMarkets Geoff cZRX
-    AllowFailures
-    Borrow Geoff 1e18 cBAT
-    Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION TOO_MANY_ASSETS
-
 Test "Borrow fails if market not listed"
     NewComptroller price:1.0
     NewCToken ZRX cZRX

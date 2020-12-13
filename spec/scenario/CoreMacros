@@ -34,9 +34,17 @@ Macro NewComptroller price=1.0 closeFactor=0.1 maxAssets=20
     Unitroller SetPendingImpl ComptrollerG3
     ComptrollerImpl ComptrollerG3 BecomeG3 1e18 []
     --g4
-    ComptrollerImpl Deploy Scenario ScenComptroller
-    Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become
+    ComptrollerImpl Deploy StandardG4 ComptrollerG4
+    Unitroller SetPendingImpl ComptrollerG4
+    ComptrollerImpl ComptrollerG4 BecomeG4
+    --g5
+    ComptrollerImpl Deploy ScenarioG5 ComptrollerG5
+    Unitroller SetPendingImpl ComptrollerG5
+    ComptrollerImpl ComptrollerG5 BecomeG5
+    --current
+    ComptrollerImpl Deploy Scenario ComptrollerScen
+    Unitroller SetPendingImpl ComptrollerScen
+    ComptrollerImpl ComptrollerScen Become
 
 Macro NewCToken erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard delegatorType=CErc20DelegatorScenario cTokenType=CErc20DelegateScenario admin=Admin becomeImplementationData="0x0"
     Erc20 Deploy tokenType erc20 erc20
