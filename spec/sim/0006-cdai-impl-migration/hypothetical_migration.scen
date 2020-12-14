@@ -3,12 +3,13 @@
 PrintTransactionLogs
 Alias CompHolder "0xC89b6f0146642688bb254bF93C28fcCF1E182C81"
 Alias CUsdtImplementation "0x976aa93ca5aaa569109f4267589c619a097f001d"
+Alias CUsdtIRM "0xFB564da37B41b2F6B6EDcc3e56FbF523bD9F2012"
 Web3Fork "https://mainnet-eth.compound.finance/@11447815" (CompHolder)
 UseConfigs mainnet
 
 
 From CompHolder (Comp Delegate CompHolder)
-From CompHolder (Governor GovernorAlpha Propose "Update cDai implementation" [(Address cDai)] [0] ["_setImplementation(address,bool,bytes)"] [[(address CUsdtImplementation) true "0x"]])
+From CompHolder (Governor GovernorAlpha Propose "Update cDai implementation" [(Address cDai) (Address cDai)] [0 0] ["_setImplementation(address,bool,bytes)" "_setInterestRateModel(address)"] [[(address CUsdtImplementation) true "0x"] [(address CUsdtIRM)]])
 
 
 
@@ -20,6 +21,7 @@ IncreaseTime 604910
 Governor GovernorAlpha Proposal LastProposal Execute
 
 Assert Equal (Erc20 (Address Dai) TokenBalance (Address cDai)) (284058478303890709049107567)
+Assert Equal (CToken cDai InterestRateModel) (Address CUsdtIRM)
 CToken cDai AccrueInterest
 
 
