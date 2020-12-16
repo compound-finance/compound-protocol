@@ -24,7 +24,7 @@ Macro FlywheelComptroller price=1.0 borrowRate=0.000005 compInitAmount=5000000e1
     Erc20 Deploy Standard COMP "COMP Token" 18
     Give (Address Comptroller) compInitAmount COMP
 
-Macro GrantsComptroller
+Macro CooldownComptroller
     FlywheelComptroller
     -- current
     ComptrollerImpl Deploy Scenario ComptrollerScen
@@ -41,47 +41,52 @@ Macro InitSpeeds
     Comptroller SetCompSpeed cZRX 1
     Comptroller SetCompSpeed cBAT 1
     Comptroller RefreshCompSpeeds
+    Comptroller SetCompSpeed cBAT 1e18
     Comptroller Send "setCompAddress(address)" (Address COMP)
 
-Test "COMP speed can be set per market"
-    GrantsComptroller
+Test "COMP from multiple tokens can be claimed frequently"
+    CooldownComptroller
     InitSpeeds
-    -- Baseline comp amounts
-    Assert Equal (Comptroller CompAccrued Geoff) 0
-    Assert Equal (Erc20 COMP TokenBalance Geoff) 0
-    -- Comp speed can be set
-    Comptroller SetCompSpeed cZRX 2
-    FastForward 1000 Blocks
-    Comptroller ClaimComp Geoff
-    Assert Equal (Comptroller CompAccrued Geoff) 0
-    Assert Equal (Erc20 COMP TokenBalance Geoff) 2000
-    -- Comp speed can be changed
-    Comptroller SetCompSpeed cZRX 4
-    FastForward 1000 Blocks
-    Comptroller ClaimComp Geoff
-    Assert Equal (Comptroller CompAccrued Geoff) 0
-    Assert Equal (Erc20 COMP TokenBalance Geoff) 6000
-    -- Comp speed can be removed
-    Comptroller SetCompSpeed cZRX 0
-    FastForward 1000 Blocks
-    Comptroller ClaimComp Geoff
-    Assert Equal (Comptroller CompAccrued Geoff) 0
-    Assert Equal (Erc20 COMP TokenBalance Geoff) 6000
+    Comptroller SetCooldownPeriod 2000
+    -- Make repeated claims, initiating cooldown for next period
+    FastForward 2000 Blocks
+    Comptroller ClaimComp Coburn
+    Assert Equal (Erc20 COMP TokenBalance Coburn) 0
+    FastForward 2000 Blocks
+    Comptroller ClaimComp Coburn
+    Assert Equal (Erc20 COMP TokenBalance Coburn) (3999999999999999999999)
+    FastForward 2000 Blocks
+    Comptroller ClaimComp Coburn
+    Assert Equal (Erc20 COMP TokenBalance Coburn) (7999999999999999999998)
 
-Test "Set comp rate is removed"
-    GrantsComptroller
+Test "COMP cooldown affects ability to claim"
+    CooldownComptroller
     InitSpeeds
-    AllowFailures
-    Comptroller SetCompRate 5
-
-Test "Comp is not claimed automatically"
-    GrantsComptroller
-    InitSpeeds
-    Comptroller SetCompSpeed cZRX 2
-    FastForward 100000 Blocks
-    -- Check comp is not claimed automatically
-    Mint Geoff 50e18 cZRX
-    Assert Equal (Erc20 COMP TokenBalance Geoff) 0
-    -- Confirm there was comp to claim
+    Comptroller SetCooldownPeriod 2000
+    -- Accrue some COMP
+    FastForward 2000 Blocks
+    -- Trigger cooldown
     Comptroller ClaimComp Geoff
-    Assert Equal (Erc20 COMP TokenBalance Geoff) 200000
+    -- Try claiming before cooldown period
+    FastForward 1999 Blocks
+    Comptroller ClaimComp Geoff
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 0
+    -- Claim after cooldown period
+    FastForward 1 Blocks
+    Comptroller ClaimComp Geoff
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 2e21
+
+Test "COMP can be claimed frequently"
+    CooldownComptroller
+    InitSpeeds
+    Comptroller SetCooldownPeriod 2000
+    -- Make repeated claims, initiating cooldown for next period
+    FastForward 2000 Blocks
+    Comptroller ClaimComp Geoff
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 0
+    FastForward 2000 Blocks
+    Comptroller ClaimComp Geoff
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 2e21
+    FastForward 2000 Blocks
+    Comptroller ClaimComp Geoff
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 4e21

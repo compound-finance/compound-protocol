@@ -26,18 +26,6 @@ Macro FlywheelComptroller price=1.0 borrowRate=0.000005 compInitAmount=5000000e1
 
 Macro GrantsComptroller
     FlywheelComptroller
-    -- g4
-    ComptrollerImpl Deploy ScenarioG4 ComptrollerScen
-    Unitroller SetPendingImpl ComptrollerScen
-    ComptrollerImpl ComptrollerScen BecomeG4
-    -- g5
-    ComptrollerImpl Deploy ScenarioG5 ComptrollerScen
-    Unitroller SetPendingImpl ComptrollerScen
-    ComptrollerImpl ComptrollerScen BecomeG5
-    -- g6
-    ComptrollerImpl Deploy ScenarioG6 ComptrollerScen
-    Unitroller SetPendingImpl ComptrollerScen
-    ComptrollerImpl ComptrollerScen BecomeG6
     -- current
     ComptrollerImpl Deploy Scenario ComptrollerScen
     Unitroller SetPendingImpl ComptrollerScen
