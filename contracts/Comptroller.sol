@@ -1252,7 +1252,7 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @dev Note: If there is not enough COMP, we do not perform the transfer all.
      * @param user The address of the user to transfer COMP to
      * @param amount The amount of COMP to (possibly) transfer
-     * @return The amount of COMP which was NOT transferred to the user
+     * @return The amount of COMk which was NOT transferred to the user
      */
     function grantCompInternal(address user, uint amount) internal returns (uint) {
         Comp comp = Comp(getCompAddress());
