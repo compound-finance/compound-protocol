@@ -23,7 +23,7 @@ IncreaseTime 604910
 Governor GovernorAlpha Proposal LastProposal Execute
 
 -- Assert Dai retrieved from DSR
-Assert Equal (Erc20 (Address Dai) TokenBalance (Address cDai)) (284058478303890709049107567)
+Assert Equal (Erc20 Dai TokenBalance cDai) (284058478303890709049107567)
 Assert Equal (CToken cDai InterestRateModel) (Address CUsdtIRM)
 
 -- Ensure accrue interest works
@@ -32,11 +32,11 @@ CToken cDai AccrueInterest
 -- Mint Test
 From DaiHolder (Erc20 Dai Approve (Address cDai) 10000000)
 From DaiHolder (CToken cDai Mint 10000000)
-Assert Equal (Erc20 (Address Dai) TokenBalance (Address cDai)) (284058478303890709059107567)
+Assert Equal (Erc20 Dai TokenBalance cDai) (284058478303890709059107567)
 
 -- Borrow Test
 From CUSDCHolder (CToken cDai Borrow 10000000)
 Assert Equal (Erc20 Dai TokenBalance CUSDCHolder) (4235678125976069)
-Assert Equal (Erc20 Dai TokenBalance (Address cDai)) (284058478303890709049107567)
+Assert Equal (Erc20 Dai TokenBalance cDai) (284058478303890709049107567)
 
 Print "cDai implementation migration ok" 
