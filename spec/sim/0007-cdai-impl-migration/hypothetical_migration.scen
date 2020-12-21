@@ -24,6 +24,8 @@ Governor GovernorAlpha Proposal LastProposal Execute
 
 -- Assert Dai retrieved from DSR
 Assert Equal (Erc20 Dai TokenBalance cDai) (284058478303890709049107567)
+
+-- IRM changed correctly
 Assert Equal (CToken cDai InterestRateModel) (Address CUsdtIRM)
 
 -- Ensure accrue interest works
