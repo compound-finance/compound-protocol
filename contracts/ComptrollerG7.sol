@@ -12,7 +12,7 @@ import "./Governance/Comp.sol";
  * @title Compound's Comptroller Contract
  * @author Compound
  */
-contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError {
+contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError {
     /// @notice Emitted when an admin supports a market
     event MarketListed(CToken cToken);
 
@@ -48,9 +48,6 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
 
     /// @notice Emitted when a new COMP speed is set for a contributor
     event ContributorCompSpeedUpdated(address indexed contributor, uint newSpeed);
-
-    /// @notice Emitted when the cooldown period is updated
-    event CooldownPeriodUpdated(uint cooldownPeriod);
 
     /// @notice Emitted when COMP is distributed to a supplier
     event DistributedSupplierComp(CToken indexed cToken, address indexed supplier, uint compDelta, uint compSupplyIndex);
@@ -1203,26 +1200,6 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
-     * @notice Claim COMP and then enter all accrued COMP into cooldown
-     * @dev If a cooldown period is already in effect, it will be reset
-     * @return Amount of COMP locked in cooldown
-     */
-    function cooldown() public returns (uint256) {
-        require(cooldownPeriod > 0, "cooldown not active");
-
-        claimComp(msg.sender);
-
-        if (compAccrued[msg.sender] > 0) {
-            lastCooldownBlock[msg.sender] = getBlockNumber();
-            uint lockingAmount = compAccrued[msg.sender];
-            compLocked[msg.sender] = lockingAmount;
-            return lockingAmount;
-        } else {
-            return 0;
-        }
-    }
-
-    /**
      * @notice Claim all the comp accrued by holder in all markets
      * @param holder The address to claim COMP for
      */
@@ -1257,47 +1234,16 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
                 updateCompBorrowIndex(address(cToken), borrowIndex);
                 for (uint j = 0; j < holders.length; j++) {
                     distributeBorrowerComp(address(cToken), holders[j], borrowIndex);
-                    compAccrued[holders[j]] = grantCompCooldownInternal(holders[j], compAccrued[holders[j]]);
+                    compAccrued[holders[j]] = grantCompInternal(holders[j], compAccrued[holders[j]]);
                 }
             }
             if (suppliers == true) {
                 updateCompSupplyIndex(address(cToken));
                 for (uint j = 0; j < holders.length; j++) {
                     distributeSupplierComp(address(cToken), holders[j]);
-                    compAccrued[holders[j]] = grantCompCooldownInternal(holders[j], compAccrued[holders[j]]);
+                    compAccrued[holders[j]] = grantCompInternal(holders[j], compAccrued[holders[j]]);
                 }
             }
-        }
-    }
-
-    /**
-     * @notice Transfer COMP to the user while respecting cooldown
-     * @dev Note: If there is not enough COMP, we do not perform the transfer all.
-     * @param user The address of the user to transfer COMP to
-     * @param amount The amount of COMP to (possibly) transfer
-     * @return The amount of COMP which was NOT transferred to the user
-     */
-    function grantCompCooldownInternal(address user, uint amount) internal returns (uint) {
-        if (cooldownPeriod == 0) {
-            // revert to existing functionality if cooldown is not in effect
-            return grantCompInternal(user, amount);
-        } else if (lastCooldownBlock[user] + cooldownPeriod <= getBlockNumber()) {
-            uint amountToTransfer = compLocked[user] < amount ? compLocked[user] : amount;
-            if (amountToTransfer == 0) {
-                return amount;
-            } else {
-                uint notTransferred = grantCompInternal(user, amountToTransfer);
-                uint lockedAmountLeft = add_(sub_(compLocked[user], amountToTransfer), notTransferred);
-                compLocked[user] = lockedAmountLeft;
-                if (lockedAmountLeft == 0) {
-                    // release storage if no locked amount left
-                    lastCooldownBlock[user] = 0;
-                }
-                return add_(notTransferred, sub_(amount, amountToTransfer));
-            }
-        } else {
-            // we do not revert here because this function can be called on behalf of multiple users
-            return amount;
         }
     }
 
@@ -1362,14 +1308,6 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         compContributorSpeeds[contributor] = compSpeed;
 
         emit ContributorCompSpeedUpdated(contributor, compSpeed);
-    }
-
-    function _setCooldownPeriod(uint _cooldownPeriod) public {
-        require(adminOrInitializing(), "only admin can set cooldown period");
-
-        cooldownPeriod = _cooldownPeriod;
-
-        emit CooldownPeriodUpdated(_cooldownPeriod);
     }
 
     /**

@@ -33,18 +33,6 @@ Macro NewComptroller price=1.0 closeFactor=0.1 maxAssets=20
     ComptrollerImpl Deploy StandardG3 ComptrollerG3
     Unitroller SetPendingImpl ComptrollerG3
     ComptrollerImpl ComptrollerG3 BecomeG3 1e18 []
-    --g4
-    ComptrollerImpl Deploy StandardG4 ComptrollerG4
-    Unitroller SetPendingImpl ComptrollerG4
-    ComptrollerImpl ComptrollerG4 BecomeG4
-    --g5
-    ComptrollerImpl Deploy ScenarioG5 ComptrollerG5
-    Unitroller SetPendingImpl ComptrollerG5
-    ComptrollerImpl ComptrollerG5 BecomeG5
-    --g6
-    ComptrollerImpl Deploy ScenarioG6 ComptrollerG6
-    Unitroller SetPendingImpl ComptrollerG6
-    ComptrollerImpl ComptrollerG6 BecomeG6
     --current
     ComptrollerImpl Deploy Scenario ComptrollerScen
     Unitroller SetPendingImpl ComptrollerScen

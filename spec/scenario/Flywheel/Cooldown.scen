@@ -24,7 +24,7 @@ Macro FlywheelComptroller price=1.0 borrowRate=0.000005 compInitAmount=5000000e1
     Erc20 Deploy Standard COMP "COMP Token" 18
     Give (Address Comptroller) compInitAmount COMP
 
-Macro GrantsComptroller
+Macro CooldownComptroller
     FlywheelComptroller
     -- current
     ComptrollerImpl Deploy Scenario ComptrollerScen
@@ -43,45 +43,36 @@ Macro InitSpeeds
     Comptroller RefreshCompSpeeds
     Comptroller Send "setCompAddress(address)" (Address COMP)
 
-Test "COMP speed can be set per market"
-    GrantsComptroller
+Test "COMP cooldown affects ability to claim"
+    CooldownComptroller
     InitSpeeds
-    -- Baseline comp amounts
-    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Comptroller SetCooldownPeriod 2000
+    -- Accrue some COMP
+    FastForward 2000 Blocks
+    -- Try claiming before cooldown period
+    From Geoff (Comptroller Cooldown)
+    FastForward 1999 Blocks
+    Comptroller ClaimComp Geoff
     Assert Equal (Erc20 COMP TokenBalance Geoff) 0
-    -- Comp speed can be set
-    Comptroller SetCompSpeed cZRX 2
-    FastForward 1000 Blocks
+    -- Claim after cooldown period
+    FastForward 1 Blocks
     Comptroller ClaimComp Geoff
-    Assert Equal (Comptroller CompAccrued Geoff) 0
-    Assert Equal (Erc20 COMP TokenBalance Geoff) 2000
-    -- Comp speed can be changed
-    Comptroller SetCompSpeed cZRX 4
-    FastForward 1000 Blocks
-    Comptroller ClaimComp Geoff
-    Assert Equal (Comptroller CompAccrued Geoff) 0
-    Assert Equal (Erc20 COMP TokenBalance Geoff) 6000
-    -- Comp speed can be removed
-    Comptroller SetCompSpeed cZRX 0
-    FastForward 1000 Blocks
-    Comptroller ClaimComp Geoff
-    Assert Equal (Comptroller CompAccrued Geoff) 0
-    Assert Equal (Erc20 COMP TokenBalance Geoff) 6000
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 2e21
 
-Test "Set comp rate is removed"
-    GrantsComptroller
+Test "COMP is not claimed if cooldown is triggered before expiry"
+    CooldownComptroller
     InitSpeeds
-    AllowFailures
-    Comptroller SetCompRate 5
-
-Test "Comp is not claimed automatically"
-    GrantsComptroller
-    InitSpeeds
-    Comptroller SetCompSpeed cZRX 2
-    FastForward 100000 Blocks
-    -- Check comp is not claimed automatically
-    Mint Geoff 50e18 cZRX
+    Comptroller SetCooldownPeriod 2000
+    -- Accrue some COMP
+    FastForward 2000 Blocks
+    -- Make repeated claims
+    From Geoff (Comptroller Cooldown)
+    FastForward 1000 Blocks
+    From Geoff (Comptroller Cooldown)
+    FastForward 1000 Blocks
+    From Geoff (Comptroller Cooldown)
+    FastForward 1000 Blocks
+    From Geoff (Comptroller Cooldown)
+    FastForward 1000 Blocks
+    Comptroller ClaimComp Geoff
     Assert Equal (Erc20 COMP TokenBalance Geoff) 0
-    -- Confirm there was comp to claim
-    Comptroller ClaimComp Geoff
-    Assert Equal (Erc20 COMP TokenBalance Geoff) 200000

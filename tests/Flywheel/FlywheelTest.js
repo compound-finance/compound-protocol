@@ -832,4 +832,124 @@ describe('Flywheel', () => {
       expect(a1Accrued).toEqualNumber(50 * 2000);
     });
   });
+
+  describe('Cooldown claim system', () => {
+    describe('_setCooldownPeriod', () => {
+      it('should revert if not called by admin', async () => {
+        await expect(
+          send(comptroller, '_setCooldownPeriod', [0], {from: a1})
+        ).rejects.toRevert('revert only admin can set cooldown period');
+      });
+
+      it('should change cooldown period if called by admin', async () => {
+        const tx = await send(comptroller, '_setCooldownPeriod', [1000]);
+        expect(tx).toHaveLog('CooldownPeriodUpdated', {
+          cooldownPeriod: 1000
+        });
+      });
+    });
+
+    describe('cooldown', () => {
+      it('should revert if cooldown period is 0', async () => {
+        await expect(
+          send(comptroller, 'cooldown', [], {from: a1})
+        ).rejects.toRevert('revert cooldown not active');
+      });
+
+      it('should claim only when cooldown period expires', async () => {
+        // send some COMP to facilitate claims
+        const compRemaining = compRate.multipliedBy(100);
+        await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+
+        // start streaming some COMP to user
+        await send(comptroller, '_setContributorCompSpeed', [a1, 2000]);
+
+        // set cooldown period
+        await send(comptroller, '_setCooldownPeriod', [1000]);
+
+        // accrue small amount of COMP
+        await fastForward(comptroller, 10);
+        await send(comptroller, 'updateContributorRewards', [a1]);
+
+        // initial cooldown and early claim
+        await send(comptroller, 'cooldown', [], {from: a1})
+        await fastForward(comptroller, 999);
+        await send(comptroller, 'claimComp', [a1]);
+        const bal1 = await compBalance(comptroller, a1);
+        expect(bal1).toEqualNumber(0);
+
+        // wait 1 more block and try again
+        await fastForward(comptroller, 1);
+        await send(comptroller, 'claimComp', [a1]);
+        const bal2 = await compBalance(comptroller, a1);
+        expect(bal2).toEqualNumber(20000);
+      });
+
+      it('should update cooldown before and after expiry', async () => {
+        // send some COMP to facilitate claims
+        const compRemaining = compRate.multipliedBy(100);
+        await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+
+        // start streaming some COMP to user
+        await send(comptroller, '_setContributorCompSpeed', [a1, 2000]);
+
+        // set cooldown period
+        await send(comptroller, '_setCooldownPeriod', [1000]);
+
+        const cooldownBlock1 = await call(comptroller, 'lastCooldownBlock', [a1]);
+        expect(cooldownBlock1).toEqualNumber(0);
+
+        // move just 10 blocks, so that we can observe a cooldown block change
+        await fastForward(comptroller, 10);
+        await send(comptroller, 'updateContributorRewards', [a1]);
+        await send(comptroller, 'cooldown', [], {from: a1})
+        const cooldownBlock2 = await call(comptroller, 'lastCooldownBlock', [a1]);
+        expect(cooldownBlock2).toEqualNumber(10);
+
+        // wait some, but not enough for the cooldown to expire
+        await fastForward(comptroller, 200);
+        await send(comptroller, 'updateContributorRewards', [a1]);
+        await send(comptroller, 'cooldown', [], {from: a1})
+        const cooldownBlock3 = await call(comptroller, 'lastCooldownBlock', [a1]);
+        expect(cooldownBlock3).toEqualNumber(210);
+
+        // wait until cooldown expires
+        await fastForward(comptroller, 10000);
+        await send(comptroller, 'updateContributorRewards', [a1]);
+        await send(comptroller, 'cooldown', [], {from: a1})
+        const cooldownBlock4 = await call(comptroller, 'lastCooldownBlock', [a1]);
+        expect(cooldownBlock4).toEqualNumber(10210);
+      });
+
+      it('should clear storage when making a full claim', async () => {
+        // send some COMP to facilitate claims
+        const compRemaining = compRate.multipliedBy(100);
+        await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+
+        // start streaming some COMP to user
+        await send(comptroller, '_setContributorCompSpeed', [a1, 2000]);
+
+        // set cooldown period
+        await send(comptroller, '_setCooldownPeriod', [1000]);
+
+        // accrue significantly
+        fastForward(comptroller, 10000);
+
+        // stop streaming COMP to user
+        await send(comptroller, '_setContributorCompSpeed', [a1, 0]);
+
+        // trigger cooldown
+        await send(comptroller, 'updateContributorRewards', [a1]);
+        await send(comptroller, 'cooldown', [], {from: a1})
+
+        // claim after cooldown expiry
+        fastForward(comptroller, 10000);
+        await send(comptroller, 'claimComp', [a1]);
+
+        // verify cooldown block is reset
+        const cooldownBlock = await call(comptroller, 'lastCooldownBlock', [a1]);
+        expect(cooldownBlock).toEqualNumber(0);
+      });
+    });
+  });
 });
