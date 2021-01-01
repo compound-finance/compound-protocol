@@ -99,6 +99,14 @@ contract GovernorBravoInterface {
 
     /// @notice Emitted when implementation is changed
     event NewImplementation(address oldImplementation, address newImplementation);
+
+
+    function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint);
+    function _become(address governorAlpha) public;
+    function castVote(uint proposalId, uint support, string calldata reason) external;
+    function state(uint proposalId) public view returns (ProposalState);
+    function getReceipt(uint proposalId, address voter) public view returns (Receipt memory);
+    function cancel(uint proposalId) public;
 }
 
 /*

@@ -3,7 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "./GovernorBravoInterfaces.sol";
 
-contract GovernorBravo is GovernorBravoStorageV1 {
+contract GovernorBravoDelegate is GovernorBravoStorageV1 {
     /// @notice The name of this contract
     string public constant name = "Compound Governor Bravo";
 
@@ -22,16 +22,17 @@ contract GovernorBravo is GovernorBravoStorageV1 {
     /// @notice The EIP-712 typehash for the ballot struct used by the contract
     bytes32 public constant BALLOT_TYPEHASH = keccak256("Ballot(uint256 proposalId,uint support,string reason)");
 
-    constructor(address timelock_, address comp_, uint256 votingPeriod_, uint256 votingDelay_) public {
+    function initialize(address timelock_, address comp_, uint256 votingPeriod_, uint256 votingDelay_, address admin_) public {
         timelock = TimelockInterface(timelock_);
         comp = CompInterface(comp_);
         votingPeriod = votingPeriod_;
         votingDelay = votingDelay_;
+        admin = admin_;
     }
 
     function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint) {
         // Reject proposals before becoming Governor
-        require(initalProposalId != 0, "GovernorBravo::propose: Governor Bravo not active");
+        //require(initalProposalId != 0, "GovernorBravo::propose: Governor Bravo not active");
         require(comp.getPriorVotes(msg.sender, sub256(block.number, 1)) > proposalThreshold(), "GovernorBravo::propose: proposer votes below proposal threshold");
         require(targets.length == values.length && targets.length == signatures.length && targets.length == calldatas.length, "GovernorBravo::propose: proposal function information arity mismatch");
         require(targets.length != 0, "GovernorBravo::propose: must provide actions");
@@ -199,7 +200,8 @@ contract GovernorBravo is GovernorBravoStorageV1 {
 
     // Become Compound Governor
     function _become(address governorAlpha) public {
-        require(msg.sender == admin);
+        require(msg.sender == admin, "GovernorBravo::_become: only admin");
+        require(initalProposalId == 0, "GovernorBravo::_become: can only become once");
         proposalCount = GovernorAlpha(governorAlpha).proposalCount();
         initalProposalId = proposalCount;
         timelock.acceptAdmin();

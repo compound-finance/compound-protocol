@@ -1,4 +1,5 @@
 pragma solidity ^0.5.16;
+pragma experimental ABIEncoderV2;
 
 import "./GovernorBravoInterfaces.sol";
 
@@ -10,15 +11,15 @@ contract GovernorBravoDelegator is GovernorBravoStorageV1 {
 	        address implementation_,
 	        uint256 votingPeriod_,
 	        uint256 votingDelay_) public {
-		admin = msg.sender;
 
 
 		// First delegate gets to initialize the delegator (i.e. storage contract)
-        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,uint256,uint256)",
+        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,uint256,uint256,address)",
                                                             timelock_,
                                                             comp_,
                                                             votingPeriod_,
-                                                            votingDelay_));
+                                                            votingDelay_,
+                                                            msg.sender));
 
         _setImplementation(implementation_);
 
@@ -37,6 +38,10 @@ contract GovernorBravoDelegator is GovernorBravoStorageV1 {
         implementation = implementation_;
 
         emit NewImplementation(oldImplementation, implementation);
+    }
+
+    function delegateToImplementation(bytes memory data) public returns (bytes memory) {
+        return delegateTo(implementation, data);
     }
 
     /**
@@ -62,7 +67,7 @@ contract GovernorBravoDelegator is GovernorBravoStorageV1 {
      * or forwards reverts.
      */
     function () payable external {
-    	require(msg.value == 0,"GovernorDelegator:fallback: cannot send value to fallback");
+    	require(msg.value == 0,"GovernorDelegator::fallback: cannot send value to fallback");
 
         // delegate all other functions to current implementation
         (bool success, ) = implementation.delegatecall(msg.data);
