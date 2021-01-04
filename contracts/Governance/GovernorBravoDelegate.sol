@@ -20,7 +20,7 @@ contract GovernorBravoDelegate is GovernorBravoStorageV1 {
     bytes32 public constant DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
 
     /// @notice The EIP-712 typehash for the ballot struct used by the contract
-    bytes32 public constant BALLOT_TYPEHASH = keccak256("Ballot(uint256 proposalId,uint support,string reason)");
+    bytes32 public constant BALLOT_TYPEHASH = keccak256("Ballot(uint256 proposalId,uint8 support,string reason)");
 
     function initialize(address timelock_, address comp_, uint256 votingPeriod_, uint256 votingDelay_, address admin_) public {
         timelock = TimelockInterface(timelock_);
@@ -145,20 +145,20 @@ contract GovernorBravoDelegate is GovernorBravoStorageV1 {
         }
     }
 
-    function castVote(uint proposalId, uint support, string calldata reason) external {
-        return _castVote(msg.sender, proposalId, support, reason);
+    function castVote(uint proposalId, uint8 support) external {
+        return _castVote(msg.sender, proposalId, support);
     }
 
-    function castVoteBySig(uint proposalId, uint support, string calldata reason, uint8 v, bytes32 r, bytes32 s) external {
+    function castVoteBySig(uint proposalId, uint8 support, string calldata reason, uint8 v, bytes32 r, bytes32 s) external {
         bytes32 domainSeparator = keccak256(abi.encode(DOMAIN_TYPEHASH, keccak256(bytes(name)), getChainId(), address(this)));
         bytes32 structHash = keccak256(abi.encode(BALLOT_TYPEHASH, proposalId, support, reason));
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "GovernorBravo::castVoteBySig: invalid signature");
-        return _castVote(signatory, proposalId, support, reason);
+        return _castVote(signatory, proposalId, support);
     }
 
-    function _castVote(address voter, uint proposalId, uint support, string memory reason) internal {
+    function _castVote(address voter, uint proposalId, uint8 support) internal {
         require(state(proposalId) == ProposalState.Active, "GovernorBravo::_castVote: voting is closed");
         require(support <= 2, "GovernorBravo::_castVote: invalid vote type");
         Proposal storage proposal = proposals[proposalId];
@@ -170,16 +170,15 @@ contract GovernorBravoDelegate is GovernorBravoStorageV1 {
             proposal.againstVotes = add256(proposal.againstVotes, votes);
         } else if (support == 1) {
             proposal.forVotes = add256(proposal.forVotes, votes);
-        } else if (support == 2) {
+        } else {
             proposal.abstainVotes = add256(proposal.abstainVotes, votes);
         }
 
         receipt.hasVoted = true;
         receipt.support = support;
         receipt.votes = votes;
-        receipt.reason = reason;
 
-        emit VoteCast(voter, proposalId, support, votes, reason);
+        emit VoteCast(voter, proposalId, support, votes);
     }
 
     function _setVotingDelay(uint newVotingDelay) external {

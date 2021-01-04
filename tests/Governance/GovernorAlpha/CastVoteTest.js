@@ -22,10 +22,21 @@ describe("governorAlpha#castVote/2", () => {
   beforeAll(async () => {
     [root, a1, ...accounts] = saddle.accounts;
     comp = await deploy('Comp', [root]);
-    govDelegate = await deploy('GovernorBravoDelegate');
-    gov = await deploy('GovernorBravoDelegator', [address(0), comp._address, root, govDelegate._address, 17280, 1]);
+    gov = await deploy('GovernorBravoImmutable', [address(0), comp._address, root, 17280, 1]);
     govAlpha = await deploy('GovernorAlpha', [address(0), comp._address, root]);
-    mergeInterface(gov,govDelegate);
+    
+
+
+    targets = [a1];
+    values = ["0"];
+    signatures = ["getBalanceOf(address)"];
+    callDatas = [encodeParameters(['address'], [a1])];
+    await send(comp, 'delegate', [root]);
+    await send(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"]);
+    proposalId = await call(gov, 'latestProposalIds', [root]);
+    
+
+    //mergeInterface(gov,govDelegate);
 
     // targets = [a1];
     // values = ["0"];
@@ -41,10 +52,16 @@ describe("governorAlpha#castVote/2", () => {
   });
 
   describe("We must revert if:", () => {
-    it("There does not exist a proposal with matching proposal id where the current block number is between the proposal's start block (exclusive) and end block (inclusive)", async () => {
+    it("Invalid vote param", async () => {
+      await mineBlock();
+      await mineBlock();
+
+      let tx = await send(gov, 'castVote', [proposalId, 1]);
+      console.log('Gas used is ' + tx.gasUsed);
+
       await expect(
-        call(gov, 'castVote', [proposalId, 4, ""])
-      ).rejects.toRevert("revert GovernorAlpha::_castVote: voting is closed");
+        call(gov, 'castVote', [proposalId, 0])
+      ).rejects.toRevert("revert GovernorBravo::_castVote: invalid vote type");
     });
   });
 });

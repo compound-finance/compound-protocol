@@ -61,7 +61,7 @@ contract GovernorBravoInterface {
         uint96 votes;
 
         /// @notice Given reason for vote
-        string reason;
+        //string reason;
     }
 
     /// @notice Possible states that a proposal may be in
@@ -80,7 +80,7 @@ contract GovernorBravoInterface {
     event ProposalCreated(uint id, address proposer, address[] targets, uint[] values, string[] signatures, bytes[] calldatas, uint startBlock, uint endBlock, string description);
 
     /// @notice An event emitted when a vote has been cast on a proposal
-    event VoteCast(address voter, uint proposalId, uint support, uint votes, string reason);
+    event VoteCast(address voter, uint proposalId, uint support, uint votes);
 
     /// @notice An event emitted when a proposal has been canceled
     event ProposalCanceled(uint id);
@@ -103,7 +103,7 @@ contract GovernorBravoInterface {
 
     function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint);
     function _become(address governorAlpha) public;
-    function castVote(uint proposalId, uint support, string calldata reason) external;
+    function castVote(uint proposalId, uint8 support) external;
     function state(uint proposalId) public view returns (ProposalState);
     function getReceipt(uint proposalId, address voter) public view returns (Receipt memory);
     function cancel(uint proposalId) public;
