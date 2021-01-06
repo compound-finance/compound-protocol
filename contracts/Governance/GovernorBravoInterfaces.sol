@@ -1,7 +1,96 @@
 pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
-contract GovernorBravoInterface {
+
+contract GovernorBravoEvents {
+    /// @notice An event emitted when a new proposal is created
+    event ProposalCreated(uint id, address proposer, address[] targets, uint[] values, string[] signatures, bytes[] calldatas, uint startBlock, uint endBlock, string description);
+
+    /// @notice An event emitted when a vote has been cast on a proposal
+    event VoteCast(address voter, uint proposalId, uint8 support, uint votes, string reason);
+
+    /// @notice An event emitted when a proposal has been canceled
+    event ProposalCanceled(uint id);
+
+    /// @notice An event emitted when a proposal has been queued in the Timelock
+    event ProposalQueued(uint id, uint eta);
+
+    /// @notice An event emitted when a proposal has been executed in the Timelock
+    event ProposalExecuted(uint id);
+
+    /// @notice An event emitted when the voting delay is set
+    event VotingDelaySet(uint oldVotingDelay, uint newVotingDelay);
+
+    /// @notice An event emitted when the voting period is set
+    event VotingPeriodSet(uint oldVotingPeriod, uint newVotingPeriod);
+
+    /// @notice Emitted when implementation is changed
+    event NewImplementation(address oldImplementation, address newImplementation);
+}
+
+contract GovernorBravoDelegatorStorage {
+    /**
+     * @notice Administrator for this contract
+     */
+    address public admin;
+
+    /**
+     * @notice Pending administrator for this contract
+     */
+    address public pendingAdmin;
+
+    /**
+     * @notice Active brains of Governor
+     */
+    address public implementation;
+}
+
+
+/*
+ * @title Compound Governor Storage
+ * @author Arr00
+ */
+contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
+    /**
+     * @notice The delay before voting on a proposal may take place, once proposed
+     */
+    uint public votingDelay;
+
+    /**
+     * @notice The duration of voting on a proposal, in blocks
+     */
+    uint public votingPeriod;
+
+    /**
+     * @notice The address of the Compound Protocol Timelock
+     */
+    TimelockInterface public timelock;
+
+    /**
+     * @notice The address of the Compound governance token
+     */
+    CompInterface public comp;
+
+    /**
+     * @notice The total number of proposals
+     */
+    uint public proposalCount;
+
+    /**
+     * @notice The official record of all proposals ever proposed
+     */
+    mapping (uint => Proposal) public proposals;
+
+    /**
+     * @notice The latest proposal for each proposer
+     */
+    mapping (address => uint) public latestProposalIds;
+
+    /**
+     * @notice Initial proposal id set at become
+     */
+    uint public initalProposalId;
+
     struct Proposal {
         /// @notice Unique id for looking up a proposal
         uint id;
@@ -76,98 +165,6 @@ contract GovernorBravoInterface {
         Executed
     }
 
-    /// @notice An event emitted when a new proposal is created
-    event ProposalCreated(uint id, address proposer, address[] targets, uint[] values, string[] signatures, bytes[] calldatas, uint startBlock, uint endBlock, string description);
-
-    /// @notice An event emitted when a vote has been cast on a proposal
-    event VoteCast(address voter, uint proposalId, uint8 support, uint votes, string reason);
-
-    /// @notice An event emitted when a proposal has been canceled
-    event ProposalCanceled(uint id);
-
-    /// @notice An event emitted when a proposal has been queued in the Timelock
-    event ProposalQueued(uint id, uint eta);
-
-    /// @notice An event emitted when a proposal has been executed in the Timelock
-    event ProposalExecuted(uint id);
-
-    /// @notice An event emitted when the voting delay is set
-    event VotingDelaySet(uint oldVotingDelay, uint newVotingDelay);
-
-    /// @notice An event emitted when the voting period is set
-    event VotingPeriodSet(uint oldVotingPeriod, uint newVotingPeriod);
-
-    /// @notice Emitted when implementation is changed
-    event NewImplementation(address oldImplementation, address newImplementation);
-
-
-    function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint);
-    function _become(address governorAlpha) public;
-    function castVote(uint proposalId, uint8 support, string calldata reason) external;
-    function state(uint proposalId) public view returns (ProposalState);
-    function getReceipt(uint proposalId, address voter) public view returns (Receipt memory);
-    function cancel(uint proposalId) public;
-}
-
-/*
- * @title Compound Governor Storage
- * @author Arr00
- */
-contract GovernorBravoStorageV1 is GovernorBravoInterface {
-    /**
-     * @notice Administrator for this contract
-     */
-    address public admin;
-
-    /**
-     * @notice Pending administrator for this contract
-     */
-    address public pendingAdmin;
-
-    /**
-     * @notice Active brains of Governor
-     */
-    address public implementation;
-
-    /**
-     * @notice The delay before voting on a proposal may take place, once proposed
-     */
-    uint public votingDelay;
-
-    /**
-     * @notice The duration of voting on a proposal, in blocks
-     */
-    uint public votingPeriod;
-
-    /**
-     * @notice The address of the Compound Protocol Timelock
-     */
-    TimelockInterface public timelock;
-
-    /**
-     * @notice The address of the Compound governance token
-     */
-    CompInterface public comp;
-
-    /**
-     * @notice The total number of proposals
-     */
-    uint public proposalCount;
-
-    /**
-     * @notice The official record of all proposals ever proposed
-     */
-    mapping (uint => Proposal) public proposals;
-
-    /**
-     * @notice The latest proposal for each proposer
-     */
-    mapping (address => uint) public latestProposalIds;
-
-    /**
-     * @notice Initial proposal id set at become
-     */
-    uint public initalProposalId;
 }
 
 

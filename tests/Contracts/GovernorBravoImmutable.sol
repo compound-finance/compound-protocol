@@ -1,7 +1,7 @@
 pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
-import "./GovernorBravoDelegate.sol";
+import "../../contracts/Governance/GovernorBravoDelegate.sol";
 
 contract GovernorBravoImmutable is GovernorBravoDelegate {
 
