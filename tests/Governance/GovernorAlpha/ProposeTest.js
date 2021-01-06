@@ -11,7 +11,7 @@ describe('GovernorAlpha#propose/5', () => {
   beforeAll(async () => {
     [root, acct, ...accounts] = accounts;
     comp = await deploy('Comp', [root]);
-    gov = await deploy('GovernorAlpha', [address(0), comp._address, address(0)]);
+    gov = await deploy('GovernorBravoImmutable', [address(0), comp._address, root, 17280, 1]);
   });
 
   let trivialProposal, targets, values, signatures, callDatas;
@@ -79,32 +79,32 @@ describe('GovernorAlpha#propose/5', () => {
       it("the length of the values, signatures or calldatas arrays are not the same length,", async () => {
         await expect(
           call(gov, 'propose', [targets.concat(root), values, signatures, callDatas, "do nothing"])
-        ).rejects.toRevert("revert GovernorAlpha::propose: proposal function information arity mismatch");
+        ).rejects.toRevert("revert GovernorBravo::propose: proposal function information arity mismatch");
 
         await expect(
           call(gov, 'propose', [targets, values.concat(values), signatures, callDatas, "do nothing"])
-        ).rejects.toRevert("revert GovernorAlpha::propose: proposal function information arity mismatch");
+        ).rejects.toRevert("revert GovernorBravo::propose: proposal function information arity mismatch");
 
         await expect(
           call(gov, 'propose', [targets, values, signatures.concat(signatures), callDatas, "do nothing"])
-        ).rejects.toRevert("revert GovernorAlpha::propose: proposal function information arity mismatch");
+        ).rejects.toRevert("revert GovernorBravo::propose: proposal function information arity mismatch");
 
         await expect(
           call(gov, 'propose', [targets, values, signatures, callDatas.concat(callDatas), "do nothing"])
-        ).rejects.toRevert("revert GovernorAlpha::propose: proposal function information arity mismatch");
+        ).rejects.toRevert("revert GovernorBravo::propose: proposal function information arity mismatch");
       });
 
       it("or if that length is zero or greater than Max Operations.", async () => {
         await expect(
           call(gov, 'propose', [[], [], [], [], "do nothing"])
-        ).rejects.toRevert("revert GovernorAlpha::propose: must provide actions");
+        ).rejects.toRevert("revert GovernorBravo::propose: must provide actions");
       });
 
       describe("Additionally, if there exists a pending or active proposal from the same proposer, we must revert.", () => {
         it("reverts with pending", async () => {
           await expect(
             call(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"])
-          ).rejects.toRevert("revert GovernorAlpha::propose: one live proposal per proposer, found an already pending proposal");
+          ).rejects.toRevert("revert GovernorBravo::propose: one live proposal per proposer, found an already pending proposal");
         });
 
         it("reverts with active", async () => {
@@ -113,7 +113,7 @@ describe('GovernorAlpha#propose/5', () => {
 
           await expect(
             call(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"])
-          ).rejects.toRevert("revert GovernorAlpha::propose: one live proposal per proposer, found an already active proposal");
+          ).rejects.toRevert("revert GovernorBravo::propose: one live proposal per proposer, found an already active proposal");
         });
       });
     });

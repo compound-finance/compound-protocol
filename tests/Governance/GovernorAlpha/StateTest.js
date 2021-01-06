@@ -12,10 +12,10 @@ const {
 const path = require('path');
 const solparse = require('solparse');
 
-const governorAlphaPath = path.join(__dirname, '../../..', 'contracts', 'Governance/GovernorAlpha.sol');
+const governorBravoPath = path.join(__dirname, '../../..', 'contracts', 'Governance/GovernorBravoInterfaces.sol');
 
 const statesInverted = solparse
-  .parseFile(governorAlphaPath)
+  .parseFile(governorBravoPath)
   .body
   .find(k => k.type === 'ContractStatement')
   .body
@@ -33,7 +33,7 @@ describe('GovernorAlpha#state/1', () => {
     comp = await deploy('Comp', [root]);
     delay = etherUnsigned(2 * 24 * 60 * 60).multipliedBy(2)
     timelock = await deploy('TimelockHarness', [root, delay]);
-    gov = await deploy('GovernorAlpha', [timelock._address, comp._address, root]);
+    gov = await deploy('GovernorBravoImmutable', [timelock._address, comp._address, root, 17280, 1]);
     await send(timelock, "harnessSetAdmin", [gov._address])
     await send(comp, 'transfer', [acct, etherMantissa(4000000)]);
     await send(comp, 'delegate', [acct], { from: acct });
@@ -52,7 +52,7 @@ describe('GovernorAlpha#state/1', () => {
   })
 
   it("Invalid for proposal not found", async () => {
-    await expect(call(gov, 'state', ["5"])).rejects.toRevert("revert GovernorAlpha::state: invalid proposal id")
+    await expect(call(gov, 'state', ["5"])).rejects.toRevert("revert GovernorBravo::state: invalid proposal id")
   })
 
   it("Pending", async () => {
@@ -90,7 +90,7 @@ describe('GovernorAlpha#state/1', () => {
     await mineBlock()
     const { reply: newProposalId } = await both(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: acct })
     await mineBlock()
-    await send(gov, 'castVote', [newProposalId, true])
+    await send(gov, 'castVote', [newProposalId, 1, ""])
     await advanceBlocks(20000)
 
     expect(await call(gov, 'state', [newProposalId])).toEqual(states["Succeeded"])
@@ -100,7 +100,7 @@ describe('GovernorAlpha#state/1', () => {
     await mineBlock()
     const { reply: newProposalId } = await both(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: acct })
     await mineBlock()
-    await send(gov, 'castVote', [newProposalId, true])
+    await send(gov, 'castVote', [newProposalId, 1, ""])
     await advanceBlocks(20000)
 
     await send(gov, 'queue', [newProposalId], { from: acct })
@@ -111,7 +111,7 @@ describe('GovernorAlpha#state/1', () => {
     await mineBlock()
     const { reply: newProposalId } = await both(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: acct })
     await mineBlock()
-    await send(gov, 'castVote', [newProposalId, true])
+    await send(gov, 'castVote', [newProposalId, 1, ""])
     await advanceBlocks(20000)
 
     await increaseTime(1)
@@ -134,7 +134,7 @@ describe('GovernorAlpha#state/1', () => {
     await mineBlock()
     const { reply: newProposalId } = await both(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: acct })
     await mineBlock()
-    await send(gov, 'castVote', [newProposalId, true])
+    await send(gov, 'castVote', [newProposalId, 1, ""])
     await advanceBlocks(20000)
 
     await increaseTime(1)

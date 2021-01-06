@@ -11,6 +11,6 @@ contract GovernorBravoImmutable is GovernorBravoDelegate {
             address admin_,
             uint256 votingPeriod_,
             uint256 votingDelay_) public {
-       initialize(timelock_, comp_, votingPeriod_, votingDelay_, comp_);
+       initialize(timelock_, comp_, admin_, votingPeriod_, votingDelay_);
     }
 }

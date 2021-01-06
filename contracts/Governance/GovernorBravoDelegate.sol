@@ -20,14 +20,14 @@ contract GovernorBravoDelegate is GovernorBravoStorageV1 {
     bytes32 public constant DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
 
     /// @notice The EIP-712 typehash for the ballot struct used by the contract
-    bytes32 public constant BALLOT_TYPEHASH = keccak256("Ballot(uint256 proposalId,uint8 support,string reason)");
+    bytes32 public constant BALLOT_TYPEHASH = keccak256("Ballot(uint256 proposalId,uint8 support)");
 
-    function initialize(address timelock_, address comp_, uint256 votingPeriod_, uint256 votingDelay_, address admin_) public {
+    function initialize(address timelock_, address comp_, address admin_, uint256 votingPeriod_, uint256 votingDelay_) public {
         timelock = TimelockInterface(timelock_);
         comp = CompInterface(comp_);
+        admin = admin_;
         votingPeriod = votingPeriod_;
         votingDelay = votingDelay_;
-        admin = admin_;
     }
 
     function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint) {
@@ -145,20 +145,20 @@ contract GovernorBravoDelegate is GovernorBravoStorageV1 {
         }
     }
 
-    function castVote(uint proposalId, uint8 support) external {
-        return _castVote(msg.sender, proposalId, support);
+    function castVote(uint proposalId, uint8 support, string calldata reason) external {
+        return _castVote(msg.sender, proposalId, support, reason);
     }
 
-    function castVoteBySig(uint proposalId, uint8 support, string calldata reason, uint8 v, bytes32 r, bytes32 s) external {
+    function castVoteBySig(uint proposalId, uint8 support, uint8 v, bytes32 r, bytes32 s) external {
         bytes32 domainSeparator = keccak256(abi.encode(DOMAIN_TYPEHASH, keccak256(bytes(name)), getChainId(), address(this)));
-        bytes32 structHash = keccak256(abi.encode(BALLOT_TYPEHASH, proposalId, support, reason));
+        bytes32 structHash = keccak256(abi.encode(BALLOT_TYPEHASH, proposalId, support));
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "GovernorBravo::castVoteBySig: invalid signature");
-        return _castVote(signatory, proposalId, support);
+        return _castVote(signatory, proposalId, support, "");
     }
 
-    function _castVote(address voter, uint proposalId, uint8 support) internal {
+    function _castVote(address voter, uint proposalId, uint8 support, string memory reason) internal {
         require(state(proposalId) == ProposalState.Active, "GovernorBravo::_castVote: voting is closed");
         require(support <= 2, "GovernorBravo::_castVote: invalid vote type");
         Proposal storage proposal = proposals[proposalId];
@@ -178,7 +178,11 @@ contract GovernorBravoDelegate is GovernorBravoStorageV1 {
         receipt.support = support;
         receipt.votes = votes;
 
-        emit VoteCast(voter, proposalId, support, votes);
+        if(bytes(reason).length != 0) {
+            receipt.reason = reason;
+        }
+
+        emit VoteCast(voter, proposalId, support, votes, reason);
     }
 
     function _setVotingDelay(uint newVotingDelay) external {
