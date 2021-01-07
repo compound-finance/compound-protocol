@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 
 contract GovernorBravoEvents {
+
     /// @notice An event emitted when a new proposal is created
     event ProposalCreated(uint id, address proposer, address[] targets, uint[] values, string[] signatures, bytes[] calldatas, uint startBlock, uint endBlock, string description);
 
@@ -26,6 +27,9 @@ contract GovernorBravoEvents {
 
     /// @notice Emitted when implementation is changed
     event NewImplementation(address oldImplementation, address newImplementation);
+
+    /// @notice Emitted when proposal threshold is set
+    event ProposalThresholdSet(uint oldProposalThreshold, uint newProposalThreshold);
 }
 
 contract GovernorBravoDelegatorStorage {
@@ -51,6 +55,7 @@ contract GovernorBravoDelegatorStorage {
  * @author Arr00
  */
 contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
+
     /**
      * @notice The delay before voting on a proposal may take place, once proposed
      */
@@ -60,6 +65,11 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
      * @notice The duration of voting on a proposal, in blocks
      */
     uint public votingPeriod;
+
+    /**
+     * @notice The number of votes required in order for a voter to become a proposer
+     */
+    uint public proposalThreshold;
 
     /**
      * @notice The address of the Compound Protocol Timelock

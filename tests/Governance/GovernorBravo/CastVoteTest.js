@@ -48,7 +48,7 @@ describe("governorBravo#castVote/2", () => {
       await mineBlock();
       await mineBlock();
 
-      let tx = await send(gov, 'castVote', [proposalId, 1, "my reason"], { from: accounts[4] });
+      let tx = await send(gov, 'castVote', [proposalId, 1, ""], { from: accounts[4] });
       console.log('Gas used is ' + tx.gasUsed);
       await expect(
         gov.methods['castVote'](proposalId, 1, "").call({ from: accounts[4] })

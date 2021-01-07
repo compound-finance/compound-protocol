@@ -4,14 +4,15 @@ pragma experimental ABIEncoderV2;
 import "./GovernorBravoInterfaces.sol";
 
 contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoEvents {
+
     /// @notice The name of this contract
     string public constant name = "Compound Governor Bravo";
 
+    /// @notice The minimum setable proposal threshold
+    uint public constant MIN_PROPOSAL_THRESHOLD = 50000e18; // 50,000 Comp
+
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
     function quorumVotes() public pure returns (uint) { return 400000e18; } // 400,000 = 4% of Comp
-
-    /// @notice The number of votes required in order for a voter to become a proposer
-    function proposalThreshold() public pure returns (uint) { return 100000e18; } // 100,000 = 1% of Comp
 
     /// @notice The maximum number of actions that can be included in a proposal
     function proposalMaxOperations() public pure returns (uint) { return 10; } // 10 actions
@@ -28,12 +29,13 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         admin = admin_;
         votingPeriod = votingPeriod_;
         votingDelay = votingDelay_;
+        proposalThreshold = 100000e18;
     }
 
     function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint) {
         // Reject proposals before becoming Governor
         require(initalProposalId != 0, "GovernorBravo::propose: Governor Bravo not active");
-        require(comp.getPriorVotes(msg.sender, sub256(block.number, 1)) > proposalThreshold(), "GovernorBravo::propose: proposer votes below proposal threshold");
+        require(comp.getPriorVotes(msg.sender, sub256(block.number, 1)) > proposalThreshold, "GovernorBravo::propose: proposer votes below proposal threshold");
         require(targets.length == values.length && targets.length == signatures.length && targets.length == calldatas.length, "GovernorBravo::propose: proposal function information arity mismatch");
         require(targets.length != 0, "GovernorBravo::propose: must provide actions");
         require(targets.length <= proposalMaxOperations(), "GovernorBravo::propose: too many actions");
@@ -104,7 +106,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         require(state != ProposalState.Executed, "GovernorBravo::cancel: cannot cancel executed proposal");
 
         Proposal storage proposal = proposals[proposalId];
-        require(msg.sender == proposal.proposer || comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold(), "GovernorBravo::cancel: proposer above threshold");
+        require(msg.sender == proposal.proposer || comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold, "GovernorBravo::cancel: proposer above threshold");
 
         proposal.canceled = true;
         for (uint i = 0; i < proposal.targets.length; i++) {
@@ -170,7 +172,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
             proposal.againstVotes = add256(proposal.againstVotes, votes);
         } else if (support == 1) {
             proposal.forVotes = add256(proposal.forVotes, votes);
-        } else {
+        } else if (support == 2) {
             proposal.abstainVotes = add256(proposal.abstainVotes, votes);
         }
 
@@ -199,6 +201,15 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         votingPeriod = newVotingPeriod;
 
         emit VotingPeriodSet(oldVotingPeriod, votingPeriod);
+    }
+
+    function _setProposalThreshold(uint newProposalThereshold) external {
+        require(msg.sender == admin);
+        require(newProposalThereshold >= MIN_PROPOSAL_THRESHOLD, "GovernorBravo::_setProposalThreshold: new threshold below min");
+        uint oldProposalThreshold = proposalThreshold;
+        proposalThreshold = newProposalThereshold;
+
+        emit ProposalThresholdSet(oldProposalThreshold, proposalThreshold);
     }
 
     // Become Compound Governor
