@@ -71,3 +71,15 @@ Test "Cannot vote on cancelled vote"
     AllowFailures
     GovernorBravo LegitGov Proposal LastProposal Vote For ""
     Assert Revert "revert GovernorBravo::_castVote: voting is closed"
+
+Test "Can abstain"
+    GivenProposal
+    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote Abstain "")
+    Assert Equal (GovernorBravo LegitGov Proposal LastProposal Support Geoff) 2
+    Assert Log VoteCast (support 2) (votes 100)
+
+Test "Voting Reason"
+    GivenProposal
+    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote For "Hello World")
+    Assert Equal (GovernorBravo LegitGov Proposal LastProposal Reason Geoff) "Hello World"
+

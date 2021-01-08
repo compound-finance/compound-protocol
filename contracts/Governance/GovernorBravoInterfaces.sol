@@ -30,6 +30,16 @@ contract GovernorBravoEvents {
 
     /// @notice Emitted when proposal threshold is set
     event ProposalThresholdSet(uint oldProposalThreshold, uint newProposalThreshold);
+
+    /**
+      * @notice Emitted when pendingAdmin is changed
+      */
+    event NewPendingAdmin(address oldPendingAdmin, address newPendingAdmin);
+
+    /**
+      * @notice Emitted when pendingAdmin is accepted, which means admin is updated
+      */
+    event NewAdmin(address oldAdmin, address newAdmin);
 }
 
 contract GovernorBravoDelegatorStorage {

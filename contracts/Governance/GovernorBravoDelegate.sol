@@ -188,7 +188,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     }
 
     function _setVotingDelay(uint newVotingDelay) external {
-        require(msg.sender == admin);
+        require(msg.sender == admin, "GovernorBravo::_setVotingDelay: admin only");
         uint oldVotingDelay = votingDelay;
         votingDelay = newVotingDelay;
 
@@ -196,7 +196,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     }
 
     function _setVotingPeriod(uint newVotingPeriod) external {
-        require(msg.sender == admin);
+        require(msg.sender == admin, "GovernorBravo::_setVotingPeriod: admin only");
         uint oldVotingPeriod = votingPeriod;
         votingPeriod = newVotingPeriod;
 
@@ -204,7 +204,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     }
 
     function _setProposalThreshold(uint newProposalThereshold) external {
-        require(msg.sender == admin);
+        require(msg.sender == admin, "GovernorBravo::_setProposalThreshold: admin only");
         require(newProposalThereshold >= MIN_PROPOSAL_THRESHOLD, "GovernorBravo::_setProposalThreshold: new threshold below min");
         uint oldProposalThreshold = proposalThreshold;
         proposalThreshold = newProposalThereshold;
@@ -214,11 +214,52 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
 
     // Initiate the term as Compound Governor
     function _initiate(address governorAlpha) public {
-        require(msg.sender == admin, "GovernorBravo::_initiate: only admin");
+        require(msg.sender == admin, "GovernorBravo::_initiate: admin only");
         require(initalProposalId == 0, "GovernorBravo::_initiate: can only become once");
         proposalCount = GovernorAlpha(governorAlpha).proposalCount();
         initalProposalId = proposalCount;
         timelock.acceptAdmin();
+    }
+
+    /**
+      * @notice Begins transfer of admin rights. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
+      * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
+      * @param newPendingAdmin New pending admin.
+      */
+    function _setPendingAdmin(address newPendingAdmin) public {
+        // Check caller = admin
+        require(msg.sender == admin, "GovernorBravoDelegator:_setPendingAdmin: admin only");
+
+        // Save current value, if any, for inclusion in log
+        address oldPendingAdmin = pendingAdmin;
+
+        // Store pendingAdmin with value newPendingAdmin
+        pendingAdmin = newPendingAdmin;
+
+        // Emit NewPendingAdmin(oldPendingAdmin, newPendingAdmin)
+        emit NewPendingAdmin(oldPendingAdmin, newPendingAdmin);
+    }
+
+    /**
+      * @notice Accepts transfer of admin rights. msg.sender must be pendingAdmin
+      * @dev Admin function for pending admin to accept role and update admin
+      */
+    function _acceptAdmin() public {
+        // Check caller is pendingAdmin and pendingAdmin ≠ address(0)
+        require(msg.sender == pendingAdmin && msg.sender != address(0), "GovernorBravoDelegator:_acceptAdmin: admin only");
+
+        // Save current values for inclusion in log
+        address oldAdmin = admin;
+        address oldPendingAdmin = pendingAdmin;
+
+        // Store admin with value pendingAdmin
+        admin = pendingAdmin;
+
+        // Clear the pending value
+        pendingAdmin = address(0);
+
+        emit NewAdmin(oldAdmin, admin);
+        emit NewPendingAdmin(oldPendingAdmin, pendingAdmin);
     }
 
     function add256(uint256 a, uint256 b) internal pure returns (uint) {

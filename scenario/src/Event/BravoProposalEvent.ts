@@ -16,7 +16,7 @@ function getSupport(support: Event): number {
     if (support === 'For' || support === 'Against' || support === 'Abstain') {
       if(support === 'Against') return 0;
       else if(support === 'For') return 1;
-      else if(support === 'Abstain') return 3;
+      else if(support === 'Abstain') return 2;
     }
   }
   throw new Error(`Unknown support flag \`${support}\`, expected "For", "Against", or "Abstain"`);

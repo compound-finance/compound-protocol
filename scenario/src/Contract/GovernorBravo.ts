@@ -14,6 +14,7 @@ export interface Proposal {
   endBlock: number
   forVotes: number
   againstVotes: number
+  abstainVotes: number
 }
 
 export const proposalStateEnums = {

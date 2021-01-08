@@ -74,7 +74,8 @@ export function proposalFetchers(governor: GovernorBravo) {
     startBlock: getNumberV,
     endBlock: getNumberV,
     forVotes: getNumberV,
-    againstVotes: getNumberV
+    againstVotes: getNumberV,
+    abstainVotes: getNumberV
   };
 
   const defaultedFields = Object.entries(fields).map(([field, values]) => {

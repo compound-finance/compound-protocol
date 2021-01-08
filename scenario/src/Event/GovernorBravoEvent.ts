@@ -95,7 +95,7 @@ async function setVotingPeriod(world: World, from: string, governor: GovernorBra
 }
 
 async function setProposalThreshold(world: World, from: string, governor: GovernorBravo, newProposalThreshold: NumberV): Promise<World> {
-  let invokation = await invoke(world, governor.methods._setVotingPeriod(newProposalThreshold.encode()), from);
+  let invokation = await invoke(world, governor.methods._setProposalThreshold(newProposalThreshold.encode()), from);
 
   world = addAction(
     world,
