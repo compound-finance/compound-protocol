@@ -35,7 +35,7 @@ export interface GovernorBravoMethods {
   proposals(proposalId: number): Callable<Proposal>;
   proposalCount(): Callable<number>;
   latestProposalIds(proposer: string): Callable<number>;
-  getReceipt(proposalId: number, voter: string): Callable<{ hasVoted: boolean, support: boolean, votes: number, reason: string }>;
+  getReceipt(proposalId: number, voter: string): Callable<{ hasVoted: boolean, support: number, votes: number, reason: string }>;
   castVote(proposalId: number, support: number, reason: string): Sendable<void>;
   queue(proposalId: encodedNumber): Sendable<void>;
   execute(proposalId: encodedNumber): Sendable<void>;

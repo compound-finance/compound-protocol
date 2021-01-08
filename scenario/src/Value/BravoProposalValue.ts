@@ -134,21 +134,21 @@ export function proposalFetchers(governor: GovernorBravo) {
       },
       { namePos: 1 }
     ),
-    new Fetcher<{ proposalIdent: EventV, voter: AddressV }, BoolV>(`
-        #### Supported
+    new Fetcher<{ proposalIdent: EventV, voter: AddressV }, NumberV>(`
+        #### Support
 
-        * "GovernorBravo <Governor> Proposal <Proposal> Supported <voter>" - Returns true if the given address has voted on given proposal
-          * E.g. "GovernorBravo GovernorBravoScenario Proposal 5 Supported Geoff"
-          * E.g. "GovernorBravo GovernorBravoScenario Proposal LastProposal Supported Geoff"
+        * "GovernorBravo <Governor> Proposal <Proposal> Support <voter>" - Returns support value for voter (0 against, 1 for, 2 abstain)
+          * E.g. "GovernorBravo GovernorBravoScenario Proposal 5 Support Geoff"
+          * E.g. "GovernorBravo GovernorBravoScenario Proposal LastProposal Support Geoff"
       `,
-      "Supported",
+      "Support",
       [
         new Arg("proposalIdent", getEventV),
         new Arg("voter", getAddressV)
       ],
       async (world, { proposalIdent, voter }) => {
         const receipt = await governor.methods.getReceipt(await getProposalId(world, governor, proposalIdent.val), voter.val).call();
-        return new BoolV(receipt.support);
+        return new NumberV(receipt.support);
       },
       { namePos: 1 }
     ),
