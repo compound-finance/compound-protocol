@@ -12,6 +12,7 @@ describe('GovernorBravo#propose/5', () => {
     [root, acct, ...accounts] = accounts;
     comp = await deploy('Comp', [root]);
     gov = await deploy('GovernorBravoImmutable', [address(0), comp._address, root, 17280, 1]);
+    await send(gov,'_become');
   });
 
   let trivialProposal, targets, values, signatures, callDatas;
@@ -143,8 +144,8 @@ describe('GovernorBravo#propose/5', () => {
         values: values,
         signatures: signatures,
         calldatas: callDatas,
-        startBlock: 14,
-        endBlock: 17294,
+        startBlock: 15,
+        endBlock: 17295,
         description: "second proposal",
         proposer: accounts[3]
       });
