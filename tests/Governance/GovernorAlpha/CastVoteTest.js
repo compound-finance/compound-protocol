@@ -44,7 +44,7 @@ describe("governorAlpha#castVote/2", () => {
       await mineBlock();
 
       let tx = await send(gov, 'castVote', [proposalId, true], { from: accounts[4] });
-      console.log('Gas used is ' + tx.gasUsed);
+      
       await expect(
         gov.methods['castVote'](proposalId, true).call({ from: accounts[4] })
       ).rejects.toRevert("revert GovernorAlpha::_castVote: voter already voted");
