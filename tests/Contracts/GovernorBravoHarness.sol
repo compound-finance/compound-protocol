@@ -5,7 +5,7 @@ import "../../contracts/Governance/GovernorBravoDelegate.sol";
 
 contract GovernorBravoDelegateHarness is GovernorBravoDelegate {
 	// Become Compound Governor
-    function _become() public {
+    function _initiate() public {
         proposalCount = 1;
         initalProposalId = 1;
     }

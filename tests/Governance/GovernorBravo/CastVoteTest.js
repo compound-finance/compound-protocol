@@ -25,7 +25,7 @@ describe("governorBravo#castVote/2", () => {
     govDelegate = await deploy('GovernorBravoDelegateHarness');
     gov = await deploy('GovernorBravoDelegator', [address(0), comp._address, root, govDelegate._address, 17280, 1]);
     mergeInterface(gov,govDelegate);
-    await send(gov, '_become');
+    await send(gov, '_initiate');
     
     
     targets = [a1];

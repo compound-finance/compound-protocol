@@ -49,8 +49,8 @@ export interface GovernorBravoMethods {
   _setVotingDelay(newVotingDelay: encodedNumber): Sendable<void>;
   _setVotingPeriod(newVotingPeriod: encodedNumber): Sendable<void>;
   _setProposalThreshold(newProposalThreshold: encodedNumber): Sendable<void>;
-  _become(governorAlpha: string): Sendable<void>;
-  _become(): Sendable<void>;
+  _initiate(governorAlpha: string): Sendable<void>;
+  _initiate(): Sendable<void>;
   _setImplementation(address: string): Sendable<void>;
 }
 

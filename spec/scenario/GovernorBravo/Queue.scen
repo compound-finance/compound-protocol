@@ -3,7 +3,7 @@ Macro DeployGov
     Timelock Deploy Jared 604800
     Comp Deploy Bank
     GovernorBravo Deploy BravoImmutable LegitGov (Address Timelock) (Address Comp) (Address Root) 17280 1
-    GovernorBravo LegitGov HarnessBecome
+    GovernorBravo LegitGov HarnessInitiate
     Enfranchise Root 400001e18
     Timelock SetAdmin (Address LegitGov)
     MineBlock
@@ -122,7 +122,7 @@ Test "Revert when queuing on invalid Timelock"
     Enfranchise Root 600001e18
     Counter Deploy CNT1
     GovernorBravo Deploy BravoImmutable LegitGov (Address Zero) (Address Comp) (Address Root) 17280 1
-    GovernorBravo LegitGov HarnessBecome
+    GovernorBravo LegitGov HarnessInitiate
     GovernorBravo LegitGov Propose "Add 5" [(Address CNT1)] [1] ["increment(uint256)"] [["2"]]
     MineBlock
     GovernorBravo LegitGov Proposal LastProposal Vote For ""

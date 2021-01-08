@@ -212,10 +212,10 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         emit ProposalThresholdSet(oldProposalThreshold, proposalThreshold);
     }
 
-    // Become Compound Governor
-    function _become(address governorAlpha) public {
-        require(msg.sender == admin, "GovernorBravo::_become: only admin");
-        require(initalProposalId == 0, "GovernorBravo::_become: can only become once");
+    // Initiate the term as Compound Governor
+    function _initiate(address governorAlpha) public {
+        require(msg.sender == admin, "GovernorBravo::_initiate: only admin");
+        require(initalProposalId == 0, "GovernorBravo::_initiate: can only become once");
         proposalCount = GovernorAlpha(governorAlpha).proposalCount();
         initalProposalId = proposalCount;
         timelock.acceptAdmin();

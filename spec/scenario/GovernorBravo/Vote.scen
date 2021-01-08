@@ -4,7 +4,7 @@ Macro GivenProposal
     Comp Deploy Bank
     Timelock Deploy Jared 604800
     GovernorBravo Deploy BravoImmutable LegitGov (Address Timelock) (Address Comp) (Address Timelock) 17280 1
-    GovernorBravo LegitGov HarnessBecome
+    GovernorBravo LegitGov HarnessInitiate
     Timelock SetAdmin (Address LegitGov)
     Enfranchise Root 100001e18
     Enfranchise Geoff 100

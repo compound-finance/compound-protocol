@@ -12,7 +12,7 @@ describe('GovernorBravo#propose/5', () => {
     [root, acct, ...accounts] = accounts;
     comp = await deploy('Comp', [root]);
     gov = await deploy('GovernorBravoImmutable', [address(0), comp._address, root, 17280, 1]);
-    await send(gov,'_become');
+    await send(gov,'_initiate');
   });
 
   let trivialProposal, targets, values, signatures, callDatas;

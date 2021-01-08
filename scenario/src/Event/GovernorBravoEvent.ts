@@ -117,23 +117,23 @@ async function setImplementation(world: World, from: string, governor: GovernorB
 
   return world;
 }
-async function become(world: World, from: string, governor: GovernorBravo, governorAlpha: string): Promise<World> {
-  let invokation = await invoke(world, governor.methods._become(governorAlpha), from);
+async function initiate(world: World, from: string, governor: GovernorBravo, governorAlpha: string): Promise<World> {
+  let invokation = await invoke(world, governor.methods._initiate(governorAlpha), from);
 
   world = addAction(
     world,
-    `Became governor from GovernorAlpha at ${governorAlpha}`,
+    `Initiated governor from GovernorAlpha at ${governorAlpha}`,
     invokation
   );
 
   return world;
 }
-async function harnessBecome(world: World, from: string, governor: GovernorBravo): Promise<World> {
-  let invokation = await invoke(world, governor.methods._become(), from);
+async function harnessInitiate(world: World, from: string, governor: GovernorBravo): Promise<World> {
+  let invokation = await invoke(world, governor.methods._initiate(), from);
 
   world = addAction(
     world,
-    `Became governor using harness function`,
+    `Initiated governor using harness function`,
     invokation
   );
 
@@ -294,30 +294,30 @@ export function governorBravoCommands() {
       { namePos: 1 }
     ),
     new Command<{ governor: GovernorBravo, governorAlpha: AddressV }>(`
-        #### Become
+        #### Initiate
 
-        * "GovernorBravo <Governor> Become <AddressV>" - Becomes the Governor for the given GovernorAlpha
-        * E.g. "GovernorBravo GovernorBravoScenario Become (Address GovernorAlpha)"
+        * "GovernorBravo <Governor> Initiate <AddressV>" - Initiates the Governor relieving the given GovernorAlpha
+        * E.g. "GovernorBravo GovernorBravoScenario Initiate (Address GovernorAlpha)"
     `,
-      'Become',
+      'Initiate',
       [
         new Arg('governor', getGovernorV),
         new Arg('governorAlpha', getAddressV)
       ],
-      (world, from, { governor, governorAlpha }) => become(world, from, governor, governorAlpha.val),
+      (world, from, { governor, governorAlpha }) => initiate(world, from, governor, governorAlpha.val),
       { namePos: 1 }
     ),
     new Command<{ governor: GovernorBravo }>(`
-        #### HarnessBecome
+        #### HarnessInitiate
 
-        * "GovernorBravo <Governor> HarnessBecome <AddressV>" - Uses harness function to bypass become
-        * E.g. "GovernorBravo GovernorBravoScenario HarnessBecome"
+        * "GovernorBravo <Governor> HarnessInitiate" - Uses harness function to bypass initiate for testing
+        * E.g. "GovernorBravo GovernorBravoScenario HarnessInitiate"
     `,
-      'HarnessBecome',
+      'HarnessInitiate',
       [
         new Arg('governor', getGovernorV)
       ],
-      (world, from, { governor }) => harnessBecome(world, from, governor),
+      (world, from, { governor }) => harnessInitiate(world, from, governor),
       { namePos: 1 }
     ),
     new Command<{ governor: GovernorBravo, newImplementation: AddressV }>(`

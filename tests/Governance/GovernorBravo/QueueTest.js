@@ -23,7 +23,7 @@ describe('GovernorBravo#queue/1', () => {
       const timelock = await deploy('TimelockHarness', [root, 86400 * 2]);
       const comp = await deploy('Comp', [root]);
       const gov = await deploy('GovernorBravoImmutable', [timelock._address, comp._address, root, 17280, 1]);
-      await send(gov, '_become');
+      await send(gov, '_initiate');
       const txAdmin = await send(timelock, 'harnessSetAdmin', [gov._address]);
 
       await enfranchise(comp, a1, 3e6);
@@ -48,7 +48,7 @@ describe('GovernorBravo#queue/1', () => {
       const timelock = await deploy('TimelockHarness', [root, 86400 * 2]);
       const comp = await deploy('Comp', [root]);
       const gov = await deploy('GovernorBravoImmutable', [timelock._address, comp._address, root, 17280, 1]);
-      await send(gov, '_become');
+      await send(gov, '_initiate');
       const txAdmin = await send(timelock, 'harnessSetAdmin', [gov._address]);
 
       await enfranchise(comp, a1, 3e6);

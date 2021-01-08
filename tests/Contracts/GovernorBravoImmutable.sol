@@ -14,7 +14,7 @@ contract GovernorBravoImmutable is GovernorBravoDelegate {
        initialize(timelock_, comp_, admin_, votingPeriod_, votingDelay_);
     }
 
-    function _become() public {
+    function _initiate() public {
         proposalCount = 1;
         initalProposalId = 1;
     }
