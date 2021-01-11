@@ -9,17 +9,19 @@ contract GovernorBravoDelegator is GovernorBravoDelegatorStorage, GovernorBravoE
 			address comp_,
 			address admin_,
 	        address implementation_,
-	        uint256 votingPeriod_,
-	        uint256 votingDelay_) public {
+	        uint votingPeriod_,
+	        uint votingDelay_,
+            uint proposalThreshold_) public {
 
 
 		// First delegate gets to initialize the delegator (i.e. storage contract)
-        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,address,uint256,uint256)",
+        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,address,uint256,uint256,uint256)",
                                                             timelock_,
                                                             comp_,
                                                             msg.sender,
                                                             votingPeriod_,
-                                                            votingDelay_));
+                                                            votingDelay_,
+                                                            proposalThreshold_));
 
         _setImplementation(implementation_);
 

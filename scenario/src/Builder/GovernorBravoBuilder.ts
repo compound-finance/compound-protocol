@@ -27,7 +27,7 @@ export async function buildGovernor(
 ): Promise<{ world: World; governor: GovernorBravo; govData: GovernorBravoData }> {
   const fetchers = [
     new Fetcher<
-      { name: StringV, timelock: AddressV, comp: AddressV, admin: AddressV, implementation: AddressV, votingPeriod: NumberV, votingDelay: NumberV},
+      { name: StringV, timelock: AddressV, comp: AddressV, admin: AddressV, implementation: AddressV, votingPeriod: NumberV, votingDelay: NumberV, proposalThreshold: NumberV},
       GovernorBravoData
     >(
       `
@@ -44,14 +44,15 @@ export async function buildGovernor(
         new Arg("admin", getAddressV),
         new Arg("implementation", getAddressV),
         new Arg("votingPeriod", getNumberV),
-        new Arg("votingDelay", getNumberV)
+        new Arg("votingDelay", getNumberV),
+        new Arg("proposalThreshold", getNumberV)
       ],
-      async (world, { name, timelock, comp, admin, implementation, votingPeriod, votingDelay }) => {
+      async (world, { name, timelock, comp, admin, implementation, votingPeriod, votingDelay, proposalThreshold }) => {
         return {
           invokation: await GovernorBravoDelegator.deploy<GovernorBravo>(
             world,
             from,
-            [timelock.val, comp.val, admin.val, implementation.val, votingPeriod.encode(), votingDelay.encode()]
+            [timelock.val, comp.val, admin.val, implementation.val, votingPeriod.encode(), votingDelay.encode(), proposalThreshold.encode()]
           ),
           name: name.val,
           contract: "GovernorBravoDelegator"
@@ -59,7 +60,7 @@ export async function buildGovernor(
       }
     ),
     new Fetcher<
-      { name: StringV, timelock: AddressV, comp: AddressV, admin: AddressV, votingPeriod: NumberV, votingDelay: NumberV},
+      { name: StringV, timelock: AddressV, comp: AddressV, admin: AddressV, votingPeriod: NumberV, votingDelay: NumberV, proposalThreshold: NumberV },
       GovernorBravoData
     >(
       `
@@ -75,14 +76,15 @@ export async function buildGovernor(
         new Arg("comp", getAddressV),
         new Arg("admin", getAddressV),
         new Arg("votingPeriod", getNumberV),
-        new Arg("votingDelay", getNumberV)
+        new Arg("votingDelay", getNumberV),
+        new Arg("proposalThreshold", getNumberV)
       ],
-      async (world, { name, timelock, comp, admin, votingPeriod, votingDelay }) => {
+      async (world, { name, timelock, comp, admin, votingPeriod, votingDelay, proposalThreshold }) => {
         return {
           invokation: await GovernorBravoImmutable.deploy<GovernorBravo>(
             world,
             from,
-            [timelock.val, comp.val, admin.val, votingPeriod.encode(), votingDelay.encode()]
+            [timelock.val, comp.val, admin.val, votingPeriod.encode(), votingDelay.encode(), proposalThreshold.encode()]
           ),
           name: name.val,
           contract: "GovernorBravoImmutable"

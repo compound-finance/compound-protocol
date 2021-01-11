@@ -53,6 +53,8 @@ export interface GovernorBravoMethods {
   _initiate(governorAlpha: string): Sendable<void>;
   _initiate(): Sendable<void>;
   _setImplementation(address: string): Sendable<void>;
+  _setPendingAdmin(address: string): Sendable<void>;
+  _acceptAdmin(): Sendable<void>;
 }
 
 export interface GovernorBravo extends Contract {

@@ -139,6 +139,28 @@ async function harnessInitiate(world: World, from: string, governor: GovernorBra
 
   return world;
 }
+async function setPendingAdmin(world: World, from: string, governor: GovernorBravo, newPendingAdmin: string): Promise<World> {
+  let invokation = await invoke(world, governor.methods._setPendingAdmin(newPendingAdmin), from);
+
+  world = addAction(
+    world,
+    `Governor pending admin set to ${newPendingAdmin}`,
+    invokation
+    );
+
+  return world;
+}
+async function acceptAdmin(world: World, from: string, governor: GovernorBravo): Promise<World> {
+  let invokation = await invoke(world, governor.methods._acceptAdmin(), from);
+
+  world = addAction(
+    world,
+    `Governor admin accepted`,
+    invokation
+    );
+  
+  return world;
+}
 async function setBlockNumber(
   world: World,
   from: string,
@@ -332,6 +354,33 @@ export function governorBravoCommands() {
         new Arg('newImplementation', getAddressV)
       ],
       (world, from, { governor, newImplementation }) => setImplementation(world, from, governor, newImplementation.val),
+      { namePos: 1 }
+    ),
+    new Command<{ governor: GovernorBravo, newPendingAdmin: AddressV }>(`
+        #### SetPendingAdmin
+
+        * "GovernorBravo <Governor> SetPendingAdmin <AddressV>" - Sets the address for the GovernorBravo pending admin
+        * E.g. "GovernorBravo GovernorBravoScenario SetPendingAdmin newAdmin"
+    `,
+      'SetPendingAdmin',
+      [
+        new Arg('governor', getGovernorV),
+        new Arg('newPendingAdmin', getAddressV)
+      ],
+      (world, from, { governor, newPendingAdmin }) => setPendingAdmin(world, from, governor, newPendingAdmin.val),
+      { namePos: 1 }
+    ),
+    new Command<{ governor: GovernorBravo }>(`
+        #### AcceptAdmin
+
+        * "GovernorBravo <Governor> AcceptAdmin" - Pending admin accepts the admin role
+        * E.g. "GovernorBravo GovernorBravoScenario AcceptAdmin"
+    `,
+      'AcceptAdmin',
+      [
+        new Arg('governor', getGovernorV),
+      ],
+      (world, from, { governor }) => acceptAdmin(world, from, governor),
       { namePos: 1 }
     ),
 

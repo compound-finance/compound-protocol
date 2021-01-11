@@ -32,7 +32,7 @@ describe('GovernorBravo#state/1', () => {
     comp = await deploy('Comp', [root]);
     delay = etherUnsigned(2 * 24 * 60 * 60).multipliedBy(2)
     timelock = await deploy('TimelockHarness', [root, delay]);
-    gov = await deploy('GovernorBravoImmutable', [timelock._address, comp._address, root, 17280, 1]);
+    gov = await deploy('GovernorBravoImmutable', [timelock._address, comp._address, root, 17280, 1, "100000000000000000000000"]);
     await send(gov, '_initiate');
     await send(timelock, "harnessSetAdmin", [gov._address])
     await send(comp, 'transfer', [acct, etherMantissa(4000000)]);

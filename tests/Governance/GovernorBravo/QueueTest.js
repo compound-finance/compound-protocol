@@ -22,7 +22,7 @@ describe('GovernorBravo#queue/1', () => {
     it("reverts on queueing overlapping actions in same proposal", async () => {
       const timelock = await deploy('TimelockHarness', [root, 86400 * 2]);
       const comp = await deploy('Comp', [root]);
-      const gov = await deploy('GovernorBravoImmutable', [timelock._address, comp._address, root, 17280, 1]);
+      const gov = await deploy('GovernorBravoImmutable', [timelock._address, comp._address, root, 17280, 1, "100000000000000000000000"]);
       await send(gov, '_initiate');
       const txAdmin = await send(timelock, 'harnessSetAdmin', [gov._address]);
 
@@ -47,7 +47,7 @@ describe('GovernorBravo#queue/1', () => {
     it("reverts on queueing overlapping actions in different proposals, works if waiting", async () => {
       const timelock = await deploy('TimelockHarness', [root, 86400 * 2]);
       const comp = await deploy('Comp', [root]);
-      const gov = await deploy('GovernorBravoImmutable', [timelock._address, comp._address, root, 17280, 1]);
+      const gov = await deploy('GovernorBravoImmutable', [timelock._address, comp._address, root, 17280, 1, "100000000000000000000000"]);
       await send(gov, '_initiate');
       const txAdmin = await send(timelock, 'harnessSetAdmin', [gov._address]);
 

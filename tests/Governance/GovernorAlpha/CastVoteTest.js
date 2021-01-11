@@ -43,7 +43,7 @@ describe("governorAlpha#castVote/2", () => {
       await mineBlock();
       await mineBlock();
 
-      let tx = await send(gov, 'castVote', [proposalId, true], { from: accounts[4] });
+      await send(gov, 'castVote', [proposalId, true], { from: accounts[4] });
       
       await expect(
         gov.methods['castVote'](proposalId, true).call({ from: accounts[4] })

@@ -9,9 +9,10 @@ contract GovernorBravoImmutable is GovernorBravoDelegate {
             address timelock_,
             address comp_,
             address admin_,
-            uint256 votingPeriod_,
-            uint256 votingDelay_) public {
-       initialize(timelock_, comp_, admin_, votingPeriod_, votingDelay_);
+            uint votingPeriod_,
+            uint votingDelay_,
+            uint proposalThreshold_) public {
+       initialize(timelock_, comp_, admin_, votingPeriod_, votingDelay_, proposalThreshold_);
     }
 
     function _initiate() public {

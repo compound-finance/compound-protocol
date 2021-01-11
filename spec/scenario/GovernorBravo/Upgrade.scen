@@ -6,7 +6,7 @@ Macro DeployGov
     Comp Deploy Bank
     Enfranchise Root 400001e18
     Timelock Deploy Jared 604800
-    GovernorBravo Deploy BravoImmutable Alpha (Address Timelock) (Address Comp) (Address Timelock) 17280 1
+    GovernorBravo Deploy BravoImmutable Alpha (Address Timelock) (Address Comp) (Address Timelock) 17280 1 100000e18
     GovernorBravo Alpha HarnessInitiate
     Timelock SetAdmin (Address Alpha)
     Assert Equal (Timelock Admin) (Address Alpha)
@@ -30,7 +30,7 @@ Macro Enfranchise user amount
 
 Test "Governor can switch to a new governor"
     DeployGov
-    GovernorBravo Deploy BravoImmutable Bravo (Address Timelock) (Address Comp) (Address Timelock) 17280 1
+    GovernorBravo Deploy BravoImmutable Bravo (Address Timelock) (Address Comp) (Address Timelock) 17280 1 100000e18
     GovernorBravo Alpha Propose "Upgrade Governor" [(Address Timelock) (Address Bravo)] [0 0] ["setPendingAdmin(address)" "_initiate(address)"] [[(Address Bravo)] [(Address Alpha)]]
     SucceedQueueExecuteLastProposal Alpha
     Assert Equal (Timelock Admin) (Address Bravo)

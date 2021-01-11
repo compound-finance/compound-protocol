@@ -23,17 +23,17 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     /// @notice The EIP-712 typehash for the ballot struct used by the contract
     bytes32 public constant BALLOT_TYPEHASH = keccak256("Ballot(uint256 proposalId,uint8 support)");
 
-    function initialize(address timelock_, address comp_, address admin_, uint256 votingPeriod_, uint256 votingDelay_) public {
+    function initialize(address timelock_, address comp_, address admin_, uint votingPeriod_, uint votingDelay_, uint proposalThreshold_) public {
         timelock = TimelockInterface(timelock_);
         comp = CompInterface(comp_);
         admin = admin_;
         votingPeriod = votingPeriod_;
         votingDelay = votingDelay_;
-        proposalThreshold = 100000e18;
+        proposalThreshold = proposalThreshold_;
     }
 
     function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint) {
-        // Reject proposals before becoming Governor
+        // Reject proposals before initiating as Governor
         require(initalProposalId != 0, "GovernorBravo::propose: Governor Bravo not active");
         require(comp.getPriorVotes(msg.sender, sub256(block.number, 1)) > proposalThreshold, "GovernorBravo::propose: proposer votes below proposal threshold");
         require(targets.length == values.length && targets.length == signatures.length && targets.length == calldatas.length, "GovernorBravo::propose: proposal function information arity mismatch");

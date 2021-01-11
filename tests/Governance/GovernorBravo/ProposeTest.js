@@ -11,7 +11,7 @@ describe('GovernorBravo#propose/5', () => {
   beforeAll(async () => {
     [root, acct, ...accounts] = accounts;
     comp = await deploy('Comp', [root]);
-    gov = await deploy('GovernorBravoImmutable', [address(0), comp._address, root, 17280, 1]);
+    gov = await deploy('GovernorBravoImmutable', [address(0), comp._address, root, 17280, 1, "100000000000000000000000"]);
     await send(gov,'_initiate');
   });
 
