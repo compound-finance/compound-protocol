@@ -34,16 +34,12 @@ contract GovernorBravoDelegator is GovernorBravoDelegatorStorage, GovernorBravoE
      * @param implementation_ The address of the new implementation for delegation
      */
     function _setImplementation(address implementation_) public {
-        require(msg.sender == admin, "GovernorDelegator::_setImplementation: Caller must be admin");
+        require(msg.sender == admin, "GovernorBravoDelegator::_setImplementation: admin only");
 
         address oldImplementation = implementation;
         implementation = implementation_;
 
         emit NewImplementation(oldImplementation, implementation);
-    }
-
-    function delegateToImplementation(bytes memory data) public returns (bytes memory) {
-        return delegateTo(implementation, data);
     }
 
     /**
@@ -69,8 +65,6 @@ contract GovernorBravoDelegator is GovernorBravoDelegatorStorage, GovernorBravoE
      * or forwards reverts.
      */
     function () payable external {
-    	require(msg.value == 0,"GovernorDelegator::fallback: cannot send value to fallback");
-
         // delegate all other functions to current implementation
         (bool success, ) = implementation.delegatecall(msg.data);
 

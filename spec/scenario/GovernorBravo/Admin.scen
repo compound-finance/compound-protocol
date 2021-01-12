@@ -3,7 +3,9 @@ Macro DeployGov
     Counter Deploy CNT1
     Timelock Deploy Scenario Jared 604800
     Comp Deploy Bank
-    GovernorBravo Deploy BravoImmutable LegitGov (Address Timelock) (Address Comp) (Address Root) 17280 1 100000e18
+    GovernorBravo Deploy BravoDelegateHarness BravoDelegateHarness
+    GovernorBravo Deploy BravoDelegator LegitGov (Address Timelock) (Address Comp) (Address Root) (Address BravoDelegateHarness) 17280 1 100000e18
+    GovernorBravo LegitGov MergeABI BravoDelegateHarness
     GovernorBravo LegitGov HarnessInitiate
     Timelock SetAdmin (Address LegitGov)
     Enfranchise Root 200001e18
@@ -51,20 +53,20 @@ Test "Set Voting delay"
 	DeployGov
 	GovernorBravo LegitGov SetVotingDelay 100
 	GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]]
-	Assert Log ProposalCreated (startBlock 113)
+	Assert Log ProposalCreated (startBlock 114)
 	Assert Equal (GovernorBravo LegitGov VotingDelay) 100
 
 Test "Orignally set voting delay to 1"
 	DeployGov
 	GovernorBravo LegitGov SetVotingDelay 1
 	GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]]
-	Assert Log ProposalCreated (startBlock 14)
+	Assert Log ProposalCreated (startBlock 15)
 
 Test "Set Voting Period"
 	DeployGov
 	GovernorBravo LegitGov SetVotingPeriod 10
 	GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]]
-	Assert Log ProposalCreated (endBlock 24)
+	Assert Log ProposalCreated (endBlock 25)
 	Assert Equal (GovernorBravo LegitGov VotingPeriod) 10
 
 Test "Set Proposal Threshold"
@@ -94,3 +96,5 @@ Test "Enforce admin"
 	Assert Revert "revert GovernorBravo::_setVotingDelay: admin only"
 	From Robert (GovernorBravo LegitGov Initiate (Address Robert))
 	Assert Revert "revert GovernorBravo::_initiate: admin only"
+	From Robert (GovernorBravo LegitGov SetImplementation (Address BravoDelegateHarness))
+	Assert Revert "revert GovernorBravoDelegator::_setImplementation: admin only"

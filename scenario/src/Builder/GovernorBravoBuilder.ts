@@ -116,6 +116,32 @@ export async function buildGovernor(
           contract: "GovernorBravoDelegate"
         };
       }
+    ),
+    new Fetcher<
+      { name: StringV },
+      GovernorBravoData
+    >(
+      `
+      #### GovernorBravoDelegateHarness
+
+      * "Governor Deploy BravoDelegateHarness name:<String>" - Deploys Compound Governor Bravo Delegate Harness
+        * E.g. "Governor Deploy BravoDelegateHarness GovernorBravoDelegateHarness"
+    `,
+      "BravoDelegateHarness",
+      [
+        new Arg("name", getStringV)
+      ],
+      async (world, { name }) => {
+        return {
+          invokation: await GovernorBravoDelegateHarness.deploy<GovernorBravo>(
+            world,
+            from,
+            []
+          ),
+          name: name.val,
+          contract: "GovernorBravoDelegateHarness"
+        };
+      }
     )
   ];
 

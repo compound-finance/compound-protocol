@@ -67,7 +67,7 @@ async function mergeABI(
     // Skip this specifically on dry runs since it's likely to crash due to a number of reasons
     world = await mergeContractABI(
       world,
-      "GovernorBravo",
+      "GovernorBravoDelegator",
       governorDelegator,
       governorDelegator.name,
       governorDelegate.name
@@ -172,11 +172,11 @@ async function setImplementation(
   world: World,
   from: string,
   governor: GovernorBravo,
-  newImplementation: string
+  newImplementation: GovernorBravo
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    governor.methods._setImplementation(newImplementation),
+    governor.methods._setImplementation(newImplementation._address),
     from
   );
 
@@ -185,6 +185,8 @@ async function setImplementation(
     `Set GovernorBravo implementation to ${newImplementation}`,
     invokation
   );
+
+  mergeABI(world, from, governor, newImplementation)
 
   return world;
 }
@@ -478,20 +480,20 @@ export function governorBravoCommands() {
       (world, from, { governor }) => harnessInitiate(world, from, governor),
       { namePos: 1 }
     ),
-    new Command<{ governor: GovernorBravo; newImplementation: AddressV }>(
+    new Command<{ governor: GovernorBravo; newImplementation: GovernorBravo }>(
       `
         #### SetImplementation
 
-        * "GovernorBravo <Governor> SetImplementation <AddressV>" - Sets the address for the GovernorBravo implementation
+        * "GovernorBravo <Governor> SetImplementation <Governor>" - Sets the address for the GovernorBravo implementation
         * E.g. "GovernorBravo GovernorBravoScenario SetImplementation newImplementation"
     `,
       "SetImplementation",
       [
         new Arg("governor", getGovernorV),
-        new Arg("newImplementation", getAddressV),
+        new Arg("newImplementation", getGovernorV),
       ],
       (world, from, { governor, newImplementation }) =>
-        setImplementation(world, from, governor, newImplementation.val),
+        setImplementation(world, from, governor, newImplementation),
       { namePos: 1 }
     ),
     new Command<{ governor: GovernorBravo; newPendingAdmin: AddressV }>(

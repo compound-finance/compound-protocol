@@ -11,6 +11,7 @@ import { Comptroller } from './Contract/Comptroller';
 import { ComptrollerImpl } from './Contract/ComptrollerImpl';
 import { CToken } from './Contract/CToken';
 import { Governor } from './Contract/Governor';
+import { GovernorBravo } from './Contract/GovernorBravo'
 import { Erc20 } from './Contract/Erc20';
 import { InterestRateModel } from './Contract/InterestRateModel';
 import { PriceOracle } from './Contract/PriceOracle';
@@ -107,6 +108,10 @@ export function getErc20Address(world: World, erc20Arg: string): string {
 
 export function getGovernorAddress(world: World, governorArg: string): string {
   return getContractDataString(world, [['Contracts', governorArg]]);
+}
+
+export function getGovernorBravo(world: World, governoBravoArg: string): Promise<GovernorBravo> {
+  return getWorldContract(world, [['Contracts', 'GovernorBravo']])
 }
 
 export async function getPriceOracleProxy(world: World): Promise<PriceOracle> {
