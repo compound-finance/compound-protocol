@@ -80,6 +80,13 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
      */
     mapping(address => Market) public markets;
 
+    /// @notice A list of all markets
+    CToken[] public allMarkets;
+
+    mapping(address => bool) internal users;
+
+    address[] public allUsers;
+
 
     /**
      * @notice The Pause Guardian can pause certain actions as a safety mechanism.

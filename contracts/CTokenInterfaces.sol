@@ -122,6 +122,11 @@ contract CTokenInterface is CTokenStorage {
      */
     bool public constant isCToken = true;
 
+    /**
+     * @notice Indicator that this is or is not a CEther contract (for inspection)
+     */
+    bool public constant isCEther = false;
+
 
     /*** Market Events ***/
 

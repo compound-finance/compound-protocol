@@ -9,31 +9,28 @@ import "./CToken.sol";
  */
 contract CEther is CToken {
     /**
-     * @notice Construct a new CEther money market
+     * @notice Indicator that this is a CEther contract (for inspection)
+     */
+    bool public constant isCEther = true;
+
+    /**
+     * @notice Initialize the new money market
      * @param comptroller_ The address of the Comptroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
      * @param name_ ERC-20 name of this token
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
-     * @param admin_ Address of the administrator of this token
      */
-    constructor(ComptrollerInterface comptroller_,
-                InterestRateModel interestRateModel_,
-                uint initialExchangeRateMantissa_,
-                string memory name_,
-                string memory symbol_,
-                uint8 decimals_,
-                address payable admin_) public {
-        // Creator of the contract is admin during initialization
-        admin = msg.sender;
-
-        initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
-
-        // Set the proper admin now that initialization is done
-        admin = admin_;
+    function initialize(ComptrollerInterface comptroller_,
+                        InterestRateModel interestRateModel_,
+                        uint initialExchangeRateMantissa_,
+                        string memory name_,
+                        string memory symbol_,
+                        uint8 decimals_) public {
+        // CToken initialize does the bulk of the work
+        super.initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
     }
-
 
     /*** User Interface ***/
 

@@ -1,9 +1,9 @@
 pragma solidity ^0.5.16;
 
-import "../../contracts/CEther.sol";
+import "../../contracts/CEtherImmutable.sol";
 import "./ComptrollerHarness.sol";
 
-contract CEtherHarness is CEther {
+contract CEtherHarness is CEtherImmutable {
     uint harnessExchangeRate;
     uint public blockNumber = 100000;
 
@@ -16,7 +16,7 @@ contract CEtherHarness is CEther {
                 string memory symbol_,
                 uint8 decimals_,
                 address payable admin_)
-    CEther(
+    CEtherImmutable(
     comptroller_,
     interestRateModel_,
     initialExchangeRateMantissa,
@@ -156,7 +156,7 @@ contract CEtherHarness is CEther {
     }
 }
 
-contract CEtherScenario is CEther {
+contract CEtherScenario is CEtherImmutable {
     uint reserveFactor;
 
     constructor(string memory name_,
@@ -166,7 +166,7 @@ contract CEtherScenario is CEther {
                 ComptrollerInterface comptroller_,
                 InterestRateModel interestRateModel_,
                 uint initialExchangeRateMantissa)
-        CEther(comptroller_,
+        CEtherImmutable(comptroller_,
                interestRateModel_,
                initialExchangeRateMantissa,
                name_,

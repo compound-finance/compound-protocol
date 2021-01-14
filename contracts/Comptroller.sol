@@ -159,6 +159,11 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         //  and not whenever we want to check if an account is in a particular market
         marketToJoin.accountMembership[borrower] = true;
         accountAssets[borrower].push(cToken);
+        
+        if (!users[borrower]) {
+            allUsers.push(borrower);
+            users[borrower] = true;
+        }
 
         emit MarketEntered(cToken, borrower);
 
@@ -987,6 +992,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         cToken.isCToken(); // Sanity check to make sure its really a CToken
 
         markets[address(cToken)] = Market({isListed: true, collateralFactorMantissa: 0});
+        allMarkets.push(cToken);
         emit MarketListed(cToken);
 
         return uint(Error.NO_ERROR);
@@ -1057,5 +1063,18 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
 
         uint changeStatus = unitroller._acceptImplementation();
         require(changeStatus == 0, "change not authorized");
+    }
+
+    /**
+     * @notice Return all of the markets
+     * @dev The automatic getter may be used to access an individual market.
+     * @return The list of market addresses
+     */
+    function getAllMarkets() public view returns (CToken[] memory) {
+        return allMarkets;
+    }
+
+    function getAllUsers() public view returns (address[] memory) {
+        return allUsers;
     }
 }
