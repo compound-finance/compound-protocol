@@ -98,3 +98,9 @@ Test "Enforce admin"
 	Assert Revert "revert GovernorBravo::_initiate: admin only"
 	From Robert (GovernorBravo LegitGov SetImplementation (Address BravoDelegateHarness))
 	Assert Revert "revert GovernorBravoDelegator::_setImplementation: admin only"
+Test "Transfer Admin"
+	DeployGov
+	Assert Equal (Address Root) (GovernorBravo LegitGov Admin)
+	GovernorBravo LegitGov SetPendingAdmin (Address Robert)
+	From Robert (GovernorBravo LegitGov AcceptAdmin)
+	Assert Equal (Address Robert) (GovernorBravo LegitGov Admin)

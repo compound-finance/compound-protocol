@@ -3,7 +3,6 @@ pragma experimental ABIEncoderV2;
 
 
 contract GovernorBravoEvents {
-
     /// @notice An event emitted when a new proposal is created
     event ProposalCreated(uint id, address proposer, address[] targets, uint[] values, string[] signatures, bytes[] calldatas, uint startBlock, uint endBlock, string description);
 
@@ -31,84 +30,51 @@ contract GovernorBravoEvents {
     /// @notice Emitted when proposal threshold is set
     event ProposalThresholdSet(uint oldProposalThreshold, uint newProposalThreshold);
 
-    /**
-      * @notice Emitted when pendingAdmin is changed
-      */
+    /// @notice Emitted when pendingAdmin is changed
     event NewPendingAdmin(address oldPendingAdmin, address newPendingAdmin);
 
-    /**
-      * @notice Emitted when pendingAdmin is accepted, which means admin is updated
-      */
+    /// @notice Emitted when pendingAdmin is accepted, which means admin is updated
     event NewAdmin(address oldAdmin, address newAdmin);
 }
 
 contract GovernorBravoDelegatorStorage {
-    /**
-     * @notice Administrator for this contract
-     */
+    /// @notice Administrator for this contract
     address public admin;
 
-    /**
-     * @notice Pending administrator for this contract
-     */
+    /// @notice Pending administrator for this contract
     address public pendingAdmin;
 
-    /**
-     * @notice Active brains of Governor
-     */
+    /// @notice Active brains of Governor
     address public implementation;
 }
 
-
-/*
- * @title Compound Governor Storage
- * @author Arr00
- */
 contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
 
-    /**
-     * @notice The delay before voting on a proposal may take place, once proposed
-     */
+    /// @notice The delay before voting on a proposal may take place, once proposed, in blocks
     uint public votingDelay;
 
-    /**
-     * @notice The duration of voting on a proposal, in blocks
-     */
+    /// @notice The duration of voting on a proposal, in blocks
     uint public votingPeriod;
 
-    /**
-     * @notice The number of votes required in order for a voter to become a proposer
-     */
+    /// @notice The number of votes required in order for a voter to become a proposer
     uint public proposalThreshold;
 
-    /**
-     * @notice The address of the Compound Protocol Timelock
-     */
+    /// @notice The address of the Compound Protocol Timelock
     TimelockInterface public timelock;
 
-    /**
-     * @notice The address of the Compound governance token
-     */
+    /// @notice The address of the Compound governance token
     CompInterface public comp;
 
-    /**
-     * @notice The total number of proposals
-     */
+    /// @notice The total number of proposals
     uint public proposalCount;
 
-    /**
-     * @notice The official record of all proposals ever proposed
-     */
+    /// @notice The official record of all proposals ever proposed
     mapping (uint => Proposal) public proposals;
 
-    /**
-     * @notice The latest proposal for each proposer
-     */
+    /// @notice The latest proposal for each proposer
     mapping (address => uint) public latestProposalIds;
 
-    /**
-     * @notice Initial proposal id set at become
-     */
+    /// @notice Initial proposal id set at become
     uint public initalProposalId;
 
     struct Proposal {
@@ -158,13 +124,20 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
         mapping (address => Receipt) receipts;
     }
 
+    /// @notice Possible values for proposal support
+    enum Support {
+    	Against,
+    	For,
+    	Abstain
+    }
+
     /// @notice Ballot receipt record for a voter
     struct Receipt {
         /// @notice Whether or not a vote has been cast
         bool hasVoted;
 
         /// @notice Whether or not the voter supports the proposal or abstains
-        uint8 support;
+        Support support;
 
         /// @notice The number of votes the voter had, which were cast
         uint96 votes;
@@ -184,10 +157,7 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
         Expired,
         Executed
     }
-
 }
-
-
 
 interface TimelockInterface {
     function delay() external view returns (uint);

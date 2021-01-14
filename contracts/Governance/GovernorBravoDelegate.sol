@@ -212,7 +212,11 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         emit ProposalThresholdSet(oldProposalThreshold, proposalThreshold);
     }
 
-    // Initiate the term as Compound Governor
+    /**
+      * @notice Initiate the GovernorBravo contract
+      * @dev Admin only. Sets initatial proposal id which initiates the contract and ensuring a continious proposal id count
+      * @param governorAlpha The address for the Governor to continue the proposal id count from
+      */
     function _initiate(address governorAlpha) public {
         require(msg.sender == admin, "GovernorBravo::_initiate: admin only");
         require(initalProposalId == 0, "GovernorBravo::_initiate: can only become once");
