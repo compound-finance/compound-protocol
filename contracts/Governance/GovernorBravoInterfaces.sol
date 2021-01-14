@@ -7,6 +7,11 @@ contract GovernorBravoEvents {
     event ProposalCreated(uint id, address proposer, address[] targets, uint[] values, string[] signatures, bytes[] calldatas, uint startBlock, uint endBlock, string description);
 
     /// @notice An event emitted when a vote has been cast on a proposal
+    /// @param voter The address which casted a vote
+    /// @param proposalId The proposal id which was voted on
+    /// @param support Support value for the vote. 0=against, 1=for, 2=abstain
+    /// @param votes Number of votes which were cast by the voter
+    /// @param reason The reason given for the vote
     event VoteCast(address voter, uint proposalId, uint8 support, uint votes, string reason);
 
     /// @notice An event emitted when a proposal has been canceled
@@ -124,20 +129,13 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
         mapping (address => Receipt) receipts;
     }
 
-    /// @notice Possible values for proposal support
-    enum Support {
-    	Against,
-    	For,
-    	Abstain
-    }
-
     /// @notice Ballot receipt record for a voter
     struct Receipt {
         /// @notice Whether or not a vote has been cast
         bool hasVoted;
 
         /// @notice Whether or not the voter supports the proposal or abstains
-        Support support;
+        uint8 support;
 
         /// @notice The number of votes the voter had, which were cast
         uint96 votes;

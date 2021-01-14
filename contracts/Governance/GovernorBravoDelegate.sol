@@ -147,6 +147,12 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         }
     }
 
+    /**
+      * @notice Cast a vote for a proposal
+      * @param proposalId The id of the proposal to vote on
+      * @param support The support value for the vote. 0=against, 1=for, 2=abstain
+      * @param reason A string giving a reason for the user's vote. If not needed, should be an empty string.
+      */
     function castVote(uint proposalId, uint8 support, string calldata reason) external {
         return _castVote(msg.sender, proposalId, support, reason);
     }
