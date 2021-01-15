@@ -289,8 +289,3 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         return chainId;
     }
 }
-
-interface GovernorAlpha {
-    /// @notice The total number of proposals
-    function proposalCount() external returns (uint); 
-}

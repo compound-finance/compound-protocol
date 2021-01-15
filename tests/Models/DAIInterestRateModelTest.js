@@ -68,7 +68,7 @@ async function getKovanFork() {
   return {kovan, root, accounts};
 }
 
-describe('DAIInterestRateModelV3', () => {
+describe('DAIInterestRateModelV3Supply', () => {
   describe("constructor", () => {
     it("sets jug and ilk address and pokes", async () => {
       // NB: Going back a certain distance requires an archive node, currently that add-on is $250/mo
@@ -166,6 +166,30 @@ describe('DAIInterestRateModelV3', () => {
           expect(Number(actual) / 1e18).toBeWithinDelta(expected, 1e-3);
         });
       });
+  });
+});
+
+describe('DAIInterestRateModelV3Borrow', () => {
+  describe("constructor", () => {
+    it("sets jug and ilk address and pokes", async () => {
+      // NB: Going back a certain distance requires an archive node, currently that add-on is $250/mo
+      //  https://community.infura.io/t/error-returned-error-project-id-does-not-have-access-to-archive-state/847
+      const {kovan, root, accounts} = await getKovanFork();
+
+      // TODO: Get contract craz
+      let {contract: model} = await saddle.deployFull('DAIInterestRateModelV3', [
+        etherUnsigned(0.8e18),
+        etherUnsigned(0.9e18),
+        "0xea190dbdc7adf265260ec4da6e9675fd4f5a78bb",
+        "0xcbb7718c9f39d05aeede1c472ca8bf804b2f1ead",
+        "0xe3e07f4f3e2f5a5286a99b9b8deed08b8e07550b" // kovan timelock
+      ], {gas: 20000000, gasPrice: 20000, from: root}, kovan);
+
+      let args = [0.5e18, 0.45e18, 500].map(etherUnsigned);
+      // let mult = await call(model, 'multiplierPerBlock');
+      let sr = await call(model, 'getSupplyRate', [...args, etherUnsigned(0.1e18)]);
+      // TODO: This doesn't check the return valie?
+    });
   });
 
   describe('getSupplyRate', () => {
