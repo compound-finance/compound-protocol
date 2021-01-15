@@ -44,7 +44,6 @@ describe("governorAlpha#castVote/2", () => {
       await mineBlock();
 
       await send(gov, 'castVote', [proposalId, true], { from: accounts[4] });
-      
       await expect(
         gov.methods['castVote'](proposalId, true).call({ from: accounts[4] })
       ).rejects.toRevert("revert GovernorAlpha::_castVote: voter already voted");
