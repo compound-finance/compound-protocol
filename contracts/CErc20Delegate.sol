@@ -27,6 +27,9 @@ contract CErc20Delegate is CErc20, CDelegateInterface {
         }
 
         require(msg.sender == admin, "only the admin may call _becomeImplementation");
+
+        // Set internal cash when becoming implementation
+        internalCash = getCashOnChain();
     }
 
     /**

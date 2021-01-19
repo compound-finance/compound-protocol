@@ -143,3 +143,11 @@ contract ComptrollerV5Storage is ComptrollerV4Storage {
     /// @notice Last block at which a contributor's COMP rewards have been allocated
     mapping(address => uint) public lastContributorBlock;
 }
+
+contract ComptrollerV6Storage is ComptrollerV5Storage {
+    /// @notice The supplyCapGuardian can set supplyCaps to any number for any market. Lowering the supply cap could disable supplying to the given market.
+    address public supplyCapGuardian;
+
+    /// @notice Supply caps enforced by mintAllowed for each cToken address. Defaults to zero which corresponds to unlimited supplying.
+    mapping(address => uint) public supplyCaps;
+}

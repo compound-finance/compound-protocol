@@ -118,14 +118,36 @@ contract CErc20 is CToken, CErc20Interface {
         return _addReservesInternal(addAmount);
     }
 
+    /**
+     * @notice Absorb excess cash into reserves.
+     */
+    function gulp() external {
+        uint256 cashOnChain = getCashOnChain();
+        uint256 cashPrior = getCashPrior();
+
+        uint excessCash = sub_(cashOnChain, cashPrior);
+        totalReserves = add_(totalReserves, excessCash);
+        internalCash = cashOnChain;
+    }
+
     /*** Safe Token ***/
 
     /**
-     * @notice Gets balance of this contract in terms of the underlying
+     * @notice Gets internal balance of this contract in terms of the underlying.
+     *  It excludes balance from direct transfer.
      * @dev This excludes the value of the current message, if any
      * @return The quantity of underlying tokens owned by this contract
      */
     function getCashPrior() internal view returns (uint) {
+        return internalCash;
+    }
+
+    /**
+     * @notice Gets total balance of this contract in terms of the underlying
+     * @dev This excludes the value of the current message, if any
+     * @return The quantity of underlying tokens owned by this contract
+     */
+    function getCashOnChain() internal view returns (uint) {
         EIP20Interface token = EIP20Interface(underlying);
         return token.balanceOf(address(this));
     }
@@ -162,8 +184,9 @@ contract CErc20 is CToken, CErc20Interface {
 
         // Calculate the amount that was *actually* transferred
         uint balanceAfter = EIP20Interface(underlying).balanceOf(address(this));
-        require(balanceAfter >= balanceBefore, "TOKEN_TRANSFER_IN_OVERFLOW");
-        return balanceAfter - balanceBefore;   // underflow already checked above, just subtract
+        uint transferredIn = sub_(balanceAfter, balanceBefore);
+        internalCash = add_(internalCash, transferredIn);
+        return transferredIn;
     }
 
     /**
@@ -194,5 +217,6 @@ contract CErc20 is CToken, CErc20Interface {
                 }
         }
         require(success, "TOKEN_TRANSFER_OUT_FAILED");
+        internalCash = sub_(internalCash, amount);
     }
 }

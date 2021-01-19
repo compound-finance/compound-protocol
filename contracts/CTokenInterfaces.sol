@@ -245,6 +245,11 @@ contract CErc20Storage {
      * @notice Underlying asset for this CToken
      */
     address public underlying;
+
+    /**
+    * @notice Internal cash counter for this CToken. Should equal underlying.balanceOf(address(this)) for CERC20.
+    */
+    uint256 public internalCash;
 }
 
 contract CErc20Interface is CErc20Storage {
@@ -258,7 +263,7 @@ contract CErc20Interface is CErc20Storage {
     function repayBorrow(uint repayAmount) external returns (uint);
     function repayBorrowBehalf(address borrower, uint repayAmount) external returns (uint);
     function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) external returns (uint);
-
+    function gulp() external;
 
     /*** Admin Functions ***/
 

@@ -12,7 +12,7 @@ import "./Governance/Comp.sol";
  * @title Compound's Comptroller Contract
  * @author Compound
  */
-contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError {
+contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError {
     /// @notice Emitted when an admin supports a market
     event MarketListed(CToken cToken);
 
@@ -60,12 +60,6 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
 
     /// @notice Emitted when borrow cap guardian is changed
     event NewBorrowCapGuardian(address oldBorrowCapGuardian, address newBorrowCapGuardian);
-
-    /// @notice Emitted when supply cap for a cToken is changed
-    event NewSupplyCap(CToken indexed cToken, uint newSupplyCap);
-
-    /// @notice Emitted when supply cap guardian is changed
-    event NewSupplyCapGuardian(address oldSupplyCapGuardian, address newSupplyCapGuardian);
 
     /// @notice Emitted when COMP is granted by admin
     event CompGranted(address recipient, uint amount);
@@ -233,22 +227,10 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
 
         // Shh - currently unused
         minter;
+        mintAmount;
 
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
-        }
-
-        uint supplyCap = supplyCaps[cToken];
-        // Supply cap of 0 corresponds to unlimited supplying
-        if (supplyCap != 0) {
-            uint totalCash = CToken(cToken).getCash();
-            uint totalBorrows = CToken(cToken).totalBorrows();
-            uint totalReserves = CToken(cToken).totalReserves();
-            // totalSupplies = totalCash + totalBorrows - totalReserves
-            uint totalSupplies = sub_(add_(totalCash, totalBorrows), totalReserves);
-
-            uint nextTotalSupplies = add_(totalSupplies, mintAmount);
-            require(nextTotalSupplies < supplyCap, "market supply cap reached");
         }
 
         // Keep the flywheel moving
@@ -967,7 +949,7 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
       * @param newBorrowCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
       */
     function _setMarketBorrowCaps(CToken[] calldata cTokens, uint[] calldata newBorrowCaps) external {
-        require(msg.sender == admin || msg.sender == borrowCapGuardian, "only admin or borrow cap guardian can set borrow caps");
+    	require(msg.sender == admin || msg.sender == borrowCapGuardian, "only admin or borrow cap guardian can set borrow caps"); 
 
         uint numMarkets = cTokens.length;
         uint numBorrowCaps = newBorrowCaps.length;
@@ -995,43 +977,6 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
 
         // Emit NewBorrowCapGuardian(OldBorrowCapGuardian, NewBorrowCapGuardian)
         emit NewBorrowCapGuardian(oldBorrowCapGuardian, newBorrowCapGuardian);
-    }
-
-    /**
-      * @notice Set the given supply caps for the given cToken markets. Supplying that brings total supplys to or above supply cap will revert.
-      * @dev Admin or supplyCapGuardian function to set the supply caps. A supply cap of 0 corresponds to unlimited supplying.
-      * @param cTokens The addresses of the markets (tokens) to change the supply caps for
-      * @param newSupplyCaps The new supply cap values in underlying to be set. A value of 0 corresponds to unlimited supplying.
-      */
-    function _setMarketSupplyCaps(CToken[] calldata cTokens, uint[] calldata newSupplyCaps) external {
-        require(msg.sender == admin || msg.sender == supplyCapGuardian, "only admin or supply cap guardian can set supply caps");
-
-        uint numMarkets = cTokens.length;
-        uint numSupplyCaps = newSupplyCaps.length;
-
-        require(numMarkets != 0 && numMarkets == numSupplyCaps, "invalid input");
-
-        for(uint i = 0; i < numMarkets; i++) {
-            supplyCaps[address(cTokens[i])] = newSupplyCaps[i];
-            emit NewSupplyCap(cTokens[i], newSupplyCaps[i]);
-        }
-    }
-
-    /**
-     * @notice Admin function to change the Supply Cap Guardian
-     * @param newSupplyCapGuardian The address of the new Supply Cap Guardian
-     */
-    function _setSupplyCapGuardian(address newSupplyCapGuardian) external {
-        require(msg.sender == admin, "only admin can set supply cap guardian");
-
-        // Save current value for inclusion in log
-        address oldSupplyCapGuardian = supplyCapGuardian;
-
-        // Store supplyCapGuardian with value newSupplyCapGuardian
-        supplyCapGuardian = newSupplyCapGuardian;
-
-        // Emit NewSupplyCapGuardian(OldSupplyCapGuardian, NewSupplyCapGuardian)
-        emit NewSupplyCapGuardian(oldSupplyCapGuardian, newSupplyCapGuardian);
     }
 
     /**
