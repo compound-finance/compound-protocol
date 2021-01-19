@@ -5,7 +5,7 @@ Test "Attempt to borrow over set cap ERC20"
     NewCToken BAT cBAT
     Comptroller SetMarketBorrowCaps (cBAT) (0.5e18)
     Assert Equal (Comptroller BorrowCaps cBAT) (Exactly 0.5e18)
-    Give cBAT 10e18 BAT -- Faucet some bat to borrow
+    GiveCToken cBAT 10e18 BAT -- Faucet some bat to borrow
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
     Prep Geoff Some ZRX cZRX
@@ -23,7 +23,7 @@ Test "Attempt to borrow at set cap ERC20"
     NewCToken ZRX cZRX
     NewCToken BAT cBAT
     Comptroller SetMarketBorrowCaps (cBAT) (1000000000000000001)
-    Give cBAT 10e18 BAT -- Faucet some bat to borrow
+    GiveCToken cBAT 10e18 BAT -- Faucet some bat to borrow
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
     Prep Geoff Some ZRX cZRX
@@ -42,7 +42,7 @@ Test "Attempt to borrow below set cap ERC20"
     NewCToken ZRX cZRX
     NewCToken BAT cBAT
     Comptroller SetMarketBorrowCaps (cBAT) (10e18)
-    Give cBAT 10e18 BAT -- Faucet some bat to borrow
+    GiveCToken cBAT 10e18 BAT -- Faucet some bat to borrow
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
     Prep Geoff Some ZRX cZRX
@@ -148,8 +148,8 @@ Test "SetBorrowCaps works correctly too"
     Comptroller SetMarketBorrowCaps (cBAT cUSDC) (0.5e18 1000001)
     Assert Equal (Comptroller BorrowCaps cBAT) (Exactly 0.5e18)
     Assert Equal (Comptroller BorrowCaps cUSDC) (Exactly 1000001)
-    Give cBAT 10e18 BAT -- Faucet some bat to borrow
-    Give cUSDC 20e6 USDC
+    GiveCToken cBAT 10e18 BAT -- Faucet some bat to borrow
+    GiveCToken cUSDC 20e6 USDC
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
     Support cUSDC collateralFactor:0.5

@@ -106,6 +106,7 @@ describe('CToken', function () {
       expect(
         await send(cToken.underlying, 'harnessSetBalance', [cToken._address, cash])
       ).toSucceed();
+      expect(await send(cToken, 'harnessSetInternalCash', [cash])).toSucceed();
     });
 
     it("fails if called by non-admin", async () => {
@@ -129,6 +130,7 @@ describe('CToken', function () {
     it("fails if amount exceeds available cash", async () => {
       const cashLessThanReserves = reserves.minus(2);
       await send(cToken.underlying, 'harnessSetBalance', [cToken._address, cashLessThanReserves]);
+      await send(cToken, 'harnessSetInternalCash', [cashLessThanReserves]);
       expect(await send(cToken, 'harnessReduceReservesFresh', [reserves])).toHaveTokenFailure('TOKEN_INSUFFICIENT_CASH', 'REDUCE_RESERVES_CASH_NOT_AVAILABLE');
       expect(await call(cToken, 'totalReserves')).toEqualNumber(reserves);
     });
@@ -159,6 +161,7 @@ describe('CToken', function () {
       expect(
         await send(cToken.underlying, 'harnessSetBalance', [cToken._address, cash])
       ).toSucceed();
+      expect(await send(cToken, 'harnessSetInternalCash', [cash])).toSucceed();
     });
 
     it("emits a reserve-reduction failure if interest accrual fails", async () => {
@@ -177,6 +180,22 @@ describe('CToken', function () {
       expect(await call(cToken, 'totalReserves')).toEqualNumber(reserves);
       expect(await send(cToken, 'harnessFastForward', [5])).toSucceed();
       expect(await send(cToken, '_reduceReserves', [reduction])).toSucceed();
+    });
+  });
+
+  describe('gulp', () => {
+    let cToken;
+    beforeEach(async () => {
+      cToken = await makeCToken();
+    });
+
+    it('absorbs excess cash into reserves', async () => {
+      expect(
+        await send(cToken.underlying, 'transfer', [cToken._address, cash])
+      ).toSucceed();
+      expect(await send(cToken, 'gulp')).toSucceed();
+      expect(await call(cToken, 'getCash')).toEqualNumber(cash);
+      expect(await call(cToken, 'totalReserves')).toEqualNumber(cash);
     });
   });
 });

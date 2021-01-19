@@ -232,7 +232,7 @@ Pending "Keeps all storage"
     ---
     NewCToken ZRX cZRX delegatorType:CErc20Delegator cTokenType:CErc20Delegate
     NewCToken BAT cBAT delegatorType:CErc20Delegator cTokenType:CErc20Delegate
-    Give cBAT 10e18 BAT -- Faucet some bat to borrow
+    GiveCToken cBAT 10e18 BAT -- Faucet some bat to borrow
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.4
     Prep Geoff Some ZRX cZRX

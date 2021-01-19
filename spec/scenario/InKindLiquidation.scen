@@ -3,7 +3,7 @@ Macro InKindBorrow borrowAmount borrowRate user=Geoff borrowPrice=1.0 mintAmount
     PricedComptroller
     Comptroller LiquidationIncentive 1.1
     NewCToken BAT cBAT borrowRate 2e9 8 borrowTokenType -- note: cannot use macros with named args right now
-    Give cBAT giveAmount BAT -- Faucet some bat
+    GiveCToken cBAT giveAmount BAT -- Faucet some bat
     PriceOracle SetPrice cBAT borrowPrice
     Support cBAT collateralFactor:0.5
     Prep user mintAmount BAT cBAT

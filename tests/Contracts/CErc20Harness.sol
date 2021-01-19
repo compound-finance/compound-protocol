@@ -372,6 +372,10 @@ contract CErc20DelegateHarness is CErc20Delegate {
     function harnessCallBorrowAllowed(uint amount) public returns (uint) {
         return comptroller.borrowAllowed(address(this), msg.sender, amount);
     }
+
+    function harnessSetInternalCash(uint amount) public {
+        internalCash = amount;
+    }
 }
 
 contract CErc20DelegateScenario is CErc20Delegate {

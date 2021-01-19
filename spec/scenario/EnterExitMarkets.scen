@@ -103,7 +103,7 @@ Test "Realistic Market Scenario"
 	EnterMarkets Geoff cZRX
 	Assert Equal (Comptroller Liquidity Geoff) 1.0e18
 	-- Fail to borrow BAT due to liquidity
-	Give cBAT 1000e18 BAT
+	GiveCToken cBAT 1000e18 BAT
 	HoldInvariants
 	Borrow Geoff 1000e18 cBAT -- 1000e18 * 0.0015 = 1.5e18 required liquidity
 							  -- But since we're only in ZRX, we only have 1.0e18 liquidity

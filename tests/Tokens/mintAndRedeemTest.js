@@ -44,6 +44,7 @@ async function preRedeem(cToken, redeemer, redeemTokens, redeemAmount, exchangeR
   await send(cToken.comptroller, 'setRedeemVerify', [true]);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cToken.underlying, 'harnessSetBalance', [cToken._address, redeemAmount]);
+  await send(cToken, 'harnessSetInternalCash', [redeemAmount]);
   await send(cToken.underlying, 'harnessSetBalance', [redeemer, 0]);
   await send(cToken.underlying, 'harnessSetFailTransferToAddress', [redeemer, false]);
   await send(cToken, 'harnessSetExchangeRate', [etherMantissa(exchangeRate)]);
@@ -193,6 +194,7 @@ describe('CToken', function () {
 
       it("fails if insufficient protocol cash to transfer out", async() => {
         await send(cToken.underlying, 'harnessSetBalance', [cToken._address, 1]);
+        await send(cToken, 'harnessSetInternalCash', [1]);
         expect(await redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).toHaveTokenFailure('TOKEN_INSUFFICIENT_CASH', 'REDEEM_TRANSFER_OUT_NOT_POSSIBLE');
       });
 
@@ -258,6 +260,7 @@ describe('CToken', function () {
 
     it("returns error from redeemFresh without emitting any extra logs", async () => {
       await setBalance(cToken.underlying, cToken._address, 0);
+      await send(cToken, 'harnessSetInternalCash', [0]);
       expect(await quickRedeem(cToken, redeemer, redeemTokens, {exchangeRate})).toHaveTokenFailure('TOKEN_INSUFFICIENT_CASH', 'REDEEM_TRANSFER_OUT_NOT_POSSIBLE');
     });
 

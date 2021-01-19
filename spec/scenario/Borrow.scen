@@ -3,7 +3,7 @@ Test "Borrow some BAT and enters BAT if BAT not entered"
     NewComptroller price:1.0
     NewCToken ZRX cZRX
     NewCToken BAT cBAT
-    Give cBAT 10e18 BAT -- Faucet some bat to borrow
+    GiveCToken cBAT 10e18 BAT -- Faucet some bat to borrow
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
     Prep Geoff Some ZRX cZRX
@@ -53,7 +53,7 @@ Test "Borrow fails if market not listed"
     NewComptroller price:1.0
     NewCToken ZRX cZRX
     NewCToken BAT cBAT
-    Give cBAT 10e18 BAT -- Faucet some bat to borrow
+    GiveCToken cBAT 10e18 BAT -- Faucet some bat to borrow
     Support cZRX collateralFactor:0.5
     Prep Geoff Some ZRX cZRX
     Mint Geoff 100e18 cZRX
@@ -67,7 +67,7 @@ Test "Borrow some BAT from Excess Cash"
     NewComptroller price:1.0
     NewCToken ZRX cZRX
     NewCToken BAT cBAT
-    Give cBAT 10e18 BAT -- Faucet some bat to borrow
+    GiveCToken cBAT 10e18 BAT -- Faucet some bat to borrow
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
     Prep Geoff Some ZRX cZRX
@@ -83,7 +83,7 @@ Test "Borrow some BAT reverts if borrow is paused"
     Comptroller SetPauseGuardian Coburn
     NewCToken ZRX cZRX
     NewCToken BAT cBAT
-    Give cBAT 10e18 BAT -- Faucet some bat to borrow
+    GiveCToken cBAT 10e18 BAT -- Faucet some bat to borrow
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
     Prep Geoff Some ZRX cZRX

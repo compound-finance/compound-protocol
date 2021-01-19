@@ -66,6 +66,10 @@ interface ComptrollerMethods {
   _setBorrowCapGuardian(string): Sendable<void>
   borrowCapGuardian(): Callable<string>
   borrowCaps(string): Callable<string>
+  _setMarketSupplyCaps(cTokens:string[], supplyCaps:encodedNumber[]): Sendable<void>
+  _setSupplyCapGuardian(string): Sendable<void>
+  supplyCapGuardian(): Callable<string>
+  supplyCaps(string): Callable<string>
 }
 
 export interface Comptroller extends Contract {
