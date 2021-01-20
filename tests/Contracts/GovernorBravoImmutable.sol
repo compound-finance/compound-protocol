@@ -12,7 +12,10 @@ contract GovernorBravoImmutable is GovernorBravoDelegate {
             uint votingPeriod_,
             uint votingDelay_,
             uint proposalThreshold_) public {
-       initialize(timelock_, comp_, admin_, votingPeriod_, votingDelay_, proposalThreshold_);
+        admin = msg.sender;
+        initialize(timelock_, comp_, votingPeriod_, votingDelay_, proposalThreshold_);
+
+        admin = admin_;
     }
 
     function _initiate() public {
