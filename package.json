@@ -34,6 +34,7 @@
     "solparse": "^2.2.8"
   },
   "dependencies": {
+    "@eth-optimism/smock": "^0.2.1-alpha.0",
     "eth-saddle": "^0.1.21",
     "hardhat": "^2.0.8"
   },
