@@ -16,7 +16,6 @@ AdvanceBlocks 20000
 Governor GovernorAlpha Proposal LastProposal Queue
 IncreaseTime 604910
 Governor GovernorAlpha Proposal LastProposal Execute
-GovernorBravo BravoDelegator MergeABI BravoDelegate
 
 From Arr00 (GovernorBravo BravoDelegator Propose "Grant Comp" [("0x5eAe89DC1C671724A672ff0630122ee834098657")] [0] ["_grantComp(address,uint256)"] [[(Address Arr00) 2]])
 
