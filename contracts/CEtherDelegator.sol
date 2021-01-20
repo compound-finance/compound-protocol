@@ -334,6 +334,25 @@ contract CEtherDelegator is CTokenInterface, CDelegatorInterface {
     }
 
     /**
+      * @notice accrues interest and sets a new admin fee for the protocol using _setAdminFeeFresh
+      * @dev Admin function to accrue interest and set a new admin fee
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
+    function _setAdminFee(uint newAdminFeeMantissa) external returns (uint) {
+        newAdminFeeMantissa; // Shh
+        delegateAndReturn();
+    }
+
+    /**
+      * @notice accrues interest and sets a new Fuse fee for the protocol using _setFuseFeeFresh
+      * @dev Function to accrue interest and set a new Fuse fee
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
+    function _setFuseFee() external returns (uint) {
+        delegateAndReturn();
+    }
+
+    /**
       * @notice accrues interest and sets a new reserve factor for the protocol using _setReserveFactorFresh
       * @dev Admin function to accrue interest and set a new reserve factor
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -369,6 +388,26 @@ contract CEtherDelegator is CTokenInterface, CDelegatorInterface {
      */
     function _reduceReserves(uint reduceAmount) external returns (uint) {
         reduceAmount; // Shh
+        delegateAndReturn();
+    }
+
+    /**
+     * @notice Accrues interest and reduces Fuse fees by transferring to Fuse
+     * @param withdrawAmount Amount of reduction to Fuse fees
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _withdrawFuseFees(uint withdrawAmount) external returns (uint) {
+        withdrawAmount; // Shh
+        delegateAndReturn();
+    }
+
+    /**
+     * @notice Accrues interest and reduces admin fees by transferring to admin
+     * @param withdrawAmount Amount of reduction to admin fees
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _withdrawAdminFees(uint withdrawAmount) external returns (uint) {
+        withdrawAmount; // Shh
         delegateAndReturn();
     }
 

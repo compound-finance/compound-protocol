@@ -3,6 +3,11 @@ pragma solidity ^0.5.16;
 import "./ComptrollerInterface.sol";
 import "./InterestRateModel.sol";
 
+interface IFuseFeeDistributor {
+    function interestFeeRate() external returns (uint256);
+    function () external payable;
+}
+
 contract CTokenStorage {
     /**
      * @dev Guard variable for re-entrancy checks
@@ -27,13 +32,17 @@ contract CTokenStorage {
     /**
      * @notice Maximum borrow rate that can ever be applied (.0005% / block)
      */
-
     uint internal constant borrowRateMaxMantissa = 0.0005e16;
 
     /**
-     * @notice Maximum fraction of interest that can be set aside for reserves
+     * @notice Maximum fraction of interest that can be set aside for reserves + fees
      */
-    uint internal constant reserveFactorMaxMantissa = 1e18;
+    uint internal constant reserveFactorPlusFeesMaxMantissa = 1e18;
+
+    /**
+     * @notice Administrator for Fuse
+     */
+    IFuseFeeDistributor internal constant fuseAdmin = IFuseFeeDistributor(0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6);
 
     /**
      * @notice Administrator for this contract
@@ -61,6 +70,16 @@ contract CTokenStorage {
     uint internal initialExchangeRateMantissa;
 
     /**
+     * @notice Fraction of interest currently set aside for admin fees
+     */
+    uint public adminFeeMantissa;
+
+    /**
+     * @notice Fraction of interest currently set aside for Fuse fees
+     */
+    uint public fuseFeeMantissa;
+
+    /**
      * @notice Fraction of interest currently set aside for reserves
      */
     uint public reserveFactorMantissa;
@@ -84,6 +103,16 @@ contract CTokenStorage {
      * @notice Total amount of reserves of the underlying held in this market
      */
     uint public totalReserves;
+
+    /**
+     * @notice Total amount of admin fees of the underlying held in this market
+     */
+    uint public totalAdminFees;
+
+    /**
+     * @notice Total amount of Fuse fees of the underlying held in this market
+     */
+    uint public totalFuseFees;
 
     /**
      * @notice Total number of tokens in circulation
@@ -197,6 +226,16 @@ contract CTokenInterface is CTokenStorage {
      * @notice Event emitted when the reserves are reduced
      */
     event ReservesReduced(address admin, uint reduceAmount, uint newTotalReserves);
+
+    /**
+     * @notice Event emitted when the admin fee is changed
+     */
+    event NewAdminFee(uint oldAdminFeeMantissa, uint newAdminFeeMantissa);
+
+    /**
+     * @notice Event emitted when the Fuse fee is changed
+     */
+    event NewFuseFee(uint oldFuseFeeMantissa, uint newFuseFeeMantissa);
 
     /**
      * @notice EIP20 Transfer event
