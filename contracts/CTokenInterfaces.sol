@@ -245,14 +245,26 @@ contract CErc20Storage {
      * @notice Underlying asset for this CToken
      */
     address public underlying;
-
-    /**
-    * @notice Internal cash counter for this CToken. Should equal underlying.balanceOf(address(this)) for CERC20.
-    */
-    uint256 public internalCash;
 }
 
 contract CErc20Interface is CErc20Storage {
+
+    /*** User Interface ***/
+
+    function mint(uint mintAmount) external returns (uint);
+    function redeem(uint redeemTokens) external returns (uint);
+    function redeemUnderlying(uint redeemAmount) external returns (uint);
+    function borrow(uint borrowAmount) external returns (uint);
+    function repayBorrow(uint repayAmount) external returns (uint);
+    function repayBorrowBehalf(address borrower, uint repayAmount) external returns (uint);
+    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) external returns (uint);
+
+    /*** Admin Functions ***/
+
+    function _addReserves(uint addAmount) external returns (uint);
+}
+
+contract CCapableErc20Interface is CErc20Storage {
 
     /*** User Interface ***/
 
@@ -277,6 +289,13 @@ contract CDelegationStorage {
     address public implementation;
 }
 
+contract CDelegationStorageExtension is CDelegationStorage {
+    /**
+     * @notice Internal cash counter for this CToken. Should equal underlying.balanceOf(address(this)) for CERC20.
+     */
+    uint256 public internalCash;
+}
+
 contract CDelegatorInterface is CDelegationStorage {
     /**
      * @notice Emitted when implementation is changed
@@ -293,6 +312,20 @@ contract CDelegatorInterface is CDelegationStorage {
 }
 
 contract CDelegateInterface is CDelegationStorage {
+    /**
+     * @notice Called by the delegator on a delegate to initialize it for duty
+     * @dev Should revert if any issues arise which make it unfit for delegation
+     * @param data The encoded bytes data for any initialization
+     */
+    function _becomeImplementation(bytes memory data) public;
+
+    /**
+     * @notice Called by the delegator on a delegate to forfeit its responsibility
+     */
+    function _resignImplementation() public;
+}
+
+contract CCapableDelegateInterface is CDelegationStorageExtension {
     /**
      * @notice Called by the delegator on a delegate to initialize it for duty
      * @dev Should revert if any issues arise which make it unfit for delegation
