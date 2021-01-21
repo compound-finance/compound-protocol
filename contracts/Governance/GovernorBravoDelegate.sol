@@ -154,7 +154,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
       * @param reason A string giving a reason for the user's vote. If not needed, should be an empty string.
       */
     function castVote(uint proposalId, uint8 support, string calldata reason) external {
-        return _castVote(msg.sender, proposalId, support, reason);
+        _castVote(msg.sender, proposalId, support, reason);
     }
 
     /**
@@ -167,7 +167,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "GovernorBravo::castVoteBySig: invalid signature");
-        return _castVote(signatory, proposalId, support, "");
+        _castVote(signatory, proposalId, support, "");
     }
 
     function _castVote(address voter, uint proposalId, uint8 support, string memory reason) internal {
