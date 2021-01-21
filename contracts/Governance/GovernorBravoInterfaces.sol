@@ -11,7 +11,7 @@ contract GovernorBravoEvents {
     /// @param proposalId The proposal id which was voted on
     /// @param support Support value for the vote. 0=against, 1=for, 2=abstain
     /// @param votes Number of votes which were cast by the voter
-    /// @param reason The reason given for the vote
+    /// @param reason The reason given for the vote by the voter
     event VoteCast(address indexed voter, uint proposalId, uint8 support, uint votes, string reason);
 
     /// @notice An event emitted when a proposal has been canceled
@@ -127,6 +127,9 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
 
         /// @notice Receipts of ballots for the entire set of voters
         mapping (address => Receipt) receipts;
+
+        /// @notice Strings for reason given by voters
+        mapping (address => string) reasons;
     }
 
     /// @notice Ballot receipt record for a voter
@@ -139,9 +142,6 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
 
         /// @notice The number of votes the voter had, which were cast
         uint96 votes;
-
-        /// @notice Given reason for vote
-        string reason;
     }
 
     /// @notice Possible states that a proposal may be in
