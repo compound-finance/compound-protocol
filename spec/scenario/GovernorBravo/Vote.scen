@@ -19,7 +19,7 @@ Macro Enfranchise user amount
 
 Test "Successfully Cast For Vote"
     GivenProposal
-    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote For "")
+    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote For)
     Assert Log VoteCast (voter (Address Geoff)) (proposalId 2) (support 1) (votes 100)
     Assert Equal (GovernorBravo LegitGov Proposal LastProposal ForVotes) 100
     Assert Equal (GovernorBravo LegitGov Proposal LastProposal AgainstVotes) 0
@@ -27,7 +27,7 @@ Test "Successfully Cast For Vote"
 
 Test "Successfully Cast Against Vote"
     GivenProposal
-    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote Against "")
+    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote Against)
     Assert Log VoteCast (support 0) (votes 100)
     Assert Equal (GovernorBravo LegitGov Proposal LastProposal ForVotes) 0
     Assert Equal (GovernorBravo LegitGov Proposal LastProposal AgainstVotes) 100
@@ -35,7 +35,7 @@ Test "Successfully Cast Against Vote"
 
 Test "Successfully Cast Zero Vote"
     GivenProposal
-    From Torrey (GovernorBravo LegitGov Proposal LastProposal Vote For "")
+    From Torrey (GovernorBravo LegitGov Proposal LastProposal Vote For)
     Assert Log VoteCast (support 1) (votes 0)
     Assert Equal (GovernorBravo LegitGov Proposal LastProposal ForVotes) 0
     Assert Equal (GovernorBravo LegitGov Proposal LastProposal AgainstVotes) 0
@@ -43,11 +43,11 @@ Test "Successfully Cast Zero Vote"
 
 Test "Fail to vote twice"
     GivenProposal
-    GovernorBravo LegitGov Proposal LastProposal Vote For ""
+    GovernorBravo LegitGov Proposal LastProposal Vote For
     AllowFailures
-    GovernorBravo LegitGov Proposal LastProposal Vote For ""
+    GovernorBravo LegitGov Proposal LastProposal Vote For
     Assert Revert "revert GovernorBravo::_castVote: voter already voted"
-    GovernorBravo LegitGov Proposal LastProposal Vote Against ""
+    GovernorBravo LegitGov Proposal LastProposal Vote Against
     Assert Revert "revert GovernorBravo::_castVote: voter already voted"
     Assert Equal (GovernorBravo LegitGov Proposal LastProposal ForVotes) 100001e18
     Assert Equal (GovernorBravo LegitGov Proposal LastProposal AgainstVotes) 0
@@ -57,31 +57,31 @@ Test "Cannot vote before vote starts"
     GivenProposal
     AllowFailures
     SetBlockNumber 7
-    GovernorBravo LegitGov Proposal LastProposal Vote For ""
+    GovernorBravo LegitGov Proposal LastProposal Vote For
     Assert Revert "revert GovernorBravo::_castVote: voting is closed"
 
 Test "Cannot vote after vote ends"
     GivenProposal
     AllowFailures
     AdvanceBlocks 20000
-    GovernorBravo LegitGov Proposal LastProposal Vote For ""
+    GovernorBravo LegitGov Proposal LastProposal Vote For
     Assert Revert "revert GovernorBravo::_castVote: voting is closed"
 
 Test "Cannot vote on cancelled vote"
     GivenProposal
     GovernorBravo LegitGov Proposal LastProposal Cancel
     AllowFailures
-    GovernorBravo LegitGov Proposal LastProposal Vote For ""
+    GovernorBravo LegitGov Proposal LastProposal Vote For
     Assert Revert "revert GovernorBravo::_castVote: voting is closed"
 
 Test "Can abstain"
     GivenProposal
-    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote Abstain "")
+    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote Abstain)
     Assert Equal (GovernorBravo LegitGov Proposal LastProposal Support Geoff) 2
     Assert Log VoteCast (support 2) (votes 100)
 
 Test "Voting Reason"
     GivenProposal
-    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote For "Hello World")
-    Assert Equal (GovernorBravo LegitGov Proposal LastProposal Reason Geoff) "Hello World"
+    From Geoff (GovernorBravo LegitGov Proposal LastProposal VoteWithReason For "Hello World")
+    Assert Log VoteCast (reason "Hello World")
 

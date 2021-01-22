@@ -32,45 +32,45 @@ Macro GivenActiveProposal
 
 Test "Defeat when for votes do not reach quorum"
     GivenActiveProposal
-    GovernorBravo LegitGov Proposal LastProposal Vote For ""
+    GovernorBravo LegitGov Proposal LastProposal Vote For
     AdvanceBlocks 20000
     Assert Equal ("Defeated") (GovernorBravo LegitGov Proposal LastProposal State)
 
 Test "Defeat when more against votes than for votes"
     GivenActiveProposal
-    From Torrey (GovernorBravo LegitGov Proposal LastProposal Vote For "")
-    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote Against "")
+    From Torrey (GovernorBravo LegitGov Proposal LastProposal Vote For)
+    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote Against)
     AdvanceBlocks 20000
     Assert Equal ("Defeated") (GovernorBravo LegitGov Proposal LastProposal State)
 
 Test "(not defeat) when vote is ongoing"
     GivenActiveProposal
-    From Torrey (GovernorBravo LegitGov Proposal LastProposal Vote For "")
-    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote For "")
+    From Torrey (GovernorBravo LegitGov Proposal LastProposal Vote For)
+    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote For)
     Assert Equal ("Active") (Governor LegitGov Proposal LastProposal State)
 
 Test "(not defeat) when fors pass quorum and nays"
     GivenActiveProposal
-    From Torrey (GovernorBravo LegitGov Proposal LastProposal Vote For "")
-    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote For "")
-    From Jared (GovernorBravo LegitGov Proposal LastProposal Vote Against "")
+    From Torrey (GovernorBravo LegitGov Proposal LastProposal Vote For)
+    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote For)
+    From Jared (GovernorBravo LegitGov Proposal LastProposal Vote Against)
     AdvanceBlocks 20000
     Assert Equal ("Succeeded") (GovernorBravo LegitGov Proposal LastProposal State)
 
 Test "Defeat when under quorum (abstain doesn't count)"
     GivenActiveProposal
-    From Torrey (GovernorBravo LegitGov Proposal LastProposal Vote Abstain "")
-    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote Abstain "")
-    From Jared (GovernorBravo LegitGov Proposal LastProposal Vote For "")
-    GovernorBravo LegitGov Proposal LastProposal Vote For ""
+    From Torrey (GovernorBravo LegitGov Proposal LastProposal Vote Abstain)
+    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote Abstain)
+    From Jared (GovernorBravo LegitGov Proposal LastProposal Vote For)
+    GovernorBravo LegitGov Proposal LastProposal Vote For
     AdvanceBlocks 20000
     Assert Equal ("Defeated") (GovernorBravo LegitGov Proposal LastProposal State)
 
 Test "Succeed when above quorum with abstains"
     GivenActiveProposal
-    From Torrey (GovernorBravo LegitGov Proposal LastProposal Vote Abstain "")
-    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote For "")
-    From Jared (GovernorBravo LegitGov Proposal LastProposal Vote Against "")
-    GovernorBravo LegitGov Proposal LastProposal Vote Against ""
+    From Torrey (GovernorBravo LegitGov Proposal LastProposal Vote Abstain)
+    From Geoff (GovernorBravo LegitGov Proposal LastProposal Vote For)
+    From Jared (GovernorBravo LegitGov Proposal LastProposal Vote Against)
+    GovernorBravo LegitGov Proposal LastProposal Vote Against
     AdvanceBlocks 20000
     Assert Equal ("Succeeded") (GovernorBravo LegitGov Proposal LastProposal State)

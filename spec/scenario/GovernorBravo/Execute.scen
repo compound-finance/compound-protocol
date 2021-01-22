@@ -18,8 +18,8 @@ Macro Enfranchise user amount
 
 Macro SucceedProposal
     MineBlock
-    GovernorBravo LegitGov Proposal LastProposal Vote For ""
-    From Jared (GovernorBravo LegitGov Proposal LastProposal Vote For "")
+    GovernorBravo LegitGov Proposal LastProposal Vote For
+    From Jared (GovernorBravo LegitGov Proposal LastProposal Vote For)
     AdvanceBlocks 20000
     Assert Equal ("Succeeded") (GovernorBravo LegitGov Proposal LastProposal State)
 

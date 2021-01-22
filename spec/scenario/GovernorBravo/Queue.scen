@@ -37,7 +37,7 @@ Macro GivenSucceededProposal
     SucceedProposal
 
 Macro SucceedProposal
-    GovernorBravo LegitGov Proposal LastProposal Vote For ""
+    GovernorBravo LegitGov Proposal LastProposal Vote For
     AdvanceBlocks 20000
     Assert Equal ("Succeeded") (GovernorBravo LegitGov Proposal LastProposal State)
 
@@ -56,7 +56,7 @@ Test "Queue simple action"
 
 Test "Queue 2 actions with multiple params"
     GivenActiveProposal
-    GovernorBravo LegitGov Proposal LastProposal Vote For ""
+    GovernorBravo LegitGov Proposal LastProposal Vote For
     AdvanceBlocks 20000
     QueueLastProposal
     Assert Log ProposalQueued (id 2)
@@ -95,7 +95,7 @@ Test "Revert queue proposal is Active"
 
 Test "Revert queue when proposal is Defeated"
     GivenActiveProposal
-    GovernorBravo LegitGov Proposal LastProposal Vote Against ""
+    GovernorBravo LegitGov Proposal LastProposal Vote Against
     AdvanceBlocks 20000
     AllowFailures
     Assert Equal ("Defeated") (GovernorBravo LegitGov Proposal LastProposal State)
@@ -127,7 +127,7 @@ Test "Revert when queuing on invalid Timelock"
     GovernorBravo LegitGov HarnessInitiate
     GovernorBravo LegitGov Propose "Add 5" [(Address CNT1)] [1] ["increment(uint256)"] [["2"]]
     MineBlock
-    GovernorBravo LegitGov Proposal LastProposal Vote For ""
+    GovernorBravo LegitGov Proposal LastProposal Vote For
     AllowFailures
     GovernorBravo LegitGov Proposal LastProposal Queue
     Assert Revert "revert"

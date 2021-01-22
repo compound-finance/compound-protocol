@@ -15,7 +15,7 @@ Macro DeployGov
 
 Macro SucceedQueueExecuteLastProposal gov
     MineBlock
-    GovernorBravo gov Proposal LastProposal Vote For ""
+    GovernorBravo gov Proposal LastProposal Vote For
     AdvanceBlocks 20000
     MineBlock
     Enfranchise Root 600001e18

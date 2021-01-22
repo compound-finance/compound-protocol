@@ -127,9 +127,6 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
 
         /// @notice Receipts of ballots for the entire set of voters
         mapping (address => Receipt) receipts;
-
-        /// @notice Strings for reason given by voters
-        mapping (address => string) reasons;
     }
 
     /// @notice Ballot receipt record for a voter

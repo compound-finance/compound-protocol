@@ -125,10 +125,6 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         return proposals[proposalId].receipts[voter];
     }
 
-    function getReason(uint proposalId, address voter) external view returns (string memory) {
-        return proposals[proposalId].reasons[voter];
-    }
-
     function state(uint proposalId) public view returns (ProposalState) {
         require(proposalCount >= proposalId && proposalId > initalProposalId, "GovernorBravo::state: invalid proposal id");
         Proposal storage proposal = proposals[proposalId];
@@ -157,12 +153,16 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
       * @param support The support value for the vote. 0=against, 1=for, 2=abstain
       */
     function castVote(uint proposalId, uint8 support) external {
-        
         emit VoteCast(msg.sender, proposalId, support, _castVote(msg.sender, proposalId, support), "");
     }
 
+    /**
+      * @notice Cast a vote for a proposal with a reason
+      * @param proposalId The id of the proposal to vote on
+      * @param support The support value for the vote. 0=against, 1=for, 2=abstain
+      * @param reason The reason given for the vote by the voter
+      */
     function castVoteWithReason(uint proposalId, uint8 support, string calldata reason) external {
-        proposals[proposalId].reasons[msg.sender] = reason;
         emit VoteCast(msg.sender, proposalId, support, _castVote(msg.sender, proposalId, support), reason);
     }
 

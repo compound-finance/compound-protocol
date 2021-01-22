@@ -207,27 +207,6 @@ export function proposalFetchers(governor: GovernorBravo) {
       },
       { namePos: 1 }
     ),
-    new Fetcher<{ proposalIdent: EventV; voter: AddressV }, StringV>(
-      `
-        #### Reason
-
-        * "GovernorBravo <Governor> Proposal <Proposal> Reason <voter>" - Returns reason given by the voter
-        * E.g. "GovernorBravo GovernorBravoScenario Proposal 5 Reason Geoff"
-        * E.g. "GovernorBravo GovernorBravoScenario Proposal LastProposal Reason Geoff"
-      `,
-      "Reason",
-      [new Arg("proposalIdent", getEventV), new Arg("voter", getAddressV)],
-      async (world, { proposalIdent, voter }) => {
-        const receipt = await governor.methods
-          .getReceipt(
-            await getProposalId(world, governor, proposalIdent.val),
-            voter.val
-          )
-          .call();
-        return new StringV(receipt.reason);
-      },
-      { namePos: 1 }
-    ),
     new Fetcher<{ proposalIdent: EventV }, StringV>(
       `
         #### State
