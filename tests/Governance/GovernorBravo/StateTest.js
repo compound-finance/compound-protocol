@@ -90,7 +90,7 @@ describe('GovernorBravo#state/1', () => {
     await mineBlock()
     const { reply: newProposalId } = await both(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: acct })
     await mineBlock()
-    await send(gov, 'castVote', [newProposalId, 1, ""])
+    await send(gov, 'castVote', [newProposalId, 1])
     await advanceBlocks(20000)
 
     expect(await call(gov, 'state', [newProposalId])).toEqual(states["Succeeded"])
@@ -100,7 +100,7 @@ describe('GovernorBravo#state/1', () => {
     await mineBlock()
     const { reply: newProposalId } = await both(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: acct })
     await mineBlock()
-    await send(gov, 'castVote', [newProposalId, 1, ""])
+    await send(gov, 'castVote', [newProposalId, 1])
     await advanceBlocks(20000)
 
     await send(gov, 'queue', [newProposalId], { from: acct })
@@ -111,7 +111,7 @@ describe('GovernorBravo#state/1', () => {
     await mineBlock()
     const { reply: newProposalId } = await both(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: acct })
     await mineBlock()
-    await send(gov, 'castVote', [newProposalId, 1, ""])
+    await send(gov, 'castVote', [newProposalId, 1])
     await advanceBlocks(20000)
 
     await increaseTime(1)
@@ -134,7 +134,7 @@ describe('GovernorBravo#state/1', () => {
     await mineBlock()
     const { reply: newProposalId } = await both(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: acct })
     await mineBlock()
-    await send(gov, 'castVote', [newProposalId, 1, ""])
+    await send(gov, 'castVote', [newProposalId, 1])
     await advanceBlocks(20000)
 
     await increaseTime(1)

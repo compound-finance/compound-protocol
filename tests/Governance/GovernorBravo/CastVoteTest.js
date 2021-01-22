@@ -40,7 +40,7 @@ describe("governorBravo#castVote/2", () => {
   describe("We must revert if:", () => {
     it("There does not exist a proposal with matching proposal id where the current block number is between the proposal's start block (exclusive) and end block (inclusive)", async () => {
       await expect(
-        call(gov, 'castVote', [proposalId, 1, ""])
+        call(gov, 'castVote', [proposalId, 1])
       ).rejects.toRevert("revert GovernorBravo::_castVote: voting is closed");
     });
 
@@ -48,9 +48,14 @@ describe("governorBravo#castVote/2", () => {
       await mineBlock();
       await mineBlock();
 
-      await send(gov, 'castVote', [proposalId, 1, ""], { from: accounts[4] });
+      let vote = await send(gov, 'castVote', [proposalId, 1], { from: accounts[4] });
+      console.log('gas used is ' + vote.gasUsed);
+
+      let vote2 = await send(gov, 'castVoteWithReason', [proposalId, 1, ""], { from: accounts[3] });
+      console.log('gas used is 0.5 ' + vote2.gasUsed);
+
       await expect(
-        gov.methods['castVote'](proposalId, 1, "").call({ from: accounts[4] })
+        gov.methods['castVote'](proposalId, 1).call({ from: accounts[4] })
       ).rejects.toRevert("revert GovernorBravo::_castVote: voter already voted");
     });
   });
@@ -58,7 +63,8 @@ describe("governorBravo#castVote/2", () => {
   describe("Otherwise", () => {
     it("we add the sender to the proposal's voters set", async () => {
       await expect(call(gov, 'getReceipt', [proposalId, accounts[2]])).resolves.toPartEqual({hasVoted: false});
-      await send(gov, 'castVote', [proposalId, 1, ""], { from: accounts[2] });
+      let vote = await send(gov, 'castVote', [proposalId, 1], { from: accounts[2] });
+      console.log('gas used 2 is ' + vote.gasUsed);
       await expect(call(gov, 'getReceipt', [proposalId, accounts[2]])).resolves.toPartEqual({hasVoted: true});
     });
 
@@ -74,7 +80,7 @@ describe("governorBravo#castVote/2", () => {
 
         let beforeFors = (await call(gov, 'proposals', [proposalId])).forVotes;
         await mineBlock();
-        await send(gov, 'castVote', [proposalId, 1, ""], { from: actor });
+        await send(gov, 'castVote', [proposalId, 1], { from: actor });
 
         let afterFors = (await call(gov, 'proposals', [proposalId])).forVotes;
         expect(new BigNumber(afterFors)).toEqual(new BigNumber(beforeFors).plus(etherMantissa(400001)));
@@ -89,7 +95,7 @@ describe("governorBravo#castVote/2", () => {
 
         let beforeAgainsts = (await call(gov, 'proposals', [proposalId])).againstVotes;
         await mineBlock();
-        await send(gov, 'castVote', [proposalId, 0, ""], { from: actor });
+        await send(gov, 'castVote', [proposalId, 0], { from: actor });
 
         let afterAgainsts = (await call(gov, 'proposals', [proposalId])).againstVotes;
         expect(new BigNumber(afterAgainsts)).toEqual(new BigNumber(beforeAgainsts).plus(etherMantissa(400001)));
@@ -130,57 +136,76 @@ describe("governorBravo#castVote/2", () => {
       });
     });
 
-    // it("receipt uses one load", async () => {
-    //   let actor = accounts[2];
-    //   let actor2 = accounts[3];
-    //   await enfranchise(comp, actor, 400001);
-    //   await enfranchise(comp, actor2, 400001);
-    //   await send(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: actor });
-    //   proposalId = await call(gov, 'latestProposalIds', [actor]);
+     it("receipt uses two loads", async () => {
+      let actor = accounts[2];
+      let actor2 = accounts[3];
+      await enfranchise(comp, actor, 400001);
+      await enfranchise(comp, actor2, 400001);
+      await send(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: actor });
+      proposalId = await call(gov, 'latestProposalIds', [actor]);
 
-    //   await mineBlock();
-    //   await mineBlock();
-    //   await send(gov, 'castVote', [proposalId, 1, ""], { from: actor });
-    //   await send(gov, 'castVote', [proposalId, 0, ""], { from: actor2 });
+      await mineBlock();
+      await mineBlock();
+      await send(gov, 'castVote', [proposalId, 1], { from: actor });
+      await send(gov, 'castVote', [proposalId, 0], { from: actor2 });
 
-    //   let trxReceipt = await send(gov, 'getReceipt', [proposalId, actor]);
-    //   let trxReceipt2 = await send(gov, 'getReceipt', [proposalId, actor2]);
-    //   console.log(trxReceipt);
-    //   await saddle.trace(trxReceipt, {
-    //     constants: {
-    //       "account": actor
-    //     },
-    //     preFilter: ({op}) => op === 'SLOAD',
-    //     postFilter: ({source}) => !source || source.includes('receipts'),
-    //     execLog: (log) => {
-    //       let [output] = log.outputs;
-    //       let votes = "000000000000000000000000000000000000000054b419003bdf81640000";
-    //       let voted = "01";
-    //       let support = "01";
-    //       log.show();
+      let trxReceipt = await send(gov, 'getReceipt', [proposalId, actor]);
+      let trxReceipt2 = await send(gov, 'getReceipt', [proposalId, actor2]);
 
-    //       console.log('Outputs is ' + output);
-    //     },
-    //     exec: (logs) => {
-    //       expect(logs.length).toEqual(3); // require only one read
-    //       console.log(logs);
-    //     }
-    //   });
-    //   console.log(trxReceipt2);
-    //   await saddle.trace(trxReceipt2, {
-    //     constants: {
-    //       "account": actor2
-    //     },
-    //     preFilter: ({op}) => op === 'SLOAD',
-    //     postFilter: ({source}) => !source || source.includes('receipts'),
-    //     execLog: (log) => {
-    //       let [output] = log.outputs;
-    //       let votes = "0000000000000000000000000000000000000000a968320077bf02c80000";
-    //       let voted = "01";
-    //       let support = "00";
-    //       log.show();
-    //     }
-    //   });
-    // });
+      let govDelegateAddress = '000000000000000000000000' + govDelegate._address.toString().toLowerCase().substring(2);
+
+      await saddle.trace(trxReceipt, {
+        constants: {
+          "account": actor
+        },
+        preFilter: ({op}) => op === 'SLOAD',
+        postFilter: ({source}) => !source || source.includes('receipts'),
+        execLog: (log) => {
+          let [output] = log.outputs;
+          let votes = "000000000000000000000000000000000000000054b419003bdf81640000";
+          let voted = "01";
+          let support = "01";
+
+          if(log.depth == 0) {
+            expect(output).toEqual(
+              `${govDelegateAddress}`
+            );
+          }
+          else {
+            expect(output).toEqual(
+              `${votes}${support}${voted}`
+            );
+          }
+        },
+        exec: (logs) => {
+          expect(logs.length).toEqual(2); // require only one read
+        }
+      });
+
+      await saddle.trace(trxReceipt2, {
+        constants: {
+          "account": actor2
+        },
+        preFilter: ({op}) => op === 'SLOAD',
+        postFilter: ({source}) => !source || source.includes('receipts'),
+        execLog: (log) => {
+          let [output] = log.outputs;
+          let votes = "0000000000000000000000000000000000000000a968320077bf02c80000";
+          let voted = "01";
+          let support = "00";
+
+          if(log.depth == 0) {
+            expect(output).toEqual(
+              `${govDelegateAddress}`
+            );
+          }
+          else {
+            expect(output).toEqual(
+              `${votes}${support}${voted}`
+            );
+          }
+        }
+      });
+    });
   });
 });

@@ -41,12 +41,12 @@ export function proposalCommands(governor: GovernorBravo) {
   return [
     new Command<{ proposalIdent: EventV; support: EventV; reason: EventV }>(
       `
-        #### Vote
+        #### VoteWithReason
 
-        * "GovernorBravo <Governor> Proposal <Number> Vote <For|Against|Abstain> <Reason>" - Votes for, against, or abstain on a given proposal with reason
-        * E.g. "GovernorBravo GovernorBravoScenario Proposal LastProposal Vote For 'must be done'"
+        * "GovernorBravo <Governor> Proposal <Number> VoteWithReason <For|Against|Abstain> <Reason>" - Votes for, against, or abstain on a given proposal with reason
+        * E.g. "GovernorBravo GovernorBravoScenario Proposal LastProposal VoteWithReason For 'must be done'"
     `,
-      "Vote",
+      "VoteWithReason",
       [
         new Arg("proposalIdent", getEventV),
         new Arg("support", getEventV),
@@ -60,7 +60,7 @@ export function proposalCommands(governor: GovernorBravo) {
         );
         const invokation = await invoke(
           world,
-          governor.methods.castVote(
+          governor.methods.castVoteWithReason(
             proposalId,
             getSupport(support.val),
             getReason(reason.val)
@@ -74,6 +74,45 @@ export function proposalCommands(governor: GovernorBravo) {
             world,
             from
           )} for proposal ${proposalId} with reason ${reason.val.toString()}`,
+          invokation
+        );
+      },
+      { namePos: 1 }
+    ),
+
+    new Command<{ proposalIdent: EventV; support: EventV }>(
+      `
+        #### Vote
+
+        * "GovernorBravo <Governor> Proposal <Number> Vote <For|Against|Abstain> <Reason>" - Votes for, against, or abstain on a given proposal
+        * E.g. "GovernorBravo GovernorBravoScenario Proposal LastProposal Vote For"
+    `,
+      "Vote",
+      [
+        new Arg("proposalIdent", getEventV),
+        new Arg("support", getEventV)
+      ],
+      async (world, from, { proposalIdent, support }) => {
+        const proposalId = await getProposalId(
+          world,
+          governor,
+          proposalIdent.val
+        );
+        const invokation = await invoke(
+          world,
+          governor.methods.castVote(
+            proposalId,
+            getSupport(support.val)
+          ),
+          from
+        );
+
+        return addAction(
+          world,
+          `Cast ${support.val.toString()} vote from ${describeUser(
+            world,
+            from
+          )} for proposal ${proposalId}`,
           invokation
         );
       },

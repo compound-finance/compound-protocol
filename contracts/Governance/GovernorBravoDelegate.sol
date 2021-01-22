@@ -151,15 +151,24 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
       * @notice Cast a vote for a proposal
       * @param proposalId The id of the proposal to vote on
       * @param support The support value for the vote. 0=against, 1=for, 2=abstain
-      * @param reason A string giving a reason for the user's vote. If not needed, should be an empty string.
       */
-    function castVote(uint proposalId, uint8 support, string calldata reason) external {
-        _castVote(msg.sender, proposalId, support, reason);
+    function castVote(uint proposalId, uint8 support) external {
+        emit VoteCast(msg.sender, proposalId, support, _castVote(msg.sender, proposalId, support), "");
+    }
+
+    /**
+      * @notice Cast a vote for a proposal with a reason
+      * @param proposalId The id of the proposal to vote on
+      * @param support The support value for the vote. 0=against, 1=for, 2=abstain
+      * @param reason The reason given for the vote by the voter
+      */
+    function castVoteWithReason(uint proposalId, uint8 support, string calldata reason) external {
+        emit VoteCast(msg.sender, proposalId, support, _castVote(msg.sender, proposalId, support), reason);
     }
 
     /**
       * @notice Cast a vote for a proposal by signature
-      * @dev External function that accepts EIP-712 signatures for voting on proposals. Reason string can not be set.
+      * @dev External function that accepts EIP-712 signatures for voting on proposals.
       */
     function castVoteBySig(uint proposalId, uint8 support, uint8 v, bytes32 r, bytes32 s) external {
         bytes32 domainSeparator = keccak256(abi.encode(DOMAIN_TYPEHASH, keccak256(bytes(name)), getChainId(), address(this)));
@@ -167,10 +176,17 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "GovernorBravo::castVoteBySig: invalid signature");
-        _castVote(signatory, proposalId, support, "");
+        emit VoteCast(signatory, proposalId, support, _castVote(signatory, proposalId, support), "");
     }
 
-    function _castVote(address voter, uint proposalId, uint8 support, string memory reason) internal {
+    /**
+      * @notice Internal function that caries out voting logic
+      * @param voter The voter that is casting their vote
+      * @param proposalId The id of the proposal to vote on
+      * @param support The support value for the vote. 0=against, 1=for, 2=abstain
+      * @return The number of votes cast
+      */
+    function _castVote(address voter, uint proposalId, uint8 support) internal returns (uint96) {
         require(state(proposalId) == ProposalState.Active, "GovernorBravo::_castVote: voting is closed");
         require(support <= 2, "GovernorBravo::_castVote: invalid vote type");
         Proposal storage proposal = proposals[proposalId];
@@ -190,11 +206,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         receipt.support = support;
         receipt.votes = votes;
 
-        if(bytes(reason).length != 0) {
-            receipt.reason = reason;
-        }
-
-        emit VoteCast(voter, proposalId, support, votes, reason);
+        return votes;
     }
 
     /*
