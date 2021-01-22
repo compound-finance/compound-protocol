@@ -179,7 +179,14 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         emit VoteCast(signatory, proposalId, support, _castVote(signatory, proposalId, support), "");
     }
 
-    function _castVote(address voter, uint proposalId, uint8 support) internal returns (uint votes) {
+    /**
+      * @notice Internal function that caries out voting logic
+      * @param voter The voter that is casting their vote
+      * @param proposalId The id of the proposal to vote on
+      * @param support The support value for the vote. 0=against, 1=for, 2=abstain
+      * @returns votes The number of votes cast
+      */
+    function _castVote(address voter, uint proposalId, uint8 support) internal returns (uint96 votes) {
         require(state(proposalId) == ProposalState.Active, "GovernorBravo::_castVote: voting is closed");
         require(support <= 2, "GovernorBravo::_castVote: invalid vote type");
         Proposal storage proposal = proposals[proposalId];
