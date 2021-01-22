@@ -849,13 +849,7 @@ describe('Flywheel', () => {
       });
     });
 
-    describe('cooldown', () => {
-      it('should revert if cooldown period is 0', async () => {
-        await expect(
-          send(comptroller, 'cooldown', [], {from: a1})
-        ).rejects.toRevert('revert cooldown not active');
-      });
-
+    describe('claimComp', () => {
       it('should claim only when cooldown period expires', async () => {
         // send some COMP to facilitate claims
         const compRemaining = compRate.multipliedBy(100);
@@ -872,7 +866,7 @@ describe('Flywheel', () => {
         await send(comptroller, 'updateContributorRewards', [a1]);
 
         // initial cooldown and early claim
-        await send(comptroller, 'cooldown', [], {from: a1})
+        await send(comptroller, 'claimComp', [a1]);
         await fastForward(comptroller, 999);
         await send(comptroller, 'claimComp', [a1]);
         const bal1 = await compBalance(comptroller, a1);
@@ -885,7 +879,7 @@ describe('Flywheel', () => {
         expect(bal2).toEqualNumber(20000);
       });
 
-      it('should update cooldown before and after expiry', async () => {
+      it('should update cooldown only after expiry', async () => {
         // send some COMP to facilitate claims
         const compRemaining = compRate.multipliedBy(100);
         await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
@@ -899,24 +893,24 @@ describe('Flywheel', () => {
         const cooldownBlock1 = await call(comptroller, 'lastCooldownBlock', [a1]);
         expect(cooldownBlock1).toEqualNumber(0);
 
-        // move just 10 blocks, so that we can observe a cooldown block change
+        // trigger first cooldown
         await fastForward(comptroller, 10);
         await send(comptroller, 'updateContributorRewards', [a1]);
-        await send(comptroller, 'cooldown', [], {from: a1})
+        await send(comptroller, 'claimComp', [a1]);
         const cooldownBlock2 = await call(comptroller, 'lastCooldownBlock', [a1]);
         expect(cooldownBlock2).toEqualNumber(10);
 
         // wait some, but not enough for the cooldown to expire
         await fastForward(comptroller, 200);
         await send(comptroller, 'updateContributorRewards', [a1]);
-        await send(comptroller, 'cooldown', [], {from: a1})
+        await send(comptroller, 'claimComp', [a1]);
         const cooldownBlock3 = await call(comptroller, 'lastCooldownBlock', [a1]);
-        expect(cooldownBlock3).toEqualNumber(210);
+        expect(cooldownBlock3).toEqualNumber(10);
 
         // wait until cooldown expires
         await fastForward(comptroller, 10000);
         await send(comptroller, 'updateContributorRewards', [a1]);
-        await send(comptroller, 'cooldown', [], {from: a1})
+        await send(comptroller, 'claimComp', [a1]);
         const cooldownBlock4 = await call(comptroller, 'lastCooldownBlock', [a1]);
         expect(cooldownBlock4).toEqualNumber(10210);
       });
@@ -940,15 +934,19 @@ describe('Flywheel', () => {
 
         // trigger cooldown
         await send(comptroller, 'updateContributorRewards', [a1]);
-        await send(comptroller, 'cooldown', [], {from: a1})
+        await send(comptroller, 'claimComp', [a1]);
+        const cooldownBlock = await call(comptroller, 'lastCooldownBlock', [a1]);
+        expect(cooldownBlock).toEqualNumber(10000);
 
         // claim after cooldown expiry
         fastForward(comptroller, 10000);
         await send(comptroller, 'claimComp', [a1]);
+        const compAccrued = await call(comptroller, 'compAccrued', [a1]);
+        expect(compAccrued).toEqualNumber(0);
 
         // verify cooldown block is reset
-        const cooldownBlock = await call(comptroller, 'lastCooldownBlock', [a1]);
-        expect(cooldownBlock).toEqualNumber(0);
+        const finalCooldownBlock = await call(comptroller, 'lastCooldownBlock', [a1]);
+        expect(finalCooldownBlock).toEqualNumber(0);
       });
     });
   });

@@ -1203,26 +1203,6 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
-     * @notice Claim COMP and then enter all accrued COMP into cooldown
-     * @dev If a cooldown period is already in effect, it will be reset
-     * @return Amount of COMP locked in cooldown
-     */
-    function cooldown() public returns (uint256) {
-        require(cooldownPeriod > 0, "cooldown not active");
-
-        claimComp(msg.sender);
-
-        if (compAccrued[msg.sender] > 0) {
-            lastCooldownBlock[msg.sender] = getBlockNumber();
-            uint lockingAmount = compAccrued[msg.sender];
-            compLocked[msg.sender] = lockingAmount;
-            return lockingAmount;
-        } else {
-            return 0;
-        }
-    }
-
-    /**
      * @notice Claim all the comp accrued by holder in all markets
      * @param holder The address to claim COMP for
      */
@@ -1271,32 +1251,47 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
-     * @notice Transfer COMP to the user while respecting cooldown
-     * @dev Note: If there is not enough COMP, we do not perform the transfer all.
-     * @param user The address of the user to transfer COMP to
-     * @param amount The amount of COMP to (possibly) transfer
-     * @return The amount of COMP which was NOT transferred to the user
-     */
+    * @notice Transfer COMP to the user while respecting cooldown
+    * @dev Note: If there is not enough COMP, we do not perform the transfer all.
+    * @param user The address of the user to transfer COMP to
+    * @param amount The amount of COMP to (possibly) transfer
+    * @return The amount of COMP which was NOT transferred to the user
+    */
     function grantCompCooldownInternal(address user, uint amount) internal returns (uint) {
         if (cooldownPeriod == 0) {
             // revert to existing functionality if cooldown is not in effect
             return grantCompInternal(user, amount);
-        } else if (lastCooldownBlock[user] + cooldownPeriod <= getBlockNumber()) {
-            uint amountToTransfer = compLocked[user] < amount ? compLocked[user] : amount;
-            if (amountToTransfer == 0) {
-                return amount;
-            } else {
-                uint notTransferred = grantCompInternal(user, amountToTransfer);
-                uint lockedAmountLeft = add_(sub_(compLocked[user], amountToTransfer), notTransferred);
-                compLocked[user] = lockedAmountLeft;
-                if (lockedAmountLeft == 0) {
-                    // release storage if no locked amount left
-                    lastCooldownBlock[user] = 0;
+        } else if (lastCooldownBlock[user] == 0 || lastCooldownBlock[user] + cooldownPeriod <= getBlockNumber()) {
+            // if previous cooldown has expired for this user
+            uint notTransferred = amount;
+            if (lastCooldownBlock[user] > 0) {
+                // only attempt to claim if cooldown has been triggered before
+
+                uint amountToTransfer = compLocked[user] < amount ? compLocked[user] : amount;
+                if (amountToTransfer > 0) {
+                    // first, immediately transfer any amount that has expired cooldown
+                    notTransferred = grantCompInternal(user, amountToTransfer);
+
+                    uint lockedAmountLeft = add_(sub_(compLocked[user], amountToTransfer), notTransferred);
+                    compLocked[user] = lockedAmountLeft;
+                    if (lockedAmountLeft == 0) {
+                        // release storage if no locked amount left
+                        lastCooldownBlock[user] = 0;
+                    }
+
+                    notTransferred = add_(notTransferred, sub_(amount, amountToTransfer));
                 }
-                return add_(notTransferred, sub_(amount, amountToTransfer));
             }
+
+            // now if there is any extra COMP accrued, begin a new cooldown period for that amount
+            if (notTransferred > 0) {
+                lastCooldownBlock[user] = getBlockNumber();
+                compLocked[user] = notTransferred;
+            }
+            
+            return notTransferred;
         } else {
-            // we do not revert here because this function can be called on behalf of multiple users
+            // cooldown still in progress, don't do anything
             return amount;
         }
     }

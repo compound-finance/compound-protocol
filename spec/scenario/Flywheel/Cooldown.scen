@@ -49,8 +49,9 @@ Test "COMP cooldown affects ability to claim"
     Comptroller SetCooldownPeriod 2000
     -- Accrue some COMP
     FastForward 2000 Blocks
+    -- Trigger cooldown
+    Comptroller ClaimComp Geoff
     -- Try claiming before cooldown period
-    From Geoff (Comptroller Cooldown)
     FastForward 1999 Blocks
     Comptroller ClaimComp Geoff
     Assert Equal (Erc20 COMP TokenBalance Geoff) 0
@@ -59,20 +60,17 @@ Test "COMP cooldown affects ability to claim"
     Comptroller ClaimComp Geoff
     Assert Equal (Erc20 COMP TokenBalance Geoff) 2e21
 
-Test "COMP is not claimed if cooldown is triggered before expiry"
+Test "COMP can be claimed frequently"
     CooldownComptroller
     InitSpeeds
     Comptroller SetCooldownPeriod 2000
-    -- Accrue some COMP
+    -- Make repeated claims, initiating cooldown for next period
     FastForward 2000 Blocks
-    -- Make repeated claims
-    From Geoff (Comptroller Cooldown)
-    FastForward 1000 Blocks
-    From Geoff (Comptroller Cooldown)
-    FastForward 1000 Blocks
-    From Geoff (Comptroller Cooldown)
-    FastForward 1000 Blocks
-    From Geoff (Comptroller Cooldown)
-    FastForward 1000 Blocks
     Comptroller ClaimComp Geoff
     Assert Equal (Erc20 COMP TokenBalance Geoff) 0
+    FastForward 2000 Blocks
+    Comptroller ClaimComp Geoff
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 2e21
+    FastForward 2000 Blocks
+    Comptroller ClaimComp Geoff
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 4e21

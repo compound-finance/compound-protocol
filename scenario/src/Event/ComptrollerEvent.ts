@@ -248,18 +248,6 @@ async function claimComp(world: World, from: string, comptroller: Comptroller, h
   return world;
 }
 
-async function cooldown(world: World, from: string, comptroller: Comptroller): Promise<World> {
-  let invokation = await invoke(world, comptroller.methods.cooldown(), from, ComptrollerErrorReporter);
-
-  world = addAction(
-    world,
-    `Comp cooldown initiated by ${from}`,
-    invokation
-  );
-
-  return world;
-}
-
 async function updateContributorRewards(world: World, from: string, comptroller: Comptroller, contributor: string): Promise<World> {
   let invokation = await invoke(world, comptroller.methods.updateContributorRewards(contributor), from, ComptrollerErrorReporter);
 
@@ -771,18 +759,6 @@ export function comptrollerCommands() {
         new Arg("holder", getAddressV)
       ],
       (world, from, {comptroller, holder}) => claimComp(world, from, comptroller, holder.val)
-    ),
-    new Command<{comptroller: Comptroller, holder: AddressV}>(`
-      #### Cooldown
-
-      * "Comptroller Cooldown" - Starts COMP cooldown
-      * E.g. "Comptroller Cooldown Geoff
-      `,
-      "Cooldown",
-      [
-        new Arg("comptroller", getComptroller, {implicit: true})
-      ],
-      (world, from, {comptroller}) => cooldown(world, from, comptroller)
     ),
     new Command<{comptroller: Comptroller, contributor: AddressV}>(`
       #### UpdateContributorRewards

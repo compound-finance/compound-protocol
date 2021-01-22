@@ -56,7 +56,6 @@ interface ComptrollerMethods {
   compSupplierIndex(market: string, account: string): Callable<string>
   compBorrowerIndex(market: string, account: string): Callable<string>
   compSpeeds(string): Callable<string>
-  cooldown(): Sendable<number>
   claimComp(string): Sendable<void>
   updateContributorRewards(account: string): Sendable<void>
   _grantComp(account: string, encodedNumber): Sendable<void>
