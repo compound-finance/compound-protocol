@@ -25,7 +25,7 @@ From Arr00 (GovernorBravo BravoDelegator2 Propose "Grant Comp" [("0x5eAe89DC1C67
 
 -- Vote for, queue, and execute the proposal
 MineBlock
-From Arr00 (GovernorBravo BravoDelegator2 Proposal LastProposal Vote For "")
+From Arr00 (GovernorBravo BravoDelegator2 Proposal LastProposal Vote For)
 AdvanceBlocks 20000
 GovernorBravo BravoDelegator2 Proposal LastProposal Queue
 IncreaseTime 604910

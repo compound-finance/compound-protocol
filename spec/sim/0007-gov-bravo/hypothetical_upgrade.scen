@@ -27,7 +27,7 @@ From CompHolder (GovernorBravo BravoDelegator2 Propose "Grant Comp" [(Address Co
 
 -- Vote for, queue, and execute the proposal
 MineBlock
-From CompHolder (GovernorBravo BravoDelegator2 Proposal LastProposal Vote For "")
+From CompHolder (GovernorBravo BravoDelegator2 Proposal LastProposal Vote For)
 AdvanceBlocks 20000
 GovernorBravo BravoDelegator2 Proposal LastProposal Queue
 IncreaseTime 604910
