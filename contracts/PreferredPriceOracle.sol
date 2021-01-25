@@ -20,8 +20,7 @@ contract PreferredPriceOracle {
             AggregatorV3Interface chainlinkPriceFeed = chainlinkOracle.priceFeeds(address(CErc20(address(cToken)).underlying()));
 
             if (address(chainlinkPriceFeed) != address(0)) {
-                (, int256 price, , , ) = chainlinkPriceFeed.latestRoundData();
-                return price >= 0 ? uint256(price) : 0;
+                return chainlinkOracle.getUnderlyingPrice(cToken);
             } else {
                 return secondaryOracle.getUnderlyingPrice(cToken);
             }
