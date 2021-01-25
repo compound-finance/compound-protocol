@@ -38901,7 +38901,7 @@
             "anonymous": false,
             "inputs": [
                 {
-                    "indexed": false,
+                    "indexed": true,
                     "internalType": "address",
                     "name": "voter",
                     "type": "address"
@@ -39210,11 +39210,6 @@
                     "internalType": "uint8",
                     "name": "support",
                     "type": "uint8"
-                },
-                {
-                    "internalType": "string",
-                    "name": "reason",
-                    "type": "string"
                 }
             ],
             "name": "castVote",
@@ -39222,7 +39217,7 @@
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function",
-            "signature": "0x470b7622"
+            "signature": "0x56781388"
         },
         {
             "constant": false,
@@ -39259,6 +39254,32 @@
             "stateMutability": "nonpayable",
             "type": "function",
             "signature": "0x3bccf4fd"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "proposalId",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint8",
+                    "name": "support",
+                    "type": "uint8"
+                },
+                {
+                    "internalType": "string",
+                    "name": "reason",
+                    "type": "string"
+                }
+            ],
+            "name": "castVoteWithReason",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function",
+            "signature": "0x7b3c71d3"
         },
         {
             "constant": true,
@@ -39361,11 +39382,6 @@
                             "internalType": "uint96",
                             "name": "votes",
                             "type": "uint96"
-                        },
-                        {
-                            "internalType": "string",
-                            "name": "reason",
-                            "type": "string"
                         }
                     ],
                     "internalType": "struct GovernorBravoDelegateStorageV1.Receipt",
@@ -39408,11 +39424,6 @@
                     "type": "address"
                 },
                 {
-                    "internalType": "address",
-                    "name": "admin_",
-                    "type": "address"
-                },
-                {
                     "internalType": "uint256",
                     "name": "votingPeriod_",
                     "type": "uint256"
@@ -39433,7 +39444,7 @@
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function",
-            "signature": "0x728cdbca"
+            "signature": "0xd13f90b4"
         },
         {
             "constant": true,
@@ -39928,7 +39939,7 @@
             "anonymous": false,
             "inputs": [
                 {
-                    "indexed": false,
+                    "indexed": true,
                     "internalType": "address",
                     "name": "voter",
                     "type": "address"
@@ -40184,11 +40195,6 @@
                     "internalType": "uint8",
                     "name": "support",
                     "type": "uint8"
-                },
-                {
-                    "internalType": "string",
-                    "name": "reason",
-                    "type": "string"
                 }
             ],
             "name": "castVote",
@@ -40196,7 +40202,7 @@
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function",
-            "signature": "0x470b7622"
+            "signature": "0x56781388"
         },
         {
             "constant": false,
@@ -40233,6 +40239,32 @@
             "stateMutability": "nonpayable",
             "type": "function",
             "signature": "0x3bccf4fd"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "proposalId",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint8",
+                    "name": "support",
+                    "type": "uint8"
+                },
+                {
+                    "internalType": "string",
+                    "name": "reason",
+                    "type": "string"
+                }
+            ],
+            "name": "castVoteWithReason",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function",
+            "signature": "0x7b3c71d3"
         },
         {
             "constant": true,
@@ -40335,11 +40367,6 @@
                             "internalType": "uint96",
                             "name": "votes",
                             "type": "uint96"
-                        },
-                        {
-                            "internalType": "string",
-                            "name": "reason",
-                            "type": "string"
                         }
                     ],
                     "internalType": "struct GovernorBravoDelegateStorageV1.Receipt",
@@ -40398,11 +40425,6 @@
                     "type": "address"
                 },
                 {
-                    "internalType": "address",
-                    "name": "admin_",
-                    "type": "address"
-                },
-                {
                     "internalType": "uint256",
                     "name": "votingPeriod_",
                     "type": "uint256"
@@ -40423,7 +40445,7 @@
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function",
-            "signature": "0x728cdbca"
+            "signature": "0xd13f90b4"
         },
         {
             "constant": true,

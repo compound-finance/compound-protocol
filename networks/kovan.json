@@ -21,8 +21,8 @@
         "Base200bps_Slope2000bps_Jump20000bps_Kink90_bad": "0xC0421A129E775680BD22Af5143098075eD6B85d5",
         "USDT": "0x07de306FF27a2B630B1141956844eB1552B956B5",
         "Pair_COMP_ETH": "0x0fd905006e24458e8b8eC1607433aF9d1498b6C1",
-        "BravoDelegate": "0x2f115757B222430f1c45a9c448BC5111d50756c4",
-        "BravoDelegator": "0x8e27607ceF3E2EAf1EC01101eEbFcA5a25884940",
+        "BravoDelegate": "0xc962c4f41e8eed1f957b9fa0965cb22db1827319",
+        "BravoDelegator": "0x68c4b3c6ec6166ecab0c83d08fe852e3116dbec6",
         "Reservoir": "0x33deD5C4eA51dBC7AF955396839655EFe13E3F1b",
         "Comptroller": "0x5eae89dc1c671724a672ff0630122ee834098657",
         "Comp": "0x61460874a7196d6a22D1eE4922473664b3E95270",
@@ -80,7 +80,7 @@
         "Base200bps_Slope2000bps_Jump20000bps_Kink90_bad": 18746562,
         "USDT": 18751059,
         "Pair_COMP_ETH": 19887881,
-        "BravoDelegate": 23052940,
+        "BravoDelegate": 23142651,
         "Reservoir": 18751158,
         "Comp": 18750992,
         "cUSDT": 18751123,
@@ -104,7 +104,7 @@
         "StdComptrollerG4": 19266981,
         "Pair_WBTC_ETH": 19887884,
         "Pair_LINK_ETH": 19887882,
-        "BravoDelegator": 23052961,
+        "BravoDelegator": 23142670,
         "cREP": 18751142,
         "Fauceteer": 18751074,
         "WBTC": 18751053,
@@ -161,12 +161,12 @@
         "BravoDelegate": {
             "name": "BravoDelegate",
             "contract": "GovernorBravoDelegate",
-            "address": "0x2f115757B222430f1c45a9c448BC5111d50756c4"
+            "address": "0xc962c4f41e8eed1f957b9fa0965cb22db1827319"
         },
         "BravoDelegator": {
             "name": "BravoDelegator",
             "contract": "GovernorBravoDelegator",
-            "address": "0x8e27607ceF3E2EAf1EC01101eEbFcA5a25884940"
+            "address": "0x68C4B3C6EC6166EcAb0C83d08FE852e3116dBEc6"
         }
     },
     "Timelock": {
