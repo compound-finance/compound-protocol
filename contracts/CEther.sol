@@ -7,12 +7,7 @@ import "./CToken.sol";
  * @notice CToken which wraps Ether
  * @author Compound
  */
-contract CEther is CToken {
-    /**
-     * @notice Indicator that this is a CEther contract (for inspection)
-     */
-    bool public constant isCEther = true;
-
+contract CEther is CToken, CEtherInterface {
     /**
      * @notice Initialize the new money market
      * @param comptroller_ The address of the Comptroller

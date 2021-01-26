@@ -309,6 +309,13 @@ contract CErc20Interface is CErc20Storage {
     function _addReserves(uint addAmount) external returns (uint);
 }
 
+contract CEtherInterface is CErc20Storage {
+    /**
+     * @notice Indicator that this is a CEther contract (for inspection)
+     */
+    bool public constant isCEther = true;
+}
+
 contract CDelegationStorage {
     /**
      * @notice Implementation address for this contract
