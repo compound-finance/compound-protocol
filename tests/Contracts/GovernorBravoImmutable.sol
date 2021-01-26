@@ -20,6 +20,6 @@ contract GovernorBravoImmutable is GovernorBravoDelegate {
 
     function _initiate() public {
         proposalCount = 1;
-        initalProposalId = 1;
+        initialProposalId = 1;
     }
 }

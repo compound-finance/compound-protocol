@@ -9,6 +9,6 @@ contract GovernorBravoDelegateHarness is GovernorBravoDelegate {
 	// Actual use will only use the _initiate(address) function
     function _initiate() public {
         proposalCount = 1;
-        initalProposalId = 1;
+        initialProposalId = 1;
     }
 }

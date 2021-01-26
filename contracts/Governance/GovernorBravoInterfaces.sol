@@ -80,7 +80,7 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
     mapping (address => uint) public latestProposalIds;
 
     /// @notice Initial proposal id set at become
-    uint public initalProposalId;
+    uint public initialProposalId;
 
     struct Proposal {
         /// @notice Unique id for looking up a proposal
