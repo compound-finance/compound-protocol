@@ -97,6 +97,10 @@ Macro SetPriceCF cToken price collateralFactor
 Macro Give user amount erc20
     Erc20 erc20 Faucet user amount
 
+Macro GiveCToken cToken amount erc20
+    Erc20 erc20 Faucet cToken amount
+    CToken cToken Gulp
+
 Macro Donate token amount
     (Trx Value amount (CToken token Donate))
 

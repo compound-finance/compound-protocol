@@ -150,6 +150,14 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     }
 
     /**
+     * @notice Gulps excess contract cash to reserves
+     * @dev This function calculates excess ERC20 gained from a ERC20.transfer() call and adds the excess to reserves.
+     */
+    function gulp() external {
+        delegateToImplementation(abi.encodeWithSignature("gulp()"));
+    }
+
+    /**
      * @notice Transfer `amount` tokens from `msg.sender` to `dst`
      * @param dst The address of the destination account
      * @param amount The number of tokens to transfer

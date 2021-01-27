@@ -205,6 +205,18 @@ async function evilSeize(world: World, from: string, cToken: CToken, treasure: C
   return world;
 }
 
+async function gulp(world: World, from: string, cToken: CToken): Promise<World> {
+  let invokation = await invoke(world, cToken.methods.gulp(), from, CTokenErrorReporter);
+
+  world = addAction(
+    world,
+    `CToken ${cToken.name}: Gulp`,
+    invokation
+  );
+
+  return world;
+}
+
 async function setPendingAdmin(world: World, from: string, cToken: CToken, newPendingAdmin: string): Promise<World> {
   let invokation = await invoke(world, cToken.methods._setPendingAdmin(newPendingAdmin), from, CTokenErrorReporter);
 
@@ -651,6 +663,18 @@ export function cTokenCommands() {
         new Arg("seizeTokens", getNumberV)
       ],
       (world, from, { cToken, treasure, liquidator, borrower, seizeTokens }) => evilSeize(world, from, cToken, treasure, liquidator.val, borrower.val, seizeTokens),
+      { namePos: 1 }
+    ),
+    new Command<{ cToken: CToken}>(`
+        #### Gulp
+        * "CToken <cToken> Gulp" - Gulps for the cToken
+          * E.g. "CToken cZRX Gulp"
+      `,
+      "Gulp",
+      [
+        new Arg("cToken", getCTokenV)
+      ],
+      (world, from, { cToken }) => gulp(world, from, cToken),
       { namePos: 1 }
     ),
     new Command<{ cToken: CToken, amount: NumberV }>(`

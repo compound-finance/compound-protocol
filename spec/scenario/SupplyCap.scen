@@ -1,0 +1,125 @@
+Test "Attempt to supply over set cap ERC20"
+    NewComptroller price:1.0
+    NewCToken ZRX cZRX
+    Comptroller SetMarketSupplyCaps (cZRX) (0.5e18)
+    Assert Equal (Comptroller SupplyCaps cZRX) (Exactly 0.5e18)
+    Support cZRX collateralFactor:0.5
+    Prep Geoff 0.5e18 ZRX cZRX
+    AllowFailures
+    Mint Geoff 0.5e18 cZRX
+    Assert Revert
+    Assert Equal (Erc20 ZRX TokenBalance Geoff) (Exactly 0.5e18)
+    Assert Equal (Erc20 ZRX TokenBalance cZRX) (Exactly 0)
+
+Test "Attempt to supply at set cap ERC20"
+    NewComptroller price:1.0
+    NewCToken ZRX cZRX
+    NewCToken BAT cBAT
+    Comptroller SetMarketSupplyCaps (cZRX) (100000000000000000001)
+    Support cZRX collateralFactor:0.5
+    Prep Geoff Some ZRX cZRX
+    Mint Geoff 100e18 cZRX
+    Assert Equal (Erc20 ZRX TokenBalance Geoff) (Exactly 0)
+    Assert Equal (Erc20 ZRX TokenBalance cZRX) (Exactly 100e18)
+
+Test "Attempt to supply below set cap ERC20"
+    NewComptroller price:1.0
+    NewCToken ZRX cZRX
+    Comptroller SetMarketSupplyCaps (cZRX) (1e18)
+    Support cZRX collateralFactor:0.5
+    Prep Geoff Some ZRX cZRX
+    Mint Geoff 0.5e18 cZRX
+    Assert Equal (Erc20 ZRX TokenBalance Geoff) (Exactly 99.5e18)
+    Assert Equal (Erc20 ZRX TokenBalance cZRX) (Exactly 0.5e18)
+
+Test "Cannot supply more even all underlying is borrowed"
+    NewComptroller price:1.0
+    NewCToken ZRX cZRX
+    NewCToken BAT cBAT
+    Support cZRX collateralFactor:0.5
+    Support cBAT collateralFactor:0.5
+    Comptroller SetMarketSupplyCaps (cZRX) (2)
+    Prep Jared Some ZRX cZRX
+    Mint Jared 1 cZRX
+    Prep Robert Some BAT cBAT
+    Mint Robert 100e18 cBAT
+    EnterMarkets Robert cBAT
+    Borrow Robert 1 cZRX -- Robert borrows all ZRX
+    Assert Equal (Erc20 ZRX TokenBalance cZRX) (Exactly 0)
+    Prep Geoff Some ZRX cZRX
+    AllowFailures
+    Mint Geoff 1 cZRX
+    Assert Revert
+    Assert Equal (Erc20 ZRX TokenBalance Geoff) (Exactly Some)
+
+Test "Setting supply cap restricted to admin"
+    NewComptroller price:1.0
+    ListedCToken ZRX cZRX
+    SetCollateralFactor cZRX collateralFactor:0.5
+    AllowFailures
+    From Robert (Comptroller SetMarketSupplyCaps (cZRX) (0.01e18))
+    Assert Revert
+
+Test "Supply cap guardian can set supply caps"
+    NewComptroller price:1.0
+    ListedCToken ZRX cZRX
+    SetCollateralFactor cZRX collateralFactor:0.5
+    Comptroller SetSupplyCapGuardian Geoff
+    From Geoff (Comptroller SetMarketSupplyCaps (cZRX) (0.5e18))
+    Assert Equal (Comptroller SupplyCaps cZRX) (Exactly 0.5e18)
+    Assert Equal (Comptroller SupplyCapGuardian) (User Geoff Address)
+    AllowFailures
+    From Robert (Comptroller SetMarketSupplyCaps (cZRX) (0.01e18)) -- Robert still can't...
+    Assert Revert
+    From Robert (Comptroller SetMarketSupplyCaps (cZRX) (0.01e18))
+    Assert Revert
+
+Test "Only admin can set Supply Cap Guardian"
+    NewComptroller price:1.0
+    AllowFailures
+    From Robert (Comptroller SetSupplyCapGuardian Robert) -- Robert has really gone rogue
+    Assert Revert
+
+Test "Reserves should not affect supply cap"
+    NewComptroller price:1.0
+    NewCToken USDC cUSDC
+    Support cUSDC collateralFactor:0.5
+    Prep Geoff Some USDC cUSDC
+    Mint Geoff 14e18 cUSDC
+    AddReserves 1e18 cUSDC Geoff
+    Assert Equal (Erc20 USDC TokenBalance cUSDC) (Exactly 15e18)
+    Assert Equal (CToken cUSDC Reserves) (Exactly 1e18)
+    -- Current supply level should exclude reserves, which should be 15e18 - 1e18 = 14e18.
+    --   Setting supply caps to 14e18 should block users from supplying.
+    Comptroller SetMarketSupplyCaps (cUSDC) (14e18)
+    AllowFailures
+    Mint Geoff 1 cUSDC
+    Assert Revert
+    Successfully
+    Comptroller SetMarketSupplyCaps (cUSDC) (15e18)
+    Mint Geoff 999999999999999999 cUSDC
+
+Test "Infimint attack"
+    NewComptroller price:1.0
+    CTokenDelegate Deploy CCapableErc20Delegate myCapableDelegate
+    NewCToken ZRX cZRX 0.000005 2e9 8 Standard CErc20DelegatorScenario CCapableErc20Delegate
+    NewCToken BAT cBAT 0.000005 2e9 8 Standard CErc20DelegatorScenario CCapableErc20Delegate
+    GiveCToken cBAT 10e18 BAT -- Faucet some bat to borrow
+    GiveCToken cZRX 1000e18 ZRX
+    Support cZRX collateralFactor:0.5
+    Support cBAT collateralFactor:0.5
+    Prep Geoff Some BAT cBAT
+    Mint Geoff 100e18 cBAT
+    EnterMarkets Geoff cBAT
+    Give Geoff 10000e18 BAT
+    --Attack
+    From Geoff (Erc20 BAT Transfer (Address cBAT) 10000e18)
+    AllowFailures
+    Borrow Geoff 1000e18 cZRX
+    Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION INSUFFICIENT_LIQUIDITY
+    Successfully
+    CToken cBAT Gulp
+    AllowFailures
+    Borrow Geoff 1000e18 cZRX
+    Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION INSUFFICIENT_LIQUIDITY
+    Assert Equal (CToken cBAT Reserves) 10010e18

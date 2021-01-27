@@ -179,4 +179,20 @@ describe('CToken', function () {
       expect(await send(cToken, '_reduceReserves', [reduction])).toSucceed();
     });
   });
+
+  describe('gulp', () => {
+    let cToken;
+    beforeEach(async () => {
+      cToken = await makeCToken({kind: 'ccapable'});
+    });
+
+    it('absorbs excess cash into reserves', async () => {
+      expect(
+        await send(cToken.underlying, 'transfer', [cToken._address, cash])
+      ).toSucceed();
+      expect(await send(cToken, 'gulp')).toSucceed();
+      expect(await call(cToken, 'getCash')).toEqualNumber(cash);
+      expect(await call(cToken, 'totalReserves')).toEqualNumber(cash);
+    });
+  });
 });

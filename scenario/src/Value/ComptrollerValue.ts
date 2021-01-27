@@ -573,7 +573,31 @@ export function comptrollerFetchers() {
       async (world, {comptroller, CToken}) => {
         return new NumberV(await comptroller.methods.borrowCaps(CToken._address).call());
       }
-    )
+    ),
+    new Fetcher<{comptroller: Comptroller}, AddressV>(`
+        #### SupplyCapGuardian
+        * "SupplyCapGuardian" - Returns the Comptrollers's SupplyCapGuardian
+        * E.g. "Comptroller SupplyCapGuardian"
+        `,
+        "SupplyCapGuardian",
+        [
+          new Arg("comptroller", getComptroller, {implicit: true})
+        ],
+        async (world, {comptroller}) => new AddressV(await comptroller.methods.supplyCapGuardian().call())
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken}, NumberV>(`
+        #### SupplyCaps
+        * "Comptroller SupplyCaps cZRX
+      `,
+        "SupplyCaps",
+        [
+          new Arg("comptroller", getComptroller, {implicit: true}),
+          new Arg("CToken", getCTokenV),
+        ],
+        async (world, {comptroller, CToken}) => {
+          return new NumberV(await comptroller.methods.supplyCaps(CToken._address).call());
+        }
+    ),
   ];
 }
 
