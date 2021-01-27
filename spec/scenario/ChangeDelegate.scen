@@ -10,19 +10,19 @@ Test "Change the delegate"
     CToken cDEL SetImplementation (CTokenDelegate cErc20Delegate2 Address) True "0x0"
     Redeem Jared 50e9 cDEL
 
-Test "Update the delegate for internal cash"
+Test "Update the delegate from CErc20 to CCapableErc20"
     NewComptroller
     NewCToken ZRX cZRX
     Support cZRX collateralFactor:0.5
     Prep Jared Some ZRX cZRX
     Mint Jared 100e18 cZRX
     Give cZRX 100e18 ZRX -- Transfer 100e18 ZRX to cZRX
-    -- Cash: 100e18, Balance: 200e18
-    Assert Equal (CToken cZRX Cash) (Exactly 100e18)
+    -- Cash: 200e18, Balance: 200e18
+    Assert Equal (CToken cZRX Cash) (Exactly 200e18)
     Assert Equal (Erc20 ZRX TokenBalance cZRX) (Exactly 200e18)
     -- New Deleagte
-    CTokenDelegate Deploy CErc20Delegate cErc20Delegate2
-    CToken cZRX SetImplementation (CTokenDelegate cErc20Delegate2 Address) True "0x0"
+    CTokenDelegate Deploy CCapableErc20Delegate myCapableDelegate
+    CToken cZRX SetImplementation (CTokenDelegate myCapableDelegate Address) True "0x0"
     -- Cash: 200e18, Balance: 200e18
     Assert Equal (CToken cZRX Cash) (Exactly 200e18)
     Assert Equal (Erc20 ZRX TokenBalance cZRX) (Exactly 200e18)

@@ -199,16 +199,20 @@ describe('CToken', function () {
 
     it("calculates with cash and cTokenSupply", async () => {
       const cTokenSupply = 5e18, totalBorrows = 0, totalReserves = 0;
+      expect(
+        await send(cToken.underlying, 'transfer', [cToken._address, etherMantissa(500)])
+      ).toSucceed();
       await send(cToken, 'harnessExchangeRateDetails', [cTokenSupply, totalBorrows, totalReserves].map(etherUnsigned));
-      expect(await send(cToken, 'harnessSetInternalCash', [etherMantissa(500)])).toSucceed();
       const result = await call(cToken, 'exchangeRateStored');
       expect(result).toEqualNumber(etherMantissa(100));
     });
 
     it("calculates with cash, borrows, reserves and cTokenSupply", async () => {
       const cTokenSupply = 500e18, totalBorrows = 500e18, totalReserves = 5e18;
+      expect(
+        await send(cToken.underlying, 'transfer', [cToken._address, etherMantissa(500)])
+      ).toSucceed();
       await send(cToken, 'harnessExchangeRateDetails', [cTokenSupply, totalBorrows, totalReserves].map(etherUnsigned));
-      expect(await send(cToken, 'harnessSetInternalCash', [etherMantissa(500)])).toSucceed();
       const result = await call(cToken, 'exchangeRateStored');
       expect(result).toEqualNumber(etherMantissa(1.99));
     });

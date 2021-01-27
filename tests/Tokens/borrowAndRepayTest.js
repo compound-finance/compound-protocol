@@ -23,7 +23,6 @@ async function preBorrow(cToken, borrower, borrowAmount) {
   await send(cToken.comptroller, 'setBorrowVerify', [true]);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cToken.underlying, 'harnessSetBalance', [cToken._address, borrowAmount]);
-  await send(cToken, 'gulp');
   await send(cToken, 'harnessSetFailTransferToAddress', [borrower, false]);
   await send(cToken, 'harnessSetAccountBorrows', [borrower, 0, 0]);
   await send(cToken, 'harnessSetTotalBorrows', [0]);

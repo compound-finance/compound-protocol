@@ -4,7 +4,7 @@ Macro NewBorrow borrowAmount borrowRate
     NewComptroller price:1.0 -- TODO: This should really be a price for a specific asset
     NewCToken ZRX cZRX
     NewCToken BAT cBAT borrowRate -- note: cannot use macros with named args right now
-    GiveCToken cBAT 10e18 BAT -- Faucet some bat to borrow
+    Give cBAT 10e18 BAT -- Faucet some bat to borrow
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
     Prep Geoff Some ZRX cZRX

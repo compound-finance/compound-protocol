@@ -25,7 +25,7 @@ Test "Mint with insufficient eth balance"
     Invariant Remains (CToken cETH UnderlyingBalance Geoff) 0e18
     Invariant Remains (Erc20 cETH TokenBalance Geoff) 0e8
     Invariant Static (EtherBalance Geoff)
-    CallMintEth Geoff 1e30 cETH
+    CallMintEth Geoff 1e20 cETH
     Assert Error "sender doesn't have enough funds to send tx. The upfront cost is"
 
 Test "Mint two Eth after minting two Eth, and then I mint two more"

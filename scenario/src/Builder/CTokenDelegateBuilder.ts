@@ -13,6 +13,7 @@ const CDaiDelegateContract = getContract('CDaiDelegate');
 const CDaiDelegateScenarioContract = getTestContract('CDaiDelegateScenario');
 const CErc20DelegateContract = getContract('CErc20Delegate');
 const CErc20DelegateScenarioContract = getTestContract('CErc20DelegateScenario');
+const CCapableErc20DelegateContract = getContract('CCapableErc20Delegate');
 
 
 export interface CTokenDelegateData {
@@ -120,6 +121,29 @@ export async function buildCTokenDelegate(
           name: name.val,
           contract: 'CErc20DelegateScenario',
           description: 'Scenario CErc20 Delegate'
+        };
+      }
+    ),
+
+    new Fetcher<{ name: StringV; }, CTokenDelegateData>(
+      `
+        #### CCapableErc20Delegate
+        * "CCapableErc20Delegate name:<String>"
+          * E.g. "CTokenDelegate Deploy CCapableErc20Delegate cLinkDelegate"
+      `,
+      'CCapableErc20Delegate',
+      [
+        new Arg('name', getStringV),
+      ],
+      async (
+        world,
+        { name }
+      ) => {
+        return {
+          invokation: await CCapableErc20DelegateContract.deploy<CErc20Delegate>(world, from, []),
+          name: name.val,
+          contract: 'CCapableErc20Delegate',
+          description: 'Capable CErc20 Delegate'
         };
       }
     )

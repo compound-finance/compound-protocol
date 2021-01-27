@@ -74,7 +74,6 @@ describe('Spinarama', () => {
       await send(cToken, 'harnessSetExchangeRate', [etherMantissa(1)]);
       await send(cToken, 'harnessSetBalance', [from, 10]);
       await send(cToken.underlying, 'harnessSetBalance', [cToken._address, 10]);
-      await send(cToken, 'gulp');
       await send(cToken.underlying, 'approve', [cToken._address, 10], {from});
       await minerStop();
       const p1 = send(cToken, 'redeem', [10], {from});
@@ -93,7 +92,6 @@ describe('Spinarama', () => {
       await send(cToken1.underlying, 'harnessSetBalance', [from, 10]);
       await send(cToken1.underlying, 'approve', [cToken1._address, 10], {from});
       await send(cToken2.underlying, 'harnessSetBalance', [cToken2._address, 10]);
-      await send(cToken2, 'gulp');
       await send(cToken2, 'harnessSetTotalSupply', [100]);
       await send(cToken2.underlying, 'approve', [cToken2._address, 10], {from});
       await send(cToken2, 'harnessSetExchangeRate', [etherMantissa(1)]);

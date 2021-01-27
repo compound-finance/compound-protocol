@@ -26,7 +26,7 @@ Test "Repay borrow should work and not change exchange rate"
     PriceOracle SetPrice cUSDT 1.0
     Support cZRX 0.5
     Support cUSDT 0.5
-    GiveCToken cUSDT 10e18 USDT -- Faucet some Tether to borrow
+    Give cUSDT 10e18 USDT -- Faucet some Tether to borrow
     Invariant Static (CToken cUSDT ExchangeRate)
     Prep Torrey 100e18 ZRX cZRX
     Mint Torrey 100e18 cZRX
@@ -52,7 +52,7 @@ Test "Should be able to liquidate fee token borrow"
     PriceOracle SetPrice cUSDT 1.0
     Support cZRX 0.5
     Support cUSDT 0.5
-    GiveCToken cUSDT 10e18 USDT -- Faucet some Tether to borrow
+    Give cUSDT 10e18 USDT -- Faucet some Tether to borrow
     Invariant Static (CToken cUSDT ExchangeRate)
     Invariant Static (CToken cZRX ExchangeRate)
     Prep Torrey 2e18 ZRX cZRX
