@@ -1,0 +1,30 @@
+
+Test "Attempt to sweep underlying token"
+    NewComptroller price:1.0
+    NewCToken ZRX cZRX
+    NewCToken BAT cBAT
+    Give cBAT 10e18 BAT -- Faucet some bat to sweep
+    Support cZRX collateralFactor:0.5
+    Support cBAT collateralFactor:0.5
+    AllowFailures
+    cToken cBAT SweepToken BAT
+    Assert Revert "revert CErc20::sweepToken: can not sweep underlying token"
+
+Test "Succesfully Sweep non-underlying token from CErc20"
+    NewComptroller price:1.0
+    NewCToken ZRX cZRX
+    NewCToken BAT cBAT
+    Give cBAT 10e18 ZRX -- Faucet some ZRX to sweep
+    Support cZRX collateralFactor:0.5
+    Support cBAT collateralFactor:0.5
+    cToken cBAT SweepToken ZRX
+    Assert Equal (Erc20 ZRX TokenBalance Admin) (10e18)
+
+Test "Succesfully Sweep ERC20 from CETH"
+    NewComptroller price:1.0
+    Erc20 Deploy Standard BAT "Basic Attention Token" 18
+    ListedEtherToken cETH initialExchangeRate:0.005e9
+    SetCollateralFactor cETH collateralFactor:0.5
+    Give cETH 10e18 BAT -- Faucet some BAT to sweep
+    cToken cETH SweepToken BAT
+    Assert Equal (Erc20 BAT TokenBalance Admin) (10e18)

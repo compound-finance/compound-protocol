@@ -47,6 +47,7 @@ export interface CTokenMethods {
   pendingAdmin(): Callable<string>;
   _setPendingAdmin(address: string): Sendable<number>;
   _acceptAdmin(): Sendable<number>;
+  sweepToken(token: string): Sendable<void>;
 }
 
 export interface CTokenScenarioMethods extends CTokenMethods {
