@@ -4,7 +4,7 @@ import "./ComptrollerInterface.sol";
 import "./CTokenInterfaces.sol";
 import "./ErrorReporter.sol";
 import "./Exponential.sol";
-import "./EIP20NonStandardInterface.sol";
+import "./EIP20Interface.sol";
 import "./InterestRateModel.sol";
 
 /**

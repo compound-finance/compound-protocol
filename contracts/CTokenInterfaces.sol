@@ -2,7 +2,7 @@ pragma solidity ^0.5.16;
 
 import "./ComptrollerInterface.sol";
 import "./InterestRateModel.sol";
-import "./EIP20Interface.sol";
+import "./EIP20NonStandardInterface.sol";
 
 contract CTokenStorage {
     /**
@@ -229,7 +229,7 @@ contract CTokenInterface is CTokenStorage {
     function getCash() external view returns (uint);
     function accrueInterest() public returns (uint);
     function seize(address liquidator, address borrower, uint seizeTokens) external returns (uint);
-    function sweepToken(EIP20Interface token) external;
+    function sweepToken(EIP20NonStandardInterface token) external;
 
 
     /*** Admin Functions ***/
