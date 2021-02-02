@@ -53,14 +53,18 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         decimals = decimals_;
 
         // Set Fuse fee
-        uint256 newFuseFeeMantissa = fuseAdmin.interestFeeRate();
-        require(reserveFactorMantissa + adminFeeMantissa + newFuseFeeMantissa <= reserveFactorPlusFeesMaxMantissa, "unexpected error: Fuse fee larger than 1e18");
-        uint oldFuseFeeMantissa = fuseFeeMantissa;
-        fuseFeeMantissa = newFuseFeeMantissa;
-        emit NewFuseFee(oldFuseFeeMantissa, newFuseFeeMantissa);
+        err = _setFuseFeeFresh(getPendingFuseFeeFromAdmin());
+        require(err == uint(Error.NO_ERROR), "setting Fuse fee failed");
 
         // The counter starts true to prevent changing it from zero to non-zero (i.e. smaller cost/refund)
         _notEntered = true;
+    }
+    
+    /**
+     * @dev Returns latest pending Fuse fee (to be set with `_setFuseFeeFresh`)
+     */
+    function getPendingFuseFeeFromAdmin() internal view returns (uint) {
+        return fuseAdmin.interestFeeRate();
     }
 
     /**
@@ -1248,7 +1252,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
             return fail(Error(error), FailureInfo.SET_ADMIN_FEE_ACCRUE_INTEREST_FAILED);
         }
         // _setAdminFeeFresh emits reserve-factor-specific logs on errors, so we don't need to.
-        return _setFuseFeeFresh(fuseAdmin.interestFeeRate());
+        return _setFuseFeeFresh(getPendingFuseFeeFromAdmin());
     }
 
     /**

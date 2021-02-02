@@ -76,7 +76,8 @@ async function makeCToken(opts = {}) {
 
   switch (kind) {
     case 'cether':
-      cToken = await deploy('CEtherHarness',
+      cDelegatee = await deploy('CEtherDelegateHarness');
+      cDelegator = await deploy('CEtherDelegator',
         [
           comptroller._address,
           interestRateModel._address,
@@ -84,8 +85,12 @@ async function makeCToken(opts = {}) {
           name,
           symbol,
           decimals,
-          admin
-        ])
+          admin,
+          cDelegatee._address,
+          "0x0"
+        ]
+                                   );
+      cToken = await saddle.getContractAt('CEtherDelegateHarness', cDelegator._address); // XXXS at
       break;
 
     case 'cdai':

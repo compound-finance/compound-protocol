@@ -31,7 +31,7 @@ describe('Comptroller', () => {
   beforeEach(async () => {
     await setOraclePrice(cTokenBorrowed, borrowedPrice);
     await setOraclePrice(cTokenCollateral, collateralPrice);
-    await send(cTokenCollateral, 'harnessExchangeRateDetails', [8e10, 4e10, 0]);
+    await send(cTokenCollateral, 'harnessExchangeRateDetails', [8e10, 4e10, 0, 0, 0]);
   });
 
   describe('liquidateCalculateAmountSeize', () => {
@@ -61,7 +61,7 @@ describe('Comptroller', () => {
     });
 
     it("reverts if it fails to calculate the exchange rate", async () => {
-      await send(cTokenCollateral, 'harnessExchangeRateDetails', [1, 0, 10]); // (1 - 10) -> underflow
+      await send(cTokenCollateral, 'harnessExchangeRateDetails', [1, 0, 10, 0, 0]); // (1 - 10) -> underflow
       await expect(
         send(comptroller, 'liquidateCalculateSeizeTokens', [cTokenBorrowed._address, cTokenCollateral._address, repayAmount])
       ).rejects.toRevert("revert exchangeRateStored: exchangeRateStoredInternal failed");

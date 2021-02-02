@@ -79,10 +79,20 @@ contract CErc20Harness is CErc20Immutable {
         totalReserves = totalReserves_;
     }
 
-    function harnessExchangeRateDetails(uint totalSupply_, uint totalBorrows_, uint totalReserves_) public {
-        totalSupply = totalSupply_;
-        totalBorrows = totalBorrows_;
-        totalReserves = totalReserves_;
+    function harnessSetTotalAdminFees(uint totalAdminFees_) public {
+        totalAdminFees = totalAdminFees_;
+    }
+
+    function harnessSetTotalFuseFees(uint totalFuseFees_) public {
+        totalFuseFees = totalFuseFees_;
+    }
+
+    function harnessExchangeRateDetails(uint _totalSupply, uint _totalBorrows, uint _totalReserves, uint _totalAdminFees, uint _totalFuseFees) public {
+        totalSupply = _totalSupply;
+        totalBorrows = _totalBorrows;
+        totalReserves = _totalReserves;
+        totalAdminFees = _totalAdminFees;
+        totalFuseFees = _totalFuseFees;
     }
 
     function harnessSetExchangeRate(uint exchangeRate) public {
@@ -138,6 +148,22 @@ contract CErc20Harness is CErc20Immutable {
         return _setReserveFactorFresh(newReserveFactorMantissa);
     }
 
+    function harnessWithdrawFuseFeesFresh(uint amount) public returns (uint) {
+        return _withdrawFuseFeesFresh(amount);
+    }
+
+    function harnessSetFuseFeeFresh(uint newFuseFeeMantissa) public returns (uint) {
+        return _setFuseFeeFresh(newFuseFeeMantissa);
+    }
+
+    function harnessWithdrawAdminFeesFresh(uint amount) public returns (uint) {
+        return _withdrawAdminFeesFresh(amount);
+    }
+
+    function harnessSetAdminFeeFresh(uint newAdminFeeMantissa) public returns (uint) {
+        return _setAdminFeeFresh(newAdminFeeMantissa);
+    }
+
     function harnessSetInterestRateModelFresh(InterestRateModel newInterestRateModel) public returns (uint) {
         return _setInterestRateModelFresh(newInterestRateModel);
     }
@@ -148,6 +174,16 @@ contract CErc20Harness is CErc20Immutable {
 
     function harnessCallBorrowAllowed(uint amount) public returns (uint) {
         return comptroller.borrowAllowed(address(this), msg.sender, amount);
+    }
+
+    uint internal pendingFuseFeeMantissa = 0;
+
+    function getPendingFuseFeeFromAdmin() internal view returns (uint) {
+        return pendingFuseFeeMantissa;
+    }
+
+    function setPendingFuseFee(uint newPendingFuseFeeMantissa) external {
+        pendingFuseFeeMantissa = newPendingFuseFeeMantissa;
     }
 }
 
@@ -181,6 +217,16 @@ contract CErc20Scenario is CErc20Immutable {
     function getBlockNumber() internal view returns (uint) {
         ComptrollerScenario comptrollerScenario = ComptrollerScenario(address(comptroller));
         return comptrollerScenario.blockNumber();
+    }
+
+    uint internal pendingFuseFeeMantissa = 0;
+
+    function getPendingFuseFeeFromAdmin() internal view returns (uint) {
+        return pendingFuseFeeMantissa;
+    }
+
+    function setPendingFuseFee(uint newPendingFuseFeeMantissa) external {
+        pendingFuseFeeMantissa = newPendingFuseFeeMantissa;
     }
 }
 
@@ -298,10 +344,20 @@ contract CErc20DelegateHarness is CErc20Delegate {
         totalReserves = totalReserves_;
     }
 
-    function harnessExchangeRateDetails(uint totalSupply_, uint totalBorrows_, uint totalReserves_) public {
-        totalSupply = totalSupply_;
-        totalBorrows = totalBorrows_;
-        totalReserves = totalReserves_;
+    function harnessSetTotalAdminFees(uint totalAdminFees_) public {
+        totalAdminFees = totalAdminFees_;
+    }
+
+    function harnessSetTotalFuseFees(uint totalFuseFees_) public {
+        totalFuseFees = totalFuseFees_;
+    }
+
+    function harnessExchangeRateDetails(uint _totalSupply, uint _totalBorrows, uint _totalReserves, uint _totalAdminFees, uint _totalFuseFees) public {
+        totalSupply = _totalSupply;
+        totalBorrows = _totalBorrows;
+        totalReserves = _totalReserves;
+        totalAdminFees = _totalAdminFees;
+        totalFuseFees = _totalFuseFees;
     }
 
     function harnessSetExchangeRate(uint exchangeRate) public {
@@ -357,6 +413,22 @@ contract CErc20DelegateHarness is CErc20Delegate {
         return _setReserveFactorFresh(newReserveFactorMantissa);
     }
 
+    function harnessWithdrawFuseFeesFresh(uint amount) public returns (uint) {
+        return _withdrawFuseFeesFresh(amount);
+    }
+
+    function harnessSetFuseFeeFresh(uint newFuseFeeMantissa) public returns (uint) {
+        return _setFuseFeeFresh(newFuseFeeMantissa);
+    }
+
+    function harnessWithdrawAdminFeesFresh(uint amount) public returns (uint) {
+        return _withdrawAdminFeesFresh(amount);
+    }
+
+    function harnessSetAdminFeeFresh(uint newAdminFeeMantissa) public returns (uint) {
+        return _setAdminFeeFresh(newAdminFeeMantissa);
+    }
+
     function harnessSetInterestRateModelFresh(InterestRateModel newInterestRateModel) public returns (uint) {
         return _setInterestRateModelFresh(newInterestRateModel);
     }
@@ -367,6 +439,16 @@ contract CErc20DelegateHarness is CErc20Delegate {
 
     function harnessCallBorrowAllowed(uint amount) public returns (uint) {
         return comptroller.borrowAllowed(address(this), msg.sender, amount);
+    }
+
+    uint internal pendingFuseFeeMantissa = 0;
+
+    function getPendingFuseFeeFromAdmin() internal view returns (uint) {
+        return pendingFuseFeeMantissa;
+    }
+
+    function setPendingFuseFee(uint newPendingFuseFeeMantissa) external {
+        pendingFuseFeeMantissa = newPendingFuseFeeMantissa;
     }
 }
 
@@ -385,19 +467,15 @@ contract CErc20DelegateScenario is CErc20Delegate {
         ComptrollerScenario comptrollerScenario = ComptrollerScenario(address(comptroller));
         return comptrollerScenario.blockNumber();
     }
-}
 
-contract CErc20DelegateScenarioExtra is CErc20DelegateScenario {
-    function iHaveSpoken() public pure returns (string memory) {
-      return "i have spoken";
+    uint internal pendingFuseFeeMantissa = 0;
+
+    function getPendingFuseFeeFromAdmin() internal view returns (uint) {
+        return pendingFuseFeeMantissa;
     }
 
-    function itIsTheWay() public {
-      admin = address(1); // make a change to test effect
-    }
-
-    function babyYoda() public pure {
-      revert("protect the baby");
+    function setPendingFuseFee(uint newPendingFuseFeeMantissa) external {
+        pendingFuseFeeMantissa = newPendingFuseFeeMantissa;
     }
 }
 
@@ -434,6 +512,16 @@ contract CDaiDelegateHarness is CDaiDelegate {
     function getBlockNumber() internal view returns (uint) {
         return blockNumber;
     }
+
+    uint internal pendingFuseFeeMantissa = 0;
+
+    function getPendingFuseFeeFromAdmin() internal view returns (uint) {
+        return pendingFuseFeeMantissa;
+    }
+
+    function setPendingFuseFee(uint newPendingFuseFeeMantissa) external {
+        pendingFuseFeeMantissa = newPendingFuseFeeMantissa;
+    }
 }
 
 contract CDaiDelegateScenario is CDaiDelegate {
@@ -448,6 +536,16 @@ contract CDaiDelegateScenario is CDaiDelegate {
     function getBlockNumber() internal view returns (uint) {
         ComptrollerScenario comptrollerScenario = ComptrollerScenario(address(comptroller));
         return comptrollerScenario.blockNumber();
+    }
+
+    uint internal pendingFuseFeeMantissa = 0;
+
+    function getPendingFuseFeeFromAdmin() internal view returns (uint) {
+        return pendingFuseFeeMantissa;
+    }
+
+    function setPendingFuseFee(uint newPendingFuseFeeMantissa) external {
+        pendingFuseFeeMantissa = newPendingFuseFeeMantissa;
     }
 }
 

@@ -211,7 +211,7 @@ describe('CToken', function () {
       });
 
       it("fails if total supply < redemption amount", async () => {
-        await send(cToken, 'harnessExchangeRateDetails', [0, 0, 0]);
+        await send(cToken, 'harnessExchangeRateDetails', [0, 0, 0, 0, 0]);
         expect(await redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).toHaveTokenFailure('MATH_ERROR', 'REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED');
       });
 

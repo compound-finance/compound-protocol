@@ -4458,8 +4458,8 @@ functional-red-black-tree@^1.0.1, functional-red-black-tree@~1.0.1:
   integrity sha1-GwqzvVU7Kg1jmdKcDj6gslIHgyc=
 
 ganache-core@^2.9.0-istanbul.0, ganache-core@^2.9.1, "ganache-core@https://github.com/compound-finance/ganache-core.git#compound":
-  version "2.9.1"
-  resolved "https://github.com/compound-finance/ganache-core.git#a53c02d0ed581267aafcdec28fe30f17d480e29c"
+  version "2.10.2"
+  resolved "https://github.com/compound-finance/ganache-core.git#f779cc61864176c8432caed0cc7f698d58113947"
   dependencies:
     abstract-leveldown "3.0.0"
     async "2.6.2"

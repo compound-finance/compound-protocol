@@ -4,7 +4,7 @@ import "./ComptrollerInterface.sol";
 import "./InterestRateModel.sol";
 
 interface IFuseFeeDistributor {
-    function interestFeeRate() external returns (uint256);
+    function interestFeeRate() external view returns (uint256);
     function () external payable;
 }
 
