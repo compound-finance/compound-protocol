@@ -58,19 +58,6 @@ contract BaseJumpRateModelV2 {
     }
 
     /**
-     * @notice Update the parameters of the interest rate model (only callable by owner, i.e. Timelock)
-     * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by 1e18)
-     * @param multiplierPerYear The rate of increase in interest rate wrt utilization (scaled by 1e18)
-     * @param jumpMultiplierPerYear The multiplierPerBlock after hitting a specified utilization point
-     * @param kink_ The utilization point at which the jump multiplier is applied
-     */
-    function updateJumpRateModel(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) external {
-        require(msg.sender == owner, "only the owner may call this function.");
-
-        updateJumpRateModelInternal(baseRatePerYear, multiplierPerYear, jumpMultiplierPerYear, kink_);
-    }
-
-    /**
      * @notice Calculates the utilization rate of the market: `borrows / (cash + borrows - reserves)`
      * @param cash The amount of cash in the market
      * @param borrows The amount of borrows in the market
@@ -146,5 +133,17 @@ contract BaseJumpRateModelV2 {
     	owner = newOwner;
 
     	emit NewOwner(oldOwner,newOwner);
+    }
+    /**
+     * @notice Update the parameters of the interest rate model (only callable by owner, i.e. Timelock)
+     * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by 1e18)
+     * @param multiplierPerYear The rate of increase in interest rate wrt utilization (scaled by 1e18)
+     * @param jumpMultiplierPerYear The multiplierPerBlock after hitting a specified utilization point
+     * @param kink_ The utilization point at which the jump multiplier is applied
+     */
+    function _updateJumpRateModel(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) external {
+        require(msg.sender == owner, "BaseJumpRateModelV2::updateJumpRateModel:owner only");
+
+        updateJumpRateModelInternal(baseRatePerYear, multiplierPerYear, jumpMultiplierPerYear, kink_);
     }
 }
