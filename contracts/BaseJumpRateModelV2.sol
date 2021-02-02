@@ -142,7 +142,7 @@ contract BaseJumpRateModelV2 {
      * @param kink_ The utilization point at which the jump multiplier is applied
      */
     function _updateJumpRateModel(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) external {
-        require(msg.sender == owner, "BaseJumpRateModelV2::updateJumpRateModel:owner only");
+        require(msg.sender == owner, "BaseJumpRateModelV2::_updateJumpRateModel:owner only");
 
         updateJumpRateModelInternal(baseRatePerYear, multiplierPerYear, jumpMultiplierPerYear, kink_);
     }
