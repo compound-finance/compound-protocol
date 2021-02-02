@@ -11,6 +11,7 @@ contract BaseJumpRateModelV2 {
     using SafeMath for uint;
 
     event NewInterestParams(uint baseRatePerBlock, uint multiplierPerBlock, uint jumpMultiplierPerBlock, uint kink);
+    event NewOwner(address oldOwner, address newOwner);
 
     /**
      * @notice The address of the owner, i.e. the Timelock contract, which can update parameters directly
@@ -133,5 +134,17 @@ contract BaseJumpRateModelV2 {
         kink = kink_;
 
         emit NewInterestParams(baseRatePerBlock, multiplierPerBlock, jumpMultiplierPerBlock, kink);
+    }
+
+    /**
+     * @notice Sets the owner of the contract. Effective immediately
+     * @param newOwner address of the new owner
+	 */
+    function _setOwner(address newOwner) external {
+    	require(msg.sender == owner, "BaseJumpRateModelV2::_setOwner:owner only");
+    	address oldOwner = owner;
+    	owner = newOwner;
+
+    	emit NewOwner(oldOwner,newOwner);
     }
 }
