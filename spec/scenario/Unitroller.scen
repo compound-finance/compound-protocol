@@ -226,39 +226,39 @@ Test "Keeps all storage"
     -- PauseGuardian; 10
     Comptroller SetPauseGuardian Coburn
     Assert Equal (Comptroller PauseGuardian) (Address Coburn)
-    Assert Equal (StorageAt Comptroller 10 0 "address") (Address Coburn)
+    Assert Equal (StorageAt Comptroller 13 0 "address") (Address Coburn)
     --
     -- MintGuardianPaused; 11
-    Assert Equal (StorageAt Comptroller 10 40 "bool") False
+    Assert Equal (StorageAt Comptroller 13 40 "bool") False
     Assert Equal (Comptroller _MintGuardianPaused) False
     --
     -- BorrowGuardianPaused; 12
-    Assert Equal (StorageAt Comptroller 10 42 "bool") False
+    Assert Equal (StorageAt Comptroller 13 42 "bool") False
     Assert Equal (Comptroller _BorrowGuardianPaused) False
     --
     -- TransferGuardianPaused; 13
-    Assert Equal (StorageAt Comptroller 10 44 "bool") False
+    Assert Equal (StorageAt Comptroller 13 44 "bool") False
     From Coburn (Comptroller SetGuardianPaused "Transfer" True)
     Assert Equal (Comptroller TransferGuardianPaused) True
-    Assert Equal (StorageAt Comptroller 10 44 "bool") True
+    Assert Equal (StorageAt Comptroller 13 44 "bool") True
     --
     -- SeizeGuardianPaused; 14
-    Assert Equal (StorageAt Comptroller 10 46 "bool") False
+    Assert Equal (StorageAt Comptroller 13 46 "bool") False
     From Coburn (Comptroller SetGuardianPaused "Seize" True)
     Assert Equal (Comptroller SeizeGuardianPaused) True
-    Assert Equal (StorageAt Comptroller 10 46 "bool") True
+    Assert Equal (StorageAt Comptroller 13 46 "bool") True
     --
     -- Pause by market storage
     --
     -- MintGuardianPaused; 15
-    Assert Equal (StorageAtMapping Comptroller 11 (Address cZRX) "bool") False
+    Assert Equal (StorageAtMapping Comptroller 14 (Address cZRX) "bool") False
     From Coburn (Comptroller SetGuardianMarketPaused cZRX "Mint" True)
     Assert Equal (Comptroller MintGuardianMarketPaused cZRX) True
-    Assert Equal (StorageAtMapping Comptroller 11 (Address cZRX) "bool") True
+    Assert Equal (StorageAtMapping Comptroller 14 (Address cZRX) "bool") True
     --
     -- BorrowGuardianPaused; 16
-    Assert Equal (StorageAtMapping Comptroller 12 (Address cZRX) "bool") False
+    Assert Equal (StorageAtMapping Comptroller 15 (Address cZRX) "bool") False
     From Coburn (Comptroller SetGuardianMarketPaused cZRX "Borrow" True)
     Assert Equal (Comptroller BorrowGuardianMarketPaused cZRX) True
-    Assert Equal (StorageAtMapping Comptroller 12 (Address cZRX) "bool") True
+    Assert Equal (StorageAtMapping Comptroller 15 (Address cZRX) "bool") True
     --
