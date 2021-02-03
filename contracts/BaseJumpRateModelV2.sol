@@ -131,8 +131,7 @@ contract BaseJumpRateModelV2 {
     	require(msg.sender == owner, "BaseJumpRateModelV2::_setOwner:owner only");
     	address oldOwner = owner;
     	owner = newOwner;
-
-    	emit NewOwner(oldOwner,newOwner);
+    	emit NewOwner(oldOwner, newOwner);
     }
     /**
      * @notice Update the parameters of the interest rate model (only callable by owner, i.e. Timelock)
