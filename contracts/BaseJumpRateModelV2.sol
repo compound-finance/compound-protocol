@@ -128,7 +128,7 @@ contract BaseJumpRateModelV2 {
      * @param newOwner address of the new owner
 	 */
     function _setOwner(address newOwner) external {
-    	require(msg.sender == owner, "BaseJumpRateModelV2::_setOwner:owner only");
+    	require(msg.sender == owner, "BaseJumpRateModelV2::_setOwner: owner only");
     	address oldOwner = owner;
     	owner = newOwner;
     	emit NewOwner(oldOwner, newOwner);
@@ -141,7 +141,7 @@ contract BaseJumpRateModelV2 {
      * @param kink_ The utilization point at which the jump multiplier is applied
      */
     function _updateJumpRateModel(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) external {
-        require(msg.sender == owner, "BaseJumpRateModelV2::_updateJumpRateModel:owner only");
+        require(msg.sender == owner, "BaseJumpRateModelV2::_updateJumpRateModel: owner only");
         updateJumpRateModelInternal(baseRatePerYear, multiplierPerYear, jumpMultiplierPerYear, kink_);
     }
 }
