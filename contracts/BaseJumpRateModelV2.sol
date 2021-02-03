@@ -142,7 +142,6 @@ contract BaseJumpRateModelV2 {
      */
     function _updateJumpRateModel(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) external {
         require(msg.sender == owner, "BaseJumpRateModelV2::_updateJumpRateModel:owner only");
-
         updateJumpRateModelInternal(baseRatePerYear, multiplierPerYear, jumpMultiplierPerYear, kink_);
     }
 }
