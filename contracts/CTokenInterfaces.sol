@@ -229,7 +229,6 @@ contract CTokenInterface is CTokenStorage {
     function getCash() external view returns (uint);
     function accrueInterest() public returns (uint);
     function seize(address liquidator, address borrower, uint seizeTokens) external returns (uint);
-    function sweepToken(EIP20NonStandardInterface token) external;
 
 
     /*** Admin Functions ***/
@@ -260,6 +259,7 @@ contract CErc20Interface is CErc20Storage {
     function repayBorrow(uint repayAmount) external returns (uint);
     function repayBorrowBehalf(address borrower, uint repayAmount) external returns (uint);
     function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) external returns (uint);
+    function sweepToken(EIP20NonStandardInterface token) external;
 
 
     /*** Admin Functions ***/

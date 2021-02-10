@@ -19,15 +19,6 @@ Test "Succesfully Sweep standard non-underlying token from CErc20"
     cToken cBAT SweepToken ZRX
     Assert Equal (Erc20 ZRX TokenBalance Admin) (10e18)
 
-Test "Succesfully Sweep ERC20 from CETH"
-    NewComptroller price:1.0
-    Erc20 Deploy Standard BAT "Basic Attention Token" 18
-    ListedEtherToken cETH initialExchangeRate:0.005e9
-    SetCollateralFactor cETH collateralFactor:0.5
-    Give cETH 10e18 BAT -- Faucet some BAT to sweep
-    cToken cETH SweepToken BAT
-    Assert Equal (Erc20 BAT TokenBalance Admin) (10e18)
-
 Test "Succesfully Sweep non-standard non-underlying token from CErc20"
     NewComptroller price:1.0
     Erc20 Deploy NonStandard USDT "USDT" 18
