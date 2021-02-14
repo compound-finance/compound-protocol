@@ -11,6 +11,21 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     /// @notice The minimum setable proposal threshold
     uint public constant MIN_PROPOSAL_THRESHOLD = 50000e18; // 50,000 Comp
 
+    /// @notice The maximum setable proposal threshold
+    uint public constant MAX_PROPOSAL_THRESHOLD = 100000e18; //100,000 Comp
+
+    /// @notice The minimum setable voting period
+    uint public constant MIN_VOTING_PERIOD = 5760; // About 24 hours
+
+    /// @notice The max setable voting period
+    uint public constant MAX_VOTING_PERIOD = 80640; // About 2 weeks
+
+    /// @notice The min setable voting delay
+    uint public constant MIN_VOTING_DELAY = 1;
+
+    /// @notice The max setable voting delay
+    uint public constant MAX_VOTING_DELAY = 40320; // About 1 week
+
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
     function quorumVotes() public pure returns (uint) { return 400000e18; } // 400,000 = 4% of Comp
 
@@ -25,6 +40,13 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
 
     function initialize(address timelock_, address comp_, uint votingPeriod_, uint votingDelay_, uint proposalThreshold_) public {
         require(msg.sender == admin, "GovernorBravo::initialize: admin only");
+        require(address(timelock) == address(0), "GovernorBravo::initialize: can only initialize once");
+        require(timelock_ != address(0), "GovernorBravo::initialize: invalid timelock address");
+        require(comp_ != address(0), "GovernorBravo::initialize: invalid comp address");
+        require(votingPeriod_ >= MIN_VOTING_PERIOD && votingPeriod_ <= MAX_VOTING_PERIOD, "GovernorBravo::initialize: invalid voting period");
+        require(votingDelay_ >= MIN_VOTING_DELAY && votingDelay_ <= MAX_VOTING_DELAY, "GovernorBravo::initialize: invalid voting delay");
+        require(proposalThreshold_ >= MIN_PROPOSAL_THRESHOLD && proposalThreshold_ <= MAX_PROPOSAL_THRESHOLD, "GovernorBravo::initialize: invalid proposal threshold");
+
         timelock = TimelockInterface(timelock_);
         comp = CompInterface(comp_);
         votingPeriod = votingPeriod_;
@@ -215,6 +237,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
      */
     function _setVotingDelay(uint newVotingDelay) external {
         require(msg.sender == admin, "GovernorBravo::_setVotingDelay: admin only");
+        require(newVotingDelay >= MIN_VOTING_DELAY && newVotingDelay <= MAX_VOTING_DELAY, "GovernorBravo::_setVotingDelay: invalid voting delay");
         uint oldVotingDelay = votingDelay;
         votingDelay = newVotingDelay;
 
@@ -227,6 +250,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
      */
     function _setVotingPeriod(uint newVotingPeriod) external {
         require(msg.sender == admin, "GovernorBravo::_setVotingPeriod: admin only");
+        require(newVotingPeriod >= MIN_VOTING_PERIOD && newVotingPeriod <= MAX_VOTING_PERIOD, "GovernorBravo::_setVotingPeriod: invalid voting period");
         uint oldVotingPeriod = votingPeriod;
         votingPeriod = newVotingPeriod;
 
@@ -240,7 +264,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
      */
     function _setProposalThreshold(uint newProposalThereshold) external {
         require(msg.sender == admin, "GovernorBravo::_setProposalThreshold: admin only");
-        require(newProposalThereshold >= MIN_PROPOSAL_THRESHOLD, "GovernorBravo::_setProposalThreshold: new threshold below min");
+        require(newProposalThereshold >= MIN_PROPOSAL_THRESHOLD && newProposalThereshold <= MAX_PROPOSAL_THRESHOLD, "GovernorBravo::_setProposalThreshold: invalid proposal threshold");
         uint oldProposalThreshold = proposalThreshold;
         proposalThreshold = newProposalThereshold;
 
