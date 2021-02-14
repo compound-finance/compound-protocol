@@ -7,16 +7,16 @@ contract SimplePriceOracle is PriceOracle {
     mapping(address => uint) prices;
     event PricePosted(address asset, uint previousPriceMantissa, uint requestedPriceMantissa, uint newPriceMantissa);
 
+    constructor() public {
+        prices[address(0)] = 1e18;
+    }
+
     function getUnderlyingPrice(CToken cToken) public view returns (uint) {
-        if (compareStrings(cToken.symbol(), "cETH")) {
-            return 1e18;
-        } else {
-            return prices[address(CErc20(address(cToken)).underlying())];
-        }
+        return prices[cToken.isCEther() ? address(0) : address(CErc20(address(cToken)).underlying())];
     }
 
     function setUnderlyingPrice(CToken cToken, uint underlyingPriceMantissa) public {
-        address asset = address(CErc20(address(cToken)).underlying());
+        address asset = cToken.isCEther() ? address(0) : address(CErc20(address(cToken)).underlying());
         emit PricePosted(asset, prices[asset], underlyingPriceMantissa, underlyingPriceMantissa);
         prices[asset] = underlyingPriceMantissa;
     }
