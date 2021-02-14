@@ -1261,6 +1261,11 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
     function _setFuseFeeFresh(uint newFuseFeeMantissa) internal returns (uint) {
+        // Check newFuseFeeMantissa != fuseFeeMantissa
+        if (newFuseFeeMantissa == fuseFeeMantissa) {
+            return uint(Error.NO_ERROR);
+        }
+
         // Verify market's block number equals current block number
         if (accrualBlockNumber != getBlockNumber()) {
             return fail(Error.MARKET_NOT_FRESH, FailureInfo.SET_FUSE_FEE_FRESH_CHECK);

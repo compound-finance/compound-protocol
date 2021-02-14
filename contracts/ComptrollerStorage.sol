@@ -83,9 +83,13 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
     /// @notice A list of all markets
     CToken[] public allMarkets;
 
-    mapping(address => bool) internal users;
+    /**
+     * @dev Maps borrowers to booleans indicating if they have entered any markets
+     */
+    mapping(address => bool) internal borrowers;
 
-    address[] public allUsers;
+    /// @notice A list of all borrowers who have entered markets
+    address[] public allBorrowers;
 
 
     /**

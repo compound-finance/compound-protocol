@@ -34,9 +34,24 @@ interface AggregatorV3Interface {
 }
 
 contract ChainlinkPriceOracle is PriceOracle {
+    /**
+     * @notice Maps ERC20 token addresses to Chainlink price feed contracts.
+     */
     mapping(address => AggregatorV3Interface) public priceFeeds;
+
+    /**
+     * @notice The maxmimum number of seconds elapsed since the round was last updated before the price is considered stale. If set to 0, no limit is enforced.
+     */
+    uint256 public maxSecondsBeforePriceIsStale;
     
-    constructor() public {
+    /**
+     * @dev Constructor to set `maxSecondsBeforePriceIsStale` as well as all Chainlink price feeds.
+     */
+    constructor(uint256 _maxSecondsBeforePriceIsStale) public {
+        // Set maxSecondsBeforePriceIsStale
+        maxSecondsBeforePriceIsStale = _maxSecondsBeforePriceIsStale;
+
+        // Set Chainlink price feeds
         priceFeeds[0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9] = AggregatorV3Interface(0x6Df09E975c830ECae5bd4eD9d90f3A95a4f88012); // AAVE
         priceFeeds[0xa117000000f279D81A1D3cc75430fAA017FA5A2e] = AggregatorV3Interface(0x8f83670260F8f7708143b836a2a6F11eF0aBac01); // ANT
         priceFeeds[0xba100000625a3754423978a60c9317c58a424e3D] = AggregatorV3Interface(0xC1438AA3823A6Ba0C159CfA8D98dF5A994bA120b); // BAL
@@ -73,12 +88,18 @@ contract ChainlinkPriceOracle is PriceOracle {
         priceFeeds[0xE41d2489571d322189246DaFA5ebDe1F4699F498] = AggregatorV3Interface(0x2Da4983a622a8498bb1a21FaE9D8F6C664939962); // ZRX
     }
 
-    function getUnderlyingPrice(CToken cToken) public view returns (uint) {
+    /**
+     * @dev Returns the price in ETH of the token underlying `cToken` (implements `PriceOracle`).
+     */
+    function getUnderlyingPrice(CToken cToken) external view returns (uint) {
         if (cToken.isCEther() || CErc20(address(cToken)).underlying() == 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2) {
+            // Return 1e18 for ETH or WETH
             return 1e18;
         } else {
+            // Get token/ETH price from Chainlink
             address underlying = CErc20(address(cToken)).underlying();
-            (, int256 price, , , ) = priceFeeds[underlying].latestRoundData();
+            (, int256 price, , uint256 updatedAt, ) = priceFeeds[underlying].latestRoundData();
+            if (maxSecondsBeforePriceIsStale > 0) require(block.timestamp <= updatedAt + maxSecondsBeforePriceIsStale, "Chainlink price is stale.");
             uint256 underlyingDecimals = uint256(EIP20Interface(underlying).decimals());
             return price >= 0 ? (underlyingDecimals <= 18 ? mul(uint256(price), 10 ** (18 - underlyingDecimals)) : uint256(price) / (10 ** (underlyingDecimals - 18))) : 0;
         }

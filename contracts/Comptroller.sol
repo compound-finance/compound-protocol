@@ -160,9 +160,10 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         marketToJoin.accountMembership[borrower] = true;
         accountAssets[borrower].push(cToken);
         
-        if (!users[borrower]) {
-            allUsers.push(borrower);
-            users[borrower] = true;
+        if (!borrowers[borrower]) {
+            allBorrowers.push(borrower);
+            borrowers[borrower] = true;
+            borrowerIndexes[borrower] = allBorrowers.length - 1;
         }
 
         emit MarketEntered(cToken, borrower);
@@ -223,6 +224,14 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         CToken[] storage storedList = accountAssets[msg.sender];
         storedList[assetIndex] = storedList[storedList.length - 1];
         storedList.length--;
+
+        // copy last item in list to location of item to be removed, reduce length by 1
+        if (storedList.length == 0) {
+            address[] storage storedList2 = borrowers;
+            storedList2[borrowerIndexes[msg.sender]] = storedList2[storedList2.length - 1];
+            storedList2.length--;
+            borrowers[msg.sender] = false;
+        }
 
         emit MarketExited(cToken, msg.sender);
 
@@ -1074,7 +1083,12 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         return allMarkets;
     }
 
-    function getAllUsers() public view returns (address[] memory) {
-        return allUsers;
+    /**
+     * @notice Return all of the borrowers
+     * @dev The automatic getter may be used to access an individual borrower.
+     * @return The list of borrower account addresses
+     */
+    function getAllBorrowers() public view returns (address[] memory) {
+        return allBorrowers;
     }
 }
