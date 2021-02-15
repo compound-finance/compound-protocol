@@ -31,7 +31,7 @@ contract CErc20Immutable is CErc20 {
         admin = msg.sender;
 
         // Initialize the market
-        initialize(underlying_, comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
+        initialize(underlying_, comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, 0, 0);
 
         // Set the proper admin now that initialization is done
         admin = admin_;

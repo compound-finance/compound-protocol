@@ -30,7 +30,9 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
                 uint8 decimals_,
                 address payable admin_,
                 address implementation_,
-                bytes memory becomeImplementationData) public {
+                bytes memory becomeImplementationData,
+                uint256 reserveFactorMantissa_,
+                uint256 adminFeeMantissa_) public {
         // Creator of the contract is admin during initialization
         admin = msg.sender;
 
@@ -42,7 +44,9 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
                                                             initialExchangeRateMantissa_,
                                                             name_,
                                                             symbol_,
-                                                            decimals_));
+                                                            decimals_,
+                                                            reserveFactorMantissa_,
+                                                            adminFeeMantissa_));
 
         // New implementations always get set via the settor (post-initialize)
         _setImplementation(implementation_, false, becomeImplementationData);

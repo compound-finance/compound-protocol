@@ -29,7 +29,7 @@ contract CEtherImmutable is CEther {
         admin = msg.sender;
 
         // Initialize the market
-        initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
+        initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, 0, 0);
 
         // Set the proper admin now that initialization is done
         admin = admin_;

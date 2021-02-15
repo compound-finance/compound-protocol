@@ -28,7 +28,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
                         uint initialExchangeRateMantissa_,
                         string memory name_,
                         string memory symbol_,
-                        uint8 decimals_) public {
+                        uint8 decimals_,
+                        uint256 reserveFactorMantissa_,
+                        uint256 adminFeeMantissa_) public {
         require(msg.sender == admin, "only admin may initialize the market");
         require(accrualBlockNumber == 0 && borrowIndex == 0, "market may only be initialized once");
 
@@ -51,6 +53,14 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         name = name_;
         symbol = symbol_;
         decimals = decimals_;
+
+        // Set reserve factor
+        err = _setReserveFactorFresh(reserveFactorMantissa_);
+        require(err == uint(Error.NO_ERROR), "setting reserve factor failed");
+
+        // Set admin fee
+        err = _setAdminFeeFresh(adminFeeMantissa_);
+        require(err == uint(Error.NO_ERROR), "setting admin fee failed");
 
         // Set Fuse fee
         err = _setFuseFeeFresh(getPendingFuseFeeFromAdmin());
