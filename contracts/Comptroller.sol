@@ -1002,6 +1002,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
 
         markets[address(cToken)] = Market({isListed: true, collateralFactorMantissa: 0});
         allMarkets.push(cToken);
+        cTokensByUnderlying[cToken.isCEther() ? address(0) : CErc20(cToken).underlying()] = cToken;
         emit MarketListed(cToken);
 
         return uint(Error.NO_ERROR);

@@ -91,6 +91,9 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
     /// @notice A list of all borrowers who have entered markets
     address[] public allBorrowers;
 
+    /// @notice All cTokens addresses mapped by their underlying token addresses
+    mapping(address => CToken) public cTokensByUnderlying;
+
 
     /**
      * @notice The Pause Guardian can pause certain actions as a safety mechanism.
