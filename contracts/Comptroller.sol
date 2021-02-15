@@ -49,6 +49,11 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     event NewMaxAssets(uint oldMaxAssets, uint newMaxAssets);
 
     /**
+     * @notice Emitted when min borrow (ETH) is changed
+     */
+    event NewMinBorrow(uint oldMinBorrowEth, uint newMinBorrowEth);
+
+    /**
      * @notice Emitted when price oracle is changed
      */
     event NewPriceOracle(PriceOracle oldPriceOracle, PriceOracle newPriceOracle);
@@ -351,6 +356,8 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
+
+        require(borrowAmount.mul(oracle.getUnderlyingPrice(cToken)) >= minBorrowEth, "borrow amount less than min borrow");
 
         // *may include Policy Hook-type checks
 
@@ -832,6 +839,29 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     }
 
     /*** Admin Functions ***/
+
+    /**
+      * @notice Sets a new min borrow (ETH) for the comptroller
+      * @dev Admin function to set a new min borrow (ETH)
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
+    function _setMinBorrow(uint newMinBorrowEth) public returns (uint) {
+        // Check caller is admin
+        if (msg.sender != admin) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_MIN_BORROW_OWNER_CHECK);
+        }
+
+        // Track the old oracle for the comptroller
+        uint oldMinBorrowEth = minBorrowEth;
+
+        // Set comptroller's oracle to newOracle
+        minBorrowEth = newMinBorrowEth;
+
+        // Emit NewMinBorrow(oldMinBorrowEth, newMinBorrowEth);
+        emit NewMinBorrow(oldMinBorrowEth, newMinBorrowEth);
+
+        return uint(Error.NO_ERROR);
+    }
 
     /**
       * @notice Sets a new price oracle for the comptroller
