@@ -39,7 +39,8 @@ describe('CToken', function () {
 
       await send(cToken.comptroller, 'setTransferAllowed', [true])
       await send(cToken.comptroller, 'setTransferVerify', [false])
-      await expect(send(cToken, 'transfer', [accounts[0], 50])).rejects.toRevert("revert transferVerify rejected transfer");
+      // no longer support verifyTransfer on cToken end
+      // await expect(send(cToken, 'transfer', [accounts[0], 50])).rejects.toRevert("revert transferVerify rejected transfer");
     });
   });
 });

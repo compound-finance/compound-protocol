@@ -351,7 +351,7 @@ describe('Flywheel', () => {
       expect(a3Accrued1).toEqualNumber(a2Accrued2.minus(a2Accrued1));
 
       expect(txT1.gasUsed).toBeLessThan(200000);
-      expect(txT1.gasUsed).toBeGreaterThan(150000);
+      expect(txT1.gasUsed).toBeGreaterThan(140000);
       expect(txT2.gasUsed).toBeLessThan(150000);
       expect(txT2.gasUsed).toBeGreaterThan(100000);
     });

@@ -327,6 +327,15 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
         return abi.decode(data, (uint));
     }
 
+    /**
+     * @notice A public function to sweep accidental ERC-20 transfers to this contract. Tokens are sent to admin (timelock)
+     * @param token The address of the ERC-20 token to sweep
+     */
+    function sweepToken(EIP20NonStandardInterface token) external {
+        delegateToImplementation(abi.encodeWithSignature("sweepToken(address)", token));
+    }
+
+
     /*** Admin Functions ***/
 
     /**

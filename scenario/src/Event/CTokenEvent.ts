@@ -289,6 +289,18 @@ async function setComptroller(world: World, from: string, cToken: CToken, comptr
   return world;
 }
 
+async function sweepToken(world: World, from: string, cToken: CToken, token: string): Promise<World> {
+  let invokation = await invoke(world, cToken.methods.sweepToken(token), from, CTokenErrorReporter);
+
+  world = addAction(
+    world,
+    `Swept ERC-20 at ${token} to admin`,
+    invokation
+  );
+
+  return world;
+}
+
 async function becomeImplementation(
   world: World,
   from: string,
@@ -734,6 +746,20 @@ export function cTokenCommands() {
         new Arg("interestRateModel", getAddressV)
       ],
       (world, from, { cToken, interestRateModel }) => setInterestRateModel(world, from, cToken, interestRateModel.val),
+      { namePos: 1 }
+    ),
+    new Command<{ cToken: CToken, token: AddressV }>(`
+        #### SweepToken
+
+        * "CToken <cToken> SweepToken erc20Token:<Contract>" - Sweeps the given erc-20 token from the contract
+          * E.g. "CToken cZRX SweepToken BAT"
+      `,
+      "SweepToken",
+      [
+        new Arg("cToken", getCTokenV),
+        new Arg("token", getAddressV)
+      ],
+      (world, from, { cToken, token }) => sweepToken(world, from, cToken, token.val),
       { namePos: 1 }
     ),
     new Command<{ cToken: CToken, comptroller: AddressV }>(`

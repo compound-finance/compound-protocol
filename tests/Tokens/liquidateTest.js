@@ -131,7 +131,7 @@ describe('CToken', function () {
       ).rejects.toRevert("revert token seizure failed");
     });
 
-    it("reverts if liquidateBorrowVerify fails", async() => {
+    xit("reverts if liquidateBorrowVerify fails", async() => {
       await send(cToken.comptroller, 'setLiquidateBorrowVerify', [false]);
       await expect(
         liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral)
