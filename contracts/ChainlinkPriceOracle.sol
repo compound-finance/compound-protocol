@@ -33,6 +33,12 @@ interface AggregatorV3Interface {
         );
 }
 
+/**
+ * @title PreferredPriceOracle
+ * @notice Returns prices from Chainlink.
+ * @dev Implements `PriceOracle`.
+ * @author David Lucid <david@rari.capital>
+ */
 contract ChainlinkPriceOracle is PriceOracle {
     /**
      * @notice Maps ERC20 token addresses to Chainlink price feed contracts.
@@ -92,17 +98,22 @@ contract ChainlinkPriceOracle is PriceOracle {
      * @dev Returns the price in ETH of the token underlying `cToken` (implements `PriceOracle`).
      */
     function getUnderlyingPrice(CToken cToken) external view returns (uint) {
-        if (cToken.isCEther() || CErc20(address(cToken)).underlying() == 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2) {
-            // Return 1e18 for ETH or WETH
-            return 1e18;
-        } else {
-            // Get token/ETH price from Chainlink
-            address underlying = CErc20(address(cToken)).underlying();
-            (, int256 price, , uint256 updatedAt, ) = priceFeeds[underlying].latestRoundData();
-            if (maxSecondsBeforePriceIsStale > 0) require(block.timestamp <= updatedAt + maxSecondsBeforePriceIsStale, "Chainlink price is stale.");
-            uint256 underlyingDecimals = uint256(EIP20Interface(underlying).decimals());
-            return price >= 0 ? (underlyingDecimals <= 18 ? mul(uint256(price), 10 ** (18 - underlyingDecimals)) : uint256(price) / (10 ** (underlyingDecimals - 18))) : 0;
-        }
+        // Return 1e18 for ETH
+        if (cToken.isCEther()) return 1e18;
+
+        // Get underlying ERC20 token address
+        address underlying = address(CErc20(address(cToken)).underlying());
+
+        // Return 1e18 for WETH
+        if (underlying == 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2) return 1e18;
+
+        // Get token/ETH price from Chainlink
+        address underlying = CErc20(address(cToken)).underlying();
+        require(priceFeeds[underlying] != address(0), "No Chainlink price feed found for this underlying ERC20 token.");
+        (, int256 price, , uint256 updatedAt, ) = priceFeeds[underlying].latestRoundData();
+        if (maxSecondsBeforePriceIsStale > 0) require(block.timestamp <= updatedAt + maxSecondsBeforePriceIsStale, "Chainlink price is stale.");
+        uint256 underlyingDecimals = uint256(EIP20Interface(underlying).decimals());
+        return price >= 0 ? (underlyingDecimals <= 18 ? mul(uint256(price), 10 ** (18 - underlyingDecimals)) : uint256(price) / (10 ** (underlyingDecimals - 18))) : 0;
     }
 
     /// @dev Overflow proof multiplication
