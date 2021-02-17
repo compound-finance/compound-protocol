@@ -31,7 +31,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
                         uint8 decimals_,
                         uint256 reserveFactorMantissa_,
                         uint256 adminFeeMantissa_) public {
-        require(msg.sender == admin, "only admin may initialize the market");
+        require(hasAdminRights(), "only admin may initialize the market");
         require(accrualBlockNumber == 0 && borrowIndex == 0, "market may only be initialized once");
 
         // Set initial exchange rate
@@ -1132,6 +1132,30 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
     /*** Admin Functions ***/
 
     /**
+      * @notice Renounce admin rights.
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
+    function _renounceAdminRights() external returns (uint) {
+        // Check caller = admin
+        if (!hasAdminRights()) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_ADMIN_RIGHTS_OWNER_CHECK);
+        }
+
+        // Check that rights have not already been renounced
+        if (!adminHasRights) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_ADMIN_RIGHTS_ALREADY_RENOUNCED);
+        }
+
+        // Store pendingAdmin with value newPendingAdmin
+        adminHasRights = false;
+
+        // Emit AdminRightsRenounced()
+        emit AdminRightsRenounced();
+
+        return uint(Error.NO_ERROR);
+    }
+
+    /**
       * @notice Begins transfer of admin rights. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
       * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
       * @param newPendingAdmin New pending admin.
@@ -1139,7 +1163,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
       */
     function _setPendingAdmin(address payable newPendingAdmin) external returns (uint) {
         // Check caller = admin
-        if (msg.sender != admin) {
+        if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PENDING_ADMIN_OWNER_CHECK);
         }
 
@@ -1189,7 +1213,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
       */
     function _setComptroller(ComptrollerInterface newComptroller) public returns (uint) {
         // Check caller is admin
-        if (msg.sender != admin) {
+        if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_COMPTROLLER_OWNER_CHECK);
         }
 
@@ -1228,7 +1252,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
       */
     function _setAdminFeeFresh(uint newAdminFeeMantissa) internal returns (uint) {
         // Check caller is admin
-        if (msg.sender != admin) {
+        if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_ADMIN_FEE_ADMIN_CHECK);
         }
 
@@ -1316,7 +1340,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
       */
     function _setReserveFactorFresh(uint newReserveFactorMantissa) internal returns (uint) {
         // Check caller is admin
-        if (msg.sender != admin) {
+        if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_RESERVE_FACTOR_ADMIN_CHECK);
         }
 
@@ -1426,7 +1450,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         uint totalReservesNew;
 
         // Check caller is admin
-        if (msg.sender != admin) {
+        if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.REDUCE_RESERVES_ADMIN_CHECK);
         }
 
@@ -1606,7 +1630,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         InterestRateModel oldInterestRateModel;
 
         // Check caller is admin
-        if (msg.sender != admin) {
+        if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_INTEREST_RATE_MODEL_OWNER_CHECK);
         }
 

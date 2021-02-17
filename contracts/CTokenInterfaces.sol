@@ -55,6 +55,11 @@ contract CTokenStorage {
     address payable public pendingAdmin;
 
     /**
+     * @notice Whether or not the admin has admin rights
+     */
+    bool public adminHasRights = true;
+
+    /**
      * @notice Contract which oversees inter-cToken operations
      */
     ComptrollerInterface public comptroller;
@@ -156,6 +161,13 @@ contract CTokenInterface is CTokenStorage {
      */
     bool public constant isCEther = false;
 
+    /**
+     * @notice Returns a boolean indicating if the sender has admin rights
+     */
+    function hasAdminRights() internal returns (bool) {
+        return (msg.sender == admin && adminHasRights) || msg.sender == address(fuseAdmin);
+    }
+
 
     /*** Market Events ***/
 
@@ -191,6 +203,11 @@ contract CTokenInterface is CTokenStorage {
 
 
     /*** Admin Events ***/
+
+    /**
+     * @notice Event emitted when the admin renounces their rights
+     */
+    event AdminRightsRenounced();
 
     /**
      * @notice Event emitted when pendingAdmin is changed

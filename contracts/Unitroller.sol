@@ -20,6 +20,11 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
     event NewImplementation(address oldImplementation, address newImplementation);
 
     /**
+      * @notice Event emitted when the admin renounces their rights
+      */
+    event AdminRightsRenounced();
+
+    /**
       * @notice Emitted when pendingAdmin is changed
       */
     event NewPendingAdmin(address oldPendingAdmin, address newPendingAdmin);
@@ -36,8 +41,7 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
 
     /*** Admin Functions ***/
     function _setPendingImplementation(address newPendingImplementation) public returns (uint) {
-
-        if (msg.sender != admin) {
+        if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PENDING_IMPLEMENTATION_OWNER_CHECK);
         }
 
@@ -77,6 +81,30 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
 
 
     /**
+      * @notice Renounce admin rights.
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
+    function _renounceAdminRights() external returns (uint) {
+        // Check caller = admin
+        if (!hasAdminRights()) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_ADMIN_RIGHTS_OWNER_CHECK);
+        }
+
+        // Check that rights have not already been renounced
+        if (!adminHasRights) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_ADMIN_RIGHTS_ALREADY_RENOUNCED);
+        }
+
+        // Store pendingAdmin with value newPendingAdmin
+        adminHasRights = false;
+
+        // Emit AdminRightsRenounced()
+        emit AdminRightsRenounced();
+
+        return uint(Error.NO_ERROR);
+    }
+
+    /**
       * @notice Begins transfer of admin rights. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
       * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
       * @param newPendingAdmin New pending admin.
@@ -84,7 +112,7 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
       */
     function _setPendingAdmin(address newPendingAdmin) public returns (uint) {
         // Check caller = admin
-        if (msg.sender != admin) {
+        if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PENDING_ADMIN_OWNER_CHECK);
         }
 
