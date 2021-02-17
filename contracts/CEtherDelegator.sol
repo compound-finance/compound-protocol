@@ -35,13 +35,13 @@ contract CEtherDelegator is CTokenInterface, CEtherInterface, CDelegatorInterfac
         admin = msg.sender;
 
         // First delegate gets to initialize the delegator (i.e. storage contract)
-        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,uint256,string,string,uint8)",
+        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,uint256,string,string,uint8,uint256,uint256)",
                                                             comptroller_,
                                                             interestRateModel_,
                                                             initialExchangeRateMantissa_,
                                                             name_,
                                                             symbol_,
-                                                            decimals_
+                                                            decimals_,
                                                             reserveFactorMantissa_,
                                                             adminFeeMantissa_));
 
