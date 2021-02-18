@@ -551,6 +551,13 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
             return (failOpaque(Error.MATH_ERROR, FailureInfo.MINT_EXCHANGE_RATE_READ_FAILED, uint(vars.mathErr)), 0);
         }
 
+        // Check max supply
+        (MathError mathErr, uint newUnderlyingBalance) = mulScalarTruncateAddUInt(Exp({mantissa: vars.exchangeRateMantissa}), accountTokens[minter], mintAmount);
+        if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
+        (MathError mathErr, uint newEthBalance) = mulScalarTruncate(Exp({mantissa: oracle.getUnderlyingPrice(CToken(cToken))}), newUnderlyingBalance);
+        if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
+        require(newEthBalance <= IFuseFeeDistributor(fuseAdmin).maxSupplyEth(), "new supply balance of sender greater than max supply");
+
         /////////////////////////
         // EFFECTS & INTERACTIONS
         // (No safe failures beyond this point)
@@ -787,6 +794,10 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         if (getCashPrior() < borrowAmount) {
             return fail(Error.TOKEN_INSUFFICIENT_CASH, FailureInfo.BORROW_CASH_NOT_AVAILABLE);
         }
+
+        // Check max utilization rate
+        uint256 utilizationRate = totalBorrows == 0 ? 0 : totalBorrows.mul(1e18).div(getCashPrior().add(totalBorrows).sub(totalReserves + totalFuseFees + totalAdminFees));
+        require(utilizationRate <= IFuseFeeDistributor(fuseAdmin).maxUtilizationRate(), "utilization rate greater than max");
 
         BorrowLocalVars memory vars;
 
