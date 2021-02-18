@@ -7,7 +7,7 @@ import "./CTokenInterfaces.sol";
  * @notice CTokens which wrap Ether and delegate to an implementation
  * @author Compound
  */
-contract CEtherDelegator is CTokenInterface, CEtherInterface, CDelegatorInterface {
+contract CEtherDelegator is CTokenAdminStorage, CDelegatorInterface {
     /**
      * @notice Construct a new CEther money market
      * @param comptroller_ The address of the Comptroller

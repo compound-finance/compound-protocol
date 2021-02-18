@@ -8,7 +8,31 @@ interface IFuseFeeDistributor {
     function () external payable;
 }
 
-contract CTokenStorage {
+contract CTokenAdminStorage {
+    /**
+     * @notice Administrator for Fuse
+     */
+    IFuseFeeDistributor internal constant fuseAdmin = IFuseFeeDistributor(0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6);
+
+    /**
+     * @notice Administrator for this contract
+     */
+    address payable public admin;
+
+    /**
+     * @notice Whether or not the admin has admin rights
+     */
+    bool public adminHasRights = true;
+
+    /**
+     * @notice Returns a boolean indicating if the sender has admin rights
+     */
+    function hasAdminRights() internal view returns (bool) {
+        return (msg.sender == admin && adminHasRights) || msg.sender == address(fuseAdmin);
+    }
+}
+
+contract CTokenStorage is CTokenAdminStorage {
     /**
      * @dev Guard variable for re-entrancy checks
      */
@@ -40,24 +64,9 @@ contract CTokenStorage {
     uint internal constant reserveFactorPlusFeesMaxMantissa = 1e18;
 
     /**
-     * @notice Administrator for Fuse
-     */
-    IFuseFeeDistributor internal constant fuseAdmin = IFuseFeeDistributor(0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6);
-
-    /**
-     * @notice Administrator for this contract
-     */
-    address payable public admin;
-
-    /**
      * @notice Pending administrator for this contract
      */
     address payable public pendingAdmin;
-
-    /**
-     * @notice Whether or not the admin has admin rights
-     */
-    bool public adminHasRights = true;
 
     /**
      * @notice Contract which oversees inter-cToken operations
@@ -160,13 +169,6 @@ contract CTokenInterface is CTokenStorage {
      * @notice Indicator that this is or is not a CEther contract (for inspection)
      */
     bool public constant isCEther = false;
-
-    /**
-     * @notice Returns a boolean indicating if the sender has admin rights
-     */
-    function hasAdminRights() internal view returns (bool) {
-        return (msg.sender == admin && adminHasRights) || msg.sender == address(fuseAdmin);
-    }
 
 
     /*** Market Events ***/

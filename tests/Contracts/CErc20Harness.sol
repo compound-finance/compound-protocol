@@ -278,14 +278,6 @@ contract CErc20DelegatorScenario is CErc20Delegator {
     becomeImplementationData,
     0,
     0) public {}
-
-    function setTotalBorrows(uint totalBorrows_) public {
-        totalBorrows = totalBorrows_;
-    }
-
-    function setTotalReserves(uint totalReserves_) public {
-        totalReserves = totalReserves_;
-    }
 }
 
 contract CErc20DelegateHarness is CErc20Delegate {
