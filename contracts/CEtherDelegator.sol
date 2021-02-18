@@ -103,34 +103,9 @@ contract CEtherDelegator is CTokenAdminStorage, CDelegatorInterface {
     /**
      * @notice Delegates execution to an implementation contract
      * @dev It returns to the external caller whatever the implementation returns or forwards reverts
-     *  There are an additional 2 prefix uints from the wrapper returndata, which we ignore since we make an extra hop.
-     * @param data The raw data to delegatecall
-     * @return The returned bytes from the delegatecall
      */
-    function delegateToViewImplementation(bytes memory data) public view returns (bytes memory) {
-        (bool success, bytes memory returnData) = address(this).staticcall(abi.encodeWithSignature("delegateToImplementation(bytes)", data));
-        assembly {
-            if eq(success, 0) {
-                revert(add(returnData, 0x20), returndatasize)
-            }
-        }
-        return abi.decode(returnData, (bytes));
-    }
-
-    function delegateToViewAndReturn() private view returns (bytes memory) {
-        (bool success, ) = address(this).staticcall(abi.encodeWithSignature("delegateToImplementation(bytes)", msg.data));
-
-        assembly {
-            let free_mem_ptr := mload(0x40)
-            returndatacopy(free_mem_ptr, 0, returndatasize)
-
-            switch success
-            case 0 { revert(free_mem_ptr, returndatasize) }
-            default { return(add(free_mem_ptr, 0x40), returndatasize) }
-        }
-    }
-
-    function delegateAndReturn() private returns (bytes memory) {
+    function () external payable {
+        // delegate all other functions to current implementation
         (bool success, ) = implementation.delegatecall(msg.data);
 
         assembly {
@@ -141,14 +116,5 @@ contract CEtherDelegator is CTokenAdminStorage, CDelegatorInterface {
             case 0 { revert(free_mem_ptr, returndatasize) }
             default { return(free_mem_ptr, returndatasize) }
         }
-    }
-
-    /**
-     * @notice Delegates execution to an implementation contract
-     * @dev It returns to the external caller whatever the implementation returns or forwards reverts
-     */
-    function () external payable {
-        // delegate all other functions to current implementation
-        delegateAndReturn();
     }
 }
