@@ -933,7 +933,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
       * @param newCollateralFactorMantissa The new collateral factor, scaled by 1e18
       * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
       */
-    function _setCollateralFactor(CToken cToken, uint newCollateralFactorMantissa) external returns (uint256) {
+    function _setCollateralFactor(CToken cToken, uint newCollateralFactorMantissa) public returns (uint256) {
         // Check caller is admin
         if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_COLLATERAL_FACTOR_OWNER_CHECK);
@@ -1029,7 +1029,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
       * @param cToken The address of the market (token) to list
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
-    function _supportMarket(CToken cToken) external returns (uint) {
+    function _supportMarket(CToken cToken) public returns (uint) {
         if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SUPPORT_MARKET_OWNER_CHECK);
         }
@@ -1046,6 +1046,18 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         emit MarketListed(cToken);
 
         return uint(Error.NO_ERROR);
+    }
+
+    /**
+      * @notice Add the market to the markets mapping and set it as listed and set the collateral factor
+      * @dev Admin function to set isListed and add support for the market and set the collateral factor
+      * @param cToken The address of the market (token) to list
+      * @param newCollateralFactorMantissa The new collateral factor, scaled by 1e18
+      * @return uint 0=success, otherwise a failure. (See enum Error for details)
+      */
+    function _supportMarketAndSetCollateralFactor(CToken cToken, uint newCollateralFactorMantissa) external returns (uint) {
+        uint256 err = _supportMarket(cToken);
+        return err == uint(Error.NO_ERROR) ? _setCollateralFactor(cToken, newCollateralFactorMantissa) : err;
     }
 
     /**
