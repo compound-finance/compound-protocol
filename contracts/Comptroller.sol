@@ -30,6 +30,11 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     event MarketExited(CToken cToken, address account);
 
     /**
+     * @notice Emitted when `enforceWhitelist` is changed
+     */
+    event WhitelistEnforcementChanged(bool enforce);
+
+    /**
      * @notice Emitted when close factor is changed by admin
      */
     event NewCloseFactor(uint oldCloseFactorMantissa, uint newCloseFactorMantissa);
@@ -263,8 +268,14 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         minter;
         mintAmount;
 
+        // Make sure market is listed
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
+        }
+
+        // Make sure minter is whitelisted
+        if (enforceWhitelist && !whitelist[minter]) {
+            return uint(Error.SUPPLIER_NOT_WHITELISTED);
         }
 
         // *may include Policy Hook-type checks
@@ -849,6 +860,48 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     }
 
     /*** Admin Functions ***/
+
+    /**
+      * @notice Sets the whitelist enforcement for the comptroller
+      * @dev Admin function to set a new whitelist enforcement boolean
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
+    function _setWhitelistEnforcement(bool enforce) external returns (uint) {
+        // Check caller is admin
+        if (!hasAdminRights()) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_WHITELIST_ENFORCEMENT_OWNER_CHECK);
+        }
+
+        // Check if `enforceWhitelist` already equals `enforce`
+        if (enforceWhitelist == enforce) {
+            return uint(Error.NO_ERROR);
+        }
+
+        // Set comptroller's `enforceWhitelist` to `enforce`
+        enforceWhitelist = enforce;
+
+        // Emit NewMinBorrow(oldMinBorrowEth, newMinBorrowEth);
+        emit WhitelistEnforcementChanged(enforce);
+
+        return uint(Error.NO_ERROR);
+    }
+
+    /**
+      * @notice Sets the whitelist status for `supplier`
+      * @dev Admin function to set a the whitelist status for `supplier`
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
+    function _setWhitelistStatus(address supplier, bool status) external returns (uint) {
+        // Check caller is admin
+        if (!hasAdminRights()) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_WHITELIST_STATUS_OWNER_CHECK);
+        }
+
+        // Set comptroller's `enforceWhitelist` to `enforce`
+        whitelist[supplier] = status;
+
+        return uint(Error.NO_ERROR);
+    }
 
     /**
       * @notice Sets a new min borrow (ETH) for the comptroller

@@ -119,8 +119,14 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
     /// @notice All cTokens addresses mapped by their underlying token addresses
     mapping(address => CToken) public cTokensByUnderlying;
 
-    /// @notice All cTokens addresses mapped by their underlying token addresses
+    /// @notice The minimum borrow amount in terms of ETH
     uint256 public minBorrowEth;
+
+    /// @notice Whether or not the supplier whitelist is enforced
+    bool public enforceWhitelist;
+
+    /// @notice Maps addresses to booleans indicating if they are allowed to supply assets (i.e., mint cTokens)
+    mapping(address => bool) public whitelist;
 
 
     /**
