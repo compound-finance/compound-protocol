@@ -1132,6 +1132,30 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
     /*** Admin Functions ***/
 
     /**
+      * @notice Renounce the Fuse admin rights.
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
+    function _renounceFuseAdminRights() external returns (uint) {
+        // Check caller = admin
+        if (!hasAdminRights()) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_FUSE_ADMIN_RIGHTS_OWNER_CHECK);
+        }
+
+        // Check that rights have not already been renounced
+        if (!fuseAdminHasRights) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_FUSE_ADMIN_RIGHTS_ALREADY_RENOUNCED);
+        }
+
+        // Set fuseAdminHasRights to false
+        fuseAdminHasRights = false;
+
+        // Emit FuseAdminRightsRenounced()
+        emit FuseAdminRightsRenounced();
+
+        return uint(Error.NO_ERROR);
+    }
+
+    /**
       * @notice Renounce admin rights.
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
@@ -1146,7 +1170,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
             return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_ADMIN_RIGHTS_ALREADY_RENOUNCED);
         }
 
-        // Store pendingAdmin with value newPendingAdmin
+        // Set adminHasRights to false
         adminHasRights = false;
 
         // Emit AdminRightsRenounced()

@@ -20,6 +20,11 @@ contract CTokenAdminStorage {
     address payable public admin;
 
     /**
+     * @notice Whether or not the Fuse admin has admin rights
+     */
+    bool public fuseAdminHasRights = true;
+
+    /**
      * @notice Whether or not the admin has admin rights
      */
     bool public adminHasRights = true;
@@ -205,6 +210,11 @@ contract CTokenInterface is CTokenStorage {
 
 
     /*** Admin Events ***/
+
+    /**
+     * @notice Event emitted when the Fuse admin renounces their rights
+     */
+    event FuseAdminRightsRenounced();
 
     /**
      * @notice Event emitted when the admin renounces their rights

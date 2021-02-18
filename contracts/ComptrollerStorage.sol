@@ -15,6 +15,11 @@ contract UnitrollerAdminStorage {
     address public pendingAdmin;
 
     /**
+     * @notice Whether or not the Fuse admin has admin rights
+     */
+    bool public fuseAdminHasRights = true;
+
+    /**
      * @notice Whether or not the admin has admin rights
      */
     bool public adminHasRights = true;
