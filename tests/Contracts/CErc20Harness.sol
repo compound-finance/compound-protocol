@@ -275,7 +275,9 @@ contract CErc20DelegatorScenario is CErc20Delegator {
     decimals_,
     admin_,
     implementation_,
-    becomeImplementationData) public {}
+    becomeImplementationData,
+    0,
+    0) public {}
 
     function setTotalBorrows(uint totalBorrows_) public {
         totalBorrows = totalBorrows_;

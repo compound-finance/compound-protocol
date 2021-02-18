@@ -1,6 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "./CToken.sol";
+import "./CErc20.sol";
 import "./ErrorReporter.sol";
 import "./Exponential.sol";
 import "./PriceOracle.sol";
@@ -231,9 +232,10 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         storedList[assetIndex] = storedList[storedList.length - 1];
         storedList.length--;
 
-        // copy last item in list to location of item to be removed, reduce length by 1
+        // If the user has exited all markets, remove them from the `allBorrowers` array
         if (storedList.length == 0) {
-            address[] storage storedList2 = borrowers;
+            // copy last item in list to location of item to be removed, reduce length by 1
+            address[] storage storedList2 = allBorrowers;
             storedList2[borrowerIndexes[msg.sender]] = storedList2[storedList2.length - 1];
             storedList2.length--;
             borrowers[msg.sender] = false;
@@ -357,11 +359,15 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         // Pausing is a very serious situation - we revert to sound the alarms
         require(!borrowGuardianPaused[cToken], "borrow is paused");
 
+        // Make sure market is listed
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
-        require(borrowAmount.mul(oracle.getUnderlyingPrice(cToken)) >= minBorrowEth, "borrow amount less than min borrow");
+        // Check min borrow
+        (MathError mathErr, uint borrowAmountEth) = mulScalarTruncate(Exp({mantissa: oracle.getUnderlyingPrice(CToken(cToken))}), borrowAmount);
+        if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
+        require(borrowAmountEth >= minBorrowEth, "borrow amount less than min borrow");
 
         // *may include Policy Hook-type checks
 
@@ -1036,7 +1042,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
 
         markets[address(cToken)] = Market({isListed: true, collateralFactorMantissa: 0});
         allMarkets.push(cToken);
-        cTokensByUnderlying[cToken.isCEther() ? address(0) : CErc20(cToken).underlying()] = cToken;
+        cTokensByUnderlying[cToken.isCEther() ? address(0) : CErc20(address(cToken)).underlying()] = cToken;
         emit MarketListed(cToken);
 
         return uint(Error.NO_ERROR);

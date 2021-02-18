@@ -22,7 +22,7 @@ contract UnitrollerAdminStorage {
     /**
      * @notice Returns a boolean indicating if the sender has admin rights
      */
-    function hasAdminRights() internal returns (bool) {
+    function hasAdminRights() internal view returns (bool) {
         return (msg.sender == admin && adminHasRights) || msg.sender == 0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6;
     }
 
@@ -102,6 +102,9 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
 
     /// @notice A list of all borrowers who have entered markets
     address[] public allBorrowers;
+
+    /// @notice Indexes of borrower account addresses in the `borrowers` array
+    mapping(address => uint256) public borrowerIndexes;
 
     /**
      * @dev Maps suppliers to booleans indicating if they have ever supplied to any markets

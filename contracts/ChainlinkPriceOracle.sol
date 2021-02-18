@@ -108,8 +108,7 @@ contract ChainlinkPriceOracle is PriceOracle {
         if (underlying == 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2) return 1e18;
 
         // Get token/ETH price from Chainlink
-        address underlying = CErc20(address(cToken)).underlying();
-        require(priceFeeds[underlying] != address(0), "No Chainlink price feed found for this underlying ERC20 token.");
+        require(address(priceFeeds[underlying]) != address(0), "No Chainlink price feed found for this underlying ERC20 token.");
         (, int256 price, , uint256 updatedAt, ) = priceFeeds[underlying].latestRoundData();
         if (maxSecondsBeforePriceIsStale > 0) require(block.timestamp <= updatedAt + maxSecondsBeforePriceIsStale, "Chainlink price is stale.");
         uint256 underlyingDecimals = uint256(EIP20Interface(underlying).decimals());

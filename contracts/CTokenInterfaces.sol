@@ -164,7 +164,7 @@ contract CTokenInterface is CTokenStorage {
     /**
      * @notice Returns a boolean indicating if the sender has admin rights
      */
-    function hasAdminRights() internal returns (bool) {
+    function hasAdminRights() internal view returns (bool) {
         return (msg.sender == admin && adminHasRights) || msg.sender == address(fuseAdmin);
     }
 
