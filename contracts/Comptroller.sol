@@ -165,6 +165,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         marketToJoin.accountMembership[borrower] = true;
         accountAssets[borrower].push(cToken);
         
+        // Add to allBorrowers
         if (!borrowers[borrower]) {
             allBorrowers.push(borrower);
             borrowers[borrower] = true;
@@ -287,6 +288,9 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         if (false) {
             maxAssets = maxAssets;
         }
+
+        // Add minter to suppliers mapping
+        suppliers[minter] = true;
     }
 
     /**

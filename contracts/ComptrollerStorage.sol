@@ -103,6 +103,11 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
     /// @notice A list of all borrowers who have entered markets
     address[] public allBorrowers;
 
+    /**
+     * @dev Maps suppliers to booleans indicating if they have ever supplied to any markets
+     */
+    mapping(address => bool) public suppliers;
+
     /// @notice All cTokens addresses mapped by their underlying token addresses
     mapping(address => CToken) public cTokensByUnderlying;
 
