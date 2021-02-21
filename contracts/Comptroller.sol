@@ -376,11 +376,11 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Check min borrow
-        (MathError mathErr, uint borrowBalance) = borrowBalanceStoredInternal(account);
+        (MathError mErr, uint borrowBalance) = CToken(cToken).borrowBalanceStored(account);
         if (mErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
-        (mathErr, borrowBalance) = addUInt(borrowBalance, borrowAmount);
+        (mErr, borrowBalance) = addUInt(borrowBalance, borrowAmount);
         if (mErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
-        (mathErr, uint borrowBalanceEth) = mulScalarTruncate(Exp({mantissa: oracle.getUnderlyingPrice(CToken(cToken))}), borrowBalance);
+        (MathError mathErr, uint borrowBalanceEth) = mulScalarTruncate(Exp({mantissa: oracle.getUnderlyingPrice(CToken(cToken))}), borrowBalance);
         if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
         require(borrowBalanceEth >= minBorrowEth && borrowBalanceEth >= IFuseFeeDistributor(fuseAdmin).minBorrowEth(), "borrow amount less than min borrow");
 
