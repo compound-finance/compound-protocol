@@ -812,6 +812,108 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
+     * @notice Determine the maximum redeem amount of a cToken
+     * @param cTokenModify The market to hypothetically redeem in
+     * @param account The account to determine liquidity for
+     * @dev Note that we calculate the exchangeRateStored for each collateral cToken using stored data,
+     *  without calculating accumulated interest.
+     * @return (possible error code,
+                maximum redeem amount)
+     */
+    function getMaxRedeem(address account, CToken cTokenModify) external view returns (uint, uint) {
+        (Error err, uint maxRedeem) = _getMaxRedeemOrBorrow(account, cTokenModify, false);
+        return (uint(err), maxRedeem);
+    }
+
+    /**
+     * @notice Determine the maximum borrow amount of a cToken
+     * @param cTokenModify The market to hypothetically borrow in
+     * @param account The account to determine liquidity for
+     * @dev Note that we calculate the exchangeRateStored for each collateral cToken using stored data,
+     *  without calculating accumulated interest.
+     * @return (possible error code,
+                maximum borrow amount)
+     */
+    function getMaxBorrow(address account, CToken cTokenModify) external view returns (uint, uint) {
+        (Error err, uint maxBorrow) = _getMaxRedeemOrBorrow(account, cTokenModify, true);
+        return (uint(err), maxBorrow);
+    }
+
+    /**
+     * @notice Determine the maximum borrow/redeem amount of a cToken
+     * @param cTokenModify The market to hypothetically borrow/redeem in
+     * @param account The account to determine liquidity for
+     * @dev Note that we calculate the exchangeRateStored for each collateral cToken using stored data,
+     *  without calculating accumulated interest.
+     * @return (possible error code,
+                maximum borrow/redeem amount)
+     */
+    function _getMaxRedeemOrBorrow(address account, CToken cTokenModify, bool isBorrow) internal view returns (Error, uint) {
+        Exp memory cTokenModifyOraclePrice;
+        Exp memory cTokenModifyTokensToEther;
+
+        // THE FOLLOWING CODE IS COPIED FROM getHypotheticalAccountLiquidityInternal
+        AccountLiquidityLocalVars memory vars; // Holds all our calculation results
+        uint oErr;
+        MathError mErr;
+
+        // For each asset the account is in
+        CToken[] memory assets = accountAssets[account];
+        for (uint i = 0; i < assets.length; i++) {
+            CToken asset = assets[i];
+
+            // Read the balances and exchange rate from the cToken
+            (oErr, vars.cTokenBalance, vars.borrowBalance, vars.exchangeRateMantissa) = asset.getAccountSnapshot(account);
+            if (oErr != 0) { // semi-opaque error code, we assume NO_ERROR == 0 is invariant between upgrades
+                return (Error.SNAPSHOT_ERROR, 0);
+            }
+            vars.collateralFactor = Exp({mantissa: markets[address(asset)].collateralFactorMantissa});
+            vars.exchangeRate = Exp({mantissa: vars.exchangeRateMantissa});
+
+            // Get the normalized price of the asset
+            vars.oraclePriceMantissa = oracle.getUnderlyingPrice(asset);
+            if (vars.oraclePriceMantissa == 0) {
+                return (Error.PRICE_ERROR, 0);
+            }
+            vars.oraclePrice = Exp({mantissa: vars.oraclePriceMantissa});
+
+            // Pre-compute a conversion factor from tokens -> ether (normalized price value)
+            (mErr, vars.tokensToEther) = mulExp3(vars.collateralFactor, vars.exchangeRate, vars.oraclePrice);
+            if (mErr != MathError.NO_ERROR) {
+                return (Error.MATH_ERROR, 0);
+            }
+
+            // sumCollateral += tokensToEther * cTokenBalance
+            (mErr, vars.sumCollateral) = mulScalarTruncateAddUInt(vars.tokensToEther, vars.cTokenBalance, vars.sumCollateral);
+            if (mErr != MathError.NO_ERROR) {
+                return (Error.MATH_ERROR, 0);
+            }
+
+            // sumBorrowPlusEffects += oraclePrice * borrowBalance
+            (mErr, vars.sumBorrowPlusEffects) = mulScalarTruncateAddUInt(vars.oraclePrice, vars.borrowBalance, vars.sumBorrowPlusEffects);
+            if (mErr != MathError.NO_ERROR) {
+                return (Error.MATH_ERROR, 0);
+            }
+
+            // Calculate effects of interacting with cTokenModify
+            if (asset == cTokenModify) {
+                cTokenModifyOraclePrice = vars.oraclePrice;
+                cTokenModifyTokensToEther = vars.tokensToEther;
+            }
+        }
+
+        // This is safe, as the underflow condition is checked first
+        if (vars.sumCollateral > vars.sumBorrowPlusEffects) {
+            Exp memory borrowOrRedeemAmount;
+            (mErr, borrowOrRedeemAmount) = divScalarByExp(vars.sumCollateral - vars.sumBorrowPlusEffects, isBorrow ? cTokenModifyOraclePrice : cTokenModifyTokensToEther);
+            if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
+            return (Error.NO_ERROR, borrowOrRedeemAmount.mantissa);
+        } else {
+            return (Error.NO_ERROR, 0); // Shortfall, so no more borrow/redeem
+        }
+    }
+
+    /**
      * @notice Calculate number of tokens of collateral asset to seize given an underlying amount
      * @dev Used in liquidation (called in cToken.liquidateBorrowFresh)
      * @param cTokenBorrowed The address of the borrowed cToken
