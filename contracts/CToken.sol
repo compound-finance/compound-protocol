@@ -1,12 +1,14 @@
 pragma solidity ^0.5.16;
 
 import "./ComptrollerInterface.sol";
+import "./ComptrollerStorage.sol";
 import "./CTokenInterfaces.sol";
 import "./ErrorReporter.sol";
 import "./Exponential.sol";
 import "./EIP20Interface.sol";
 import "./EIP20NonStandardInterface.sol";
 import "./InterestRateModel.sol";
+import "./SafeMath.sol";
 
 /**
  * @title Compound's CToken Contract
@@ -14,6 +16,8 @@ import "./InterestRateModel.sol";
  * @author Compound
  */
 contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
+    using SafeMath for uint;
+
     /**
      * @notice Initialize the money market
      * @param comptroller_ The address of the Comptroller
@@ -553,10 +557,11 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
 
         // Check max supply
         (MathError mathErr, uint newUnderlyingBalance) = mulScalarTruncateAddUInt(Exp({mantissa: vars.exchangeRateMantissa}), accountTokens[minter], mintAmount);
-        if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
-        (MathError mathErr, uint newEthBalance) = mulScalarTruncate(Exp({mantissa: oracle.getUnderlyingPrice(CToken(cToken))}), newUnderlyingBalance);
-        if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
-        require(newEthBalance <= IFuseFeeDistributor(fuseAdmin).maxSupplyEth(), "new supply balance of sender greater than max supply");
+        if (mathErr != MathError.NO_ERROR) return (failOpaque(Error.MATH_ERROR, FailureInfo.MINT_MAX_SUPPLY_VALIDATION_FAILED, uint(vars.mathErr)), 0);
+        uint newEthBalance;
+        (mathErr, newEthBalance) = mulScalarTruncate(Exp({mantissa: ComptrollerV1Storage(address(comptroller)).oracle().getUnderlyingPrice(this)}), newUnderlyingBalance);
+        if (mathErr != MathError.NO_ERROR) return (failOpaque(Error.MATH_ERROR, FailureInfo.MINT_MAX_SUPPLY_VALIDATION_FAILED, uint(vars.mathErr)), 0);
+        require(newEthBalance <= fuseAdmin.maxSupplyEth(), "new supply balance of sender greater than max supply");
 
         /////////////////////////
         // EFFECTS & INTERACTIONS
@@ -791,13 +796,15 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         }
 
         /* Fail gracefully if protocol has insufficient underlying cash */
-        if (getCashPrior() < borrowAmount) {
+        uint cashPrior = getCashPrior();
+
+        if (cashPrior < borrowAmount) {
             return fail(Error.TOKEN_INSUFFICIENT_CASH, FailureInfo.BORROW_CASH_NOT_AVAILABLE);
         }
 
         // Check max utilization rate
-        uint256 utilizationRate = totalBorrows == 0 ? 0 : totalBorrows.mul(1e18).div(getCashPrior().add(totalBorrows).sub(totalReserves + totalFuseFees + totalAdminFees));
-        require(utilizationRate <= IFuseFeeDistributor(fuseAdmin).maxUtilizationRate(), "utilization rate greater than max");
+        uint256 utilizationRate = totalBorrows == 0 ? 0 : totalBorrows.mul(1e18).div(cashPrior.add(totalBorrows).sub(totalReserves + totalFuseFees + totalAdminFees));
+        require(utilizationRate <= fuseAdmin.maxUtilizationRate(), "utilization rate greater than max");
 
         BorrowLocalVars memory vars;
 
@@ -820,6 +827,12 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         if (vars.mathErr != MathError.NO_ERROR) {
             return failOpaque(Error.MATH_ERROR, FailureInfo.BORROW_NEW_TOTAL_BALANCE_CALCULATION_FAILED, uint(vars.mathErr));
         }
+
+        // Check min borrow
+        uint borrowBalanceEth;
+        (vars.mathErr, borrowBalanceEth) = mulScalarTruncate(Exp({mantissa: ComptrollerV1Storage(address(comptroller)).oracle().getUnderlyingPrice(this)}), vars.accountBorrowsNew);
+        if (vars.mathErr != MathError.NO_ERROR) return failOpaque(Error.MATH_ERROR, FailureInfo.BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED, uint(vars.mathErr));
+        require(borrowBalanceEth >= ComptrollerV2Storage(address(comptroller)).minBorrowEth() && borrowBalanceEth >= fuseAdmin.minBorrowEth(), "borrow amount less than min borrow");
 
         /////////////////////////
         // EFFECTS & INTERACTIONS
@@ -1149,12 +1162,12 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
     function _renounceFuseAdminRights() external returns (uint) {
         // Check caller = admin
         if (!hasAdminRights()) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_FUSE_ADMIN_RIGHTS_OWNER_CHECK);
+            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_ADMIN_RIGHTS_OWNER_CHECK);
         }
 
         // Check that rights have not already been renounced
         if (!fuseAdminHasRights) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_FUSE_ADMIN_RIGHTS_ALREADY_RENOUNCED);
+            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_ADMIN_RIGHTS_ALREADY_RENOUNCED);
         }
 
         // Set fuseAdminHasRights to false
