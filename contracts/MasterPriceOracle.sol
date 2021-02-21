@@ -14,7 +14,7 @@ contract MasterPriceOracle is PriceOracle {
     /**
      * @dev Maps underlying token addresses to `PriceOracle` contracts.
      */
-    mapping(address => PriceOracle) oracles;
+    mapping(address => PriceOracle) public oracles;
 
     /**
      * @dev The administrator of this `MasterPriceOracle`.
@@ -30,10 +30,10 @@ contract MasterPriceOracle is PriceOracle {
      * @dev Constructor to initialize state variables.
      * @param underlyings The underlying ERC20 token addresses to link to `_oracles`.
      * @param _oracles The `PriceOracle` contracts to be assigned to `underlyings`.
-     * @param admin The admin who can assign oracles to underlying tokens.
-     * @param canAdminOverwrite Controls if `admin` can overwrite existing assignments of oracles to underlying tokens.
+     * @param _admin The admin who can assign oracles to underlying tokens.
+     * @param _canAdminOverwrite Controls if `admin` can overwrite existing assignments of oracles to underlying tokens.
      */
-    constructor (address[] underlyings, PriceOracle[] _oracles, address admin, bool canAdminOverwrite) public {
+    constructor (address[] memory underlyings, PriceOracle[] memory _oracles, address _admin, bool _canAdminOverwrite) public {
         // Input validation
         require(underlyings.length > 0 && underlyings.length == _oracles.length, "Lengths of both arrays must be equal and greater than 0.");
 
@@ -46,7 +46,7 @@ contract MasterPriceOracle is PriceOracle {
     /**
      * @dev Constructor to map RariFundTokens to RariFundManagers.
      */
-    function add(address[] underlyings, PriceOracle[] _oracles) external onlyAdmin {
+    function add(address[] calldata underlyings, PriceOracle[] calldata _oracles) external onlyAdmin {
         // Input validation
         require(underlyings.length > 0 && underlyings.length == _oracles.length, "Lengths of both arrays must be equal and greater than 0.");
 
@@ -76,6 +76,7 @@ contract MasterPriceOracle is PriceOracle {
      */
     modifier onlyAdmin {
         require(msg.sender == admin, "Sender is not the admin.");
+        _;
     }
 
     /**
