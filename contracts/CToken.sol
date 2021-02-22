@@ -1,7 +1,6 @@
 pragma solidity ^0.5.16;
 
 import "./ComptrollerInterface.sol";
-import "./ComptrollerStorage.sol";
 import "./CTokenInterfaces.sol";
 import "./ErrorReporter.sol";
 import "./Exponential.sol";
@@ -552,18 +551,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
             return (failOpaque(Error.MATH_ERROR, FailureInfo.MINT_EXCHANGE_RATE_READ_FAILED, uint(vars.mathErr)), 0);
         }
 
-        // Check max supply
-        uint maxSupplyEth = fuseAdmin.maxSupplyEth();
-
-        if (maxSupplyEth < uint(-1)) {
-            (MathError mathErr, uint newUnderlyingBalance) = mulScalarTruncateAddUInt(Exp({mantissa: vars.exchangeRateMantissa}), accountTokens[minter], mintAmount);
-            if (mathErr != MathError.NO_ERROR) return (failOpaque(Error.MATH_ERROR, FailureInfo.MINT_MAX_SUPPLY_VALIDATION_FAILED, uint(vars.mathErr)), 0);
-            uint newEthBalance;
-            (mathErr, newEthBalance) = mulScalarTruncate(Exp({mantissa: ComptrollerV1Storage(address(comptroller)).oracle().getUnderlyingPrice(this)}), newUnderlyingBalance);
-            if (mathErr != MathError.NO_ERROR) return (failOpaque(Error.MATH_ERROR, FailureInfo.MINT_MAX_SUPPLY_VALIDATION_FAILED, uint(vars.mathErr)), 0);
-            require(newEthBalance <= maxSupplyEth, "new supply balance of sender greater than max supply");
-        }
-
         /////////////////////////
         // EFFECTS & INTERACTIONS
         // (No safe failures beyond this point)
@@ -832,12 +819,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         if (vars.mathErr != MathError.NO_ERROR) {
             return failOpaque(Error.MATH_ERROR, FailureInfo.BORROW_NEW_TOTAL_BALANCE_CALCULATION_FAILED, uint(vars.mathErr));
         }
-
-        // Check min borrow
-        uint borrowBalanceEth;
-        (vars.mathErr, borrowBalanceEth) = mulScalarTruncate(Exp({mantissa: ComptrollerV1Storage(address(comptroller)).oracle().getUnderlyingPrice(this)}), vars.accountBorrowsNew);
-        if (vars.mathErr != MathError.NO_ERROR) return failOpaque(Error.MATH_ERROR, FailureInfo.BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED, uint(vars.mathErr));
-        require(borrowBalanceEth >= ComptrollerV2Storage(address(comptroller)).minBorrowEth() && borrowBalanceEth >= fuseAdmin.minBorrowEth(), "borrow amount less than min borrow");
 
         /////////////////////////
         // EFFECTS & INTERACTIONS
