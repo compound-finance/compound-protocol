@@ -553,12 +553,16 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         }
 
         // Check max supply
-        (MathError mathErr, uint newUnderlyingBalance) = mulScalarTruncateAddUInt(Exp({mantissa: vars.exchangeRateMantissa}), accountTokens[minter], mintAmount);
-        if (mathErr != MathError.NO_ERROR) return (failOpaque(Error.MATH_ERROR, FailureInfo.MINT_MAX_SUPPLY_VALIDATION_FAILED, uint(vars.mathErr)), 0);
-        uint newEthBalance;
-        (mathErr, newEthBalance) = mulScalarTruncate(Exp({mantissa: ComptrollerV1Storage(address(comptroller)).oracle().getUnderlyingPrice(this)}), newUnderlyingBalance);
-        if (mathErr != MathError.NO_ERROR) return (failOpaque(Error.MATH_ERROR, FailureInfo.MINT_MAX_SUPPLY_VALIDATION_FAILED, uint(vars.mathErr)), 0);
-        require(newEthBalance <= fuseAdmin.maxSupplyEth(), "new supply balance of sender greater than max supply");
+        uint maxSupplyEth = fuseAdmin.maxSupplyEth();
+
+        if (maxSupplyEth < uint(-1)) {
+            (MathError mathErr, uint newUnderlyingBalance) = mulScalarTruncateAddUInt(Exp({mantissa: vars.exchangeRateMantissa}), accountTokens[minter], mintAmount);
+            if (mathErr != MathError.NO_ERROR) return (failOpaque(Error.MATH_ERROR, FailureInfo.MINT_MAX_SUPPLY_VALIDATION_FAILED, uint(vars.mathErr)), 0);
+            uint newEthBalance;
+            (mathErr, newEthBalance) = mulScalarTruncate(Exp({mantissa: ComptrollerV1Storage(address(comptroller)).oracle().getUnderlyingPrice(this)}), newUnderlyingBalance);
+            if (mathErr != MathError.NO_ERROR) return (failOpaque(Error.MATH_ERROR, FailureInfo.MINT_MAX_SUPPLY_VALIDATION_FAILED, uint(vars.mathErr)), 0);
+            require(newEthBalance <= maxSupplyEth, "new supply balance of sender greater than max supply");
+        }
 
         /////////////////////////
         // EFFECTS & INTERACTIONS
@@ -800,8 +804,12 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         }
 
         // Check max utilization rate
-        uint256 utilizationRate = totalBorrows == 0 ? 0 : totalBorrows * 1e18 / (cashPrior + totalBorrows - (totalReserves + totalFuseFees + totalAdminFees));
-        require(utilizationRate <= fuseAdmin.maxUtilizationRate(), "utilization rate greater than max");
+        uint maxUtilizationRate = fuseAdmin.maxUtilizationRate();
+
+        if (maxUtilizationRate < 1e18) {
+            uint256 utilizationRate = totalBorrows == 0 ? 0 : totalBorrows * 1e18 / (cashPrior + totalBorrows - (totalReserves + totalFuseFees + totalAdminFees));
+            require(utilizationRate <= maxUtilizationRate, "utilization rate greater than max");
+        }
 
         BorrowLocalVars memory vars;
 
