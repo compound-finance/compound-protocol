@@ -8,7 +8,6 @@ import "./Exponential.sol";
 import "./EIP20Interface.sol";
 import "./EIP20NonStandardInterface.sol";
 import "./InterestRateModel.sol";
-import "./SafeMath.sol";
 
 /**
  * @title Compound's CToken Contract
@@ -16,8 +15,6 @@ import "./SafeMath.sol";
  * @author Compound
  */
 contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
-    using SafeMath for uint;
-
     /**
      * @notice Initialize the money market
      * @param comptroller_ The address of the Comptroller
@@ -803,7 +800,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         }
 
         // Check max utilization rate
-        uint256 utilizationRate = totalBorrows == 0 ? 0 : totalBorrows.mul(1e18).div(cashPrior.add(totalBorrows).sub(totalReserves + totalFuseFees + totalAdminFees));
+        uint256 utilizationRate = totalBorrows == 0 ? 0 : totalBorrows * 1e18 / (cashPrior + totalBorrows - (totalReserves + totalFuseFees + totalAdminFees));
         require(utilizationRate <= fuseAdmin.maxUtilizationRate(), "utilization rate greater than max");
 
         BorrowLocalVars memory vars;
