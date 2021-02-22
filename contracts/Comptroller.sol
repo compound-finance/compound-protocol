@@ -895,10 +895,10 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
 
         // This is safe, as the underflow condition is checked first
         if (vars.sumCollateral > vars.sumBorrowPlusEffects) {
-            Exp memory borrowOrRedeemAmount;
-            (mErr, borrowOrRedeemAmount) = divScalarByExp(vars.sumCollateral - vars.sumBorrowPlusEffects, isBorrow ? cTokenModifyOraclePrice : cTokenModifyTokensToEther);
+            uint borrowOrRedeemAmount;
+            (mErr, borrowOrRedeemAmount) = divScalarByExpTruncate(vars.sumCollateral - vars.sumBorrowPlusEffects, isBorrow ? cTokenModifyOraclePrice : cTokenModifyTokensToEther);
             if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
-            return (Error.NO_ERROR, borrowOrRedeemAmount.mantissa);
+            return (Error.NO_ERROR, borrowOrRedeemAmount);
         } else {
             return (Error.NO_ERROR, 0); // Shortfall, so no more borrow/redeem
         }
