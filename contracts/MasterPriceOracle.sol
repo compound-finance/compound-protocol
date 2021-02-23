@@ -1,6 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "./PriceOracle.sol";
+import "./BasePriceOracle.sol";
 import "./EIP20Interface.sol";
 import "./CErc20.sol";
 
@@ -10,9 +11,9 @@ import "./CErc20.sol";
  * @dev Implements `PriceOracle`.
  * @author David Lucid <david@rari.capital>
  */
-contract MasterPriceOracle is PriceOracle {
+contract MasterPriceOracle is PriceOracle, BasePriceOracle {
     /**
-     * @dev Maps underlying token addresses to `PriceOracle` contracts.
+     * @dev Maps underlying token addresses to `PriceOracle` contracts (can be `BasePriceOracle` contracts too).
      */
     mapping(address => PriceOracle) public oracles;
 
@@ -93,6 +94,17 @@ contract MasterPriceOracle is PriceOracle {
         if (underlying == 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2) return 1e18;
 
         // Get underlying price from assigned oracle
-        return oracles[CErc20(address(cToken)).underlying()].getUnderlyingPrice(cToken);
+        return oracles[underlying].getUnderlyingPrice(cToken);
+    }
+
+    /**
+     * @dev Attempts to return the price in ETH of `underlying` (implements `BasePriceOracle`).
+     */
+    function price(address underlying) external view returns (uint) {
+        // Return 1e18 for WETH
+        if (underlying == 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2) return 1e18;
+
+        // Get underlying price from assigned oracle
+        return BasePriceOracle(address(oracles[underlying])).price(underlying);
     }
 }

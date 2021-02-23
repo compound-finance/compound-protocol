@@ -1,6 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "./PriceOracle.sol";
+import "./BasePriceOracle.sol";
 import "./CErc20.sol";
 
 interface AggregatorV3Interface {
@@ -39,7 +40,7 @@ interface AggregatorV3Interface {
  * @dev Implements `PriceOracle`.
  * @author David Lucid <david@rari.capital>
  */
-contract ChainlinkPriceOracle is PriceOracle {
+contract ChainlinkPriceOracle is PriceOracle, BasePriceOracle {
     /**
      * @notice Maps ERC20 token addresses to Chainlink price feed contracts.
      */
@@ -95,24 +96,42 @@ contract ChainlinkPriceOracle is PriceOracle {
     }
 
     /**
+     * @dev Returns the price in ETH of `underlying`.
+     */
+    function _price(address underlying) internal view returns (uint) {
+        // Return 1e18 for WETH
+        if (underlying == 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2) return 1e18;
+
+        // Get token/ETH price from Chainlink
+        require(address(priceFeeds[underlying]) != address(0), "No Chainlink price feed found for this underlying ERC20 token.");
+        (, int256 chainlinkPrice, , uint256 updatedAt, ) = priceFeeds[underlying].latestRoundData();
+        if (maxSecondsBeforePriceIsStale > 0) require(block.timestamp <= updatedAt + maxSecondsBeforePriceIsStale, "Chainlink price is stale.");
+        return chainlinkPrice >= 0 ? uint256(chainlinkPrice) : 0;
+    }
+
+    /**
+     * @dev Returns the price in ETH of `underlying` (implements `BasePriceOracle`).
+     */
+    function price(address underlying) external view returns (uint) {
+        return _price(underlying);
+    }
+
+    /**
      * @dev Returns the price in ETH of the token underlying `cToken` (implements `PriceOracle`).
      */
     function getUnderlyingPrice(CToken cToken) external view returns (uint) {
         // Return 1e18 for ETH
         if (cToken.isCEther()) return 1e18;
 
-        // Get underlying ERC20 token address
-        address underlying = address(CErc20(address(cToken)).underlying());
+        // Get underlying token address
+        address underlying = CErc20(address(cToken)).underlying();
 
-        // Return 1e18 for WETH
-        if (underlying == 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2) return 1e18;
+        // Get price
+        uint256 chainlinkPrice = _price(underlying);
 
-        // Get token/ETH price from Chainlink
-        require(address(priceFeeds[underlying]) != address(0), "No Chainlink price feed found for this underlying ERC20 token.");
-        (, int256 price, , uint256 updatedAt, ) = priceFeeds[underlying].latestRoundData();
-        if (maxSecondsBeforePriceIsStale > 0) require(block.timestamp <= updatedAt + maxSecondsBeforePriceIsStale, "Chainlink price is stale.");
+        // Format and return price
         uint256 underlyingDecimals = uint256(EIP20Interface(underlying).decimals());
-        return price >= 0 ? (underlyingDecimals <= 18 ? mul(uint256(price), 10 ** (18 - underlyingDecimals)) : uint256(price) / (10 ** (underlyingDecimals - 18))) : 0;
+        return underlyingDecimals <= 18 ? mul(uint256(chainlinkPrice), 10 ** (18 - underlyingDecimals)) : uint256(chainlinkPrice) / (10 ** (underlyingDecimals - 18));
     }
 
     /// @dev Overflow proof multiplication

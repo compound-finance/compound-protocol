@@ -1,6 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "./PriceOracle.sol";
+import "./BasePriceOracle.sol";
 import "./EIP20Interface.sol";
 import "./CErc20.sol";
 
@@ -14,7 +15,7 @@ interface Keep3rV1Oracle {
  * @dev Implements `PriceOracle`.
  * @author David Lucid <david@rari.capital>
  */
-contract Keep3rPriceOracle is PriceOracle {
+contract Keep3rPriceOracle is PriceOracle, BasePriceOracle {
     /**
      * @dev Constructor that sets the Keep3rV1Oracle or SushiswapV1Oracle.
      */
@@ -35,19 +36,35 @@ contract Keep3rPriceOracle is PriceOracle {
     /**
      * @dev Returns the price in ETH of the token underlying `cToken` (implements `PriceOracle`).
      */
-    function getUnderlyingPrice(CToken cToken) public view returns (uint) {
+    function getUnderlyingPrice(CToken cToken) external view returns (uint) {
         // Return 1e18 for ETH
         if (cToken.isCEther()) return 1e18;
 
         // Get underlying ERC20 token address
         address underlying = CErc20(address(cToken)).underlying();
 
+        // Get price, format, and return
+        uint256 baseUnit = (10 ** uint256(EIP20Interface(underlying).decimals()));
+        return mul(_price(underlying), 1e18) / baseUnit;
+    }
+    
+    /**
+     * @dev Returns the price in ETH of `underlying` (implements `BasePriceOracle`).
+     */
+    function _price(address underlying) internal view returns (uint) {
         // Return 1e18 for WETH
         if (underlying == WETH_ADDRESS) return 1e18;
 
-        // Call Keep3r for ERC20 price, format, and return
+        // Call Keep3r for ERC20/ETH price and return
         uint256 baseUnit = (10 ** uint256(EIP20Interface(underlying).decimals()));
-        return mul(oracle.current(underlying, baseUnit, WETH_ADDRESS), 1e18) / baseUnit;
+        return oracle.current(underlying, baseUnit, WETH_ADDRESS);
+    }
+
+    /**
+     * @dev Returns the price in ETH of `underlying` (implements `BasePriceOracle`).
+     */
+    function price(address underlying) external view returns (uint) {
+        return _price(underlying);
     }
 
     /// @dev Overflow proof multiplication
