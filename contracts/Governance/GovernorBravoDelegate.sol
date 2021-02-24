@@ -23,6 +23,14 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     /// @notice The EIP-712 typehash for the ballot struct used by the contract
     bytes32 public constant BALLOT_TYPEHASH = keccak256("Ballot(uint256 proposalId,uint8 support)");
 
+    /**
+      * @notice Used to initialize the contract during delegator contructor
+      * @param timelock_ The address of the Timelock
+      * @param comp_ The address of the COMP token
+      * @param votingPeriod_ The initial voting period
+      * @param votingDelay_ The initial voting delay
+      * @param proposalThreshold_ The initial proposal threshold
+      */
     function initialize(address timelock_, address comp_, uint votingPeriod_, uint votingDelay_, uint proposalThreshold_) public {
         require(msg.sender == admin, "GovernorBravo::initialize: admin only");
         timelock = TimelockInterface(timelock_);
@@ -32,6 +40,15 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         proposalThreshold = proposalThreshold_;
     }
 
+    /**
+      * @notice Function used to propose a new proposal. Sender must have delegates above the proposal threshold
+      * @param targets Target addresses for proposal calls
+      * @param values Eth values for proposal calls
+      * @param signatures Function signatures for proposal calls
+      * @param calldatas Calldatas for proposal calls
+      * @param description String description of the proposal
+      * @return Proposal id of new proposal
+      */
     function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint) {
         // Reject proposals before initiating as Governor
         require(initialProposalId != 0, "GovernorBravo::propose: Governor Bravo not active");
@@ -75,6 +92,10 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         return newProposal.id;
     }
 
+    /**
+      * @notice Queues a proposal of state succeeded
+      * @param proposalId The id of the proposal to queue
+      */
     function queue(uint proposalId) external {
         require(state(proposalId) == ProposalState.Succeeded, "GovernorBravo::queue: proposal can only be queued if it is succeeded");
         Proposal storage proposal = proposals[proposalId];
@@ -91,6 +112,10 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         timelock.queueTransaction(target, value, signature, data, eta);
     }
 
+    /**
+      * @notice Executes a queued proposal if eta has passed
+      * @param proposalId The id of the proposal to execute
+      */
     function execute(uint proposalId) external payable {
         require(state(proposalId) == ProposalState.Queued, "GovernorBravo::execute: proposal can only be executed if it is queued");
         Proposal storage proposal = proposals[proposalId];
@@ -101,6 +126,10 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         emit ProposalExecuted(proposalId);
     }
 
+    /**
+      * @notice Cancels a proposal only if sender is the proposer, or proposer delegates dropped below proposal threshold
+      * @param proposalId The id of the proposal to cancel
+      */
     function cancel(uint proposalId) external {
         ProposalState state = state(proposalId);
         require(state != ProposalState.Executed, "GovernorBravo::cancel: cannot cancel executed proposal");
@@ -116,15 +145,31 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         emit ProposalCanceled(proposalId);
     }
 
+    /**
+      * @notice Gets actions of a proposal
+      * @param proposalId the id of the proposal
+      * @return Targets, values, signatures, and calldatas of the proposal actions
+      */
     function getActions(uint proposalId) external view returns (address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas) {
         Proposal storage p = proposals[proposalId];
         return (p.targets, p.values, p.signatures, p.calldatas);
     }
 
+    /**
+      * @notice Gets the receipt for a voter on a given proposal
+      * @param proposalId the id of proposal
+      * @param voter The address of the voter
+      * @return The voting receipt
+      */
     function getReceipt(uint proposalId, address voter) external view returns (Receipt memory) {
         return proposals[proposalId].receipts[voter];
     }
 
+    /**
+      * @notice Gets the state of a proposal
+      * @param proposalId The id of the proposal
+      * @return Proposal state
+      */
     function state(uint proposalId) public view returns (ProposalState) {
         require(proposalCount >= proposalId && proposalId > initialProposalId, "GovernorBravo::state: invalid proposal id");
         Proposal storage proposal = proposals[proposalId];
@@ -209,10 +254,10 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         return votes;
     }
 
-    /*
-     * @notice Admin function for setting the voting delay
-     * @param newVotingDelay new voting delay, in blocks
-     */
+    /**
+      * @notice Admin function for setting the voting delay
+      * @param newVotingDelay new voting delay, in blocks
+      */
     function _setVotingDelay(uint newVotingDelay) external {
         require(msg.sender == admin, "GovernorBravo::_setVotingDelay: admin only");
         uint oldVotingDelay = votingDelay;
@@ -221,10 +266,10 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         emit VotingDelaySet(oldVotingDelay,votingDelay);
     }
 
-    /*
-     * @notice Admin function for setting the voting period
-     * @param newVotingPeriod new voting period, in blocks
-     */
+    /**
+      * @notice Admin function for setting the voting period
+      * @param newVotingPeriod new voting period, in blocks
+      */
     function _setVotingPeriod(uint newVotingPeriod) external {
         require(msg.sender == admin, "GovernorBravo::_setVotingPeriod: admin only");
         uint oldVotingPeriod = votingPeriod;
@@ -249,7 +294,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
 
     /**
       * @notice Initiate the GovernorBravo contract
-      * @dev Admin only. Sets initial proposal id which initiates the contract, ensuring a continious proposal id count
+      * @dev Admin only. Sets initial proposal id which initiates the contract, ensuring a continuous proposal id count
       * @param governorAlpha The address for the Governor to continue the proposal id count from
       */
     function _initiate(address governorAlpha) external {
