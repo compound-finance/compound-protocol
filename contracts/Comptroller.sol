@@ -840,81 +840,43 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
                 maximum borrow/redeem amount)
      */
     function _getMaxRedeemOrBorrow(address account, CToken cTokenModify, bool isBorrow) internal view returns (Error, uint) {
-        Exp memory cTokenModifyOraclePrice;
-        Exp memory cTokenModifyTokensToEther;
+        (Error err, uint liquidity, ) = getHypotheticalAccountLiquidityInternal(account, cTokenModify, 0, 0);
+        if (err != Error.NO_ERROR) return (err, 0);
+        if (liquidity <= 0) return (Error.NO_ERROR, 0); // No available account liquidity, so no more borrow/redeem
 
-        // THE FOLLOWING CODE IS COPIED FROM getHypotheticalAccountLiquidityInternal
-        AccountLiquidityLocalVars memory vars; // Holds all our calculation results
-        uint oErr;
-        MathError mErr;
+        // Read the balances and exchange rate from the cToken
+        uint cTokenModifyBalance = cTokenModify.balanceOf(account);
+        uint exchangeRateMantissa = cTokenModify.exchangeRateStored();
+        Exp memory collateralFactor = Exp({mantissa: markets[address(cTokenModify)].collateralFactorMantissa});
+        Exp memory exchangeRate = Exp({mantissa: exchangeRateMantissa});
 
-        // For each asset the account is in
-        CToken[] memory assets = accountAssets[account];
-        for (uint i = 0; i < assets.length; i++) {
-            CToken asset = assets[i];
+        // Get the normalized price of the asset
+        uint oraclePriceMantissa = oracle.getUnderlyingPrice(cTokenModify);
+        if (oraclePriceMantissa == 0) return (Error.PRICE_ERROR, 0);
+        Exp memory oraclePrice = Exp({mantissa: oraclePriceMantissa});
 
-            // Read the balances and exchange rate from the cToken
-            (oErr, vars.cTokenBalance, vars.borrowBalance, vars.exchangeRateMantissa) = asset.getAccountSnapshot(account);
-            if (oErr != 0) { // semi-opaque error code, we assume NO_ERROR == 0 is invariant between upgrades
-                return (Error.SNAPSHOT_ERROR, 0);
-            }
-            vars.collateralFactor = Exp({mantissa: markets[address(asset)].collateralFactorMantissa});
-            vars.exchangeRate = Exp({mantissa: vars.exchangeRateMantissa});
+        // Pre-compute a conversion factor from tokens -> ether (normalized price value)
+        (MathError mErr, Exp memory tokensToEther) = mulExp3(collateralFactor, exchangeRate, oraclePrice);
+        if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
 
-            // Get the normalized price of the asset
-            vars.oraclePriceMantissa = oracle.getUnderlyingPrice(asset);
-            if (vars.oraclePriceMantissa == 0) {
-                return (Error.PRICE_ERROR, 0);
-            }
-            vars.oraclePrice = Exp({mantissa: vars.oraclePriceMantissa});
+        // Get max borrow or redeem considering excess account liquidity
+        uint maxBorrowOrRedeemAmount;
+        (mErr, maxBorrowOrRedeemAmount) = divScalarByExpTruncate(liquidity, isBorrow ? oraclePrice : tokensToEther);
+        if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
 
-            // Pre-compute a conversion factor from tokens -> ether (normalized price value)
-            (mErr, vars.tokensToEther) = mulExp3(vars.collateralFactor, vars.exchangeRate, vars.oraclePrice);
-            if (mErr != MathError.NO_ERROR) {
-                return (Error.MATH_ERROR, 0);
-            }
-
-            // sumCollateral += tokensToEther * cTokenBalance
-            (mErr, vars.sumCollateral) = mulScalarTruncateAddUInt(vars.tokensToEther, vars.cTokenBalance, vars.sumCollateral);
-            if (mErr != MathError.NO_ERROR) {
-                return (Error.MATH_ERROR, 0);
-            }
-
-            // sumBorrowPlusEffects += oraclePrice * borrowBalance
-            (mErr, vars.sumBorrowPlusEffects) = mulScalarTruncateAddUInt(vars.oraclePrice, vars.borrowBalance, vars.sumBorrowPlusEffects);
-            if (mErr != MathError.NO_ERROR) {
-                return (Error.MATH_ERROR, 0);
-            }
-
-            // Calculate effects of interacting with cTokenModify
-            if (asset == cTokenModify) {
-                cTokenModifyOraclePrice = vars.oraclePrice;
-                cTokenModifyTokensToEther = vars.tokensToEther;
-            }
-        }
-
-        // This is safe, as the underflow condition is checked first
-        if (vars.sumCollateral > vars.sumBorrowPlusEffects) {
-            // Get max borrow or redeem considering excess account liquidity
-            uint maxBorrowOrRedeemAmount;
-            (mErr, maxBorrowOrRedeemAmount) = divScalarByExpTruncate(vars.sumCollateral - vars.sumBorrowPlusEffects, isBorrow ? cTokenModifyOraclePrice : cTokenModifyTokensToEther);
+        // Redeem only: max out at underlying balance
+        if (!isBorrow) {
+            uint balanceOfUnderlying;
+            (mErr, balanceOfUnderlying) = mulScalarTruncate(exchangeRate, cTokenModifyBalance);
             if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
-            return (Error.NO_ERROR, maxBorrowOrRedeemAmount);
-
-            // Redeem only: max out at underlying balance
-            if (!isBorrow) {
-                uint balanceOfUnderlying = cTokenModify.balanceOfUnderlying(account);
-                if (balanceOfUnderlying < maxBorrowOrRedeemAmount) maxBorrowOrRedeemAmount = balanceOfUnderlying;
-            }
-
-            // Get max borrow or redeem considering cToken liquidity
-            uint cTokenLiquidity = cTokenModify.getCash();
-
-            // Return the minimum of the two maximums
-            return maxBorrowOrRedeemAmount <= cTokenLiquidity ? maxBorrowOrRedeemAmount : cTokenLiquidity;
-        } else {
-            return (Error.NO_ERROR, 0); // Shortfall, so no more borrow/redeem
+            if (balanceOfUnderlying < maxBorrowOrRedeemAmount) maxBorrowOrRedeemAmount = balanceOfUnderlying;
         }
+
+        // Get max borrow or redeem considering cToken liquidity
+        uint cTokenLiquidity = cTokenModify.getCash();
+
+        // Return the minimum of the two maximums
+        return (Error.NO_ERROR, maxBorrowOrRedeemAmount <= cTokenLiquidity ? maxBorrowOrRedeemAmount : cTokenLiquidity);
     }
 
     /**
@@ -1001,7 +963,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
       * @dev Admin function to set the whitelist `statuses` for `suppliers`
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _setWhitelistStatuses(address[] memory suppliers, bool[] memory statuses) external returns (uint) {
+    function _setWhitelistStatuses(address[] calldata suppliers, bool[] calldata statuses) external returns (uint) {
         // Check caller is admin
         if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_WHITELIST_STATUS_OWNER_CHECK);
