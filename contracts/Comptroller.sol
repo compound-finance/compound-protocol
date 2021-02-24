@@ -997,18 +997,18 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
-      * @notice Sets the whitelist status for `supplier`
-      * @dev Admin function to set a the whitelist status for `supplier`
+      * @notice Sets the whitelist `statuses` for `suppliers`
+      * @dev Admin function to set the whitelist `statuses` for `suppliers`
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _setWhitelistStatus(address supplier, bool status) external returns (uint) {
+    function _setWhitelistStatuses(address[] memory suppliers, bool[] memory statuses) external returns (uint) {
         // Check caller is admin
         if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_WHITELIST_STATUS_OWNER_CHECK);
         }
 
-        // Set comptroller's `enforceWhitelist` to `enforce`
-        whitelist[supplier] = status;
+        // Set whitelist statuses for suppliers
+        for (uint i = 0; i < suppliers.length; i++) whitelist[suppliers[i]] = statuses[i];
 
         return uint(Error.NO_ERROR);
     }
