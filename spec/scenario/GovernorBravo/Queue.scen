@@ -71,7 +71,7 @@ Test "Revert on repeated proposal items"
     SucceedProposal
     AllowFailures
     GovernorBravo LegitGov Proposal LastProposal Queue
-    Assert Revert "revert GovernorBravo::_queueOrRevert: proposal action already queued at eta"
+    Assert Revert "revert GovernorBravo::queueOrRevertInternal: proposal action already queued at eta"
 
 Test "Revert queue when proposal Id is Invalid"
     DeployGov

@@ -46,9 +46,9 @@ Test "Fail to vote twice"
     GovernorBravo LegitGov Proposal LastProposal Vote For
     AllowFailures
     GovernorBravo LegitGov Proposal LastProposal Vote For
-    Assert Revert "revert GovernorBravo::_castVote: voter already voted"
+    Assert Revert "revert GovernorBravo::castVoteInternal: voter already voted"
     GovernorBravo LegitGov Proposal LastProposal Vote Against
-    Assert Revert "revert GovernorBravo::_castVote: voter already voted"
+    Assert Revert "revert GovernorBravo::castVoteInternal: voter already voted"
     Assert Equal (GovernorBravo LegitGov Proposal LastProposal ForVotes) 100001e18
     Assert Equal (GovernorBravo LegitGov Proposal LastProposal AgainstVotes) 0
     Assert False (GovernorBravo LegitGov Proposal LastProposal HasVoted Geoff)
@@ -58,21 +58,21 @@ Test "Cannot vote before vote starts"
     AllowFailures
     SetBlockNumber 7
     GovernorBravo LegitGov Proposal LastProposal Vote For
-    Assert Revert "revert GovernorBravo::_castVote: voting is closed"
+    Assert Revert "revert GovernorBravo::castVoteInternal: voting is closed"
 
 Test "Cannot vote after vote ends"
     GivenProposal
     AllowFailures
     AdvanceBlocks 20000
     GovernorBravo LegitGov Proposal LastProposal Vote For
-    Assert Revert "revert GovernorBravo::_castVote: voting is closed"
+    Assert Revert "revert GovernorBravo::castVoteInternal: voting is closed"
 
 Test "Cannot vote on cancelled vote"
     GivenProposal
     GovernorBravo LegitGov Proposal LastProposal Cancel
     AllowFailures
     GovernorBravo LegitGov Proposal LastProposal Vote For
-    Assert Revert "revert GovernorBravo::_castVote: voting is closed"
+    Assert Revert "revert GovernorBravo::castVoteInternal: voting is closed"
 
 Test "Can abstain"
     GivenProposal

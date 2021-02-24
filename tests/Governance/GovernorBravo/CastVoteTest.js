@@ -41,7 +41,7 @@ describe("governorBravo#castVote/2", () => {
     it("There does not exist a proposal with matching proposal id where the current block number is between the proposal's start block (exclusive) and end block (inclusive)", async () => {
       await expect(
         call(gov, 'castVote', [proposalId, 1])
-      ).rejects.toRevert("revert GovernorBravo::_castVote: voting is closed");
+      ).rejects.toRevert("revert GovernorBravo::castVoteInternal: voting is closed");
     });
 
     it("Such proposal already has an entry in its voters set matching the sender", async () => {
@@ -49,14 +49,12 @@ describe("governorBravo#castVote/2", () => {
       await mineBlock();
 
       let vote = await send(gov, 'castVote', [proposalId, 1], { from: accounts[4] });
-      console.log('gas used is ' + vote.gasUsed);
 
       let vote2 = await send(gov, 'castVoteWithReason', [proposalId, 1, ""], { from: accounts[3] });
-      console.log('gas used is 0.5 ' + vote2.gasUsed);
 
       await expect(
         gov.methods['castVote'](proposalId, 1).call({ from: accounts[4] })
-      ).rejects.toRevert("revert GovernorBravo::_castVote: voter already voted");
+      ).rejects.toRevert("revert GovernorBravo::castVoteInternal: voter already voted");
     });
   });
 
@@ -64,7 +62,6 @@ describe("governorBravo#castVote/2", () => {
     it("we add the sender to the proposal's voters set", async () => {
       await expect(call(gov, 'getReceipt', [proposalId, accounts[2]])).resolves.toPartEqual({hasVoted: false});
       let vote = await send(gov, 'castVote', [proposalId, 1], { from: accounts[2] });
-      console.log('gas used 2 is ' + vote.gasUsed);
       await expect(call(gov, 'getReceipt', [proposalId, accounts[2]])).resolves.toPartEqual({hasVoted: true});
     });
 

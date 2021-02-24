@@ -41,7 +41,7 @@ describe('GovernorBravo#queue/1', () => {
 
       await expect(
         send(gov, 'queue', [proposalId1])
-      ).rejects.toRevert("revert GovernorBravo::_queueOrRevert: proposal action already queued at eta");
+      ).rejects.toRevert("revert GovernorBravo::queueOrRevertInternal: proposal action already queued at eta");
     });
 
     it("reverts on queueing overlapping actions in different proposals, works if waiting", async () => {
@@ -71,7 +71,7 @@ describe('GovernorBravo#queue/1', () => {
       const txQueue1 = await send(gov, 'queue', [proposalId1]);
       await expect(
         send(gov, 'queue', [proposalId2])
-      ).rejects.toRevert("revert GovernorBravo::_queueOrRevert: proposal action already queued at eta");
+      ).rejects.toRevert("revert GovernorBravo::queueOrRevertInternal: proposal action already queued at eta");
 
       await freezeTime(101);
       const txQueue2 = await send(gov, 'queue', [proposalId2]);
