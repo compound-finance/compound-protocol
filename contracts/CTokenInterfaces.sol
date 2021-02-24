@@ -36,7 +36,7 @@ contract CTokenAdminStorage {
      * @notice Returns a boolean indicating if the sender has admin rights
      */
     function hasAdminRights() internal view returns (bool) {
-        return (msg.sender == admin && adminHasRights) || msg.sender == address(fuseAdmin);
+        return (msg.sender == admin && adminHasRights) || (msg.sender == address(fuseAdmin) && fuseAdminHasRights);
     }
 }
 

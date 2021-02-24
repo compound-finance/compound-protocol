@@ -28,7 +28,7 @@ contract UnitrollerAdminStorage {
      * @notice Returns a boolean indicating if the sender has admin rights
      */
     function hasAdminRights() internal view returns (bool) {
-        return (msg.sender == admin && adminHasRights) || msg.sender == 0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6;
+        return (msg.sender == admin && adminHasRights) || (msg.sender == 0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6 && fuseAdminHasRights);
     }
 
     /**
