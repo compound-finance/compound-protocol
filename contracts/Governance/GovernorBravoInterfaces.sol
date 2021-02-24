@@ -53,6 +53,13 @@ contract GovernorBravoDelegatorStorage {
     address public implementation;
 }
 
+
+/**
+ * @title Storage for Governor Bravo Delegate
+ * @notice For future upgrades, do not change GovernorBravoDelegateStorageV1. Create a new
+ * contract which implements GovernorBravoDelegateStorageV1 and following the naming convention
+ * GovernorBravoDelegateStorageVX.
+ */
 contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
 
     /// @notice The delay before voting on a proposal may take place, once proposed, in blocks
@@ -64,14 +71,17 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
     /// @notice The number of votes required in order for a voter to become a proposer
     uint public proposalThreshold;
 
+    /// @notice Initial proposal id set at become
+    uint public initialProposalId;
+
+    /// @notice The total number of proposals
+    uint public proposalCount;
+
     /// @notice The address of the Compound Protocol Timelock
     TimelockInterface public timelock;
 
     /// @notice The address of the Compound governance token
     CompInterface public comp;
-
-    /// @notice The total number of proposals
-    uint public proposalCount;
 
     /// @notice The official record of all proposals ever proposed
     mapping (uint => Proposal) public proposals;
@@ -79,8 +89,6 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
     /// @notice The latest proposal for each proposer
     mapping (address => uint) public latestProposalIds;
 
-    /// @notice Initial proposal id set at become
-    uint public initialProposalId;
 
     struct Proposal {
         /// @notice Unique id for looking up a proposal
