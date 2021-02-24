@@ -895,10 +895,23 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
 
         // This is safe, as the underflow condition is checked first
         if (vars.sumCollateral > vars.sumBorrowPlusEffects) {
-            uint borrowOrRedeemAmount;
-            (mErr, borrowOrRedeemAmount) = divScalarByExpTruncate(vars.sumCollateral - vars.sumBorrowPlusEffects, isBorrow ? cTokenModifyOraclePrice : cTokenModifyTokensToEther);
+            // Get max borrow or redeem considering excess account liquidity
+            uint maxBorrowOrRedeemAmount;
+            (mErr, maxBorrowOrRedeemAmount) = divScalarByExpTruncate(vars.sumCollateral - vars.sumBorrowPlusEffects, isBorrow ? cTokenModifyOraclePrice : cTokenModifyTokensToEther);
             if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
-            return (Error.NO_ERROR, borrowOrRedeemAmount);
+            return (Error.NO_ERROR, maxBorrowOrRedeemAmount);
+
+            // Redeem only: max out at underlying balance
+            if (!isBorrow) {
+                uint balanceOfUnderlying = cTokenModify.balanceOfUnderlying(account);
+                if (balanceOfUnderlying < maxBorrowOrRedeemAmount) maxBorrowOrRedeemAmount = balanceOfUnderlying;
+            }
+
+            // Get max borrow or redeem considering cToken liquidity
+            uint cTokenLiquidity = cTokenModify.getCash();
+
+            // Return the minimum of the two maximums
+            return maxBorrowOrRedeemAmount <= cTokenLiquidity ? maxBorrowOrRedeemAmount : cTokenLiquidity;
         } else {
             return (Error.NO_ERROR, 0); // Shortfall, so no more borrow/redeem
         }
