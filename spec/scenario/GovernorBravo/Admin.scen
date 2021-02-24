@@ -64,10 +64,10 @@ Test "Orignally set voting delay to 1"
 
 Test "Set Voting Period"
 	DeployGov
-	GovernorBravo LegitGov SetVotingPeriod 10
+	GovernorBravo LegitGov SetVotingPeriod 11521
 	GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]]
-	Assert Log ProposalCreated (endBlock 25)
-	Assert Equal (GovernorBravo LegitGov VotingPeriod) 10
+	Assert Log ProposalCreated (endBlock 11536)
+	Assert Equal (GovernorBravo LegitGov VotingPeriod) 11521
 
 Test "Set Proposal Threshold"
 	DeployGov
@@ -83,7 +83,7 @@ Test "Enforce Proposal Threshold min"
 	DeployGov
 	AllowFailures
 	GovernorBravo LegitGov SetProposalThreshold 5000e18
-	Assert Revert "revert GovernorBravo::_setProposalThreshold: new threshold below min"
+	Assert Revert "revert GovernorBravo::_setProposalThreshold: invalid proposal threshold"
 
 Test "Enforce admin"
 	DeployGov
