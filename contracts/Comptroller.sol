@@ -1188,19 +1188,33 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
     function _supportMarket(CToken cToken) public returns (uint) {
+        // Check caller is admin
         if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SUPPORT_MARKET_OWNER_CHECK);
         }
 
+        // Is market already listed?
         if (markets[address(cToken)].isListed) {
             return fail(Error.MARKET_ALREADY_LISTED, FailureInfo.SUPPORT_MARKET_EXISTS);
         }
 
-        cToken.isCToken(); // Sanity check to make sure its really a CToken
+        // Sanity check to make sure its really a CToken
+        cToken.isCToken();
 
+        // Check cToken.comptroller == this
+        require(address(cToken.comptroller()) == address(this), "Cannot support a market with a different Comptroller.");
+
+        // Make sure market is not already listed
+        address underlying = cToken.isCEther() ? address(0) : CErc20(address(cToken)).underlying();
+
+        if (address(cTokensByUnderlying[underlying]) != address(0)) {
+            return fail(Error.MARKET_ALREADY_LISTED, FailureInfo.SUPPORT_MARKET_EXISTS);
+        }
+
+        // List market and emit event
         markets[address(cToken)] = Market({isListed: true, collateralFactorMantissa: 0});
         allMarkets.push(cToken);
-        cTokensByUnderlying[cToken.isCEther() ? address(0) : CErc20(address(cToken)).underlying()] = cToken;
+        cTokensByUnderlying[underlying] = cToken;
         emit MarketListed(cToken);
 
         return uint(Error.NO_ERROR);
