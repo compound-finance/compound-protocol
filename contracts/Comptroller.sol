@@ -407,6 +407,39 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
+     * @notice Checks if the account should be allowed to borrow the underlying asset of the given market
+     * @param cToken Asset whose underlying is being borrowed
+     * @param accountBorrowsNew The user's new borrow balance of the underlying asset
+     */
+    function borrowWithinLimits(address cToken, uint accountBorrowsNew) external returns (uint) {
+        (MathError mathErr, uint borrowBalanceEth) = mulScalarTruncate(Exp({mantissa: oracle.getUnderlyingPrice(CToken(cToken))}), accountBorrowsNew);
+        if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
+        if (borrowBalanceEth < minBorrowEth || borrowBalanceEth < fuseAdmin.minBorrowEth()) return uint(Error.BORROW_BELOW_MIN);
+        return uint(Error.NO_ERROR);
+    }
+
+    /**
+     * @notice Checks if the account should be allowed to borrow the underlying asset of the given market
+     * @param cToken Asset whose underlying is being borrowed
+     * @param exchangeRateMantissa Underlying/cToken exchange rate
+     * @param accountTokens Initial account cToken balance
+     * @param accountTokens Underlying amount to mint
+     */
+    function mintWithinLimits(address cToken, uint exchangeRateMantissa, uint accountTokens, uint mintAmount) external returns (uint) {
+        // Check max supply
+        uint maxSupplyEth = fuseAdmin.maxSupplyEth();
+
+        if (maxSupplyEth < uint(-1)) {
+            (MathError mathErr, uint newUnderlyingBalance) = mulScalarTruncateAddUInt(Exp({mantissa: exchangeRateMantissa}), accountTokens, mintAmount);
+            if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
+            uint newEthBalance;
+            (mathErr, newEthBalance) = mulScalarTruncate(Exp({mantissa: oracle.getUnderlyingPrice(CToken(cToken))}), newUnderlyingBalance);
+            if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
+            if (newEthBalance > maxSupplyEth) return uint(Error.SUPPLY_ABOVE_MAX);
+        }
+    }
+
+    /**
      * @notice Validates borrow and reverts on rejection. May emit logs.
      * @param cToken Asset whose underlying is being borrowed
      * @param borrower The address borrowing the underlying

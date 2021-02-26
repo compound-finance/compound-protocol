@@ -12,12 +12,14 @@ contract ComptrollerInterface {
     /*** Policy Hooks ***/
 
     function mintAllowed(address cToken, address minter, uint mintAmount) external returns (uint);
+    function mintWithinLimits(address cToken, uint exchangeRateMantissa, uint accountTokens, uint mintAmount) external returns (uint);
     function mintVerify(address cToken, address minter, uint mintAmount, uint mintTokens) external;
 
     function redeemAllowed(address cToken, address redeemer, uint redeemTokens) external returns (uint);
     function redeemVerify(address cToken, address redeemer, uint redeemAmount, uint redeemTokens) external;
 
     function borrowAllowed(address cToken, address borrower, uint borrowAmount) external returns (uint);
+    function borrowWithinLimits(address cToken, uint accountBorrowsNew) external returns (uint);
     function borrowVerify(address cToken, address borrower, uint borrowAmount) external;
 
     function repayBorrowAllowed(

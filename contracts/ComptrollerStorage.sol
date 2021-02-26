@@ -1,9 +1,15 @@
 pragma solidity ^0.5.16;
 
+import "./IFuseFeeDistributor.sol";
 import "./CToken.sol";
 import "./PriceOracle.sol";
 
 contract UnitrollerAdminStorage {
+    /**
+     * @notice Administrator for Fuse
+     */
+    IFuseFeeDistributor internal constant fuseAdmin = IFuseFeeDistributor(0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6);
+
     /**
     * @notice Administrator for this contract
     */
@@ -28,7 +34,7 @@ contract UnitrollerAdminStorage {
      * @notice Returns a boolean indicating if the sender has admin rights
      */
     function hasAdminRights() internal view returns (bool) {
-        return (msg.sender == admin && adminHasRights) || (msg.sender == 0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6 && fuseAdminHasRights);
+        return (msg.sender == admin && adminHasRights) || (msg.sender == address(fuseAdmin) && fuseAdminHasRights);
     }
 
     /**
