@@ -55,11 +55,6 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     event NewMaxAssets(uint oldMaxAssets, uint newMaxAssets);
 
     /**
-     * @notice Emitted when min borrow (ETH) is changed
-     */
-    event NewMinBorrow(uint oldMinBorrowEth, uint newMinBorrowEth);
-
-    /**
      * @notice Emitted when price oracle is changed
      */
     event NewPriceOracle(PriceOracle oldPriceOracle, PriceOracle newPriceOracle);
@@ -414,7 +409,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     function borrowWithinLimits(address cToken, uint accountBorrowsNew) external returns (uint) {
         (MathError mathErr, uint borrowBalanceEth) = mulScalarTruncate(Exp({mantissa: oracle.getUnderlyingPrice(CToken(cToken))}), accountBorrowsNew);
         if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
-        if (borrowBalanceEth < minBorrowEth || borrowBalanceEth < fuseAdmin.minBorrowEth()) return uint(Error.BORROW_BELOW_MIN);
+        if (borrowBalanceEth < fuseAdmin.minBorrowEth()) return uint(Error.BORROW_BELOW_MIN);
         return uint(Error.NO_ERROR);
     }
 
@@ -985,7 +980,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         // Set comptroller's `enforceWhitelist` to `enforce`
         enforceWhitelist = enforce;
 
-        // Emit NewMinBorrow(oldMinBorrowEth, newMinBorrowEth);
+        // Emit WhitelistEnforcementChanged(bool enforce);
         emit WhitelistEnforcementChanged(enforce);
 
         return uint(Error.NO_ERROR);
@@ -1004,29 +999,6 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
 
         // Set whitelist statuses for suppliers
         for (uint i = 0; i < suppliers.length; i++) whitelist[suppliers[i]] = statuses[i];
-
-        return uint(Error.NO_ERROR);
-    }
-
-    /**
-      * @notice Sets a new min borrow (ETH) for the comptroller
-      * @dev Admin function to set a new min borrow (ETH)
-      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-      */
-    function _setMinBorrow(uint newMinBorrowEth) public returns (uint) {
-        // Check caller is admin
-        if (!hasAdminRights()) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.SET_MIN_BORROW_OWNER_CHECK);
-        }
-
-        // Track the old oracle for the comptroller
-        uint oldMinBorrowEth = minBorrowEth;
-
-        // Set comptroller's oracle to newOracle
-        minBorrowEth = newMinBorrowEth;
-
-        // Emit NewMinBorrow(oldMinBorrowEth, newMinBorrowEth);
-        emit NewMinBorrow(oldMinBorrowEth, newMinBorrowEth);
 
         return uint(Error.NO_ERROR);
     }
