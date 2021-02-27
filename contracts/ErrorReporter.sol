@@ -22,7 +22,8 @@ contract ComptrollerErrorReporter {
         TOO_MUCH_REPAY,
         SUPPLIER_NOT_WHITELISTED,
         BORROW_BELOW_MIN,
-        SUPPLY_ABOVE_MAX
+        SUPPLY_ABOVE_MAX,
+        LENS_CTOKEN_ACCRUE_INTEREST_FAILED
     }
 
     enum FailureInfo {

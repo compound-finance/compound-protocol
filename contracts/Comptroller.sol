@@ -868,7 +868,12 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
                 maximum borrow/redeem amount)
      */
     function _getMaxRedeemOrBorrow(address account, CToken cTokenModify, bool isBorrow) internal view returns (Error, uint) {
-        (Error err, uint liquidity, ) = getHypotheticalAccountLiquidityInternal(account, cTokenModify, 0, 0);
+        // Accrue interest
+        uint error = cTokenModify.accrueInterest();
+        if (error != uint(Error.NO_ERROR)) return (Error.LENS_CTOKEN_ACCRUE_INTEREST_FAILED, 0);
+
+        // Get account liquidity
+        (Error err, uint liquidity, ) = getHypotheticalAccountLiquidityInternal(account, CToken(0), 0, 0);
         if (err != Error.NO_ERROR) return (err, 0);
         if (liquidity <= 0) return (Error.NO_ERROR, 0); // No available account liquidity, so no more borrow/redeem
 
