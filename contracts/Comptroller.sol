@@ -839,7 +839,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      * @return (possible error code,
                 maximum redeem amount)
      */
-    function getMaxRedeem(address account, CToken cTokenModify) external view returns (uint, uint) {
+    function getMaxRedeem(address account, CToken cTokenModify) external returns (uint, uint) {
         (Error err, uint maxRedeem) = _getMaxRedeemOrBorrow(account, cTokenModify, false);
         return (uint(err), maxRedeem);
     }
@@ -853,7 +853,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      * @return (possible error code,
                 maximum borrow amount)
      */
-    function getMaxBorrow(address account, CToken cTokenModify) external view returns (uint, uint) {
+    function getMaxBorrow(address account, CToken cTokenModify) external returns (uint, uint) {
         (Error err, uint maxBorrow) = _getMaxRedeemOrBorrow(account, cTokenModify, true);
         return (uint(err), maxBorrow);
     }
@@ -867,21 +867,14 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      * @return (possible error code,
                 maximum borrow/redeem amount)
      */
-    function _getMaxRedeemOrBorrow(address account, CToken cTokenModify, bool isBorrow) internal view returns (Error, uint) {
+    function _getMaxRedeemOrBorrow(address account, CToken cTokenModify, bool isBorrow) internal returns (Error, uint) {
         // Accrue interest
-        uint error = cTokenModify.accrueInterest();
-        if (error != uint(Error.NO_ERROR)) return (Error.LENS_CTOKEN_ACCRUE_INTEREST_FAILED, 0);
+        uint balanceOfUnderlying = cTokenModify.balanceOfUnderlying(account);
 
         // Get account liquidity
         (Error err, uint liquidity, ) = getHypotheticalAccountLiquidityInternal(account, CToken(0), 0, 0);
         if (err != Error.NO_ERROR) return (err, 0);
         if (liquidity <= 0) return (Error.NO_ERROR, 0); // No available account liquidity, so no more borrow/redeem
-
-        // Read the balances and exchange rate from the cToken
-        uint cTokenModifyBalance = cTokenModify.balanceOf(account);
-        uint exchangeRateMantissa = cTokenModify.exchangeRateStored();
-        Exp memory collateralFactor = Exp({mantissa: markets[address(cTokenModify)].collateralFactorMantissa});
-        Exp memory exchangeRate = Exp({mantissa: exchangeRateMantissa});
 
         // Get the normalized price of the asset
         uint oraclePriceMantissa = oracle.getUnderlyingPrice(cTokenModify);
@@ -889,8 +882,14 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         Exp memory oraclePrice = Exp({mantissa: oraclePriceMantissa});
 
         // Pre-compute a conversion factor from tokens -> ether (normalized price value)
-        (MathError mErr, Exp memory tokensToEther) = mulExp3(collateralFactor, exchangeRate, oraclePrice);
-        if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
+        MathError mErr;
+        Exp memory tokensToEther;
+
+        if (!isBorrow) {
+            Exp memory collateralFactor = Exp({mantissa: markets[address(cTokenModify)].collateralFactorMantissa});
+            (mErr, tokensToEther) = mulExp(collateralFactor, oraclePrice);
+            if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
+        }
 
         // Get max borrow or redeem considering excess account liquidity
         uint maxBorrowOrRedeemAmount;
@@ -898,12 +897,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
 
         // Redeem only: max out at underlying balance
-        if (!isBorrow) {
-            uint balanceOfUnderlying;
-            (mErr, balanceOfUnderlying) = mulScalarTruncate(exchangeRate, cTokenModifyBalance);
-            if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
-            if (balanceOfUnderlying < maxBorrowOrRedeemAmount) maxBorrowOrRedeemAmount = balanceOfUnderlying;
-        }
+        if (!isBorrow && balanceOfUnderlying < maxBorrowOrRedeemAmount) maxBorrowOrRedeemAmount = balanceOfUnderlying;
 
         // Get max borrow or redeem considering cToken liquidity
         uint cTokenLiquidity = cTokenModify.getCash();
