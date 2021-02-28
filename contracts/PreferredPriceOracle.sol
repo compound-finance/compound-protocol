@@ -45,8 +45,7 @@ contract PreferredPriceOracle is PriceOracle {
         if (underlying == 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2) return 1e18;
 
         // Try to get Chainlink price
-        AggregatorV3Interface chainlinkPriceFeed = chainlinkOracle.priceFeeds(underlying);
-        if (address(chainlinkPriceFeed) != address(0)) return chainlinkOracle.getUnderlyingPrice(cToken);
+        if (chainlinkOracle.hasPriceFeed(underlying)) return chainlinkOracle.getUnderlyingPrice(cToken);
 
         // Otherwise, get price from secondary oracle
         return secondaryOracle.getUnderlyingPrice(cToken);
