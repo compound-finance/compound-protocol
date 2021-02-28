@@ -1,7 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "./PriceOracle.sol";
-import "./ChainlinkPriceOracle.sol";
+import "./EIP20Interface.sol";
 import "./CErc20.sol";
 
 interface ExchangeRates {
@@ -24,6 +24,10 @@ interface ISynth {
     function currencyKey() external view returns (bytes32);
 }
 
+contract Proxy {
+    address public target;
+}
+
 /**
  * @title SynthetixPriceOracle
  * @notice Returns prices for Synths from Synthetix's official `ExchangeRates` contract.
@@ -32,16 +36,12 @@ interface ISynth {
  */
 contract SynthetixPriceOracle is PriceOracle {
     /**
-     * @dev Synthetix's official `ExchangeRates` contract.
-     */
-    ExchangeRates public rootOracle = ExchangeRates(0xd69b189020EF614796578AfE4d10378c5e7e1138);
-
-    /**
      * @dev Returns the price in ETH of the token underlying `cToken` (implements `PriceOracle`).
      */
     function getUnderlyingPrice(CToken cToken) public view returns (uint) {
         address underlying = CErc20(address(cToken)).underlying();
         uint256 baseUnit = 10 ** uint(EIP20Interface(underlying).decimals());
+        underlying = Proxy(underlying).target(); // For some reason we have to use the logic contract instead of the proxy contract to get `resolver` and `currencyKey`
         ExchangeRates exchangeRates = ExchangeRates(MixinResolver(underlying).resolver().requireAndGetAddress("ExchangeRates", "Failed to get Synthetix's ExchangeRates contract address."));
         return mul(exchangeRates.effectiveValue(ISynth(underlying).currencyKey(), baseUnit, "ETH"), 1e36) / baseUnit;
     }
