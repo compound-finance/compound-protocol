@@ -1328,7 +1328,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but on top of that we want to log the fact that an attempted admin fee change failed.
-            return fail(Error(error), FailureInfo.SET_ADMIN_FEE_ACCRUE_INTEREST_FAILED);
+            return fail(Error(error), FailureInfo.SET_FUSE_FEE_ACCRUE_INTEREST_FAILED);
         }
         // _setAdminFeeFresh emits reserve-factor-specific logs on errors, so we don't need to.
         return _setFuseFeeFresh(getPendingFuseFeeFromAdmin());
