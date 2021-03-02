@@ -175,8 +175,7 @@ describe("governorBravo#castVote/2", () => {
           }
         },
         exec: (logs) => {
-          console.log(logs);
-          expect(logs.length).toEqual(2); // require only one read
+          expect(logs[logs.length - 1]["depth"]).toEqual(1); // last log is depth 1 (two SLOADS)
         }
       });
 
@@ -202,6 +201,9 @@ describe("governorBravo#castVote/2", () => {
               `${votes}${support}${voted}`
             );
           }
+        },
+        exec: (logs) => {
+          expect(logs[logs.length - 1]["depth"]).toEqual(1); // last log is depth 1 (two SLOADS)
         }
       });
     });
