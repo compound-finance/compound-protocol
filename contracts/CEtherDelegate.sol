@@ -7,7 +7,7 @@ import "./CEther.sol";
  * @notice CTokens which wrap Ether and are delegated to
  * @author Compound
  */
-contract CEtherDelegate is CEther, CDelegateInterface {
+contract CEtherDelegate is CDelegateInterface, CEther {
     /**
      * @notice Construct an empty delegate
      */

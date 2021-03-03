@@ -7,7 +7,7 @@ import "./CErc20.sol";
  * @notice CTokens which wrap an EIP-20 underlying and are delegated to
  * @author Compound
  */
-contract CErc20Delegate is CErc20, CDelegateInterface {
+contract CErc20Delegate is CDelegateInterface, CErc20 {
     /**
      * @notice Construct an empty delegate
      */
