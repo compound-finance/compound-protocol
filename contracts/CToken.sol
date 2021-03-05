@@ -796,14 +796,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
             return fail(Error.TOKEN_INSUFFICIENT_CASH, FailureInfo.BORROW_CASH_NOT_AVAILABLE);
         }
 
-        // Check max utilization rate
-        uint maxUtilizationRate = fuseAdmin.maxUtilizationRate();
-
-        if (maxUtilizationRate < 1e18) {
-            uint256 utilizationRate = totalBorrows == 0 ? 0 : totalBorrows * 1e18 / (cashPrior + totalBorrows - (totalReserves + totalFuseFees + totalAdminFees));
-            require(utilizationRate <= maxUtilizationRate, "utilization rate greater than max");
-        }
-
         BorrowLocalVars memory vars;
 
         /*
@@ -821,6 +813,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
             return failOpaque(Error.MATH_ERROR, FailureInfo.BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED, uint(vars.mathErr));
         }
 
+        // Check min borrow for this user for this asset
         allowed = comptroller.borrowWithinLimits(address(this), vars.accountBorrowsNew);
         if (allowed != 0) {
             return failOpaque(Error.COMPTROLLER_REJECTION, FailureInfo.BORROW_COMPTROLLER_REJECTION, allowed);
@@ -829,6 +822,14 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         (vars.mathErr, vars.totalBorrowsNew) = addUInt(totalBorrows, borrowAmount);
         if (vars.mathErr != MathError.NO_ERROR) {
             return failOpaque(Error.MATH_ERROR, FailureInfo.BORROW_NEW_TOTAL_BALANCE_CALCULATION_FAILED, uint(vars.mathErr));
+        }
+
+        // Check max utilization rate for this asset
+        uint maxUtilizationRate = fuseAdmin.maxUtilizationRate();
+
+        if (maxUtilizationRate < uint(-1)) {
+            uint256 utilizationRate = vars.totalBorrowsNew == 0 ? 0 : vars.totalBorrowsNew * 1e18 / (cashPrior + totalBorrows - (totalReserves + totalFuseFees + totalAdminFees));
+            if (utilizationRate <= maxUtilizationRate) return fail(Error.UTILIZATION_ABOVE_MAX, FailureInfo.NEW_UTILIZATION_RATE_ABOVE_MAX);
         }
 
         /////////////////////////
