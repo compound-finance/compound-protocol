@@ -87,7 +87,9 @@ async function makeCToken(opts = {}) {
           decimals,
           admin,
           cDelegatee._address,
-          "0x0"
+          "0x0",
+          0,
+          0
         ]
                                    );
       cToken = await saddle.getContractAt('CEtherDelegateHarness', cDelegator._address); // XXXS at
@@ -108,7 +110,9 @@ async function makeCToken(opts = {}) {
           decimals,
           admin,
           cDelegatee._address,
-          encodeParameters(['address', 'address'], [cDaiMaker._address, cDaiMaker._address])
+          encodeParameters(['address', 'address'], [cDaiMaker._address, cDaiMaker._address]),
+          0,
+          0
         ]
       );
       cToken = await saddle.getContractAt('CDaiDelegateHarness', cDelegator._address); // XXXS at
@@ -129,7 +133,9 @@ async function makeCToken(opts = {}) {
           decimals,
           admin,
           cDelegatee._address,
-          "0x0"
+          "0x0",
+          0,
+          0
         ]
                                    );
       cToken = await saddle.getContractAt('CErc20DelegateHarness', cDelegator._address); // XXXS at
