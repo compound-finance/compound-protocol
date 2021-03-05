@@ -1163,9 +1163,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         }
 
         // Check that rights have not already been renounced
-        if (!fuseAdminHasRights) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_ADMIN_RIGHTS_ALREADY_RENOUNCED);
-        }
+        if (!fuseAdminHasRights) return uint(Error.NO_ERROR);
 
         // Set fuseAdminHasRights to false
         fuseAdminHasRights = false;
@@ -1187,9 +1185,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         }
 
         // Check that rights have not already been renounced
-        if (!adminHasRights) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_ADMIN_RIGHTS_ALREADY_RENOUNCED);
-        }
+        if (!adminHasRights) return uint(Error.NO_ERROR);
 
         // Set adminHasRights to false
         adminHasRights = false;
