@@ -30,11 +30,6 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     event MarketExited(CToken cToken, address account);
 
     /**
-     * @notice Emitted when `enforceWhitelist` is changed
-     */
-    event WhitelistEnforcementChanged(bool enforce);
-
-    /**
      * @notice Emitted when close factor is changed by admin
      */
     event NewCloseFactor(uint oldCloseFactorMantissa, uint newCloseFactorMantissa);
@@ -266,11 +261,6 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         // Make sure market is listed
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
-        }
-
-        // Make sure minter is whitelisted
-        if (enforceWhitelist && !whitelist[minter]) {
-            return uint(Error.SUPPLIER_NOT_WHITELISTED);
         }
 
         // *may include Policy Hook-type checks
@@ -883,48 +873,6 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     }
 
     /*** Admin Functions ***/
-
-    /**
-      * @notice Sets the whitelist enforcement for the comptroller
-      * @dev Admin function to set a new whitelist enforcement boolean
-      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-      */
-    function _setWhitelistEnforcement(bool enforce) external returns (uint) {
-        // Check caller is admin
-        if (!hasAdminRights()) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.SET_WHITELIST_ENFORCEMENT_OWNER_CHECK);
-        }
-
-        // Check if `enforceWhitelist` already equals `enforce`
-        if (enforceWhitelist == enforce) {
-            return uint(Error.NO_ERROR);
-        }
-
-        // Set comptroller's `enforceWhitelist` to `enforce`
-        enforceWhitelist = enforce;
-
-        // Emit WhitelistEnforcementChanged(bool enforce);
-        emit WhitelistEnforcementChanged(enforce);
-
-        return uint(Error.NO_ERROR);
-    }
-
-    /**
-      * @notice Sets the whitelist `statuses` for `suppliers`
-      * @dev Admin function to set the whitelist `statuses` for `suppliers`
-      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-      */
-    function _setWhitelistStatuses(address[] calldata suppliers, bool[] calldata statuses) external returns (uint) {
-        // Check caller is admin
-        if (!hasAdminRights()) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.SET_WHITELIST_STATUS_OWNER_CHECK);
-        }
-
-        // Set whitelist statuses for suppliers
-        for (uint i = 0; i < suppliers.length; i++) whitelist[suppliers[i]] = statuses[i];
-
-        return uint(Error.NO_ERROR);
-    }
 
     /**
       * @notice Sets a new price oracle for the comptroller
