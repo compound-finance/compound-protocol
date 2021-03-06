@@ -26,7 +26,7 @@ contract CEtherDelegate is CDelegateInterface, CEther {
             implementation = address(0);
         }
 
-        require(hasAdminRights(), "only the admin may call _becomeImplementation");
+        require(msg.sender == admin, "only the admin may call _becomeImplementation");
     }
 
     /**
@@ -38,6 +38,6 @@ contract CEtherDelegate is CDelegateInterface, CEther {
             implementation = address(0);
         }
 
-        require(hasAdminRights(), "only the admin may call _resignImplementation");
+        require(msg.sender == admin, "only the admin may call _resignImplementation");
     }
 }

@@ -881,7 +881,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
       */
     function _setPriceOracle(PriceOracle newOracle) public returns (uint) {
         // Check caller is admin
-        if (!hasAdminRights()) {
+        if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PRICE_ORACLE_OWNER_CHECK);
         }
 
@@ -905,7 +905,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
       */
     function _setCloseFactor(uint newCloseFactorMantissa) external returns (uint256) {
         // Check caller is admin
-        if (!hasAdminRights()) {
+        if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_CLOSE_FACTOR_OWNER_CHECK);
         }
 
@@ -936,7 +936,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
       */
     function _setCollateralFactor(CToken cToken, uint newCollateralFactorMantissa) public returns (uint256) {
         // Check caller is admin
-        if (!hasAdminRights()) {
+        if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_COLLATERAL_FACTOR_OWNER_CHECK);
         }
 
@@ -977,7 +977,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
       */
     function _setMaxAssets(uint newMaxAssets) external returns (uint) {
         // Check caller is admin
-        if (!hasAdminRights()) {
+        if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_MAX_ASSETS_OWNER_CHECK);
         }
 
@@ -996,7 +996,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
       */
     function _setLiquidationIncentive(uint newLiquidationIncentiveMantissa) external returns (uint) {
         // Check caller is admin
-        if (!hasAdminRights()) {
+        if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_LIQUIDATION_INCENTIVE_OWNER_CHECK);
         }
 
@@ -1032,7 +1032,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
       */
     function _supportMarket(CToken cToken) public returns (uint) {
         // Check caller is admin
-        if (!hasAdminRights()) {
+        if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SUPPORT_MARKET_OWNER_CHECK);
         }
 
@@ -1081,7 +1081,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      * @return uint 0=success, otherwise a failure. (See enum Error for details)
      */
     function _setPauseGuardian(address newPauseGuardian) public returns (uint) {
-        if (!hasAdminRights()) {
+        if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PAUSE_GUARDIAN_OWNER_CHECK);
         }
 
@@ -1099,8 +1099,8 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
 
     function _setMintPaused(CToken cToken, bool state) public returns (bool) {
         require(markets[address(cToken)].isListed, "cannot pause a market that is not listed");
-        require(msg.sender == pauseGuardian || hasAdminRights(), "only pause guardian and admin can pause");
-        require(hasAdminRights() || state == true, "only admin can unpause");
+        require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
+        require(msg.sender == admin || state == true, "only admin can unpause");
 
         mintGuardianPaused[address(cToken)] = state;
         emit ActionPaused(cToken, "Mint", state);
@@ -1109,8 +1109,8 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
 
     function _setBorrowPaused(CToken cToken, bool state) public returns (bool) {
         require(markets[address(cToken)].isListed, "cannot pause a market that is not listed");
-        require(msg.sender == pauseGuardian || hasAdminRights(), "only pause guardian and admin can pause");
-        require(hasAdminRights() || state == true, "only admin can unpause");
+        require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
+        require(msg.sender == admin || state == true, "only admin can unpause");
 
         borrowGuardianPaused[address(cToken)] = state;
         emit ActionPaused(cToken, "Borrow", state);
@@ -1118,8 +1118,8 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     }
 
     function _setTransferPaused(bool state) public returns (bool) {
-        require(msg.sender == pauseGuardian || hasAdminRights(), "only pause guardian and admin can pause");
-        require(hasAdminRights() || state == true, "only admin can unpause");
+        require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
+        require(msg.sender == admin || state == true, "only admin can unpause");
 
         transferGuardianPaused = state;
         emit ActionPaused("Transfer", state);
@@ -1127,8 +1127,8 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     }
 
     function _setSeizePaused(bool state) public returns (bool) {
-        require(msg.sender == pauseGuardian || hasAdminRights(), "only pause guardian and admin can pause");
-        require(hasAdminRights() || state == true, "only admin can unpause");
+        require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
+        require(msg.sender == admin || state == true, "only admin can unpause");
 
         seizeGuardianPaused = state;
         emit ActionPaused("Seize", state);

@@ -836,7 +836,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
       */
     function _setCollateralFactor(CToken cToken, uint newCollateralFactorMantissa) external returns (uint256) {
         // Check caller is admin
-        if (!hasAdminRights()) {
+        if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_COLLATERAL_FACTOR_OWNER_CHECK);
         }
 
@@ -931,7 +931,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
     function _supportMarket(CToken cToken) external returns (uint) {
-        if (!hasAdminRights()) {
+        if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SUPPORT_MARKET_OWNER_CHECK);
         }
 
@@ -987,7 +987,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
                 //solium-disable-next-line security/no-tx-origin
                 tx.origin == admin
         );
-        bool isAdmin = hasAdminRights();
+        bool isAdmin = msg.sender == admin;
         return isAdmin || initializing;
     }
 }
