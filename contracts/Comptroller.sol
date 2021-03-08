@@ -997,7 +997,28 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Set whitelist statuses for suppliers
-        for (uint i = 0; i < suppliers.length; i++) whitelist[suppliers[i]] = statuses[i];
+        for (uint i = 0; i < suppliers.length; i++) {
+            address supplier = suppliers[i];
+
+            if (statuses[i]) {
+                // If not already whitelisted, add to whitelist
+                if (!whitelist[supplier]) {
+                    whitelist[supplier] = true;
+                    whitelistArray.push(supplier);
+                    whitelistIndexes[supplier] = whitelistArray.length - 1;
+                }
+            } else {
+                // If whitelisted, remove from whitelist
+                if (whitelist[supplier]) {
+                    whitelist[supplier] = false;
+
+                    // Copy last item in list to location of item to be removed and reduce length by 1
+                    address[] storage storedList = whitelistArray;
+                    storedList[whitelistIndexes[supplier]] = storedList[storedList.length - 1];
+                    storedList.length--;
+                }
+            }
+        }
 
         return uint(Error.NO_ERROR);
     }
@@ -1286,5 +1307,14 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      */
     function getAllBorrowers() public view returns (address[] memory) {
         return allBorrowers;
+    }
+
+    /**
+     * @notice Return all of the whitelist
+     * @dev The automatic getter may be used to access an individual whitelist status.
+     * @return The list of borrower account addresses
+     */
+    function getWhitelist() external view returns (address[] memory) {
+        return whitelistArray;
     }
 }
