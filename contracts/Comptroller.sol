@@ -872,32 +872,41 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         uint balanceOfUnderlying = cTokenModify.balanceOfUnderlying(account);
 
         // Get account liquidity
-        (Error err, uint liquidity, ) = getHypotheticalAccountLiquidityInternal(account, CToken(0), 0, 0);
+        (Error err, uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(account, CToken(0), 0, 0);
         if (err != Error.NO_ERROR) return (err, 0);
-        if (liquidity <= 0) return (Error.NO_ERROR, 0); // No available account liquidity, so no more borrow/redeem
+        if (shortfall > 0) return (Error.NO_ERROR, 0); // Shortfall, so no more borrow/redeem
 
-        // Get the normalized price of the asset
-        uint oraclePriceMantissa = oracle.getUnderlyingPrice(cTokenModify);
-        if (oraclePriceMantissa == 0) return (Error.PRICE_ERROR, 0);
-        Exp memory oraclePrice = Exp({mantissa: oraclePriceMantissa});
-
-        // Pre-compute a conversion factor from tokens -> ether (normalized price value)
-        MathError mErr;
-        Exp memory tokensToEther;
-
-        if (!isBorrow) {
-            Exp memory collateralFactor = Exp({mantissa: markets[address(cTokenModify)].collateralFactorMantissa});
-            (mErr, tokensToEther) = mulExp(collateralFactor, oraclePrice);
-            if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
-        }
-
-        // Get max borrow or redeem considering excess account liquidity
+        // Get max borrow/redeem
         uint maxBorrowOrRedeemAmount;
-        (mErr, maxBorrowOrRedeemAmount) = divScalarByExpTruncate(liquidity, isBorrow ? oraclePrice : tokensToEther);
-        if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
 
-        // Redeem only: max out at underlying balance
-        if (!isBorrow && balanceOfUnderlying < maxBorrowOrRedeemAmount) maxBorrowOrRedeemAmount = balanceOfUnderlying;
+        if (!isBorrow && !markets[address(cTokenModify)].accountMembership[msg.sender]) {
+            // Max redeem = balance of underlying if not used as collateral
+            maxBorrowOrRedeemAmount = balanceOfUnderlying;
+        } else {
+            if (liquidity <= 0) return (Error.NO_ERROR, 0); // No available account liquidity, so no more borrow/redeem
+
+            // Get the normalized price of the asset
+            uint oraclePriceMantissa = oracle.getUnderlyingPrice(cTokenModify);
+            if (oraclePriceMantissa == 0) return (Error.PRICE_ERROR, 0);
+            Exp memory oraclePrice = Exp({mantissa: oraclePriceMantissa});
+
+            // Pre-compute a conversion factor from tokens -> ether (normalized price value)
+            MathError mErr;
+            Exp memory tokensToEther;
+
+            if (!isBorrow) {
+                Exp memory collateralFactor = Exp({mantissa: markets[address(cTokenModify)].collateralFactorMantissa});
+                (mErr, tokensToEther) = mulExp(collateralFactor, oraclePrice);
+                if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
+            }
+
+            // Get max borrow or redeem considering excess account liquidity
+            (mErr, maxBorrowOrRedeemAmount) = divScalarByExpTruncate(liquidity, isBorrow ? oraclePrice : tokensToEther);
+            if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
+
+            // Redeem only: max out at underlying balance
+            if (!isBorrow && balanceOfUnderlying < maxBorrowOrRedeemAmount) maxBorrowOrRedeemAmount = balanceOfUnderlying;
+        }
 
         // Get max borrow or redeem considering cToken liquidity
         uint cTokenLiquidity = cTokenModify.getCash();
