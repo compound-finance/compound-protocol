@@ -38663,7 +38663,7 @@
             "type": "function"
         }
     ],
-    "BravoDelegator": [
+    "GovernorBravoDelegator": [
         {
             "inputs": [
                 {
@@ -39744,7 +39744,7 @@
             "signature": "0x02a251a3"
         }
     ],
-    "BravoDelegate": [
+    "GovernorBravoDelegate": [
         {
             "anonymous": false,
             "inputs": [
