@@ -840,7 +840,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
                 maximum redeem amount)
      */
     function getMaxRedeem(address account, CToken cTokenModify) external returns (uint, uint) {
-        (Error err, uint maxRedeem) = _getMaxRedeemOrBorrow(account, cTokenModify, false);
+        (Error err, uint maxRedeem) = getMaxRedeemOrBorrow(account, cTokenModify, false);
         return (uint(err), maxRedeem);
     }
 
@@ -854,12 +854,12 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
                 maximum borrow amount)
      */
     function getMaxBorrow(address account, CToken cTokenModify) external returns (uint, uint) {
-        (Error err, uint maxBorrow) = _getMaxRedeemOrBorrow(account, cTokenModify, true);
+        (Error err, uint maxBorrow) = getMaxRedeemOrBorrow(account, cTokenModify, true);
         return (uint(err), maxBorrow);
     }
 
     /**
-     * @notice Determine the maximum borrow/redeem amount of a cToken
+     * @dev Internal function to determine the maximum borrow/redeem amount of a cToken
      * @param cTokenModify The market to hypothetically borrow/redeem in
      * @param account The account to determine liquidity for
      * @dev Note that we calculate the exchangeRateStored for each collateral cToken using stored data,
@@ -867,7 +867,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      * @return (possible error code,
                 maximum borrow/redeem amount)
      */
-    function _getMaxRedeemOrBorrow(address account, CToken cTokenModify, bool isBorrow) internal returns (Error, uint) {
+    function getMaxRedeemOrBorrow(address account, CToken cTokenModify, bool isBorrow) internal returns (Error, uint) {
         // Accrue interest
         uint balanceOfUnderlying = cTokenModify.balanceOfUnderlying(account);
 
@@ -883,26 +883,9 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
             // Max redeem = balance of underlying if not used as collateral
             maxBorrowOrRedeemAmount = balanceOfUnderlying;
         } else {
-            if (liquidity <= 0) return (Error.NO_ERROR, 0); // No available account liquidity, so no more borrow/redeem
-
-            // Get the normalized price of the asset
-            uint oraclePriceMantissa = oracle.getUnderlyingPrice(cTokenModify);
-            if (oraclePriceMantissa == 0) return (Error.PRICE_ERROR, 0);
-            Exp memory oraclePrice = Exp({mantissa: oraclePriceMantissa});
-
-            // Pre-compute a conversion factor from tokens -> ether (normalized price value)
-            MathError mErr;
-            Exp memory tokensToEther;
-
-            if (!isBorrow) {
-                Exp memory collateralFactor = Exp({mantissa: markets[address(cTokenModify)].collateralFactorMantissa});
-                (mErr, tokensToEther) = mulExp(collateralFactor, oraclePrice);
-                if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
-            }
-
-            // Get max borrow or redeem considering excess account liquidity
-            (mErr, maxBorrowOrRedeemAmount) = divScalarByExpTruncate(liquidity, isBorrow ? oraclePrice : tokensToEther);
-            if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
+            // Avoid "stack too deep" error by separating this logic
+            (err, maxBorrowOrRedeemAmount) = _getMaxRedeemOrBorrow(liquidity, cTokenModify, isBorrow);
+            if (err != Error.NO_ERROR) return (err, 0);
 
             // Redeem only: max out at underlying balance
             if (!isBorrow && balanceOfUnderlying < maxBorrowOrRedeemAmount) maxBorrowOrRedeemAmount = balanceOfUnderlying;
@@ -913,6 +896,33 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
 
         // Return the minimum of the two maximums
         return (Error.NO_ERROR, maxBorrowOrRedeemAmount <= cTokenLiquidity ? maxBorrowOrRedeemAmount : cTokenLiquidity);
+    }
+
+    /**
+     * @dev Portion of the logic above separated to avoid "stack too deep" errors.
+     */
+    function _getMaxRedeemOrBorrow(uint liquidity, CToken cTokenModify, bool isBorrow) internal view returns (Error, uint) {
+        if (liquidity <= 0) return (Error.NO_ERROR, 0); // No available account liquidity, so no more borrow/redeem
+
+        // Get the normalized price of the asset
+        uint oraclePriceMantissa = oracle.getUnderlyingPrice(cTokenModify);
+        if (oraclePriceMantissa == 0) return (Error.PRICE_ERROR, 0);
+        Exp memory conversionFactor = Exp({mantissa: oraclePriceMantissa});
+
+        // Pre-compute a conversion factor from tokens -> ether (normalized price value)
+        MathError mErr;
+
+        if (!isBorrow) {
+            Exp memory collateralFactor = Exp({mantissa: markets[address(cTokenModify)].collateralFactorMantissa});
+            (mErr, conversionFactor) = mulExp(collateralFactor, conversionFactor);
+            if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
+        }
+
+        // Get max borrow or redeem considering excess account liquidity
+        uint maxBorrowOrRedeemAmount;
+        (mErr, maxBorrowOrRedeemAmount) = divScalarByExpTruncate(liquidity, conversionFactor);
+        if (mErr != MathError.NO_ERROR) return (Error.MATH_ERROR, 0);
+        return (Error.NO_ERROR, maxBorrowOrRedeemAmount);
     }
 
     /**
