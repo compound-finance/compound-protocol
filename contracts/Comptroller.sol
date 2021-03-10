@@ -238,6 +238,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
             address[] storage storedList2 = allBorrowers;
             storedList2[borrowerIndexes[msg.sender]] = storedList2[storedList2.length - 1];
             storedList2.length--;
+            borrowerIndexes[storedList2[borrowerIndexes[msg.sender]]] = borrowerIndexes[msg.sender];
             borrowers[msg.sender] = false;
         }
 
@@ -1035,6 +1036,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
                     address[] storage storedList = whitelistArray;
                     storedList[whitelistIndexes[supplier]] = storedList[storedList.length - 1];
                     storedList.length--;
+                    whitelistIndexes[storedList[whitelistIndexes[supplier]]] = whitelistIndexes[supplier];
                 }
             }
         }
