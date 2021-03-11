@@ -1,7 +1,7 @@
 const { last } = require('./Utils/JS');
 const { address, etherUnsigned } = require('./Utils/Ethereum');
 const { default: diff } = require('jest-diff');
-const { ComptrollerErr, TokenErr, IRErr, MathErr } = require('./Errors');
+const { ComptrollerErr, OracleErr, TokenErr, IRErr, MathErr } = require('./Errors');
 
 function opts(comment) {
   return {
@@ -312,6 +312,10 @@ expect.extend({
 
   toHaveLog(result, event, params) {
     return hasLog.call(this, result, event, params);
+  },
+
+  toHaveOracleFailure(result, err, info, detail=undefined) {
+    return hasFailure.call(this, result, err, info, detail, OracleErr, 'toHaveOracleFailure');
   },
 
   toHaveTrollFailure(result, err, info, detail=undefined) {
