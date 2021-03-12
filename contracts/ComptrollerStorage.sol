@@ -114,8 +114,8 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
     /// @notice A list of all borrowers who have entered markets
     address[] public allBorrowers;
 
-    /// @notice Indexes of borrower account addresses in the `borrowers` array
-    mapping(address => uint256) public borrowerIndexes;
+    /// @notice Indexes of borrower account addresses in the `allBorrowers` array
+    mapping(address => uint256) internal borrowerIndexes;
 
     /**
      * @dev Maps suppliers to booleans indicating if they have ever supplied to any markets
@@ -130,6 +130,12 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
 
     /// @notice Maps addresses to booleans indicating if they are allowed to supply assets (i.e., mint cTokens)
     mapping(address => bool) public whitelist;
+
+    /// @notice An array of all whitelisted accounts
+    address[] public whitelistArray;
+
+    /// @notice Indexes of account addresses in the `whitelistArray` array
+    mapping(address => uint256) internal whitelistIndexes;
 
 
     /**
