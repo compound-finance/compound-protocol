@@ -20,6 +20,16 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
     event NewImplementation(address oldImplementation, address newImplementation);
 
     /**
+      * @notice Event emitted when the Fuse admin renounces their rights
+      */
+    event FuseAdminRightsRenounced();
+
+    /**
+      * @notice Event emitted when the admin renounces their rights
+      */
+    event AdminRightsRenounced();
+
+    /**
       * @notice Emitted when pendingAdmin is changed
       */
     event NewPendingAdmin(address oldPendingAdmin, address newPendingAdmin);
@@ -74,6 +84,50 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
         return uint(Error.NO_ERROR);
     }
 
+
+    /**
+      * @notice Renounce Fuse admin rights.
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
+    function _renounceFuseAdminRights() external returns (uint) {
+        // Check caller = admin
+        if (!hasAdminRights()) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_ADMIN_RIGHTS_OWNER_CHECK);
+        }
+
+        // Check that rights have not already been renounced
+        if (!fuseAdminHasRights) return uint(Error.NO_ERROR);
+
+        // Set fuseAdminHasRights to false
+        fuseAdminHasRights = false;
+
+        // Emit FuseAdminRightsRenounced()
+        emit FuseAdminRightsRenounced();
+
+        return uint(Error.NO_ERROR);
+    }
+
+    /**
+      * @notice Renounce admin rights.
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
+    function _renounceAdminRights() external returns (uint) {
+        // Check caller = admin
+        if (!hasAdminRights()) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_ADMIN_RIGHTS_OWNER_CHECK);
+        }
+
+        // Check that rights have not already been renounced
+        if (!adminHasRights) return uint(Error.NO_ERROR);
+
+        // Set adminHasRights to false
+        adminHasRights = false;
+
+        // Emit AdminRightsRenounced()
+        emit AdminRightsRenounced();
+
+        return uint(Error.NO_ERROR);
+    }
 
     /**
       * @notice Begins transfer of admin rights. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.

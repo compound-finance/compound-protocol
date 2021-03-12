@@ -208,6 +208,16 @@ contract CTokenInterface is CTokenStorage {
     /*** Admin Events ***/
 
     /**
+     * @notice Event emitted when the Fuse admin renounces their rights
+     */
+    event FuseAdminRightsRenounced();
+
+    /**
+     * @notice Event emitted when the admin renounces their rights
+     */
+    event AdminRightsRenounced();
+
+    /**
      * @notice Event emitted when pendingAdmin is changed
      */
     event NewPendingAdmin(address oldPendingAdmin, address newPendingAdmin);
