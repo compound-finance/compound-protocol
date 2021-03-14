@@ -398,7 +398,9 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      * @param accountBorrowsNew The user's new borrow balance of the underlying asset
      */
     function borrowWithinLimits(address cToken, uint accountBorrowsNew) external returns (uint) {
-        (MathError mathErr, uint borrowBalanceEth) = mulScalarTruncate(Exp({mantissa: oracle.getUnderlyingPrice(CToken(cToken))}), accountBorrowsNew);
+        uint oraclePriceMantissa = oracle.getUnderlyingPrice(CToken(cToken));
+        if (oraclePriceMantissa == 0) return uint(Error.PRICE_ERROR);
+        (MathError mathErr, uint borrowBalanceEth) = mulScalarTruncate(Exp({mantissa: oraclePriceMantissa}), accountBorrowsNew);
         if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
         if (borrowBalanceEth < fuseAdmin.minBorrowEth()) return uint(Error.BORROW_BELOW_MIN);
         return uint(Error.NO_ERROR);
