@@ -5,6 +5,9 @@ import "./CToken.sol";
 /**
  * @title Compound's CErc20 Contract
  * @notice CTokens which wrap an EIP-20 underlying
+ * @dev This contract should not to be deployed on its own; instead, deploy:
+ * 1) `CErc20Delegator` (proxy contract) and `CErc20Delegate` (logic/implementation contract).
+ * 2) `CErc20Immutable` to deploy without the proxy storage pattern.
  * @author Compound
  */
 contract CErc20 is CToken, CErc20Interface {

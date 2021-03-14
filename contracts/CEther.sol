@@ -5,6 +5,9 @@ import "./CToken.sol";
 /**
  * @title Compound's CEther Contract
  * @notice CToken which wraps Ether
+ * @dev This contract should not to be deployed on its own; instead, deploy:
+ * 1) `CEtherDelegator` (proxy contract) and `CEtherDelegate` (logic/implementation contract).
+ * 2) `CEtherImmutable` to deploy without the proxy storage pattern.
  * @author Compound
  */
 contract CEther is CToken, CEtherInterface {
