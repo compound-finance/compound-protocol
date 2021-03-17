@@ -229,12 +229,11 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
 
         // If the user has exited all markets, remove them from the `allBorrowers` array
         if (storedList.length == 0) {
-            // copy last item in list to location of item to be removed, reduce length by 1
-            address[] storage storedList2 = allBorrowers;
-            storedList2[borrowerIndexes[msg.sender]] = storedList2[storedList2.length - 1];
-            storedList2.length--;
-            borrowerIndexes[storedList2[borrowerIndexes[msg.sender]]] = borrowerIndexes[msg.sender];
-            borrowers[msg.sender] = false;
+            allBorrowers[borrowerIndexes[msg.sender]] = allBorrowers[allBorrowers.length - 1]; // Copy last item in list to location of item to be removed
+            allBorrowers.length--; // Reduce length by 1
+            borrowerIndexes[allBorrowers[borrowerIndexes[msg.sender]]] = borrowerIndexes[msg.sender]; // Set borrower index of moved item to correct index
+            borrowerIndexes[msg.sender] = 0; // Reset sender borrower index to 0 for a gas refund
+            borrowers[msg.sender] = false; // Tell the contract that the sender is no longer a borrower (so it knows to add the borrower back if they enter a market in the future)
         }
 
         emit MarketExited(cToken, msg.sender);
