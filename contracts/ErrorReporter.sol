@@ -227,6 +227,6 @@ contract TokenErrorReporter {
     function failOpaque(Error err, FailureInfo info, uint opaqueError) internal returns (uint) {
         emit Failure(uint(err), uint(info), opaqueError);
 
-        return uint(err);
+        return err == Error.COMPTROLLER_REJECTION ? 1000 + opaqueError : uint(err);
     }
 }
