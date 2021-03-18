@@ -20,6 +20,11 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     event MarketListed(CToken cToken);
 
     /**
+     * @notice Emitted when an admin supports a market
+     */
+    event MarketUnlisted(CToken cToken);
+
+    /**
      * @notice Emitted when an account enters a market
      */
     event MarketEntered(CToken cToken, address account);
@@ -1170,6 +1175,50 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     function _supportMarketAndSetCollateralFactor(CToken cToken, uint newCollateralFactorMantissa) external returns (uint) {
         uint256 err = _supportMarket(cToken);
         return err == uint(Error.NO_ERROR) ? _setCollateralFactor(cToken, newCollateralFactorMantissa) : err;
+    }
+
+    /**
+      * @notice Removed a market from the markets mapping and sets it as unlisted
+      * @dev Admin function unset isListed and collateralFactorMantissa and unadd support for the market
+      * @param cToken The address of the market (token) to unlist
+      * @return uint 0=success, otherwise a failure. (See enum Error for details)
+      */
+    function _unsupportMarket(CToken cToken) external returns (uint) {
+        // Check admin rights
+        if (!hasAdminRights()) return fail(Error.UNAUTHORIZED, FailureInfo.UNSUPPORT_MARKET_OWNER_CHECK);
+
+        // Check if market is already unlisted
+        if (!markets[address(cToken)].isListed) return fail(Error.MARKET_NOT_LISTED, FailureInfo.UNSUPPORT_MARKET_DOES_NOT_EXIST);
+
+        // Check if market is in use
+        if (cToken.totalSupply() > 0) return fail(Error.NONZERO_TOTAL_SUPPLY, FailureInfo.UNSUPPORT_MARKET_IN_USE);
+
+        // Unlist market
+        delete markets[address(cToken)];
+        
+        /* Delete cToken from allMarkets */
+        // load into memory for faster iteration
+        CToken[] memory _allMarkets = allMarkets;
+        uint len = _allMarkets.length;
+        uint assetIndex = len;
+        for (uint i = 0; i < len; i++) {
+            if (_allMarkets[i] == cToken) {
+                assetIndex = i;
+                break;
+            }
+        }
+
+        // We *must* have found the asset in the list or our redundant data structure is broken
+        assert(assetIndex < len);
+
+        // copy last item in list to location of item to be removed, reduce length by 1
+        allMarkets[assetIndex] = allMarkets[allMarkets.length - 1];
+        allMarkets.length--;
+
+        cTokensByUnderlying[cToken.isCEther() ? address(0) : CErc20(address(cToken)).underlying()] = CToken(address(0));
+        emit MarketUnlisted(cToken);
+
+        return uint(Error.NO_ERROR);
     }
 
     /**

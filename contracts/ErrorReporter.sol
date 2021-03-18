@@ -22,7 +22,8 @@ contract ComptrollerErrorReporter {
         TOO_MUCH_REPAY,
         SUPPLIER_NOT_WHITELISTED,
         BORROW_BELOW_MIN,
-        SUPPLY_ABOVE_MAX
+        SUPPLY_ABOVE_MAX,
+        NONZERO_TOTAL_SUPPLY
     }
 
     enum FailureInfo {
@@ -47,7 +48,10 @@ contract ComptrollerErrorReporter {
         SET_WHITELIST_STATUS_OWNER_CHECK,
         SUPPORT_MARKET_EXISTS,
         SUPPORT_MARKET_OWNER_CHECK,
-        SET_PAUSE_GUARDIAN_OWNER_CHECK
+        SET_PAUSE_GUARDIAN_OWNER_CHECK,
+        UNSUPPORT_MARKET_OWNER_CHECK,
+        UNSUPPORT_MARKET_DOES_NOT_EXIST,
+        UNSUPPORT_MARKET_IN_USE
     }
 
     /**
