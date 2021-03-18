@@ -124,9 +124,9 @@ describe('CToken', function () {
     });
 
     it("increases Fuse admin balance and reduces Fuse fees on success", async () => {
-      const balance = etherUnsigned(await call(cToken.underlying, 'balanceOf', ["0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6"]));
+      const balance = etherUnsigned(await call(cToken.underlying, 'balanceOf', ["0xa731585ab05fC9f83555cf9Bff8F58ee94e18F85"]));
       expect(await send(cToken, 'harnessWithdrawFuseFeesFresh', [fuseFees])).toSucceed();
-      expect(await call(cToken.underlying, 'balanceOf', ["0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6"])).toEqualNumber(balance.add(fuseFees));
+      expect(await call(cToken.underlying, 'balanceOf', ["0xa731585ab05fC9f83555cf9Bff8F58ee94e18F85"])).toEqualNumber(balance.add(fuseFees));
       expect(await call(cToken, 'totalFuseFees')).toEqualNumber(0);
     });
   });
