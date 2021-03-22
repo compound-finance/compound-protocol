@@ -209,11 +209,17 @@ contract TokenErrorReporter {
 contract OracleErrorReporter {
     enum Error {
         NO_ERROR,
-        UNAUTHORIZED
+        UNAUTHORIZED,
+        BAD_INPUT,
+        CANNOT_FAILOVER
     }
 
     enum FailureInfo {
-        SET_PRICE_FEED_OWNER_CHECK
+        SET_PRICE_FEED_OWNER_CHECK,
+        SET_PRICE_FEED_ZERO_ADDRESS,
+        SET_PRICE_FEED_INVALID_FAILOVER,
+        FAILOVER_PRICE_FEED_OWNER_CHECK,
+        ALREADY_FAILED_OVER
     }
 
     /**
