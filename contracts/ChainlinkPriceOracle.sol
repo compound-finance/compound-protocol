@@ -26,6 +26,11 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
     //// @notice Emitted when a cToken price feed is failed over
     event PriceFeedFailover(address indexed cTokenAddress, address indexed oldPriceFeed, address indexed failoverPriceFeed);
 
+    /**
+     * @notice Create a new ChainlinkPriceOracle
+     * @dev msg.sender is used as the full admin. failoverAdminAddress is used as the failoverAdmin
+     * @param failoverAdminAddress failover admin
+     */
     constructor(address failoverAdminAddress) public {
         admin = msg.sender;
         failoverAdmin = failoverAdminAddress;
