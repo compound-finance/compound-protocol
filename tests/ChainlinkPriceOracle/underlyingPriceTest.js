@@ -1,10 +1,11 @@
 describe('getUnderlyingPrice', () => {
-    let root, cToken, feed, accounts;
+    let root, cToken, feed, failoverFeed, accounts;
     let clPriceOracle;
     beforeEach(async () => {
         [root, cToken, ...accounts] = saddle.accounts;
-        clPriceOracle = await deploy('ChainlinkPriceOracle', {from: root});
+        clPriceOracle = await deploy('ChainlinkPriceOracle', [root], {from: root});
         feed = await deploy('MockAggregatorV3', {from: root});
+        failoverFeed = await deploy('MockAggregatorV3', {from: root});
     })
 
     it('should revert if the feed does not exist', async () => {
@@ -28,7 +29,7 @@ describe('getUnderlyingPrice', () => {
 
         // Add the feed to the oracle
         expect(
-            await send(clPriceOracle, '_setPriceFeed', [cToken, feed.options.address], {from: root})
+            await send(clPriceOracle, '_setPriceFeed', [cToken, feed.options.address, failoverFeed.options.address], {from: root})
         ).toSucceed();
 
         // Run the test
@@ -51,7 +52,7 @@ describe('getUnderlyingPrice', () => {
         ).toSucceed();
         // Add the feed to the oracle
         expect(
-            await send(clPriceOracle, '_setPriceFeed', [cToken, feed.options.address], {from: root})
+            await send(clPriceOracle, '_setPriceFeed', [cToken, feed.options.address, failoverFeed.options.address], {from: root})
         ).toSucceed();
         // Run the test
         expect(
