@@ -20,6 +20,12 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
     //// @notice Failover price feeds to switch to in emergency
     mapping(address => AggregatorInterface) public failoverFeeds;
 
+    //// @notice Emitted when a new administrator is set
+    event AdminChanged(address indexed newAdmin);
+
+    //// @notice Emitted when a new failover admin is set
+    event FailoverAdminChanged(address indexed newFailoverAdmin);
+
     //// @notice Emitted when a price feed is set
     event PriceFeedSet(address indexed cTokenAddress, address indexed newPriceFeed, address indexed failoverPriceFeed);
 
@@ -53,6 +59,46 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
     }
 
     /*** Admin Only Functions ***/
+
+    /**
+     * @notice Set a new admin for this contract
+     * @dev Only the current admin can call this function
+     * @param newAdmin The new administrator address
+     * @return Success code uint
+     */
+    function _setAdmin(address newAdmin) external returns (uint) {
+        // Check caller is admin
+        if (msg.sender != admin) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_ADMIN_OWNER_CHECK);
+        }
+
+        // Set new admin
+        admin = newAdmin;
+
+        emit AdminChanged(newAdmin);
+
+        return uint(Error.NO_ERROR);
+    }
+
+    /**
+     * @notice Set a new failover admin for this contract
+     * @dev Only the admin can call this function
+     * @param newFailoverAdmin The new failvover admin address
+     * @return Success code uint
+     */
+    function _setFailoverAdmin(address newFailoverAdmin) external returns (uint) {
+        // Check caller is admin
+        if (msg.sender != admin) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_FAILOVER_ADMIN_OWNER_CHECK);
+        }
+
+        // Set new admin
+        failoverAdmin = newFailoverAdmin;
+
+        emit FailoverAdminChanged(newFailoverAdmin);
+
+        return uint(Error.NO_ERROR);
+    }
 
     /**
      * @notice Add a price feed for a cToken

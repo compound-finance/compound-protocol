@@ -2,7 +2,7 @@ const {
   address
 } = require('../Utils/Ethereum');
 
-describe('admin / _setPriceFeed ', () => {
+describe('admin configuration functions', () => {
   let root, failoverAdmin, cToken, feed, failoverFeed, accounts;
   let clPriceOracle;
   beforeEach(async () => {
@@ -14,11 +14,73 @@ describe('admin / _setPriceFeed ', () => {
     it('should return correct admin', async () => {
       expect(await call(clPriceOracle, 'admin')).toEqual(root);
     });
+  });
 
+  describe('failoverAdmin()', () => {
     it('should return correct failoverAdmin', async () => {
       expect(await call(clPriceOracle, 'failoverAdmin')).toEqual(failoverAdmin);
     })
-  });
+  })
+
+  describe('_setAdmin()', () => {
+    it('should only be callable by admin', async () => {
+      expect(
+        await send(clPriceOracle, '_setAdmin', [accounts[0]], {from: accounts[1]})
+      ).toHaveOracleFailure('UNAUTHORIZED', 'SET_ADMIN_OWNER_CHECK');
+
+      const response = await call(clPriceOracle, 'admin');
+      expect(response).toEqual(root)
+    })
+
+    it('should set the new admin', async () => {
+      const newAdmin = accounts[0]
+      expect(
+        await send(clPriceOracle, '_setAdmin', [newAdmin], {from: root})
+      ).toSucceed();
+
+      const response = await call(clPriceOracle, 'admin');
+      expect(response).toEqual(newAdmin)
+    })
+
+    it('should emit an event', async () => {
+      const newAdmin = accounts[0]
+
+      const result = await send(clPriceOracle, '_setAdmin', [newAdmin], {from: root})
+      expect(result).toHaveLog('AdminChanged', {
+        newAdmin: newAdmin
+      });
+    })
+  })
+
+  describe('_setFailoverAdmin()', () => {
+    it('should only be callable by admin', async () => {
+      expect(
+        await send(clPriceOracle, '_setFailoverAdmin', [accounts[0]], {from: accounts[1]})
+      ).toHaveOracleFailure('UNAUTHORIZED', 'SET_FAILOVER_ADMIN_OWNER_CHECK');
+
+      const response = await call(clPriceOracle, 'failoverAdmin');
+      expect(response).toEqual(failoverAdmin)
+    })
+
+    it('should set the new failover admin', async () => {
+      const newFailoverAdmin = accounts[0]
+      expect(
+        await send(clPriceOracle, '_setFailoverAdmin', [newFailoverAdmin], {from: root})
+      ).toSucceed();
+
+      const response = await call(clPriceOracle, 'failoverAdmin');
+      expect(response).toEqual(newFailoverAdmin)
+    })
+
+    it('should emit an event', async () => {
+      const newFailoverAdmin = accounts[0]
+
+      const result = await send(clPriceOracle, '_setFailoverAdmin', [newFailoverAdmin], {from: root})
+      expect(result).toHaveLog('FailoverAdminChanged', {
+        newFailoverAdmin: newFailoverAdmin
+      });
+    })
+  })
 
   describe('_setPriceFeed()', () => {
     it('should only be callable by admin', async () => {
@@ -87,6 +149,9 @@ describe('admin / _setPriceFeed ', () => {
       expect(
         await send(clPriceOracle, '_failoverPriceFeed', [cToken], {from: accounts[0]})
       ).toHaveOracleFailure('UNAUTHORIZED', 'FAILOVER_PRICE_FEED_OWNER_CHECK');
+
+      const response = await call(clPriceOracle, 'priceFeeds', [cToken])
+      expect(response).toEqual(feed)
     })
 
     it('should fail if already failed over', async () => {
@@ -116,7 +181,5 @@ describe('admin / _setPriceFeed ', () => {
         failoverPriceFeed: failoverFeed
       });
     })
-
   })
-
 });
