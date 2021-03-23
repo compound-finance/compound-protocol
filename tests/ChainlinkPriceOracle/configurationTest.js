@@ -32,6 +32,12 @@ describe('admin configuration functions', () => {
       expect(response).toEqual(root)
     })
 
+    it('should only allow a different admin to be set', async () => {
+      expect(
+        await send(clPriceOracle, '_setAdmin', [root], {from: root})
+      ).toHaveOracleFailure('BAD_INPUT', 'SET_ADMIN_NO_CHANGE');
+    })
+
     it('should set the new admin', async () => {
       const newAdmin = accounts[0]
       expect(
@@ -60,6 +66,12 @@ describe('admin configuration functions', () => {
 
       const response = await call(clPriceOracle, 'failoverAdmin');
       expect(response).toEqual(failoverAdmin)
+    })
+
+    it('should only allow a different failover admin to be set', async () => {
+      expect(
+        await send(clPriceOracle, '_setFailoverAdmin', [failoverAdmin], {from: root})
+      ).toHaveOracleFailure('BAD_INPUT', 'SET_FAILOVER_ADMIN_NO_CHANGE');
     })
 
     it('should set the new failover admin', async () => {

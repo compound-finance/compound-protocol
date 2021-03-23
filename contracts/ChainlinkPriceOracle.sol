@@ -72,6 +72,11 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_ADMIN_OWNER_CHECK);
         }
 
+        // Check if new admin is different to old
+        if (newAdmin == admin) {
+            return fail(Error.BAD_INPUT, FailureInfo.SET_ADMIN_NO_CHANGE);
+        }
+
         // Set new admin
         admin = newAdmin;
 
@@ -90,6 +95,11 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
         // Check caller is admin
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_FAILOVER_ADMIN_OWNER_CHECK);
+        }
+
+        // Check if new failover admin is different to old
+        if (newFailoverAdmin == failoverAdmin) {
+            return fail(Error.BAD_INPUT, FailureInfo.SET_FAILOVER_ADMIN_NO_CHANGE);
         }
 
         // Set new admin
