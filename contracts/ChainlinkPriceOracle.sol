@@ -128,7 +128,9 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
      * @dev Only callable by the administrator
      * @param cTokenAddress The address of the cToken
      * @param newPriceFeedAddress The address of the price feed
+     * @param newPriceFeedExtraDecimals The extra decimals required for the new price feed to conform to 18 decimals
      * @param failoverPriceFeedAddress The failover address
+     * @param failoverPriceFeedExtraDecimals The extra decimals required for the failover feed to conform to 18 decimals
      * @return Whether or not the price feed was set
      */
     function _setPriceFeed(address cTokenAddress,
