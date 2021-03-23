@@ -207,4 +207,47 @@ describe('admin configuration functions', () => {
       });
     })
   })
+
+  describe('_failoverPriceFeeds()', () => {
+    let cToken2, feed2, failoverFeed2
+    beforeEach(async () => {
+      cToken2 = accounts[0]
+      feed2 = accounts[1]
+      failoverFeed2 = accounts[2]
+      await send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, failoverFeed, decimals], {from: root})
+      await send(clPriceOracle, '_setPriceFeed', [cToken2, feed2, decimals, failoverFeed2, decimals], {from: root})
+    })
+
+    it('should only be callable by admin or failoverAdmin', async () => {
+      await expect(
+        send(clPriceOracle, '_failoverPriceFeeds', [[cToken]], {from: accounts[0]})
+      ).rejects.toRevert('revert Must be admin or failover admin');
+
+      const response = await call(clPriceOracle, 'priceFeeds', [cToken])
+      expect(response[0]).toEqual(feed)
+    })
+
+    it('should properly fail over both feeds in one transaction', async () => {
+      expect(
+        await send(clPriceOracle, '_failoverPriceFeeds', [[cToken, cToken2]], {from: failoverAdmin})
+      ).toSucceed();
+
+      const response1 = await call(clPriceOracle, 'priceFeeds', [cToken]);
+      expect(response1[0]).toEqual(failoverFeed);
+
+      const response2 = await call(clPriceOracle, 'priceFeeds', [cToken2]);
+      expect(response2[0]).toEqual(failoverFeed2);
+    })
+
+    it('should fail if already failed over', async () => {
+      expect(
+        await send(clPriceOracle, '_failoverPriceFeed', [cToken], {from: failoverAdmin})
+      ).toSucceed();
+
+      await expect(
+        send(clPriceOracle, '_failoverPriceFeeds', [[cToken]], {from: root})
+      ).rejects.toRevert('revert Already failed over');
+    })
+
+  })
 });

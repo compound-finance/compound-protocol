@@ -162,7 +162,7 @@ contract ChainlinkPriceOracle is PriceOracle {
      * @dev Only callable by the administrator, or the failover administrator
      * @param cTokenAddress cToken to failover price feed
      */
-    function _failoverPriceFeed(address cTokenAddress) external returns (uint) {
+    function _failoverPriceFeed(address cTokenAddress) public {
         // Check caller is admin or failover admin
         require(msg.sender == admin || msg.sender == failoverAdmin, "Must be admin or failover admin");
 
@@ -181,5 +181,16 @@ contract ChainlinkPriceOracle is PriceOracle {
 
         // Emit that a cToken price feed has failed over
         emit PriceFeedFailover(cTokenAddress, address(oldPriceFeed), address(failoverPriceFeed));
+    }
+
+    /**
+     * @notice Failover multiple price feeds at once
+     * @dev Only callable by the administrator, or the failover administrator
+     * @param cTokenAddresses cTokens to failover
+     */
+    function _failoverPriceFeeds(address[] calldata cTokenAddresses) external {
+        for (uint256 i = 0; i < cTokenAddresses.length; i++) {
+            _failoverPriceFeed(cTokenAddresses[i]);
+        }
     }
 }
