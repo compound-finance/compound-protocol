@@ -53,6 +53,7 @@ describe('admin configuration functions', () => {
 
       const result = await send(clPriceOracle, '_setAdmin', [newAdmin], {from: root})
       expect(result).toHaveLog('AdminChanged', {
+        oldAdmin: root,
         newAdmin: newAdmin
       });
     })
@@ -89,6 +90,7 @@ describe('admin configuration functions', () => {
 
       const result = await send(clPriceOracle, '_setFailoverAdmin', [newFailoverAdmin], {from: root})
       expect(result).toHaveLog('FailoverAdminChanged', {
+        oldFailoverAdmin: failoverAdmin,
         newFailoverAdmin: newFailoverAdmin
       });
     })

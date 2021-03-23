@@ -8,28 +8,28 @@ import "./SafeMath.sol";
 contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
     using SafeMath for uint;
 
-    //// @notice Administrator for this contract. Full control of contract.
+    /// @notice Administrator for this contract. Full control of contract.
     address public admin;
 
-    //// @notice Failover administrator for this contract. Failover control only.
+    /// @notice Failover administrator for this contract. Failover control only.
     address public failoverAdmin;
 
-    //// @notice Mapping of (cToken Address => price feed AggregatorInterface)
+    /// @notice Mapping of (cToken Address => price feed AggregatorInterface)
     mapping(address => AggregatorInterface) public priceFeeds;
 
-    //// @notice Failover price feeds to switch to in emergency
+    /// @notice Failover price feeds to switch to in emergency
     mapping(address => AggregatorInterface) public failoverFeeds;
 
-    //// @notice Emitted when a new administrator is set
-    event AdminChanged(address indexed newAdmin);
+    /// @notice Emitted when a new administrator is set
+    event AdminChanged(address indexed oldAdmin, address indexed newAdmin);
 
-    //// @notice Emitted when a new failover admin is set
-    event FailoverAdminChanged(address indexed newFailoverAdmin);
+    /// @notice Emitted when a new failover admin is set
+    event FailoverAdminChanged(address indexed oldFailoverAdmin, address indexed newFailoverAdmin);
 
-    //// @notice Emitted when a price feed is set
+    /// @notice Emitted when a price feed is set
     event PriceFeedSet(address indexed cTokenAddress, address indexed newPriceFeed, address indexed failoverPriceFeed);
 
-    //// @notice Emitted when a cToken price feed is failed over
+    /// @notice Emitted when a cToken price feed is failed over
     event PriceFeedFailover(address indexed cTokenAddress, address indexed oldPriceFeed, address indexed failoverPriceFeed);
 
     /**
@@ -62,25 +62,30 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
 
     /**
      * @notice Set a new admin for this contract
-     * @dev Only the current admin can call this function
+     * @dev Only the current admin can call this function.
+     * @dev We eschew the safe ownership transfer pattern (i.e. a two step transfer using proposeAdmin, acceptAdmin)
+     * since this role will be held by a governance contract whose voters can reasonably be expected to thoroughly
+     * verify any new admin prior to voting.
      * @param newAdmin The new administrator address
      * @return Success code uint
      */
     function _setAdmin(address newAdmin) external returns (uint) {
+        address currentAdmin = admin;
+
         // Check caller is admin
-        if (msg.sender != admin) {
+        if (msg.sender != currentAdmin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_ADMIN_OWNER_CHECK);
         }
 
         // Check if new admin is different to old
-        if (newAdmin == admin) {
+        if (newAdmin == currentAdmin) {
             return fail(Error.BAD_INPUT, FailureInfo.SET_ADMIN_NO_CHANGE);
         }
 
         // Set new admin
         admin = newAdmin;
 
-        emit AdminChanged(newAdmin);
+        emit AdminChanged(currentAdmin, newAdmin);
 
         return uint(Error.NO_ERROR);
     }
@@ -97,15 +102,17 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_FAILOVER_ADMIN_OWNER_CHECK);
         }
 
+        address currentFailoverAdmin = failoverAdmin;
+
         // Check if new failover admin is different to old
-        if (newFailoverAdmin == failoverAdmin) {
+        if (newFailoverAdmin == currentFailoverAdmin) {
             return fail(Error.BAD_INPUT, FailureInfo.SET_FAILOVER_ADMIN_NO_CHANGE);
         }
 
         // Set new admin
         failoverAdmin = newFailoverAdmin;
 
-        emit FailoverAdminChanged(newFailoverAdmin);
+        emit FailoverAdminChanged(currentFailoverAdmin, newFailoverAdmin);
 
         return uint(Error.NO_ERROR);
     }
