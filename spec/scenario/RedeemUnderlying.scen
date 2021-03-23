@@ -1,15 +1,15 @@
 -- Redeem Tests
 
 Test "Mint then Redeem All"
-    NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
+    NewController
+    ListedVToken ZRX cZRX initialExchangeRate:1e9
     Prep Geoff 70e18 ZRX cZRX
     Mint Geoff 50e18 cZRX
     -- Check current affairs
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 500e8
     Assert Equal (Erc20 ZRX TokenBalance Geoff) 20e18
     -- Any other good invariants?
-    Invariant Static (CToken cZRX ExchangeRateStored)
+    Invariant Static (VToken cZRX ExchangeRateStored)
     -- Now redeem after some time
     FastForward 2 Blocks
     RedeemUnderlying Geoff 50e18 cZRX
@@ -17,15 +17,15 @@ Test "Mint then Redeem All"
     Assert Equal (Erc20 ZRX TokenBalance Geoff) 70e18
 
 Test "Mint then Redeem Part"
-    NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
+    NewController
+    ListedVToken ZRX cZRX initialExchangeRate:1e9
     Prep Geoff 70e18 ZRX cZRX
     Mint Geoff 50e18 cZRX
     -- Check current affairs
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 500e8
     Assert Equal (Erc20 ZRX TokenBalance Geoff) 20e18
     -- Any other good invariants?
-    Invariant Static (CToken cZRX ExchangeRateStored)
+    Invariant Static (VToken cZRX ExchangeRateStored)
     -- Now redeem after some time
     FastForward 2 Blocks
     RedeemUnderlying Geoff 25e18 cZRX
@@ -33,12 +33,12 @@ Test "Mint then Redeem Part"
     Assert Equal (Erc20 ZRX TokenBalance Geoff) 45e18
 
 Test "Mint then Redeem Too Much"
-    NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
+    NewController
+    ListedVToken ZRX cZRX initialExchangeRate:1e9
     Prep Geoff 70e18 ZRX cZRX
     Mint Geoff 50e18 cZRX
     -- Check and hold static
-    Invariant Static (CToken cZRX ExchangeRateStored)
+    Invariant Static (VToken cZRX ExchangeRateStored)
     Invariant Remains (Erc20 cZRX TokenBalance Geoff) 500e8
     Invariant Remains (Erc20 ZRX TokenBalance Geoff) 20e18
     -- Now redeem after some time
@@ -48,15 +48,15 @@ Test "Mint then Redeem Too Much"
     Assert Failure MATH_ERROR REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED "3"
 
 Test "Mint then Redeem Zero"
-    NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
+    NewController
+    ListedVToken ZRX cZRX initialExchangeRate:1e9
     Prep Geoff 70e18 ZRX cZRX
     Mint Geoff 50e18 cZRX
     -- Check current affairs
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 500e8
     Assert Equal (Erc20 ZRX TokenBalance Geoff) 20e18
     -- Any other good invariants?
-    Invariant Static (CToken cZRX ExchangeRateStored)
+    Invariant Static (VToken cZRX ExchangeRateStored)
     -- Now redeem after some time
     FastForward 2 Blocks
     RedeemUnderlying Geoff 0e18 cZRX
@@ -64,14 +64,14 @@ Test "Mint then Redeem Zero"
     Assert Equal (Erc20 ZRX TokenBalance Geoff) 20e18
 
 Test "Mint then redeem with interest - no reserves"
-    NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
-    Invariant Remains (CToken cZRX Reserves) Zero
+    NewController
+    ListedVToken ZRX cZRX initialExchangeRate:1e9
+    Invariant Remains (VToken cZRX Reserves) Zero
     Prep Geoff 50e18 ZRX cZRX
     Mint Geoff 50e18 cZRX
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 500e8
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) 50e18
-    Assert Equal (CToken cZRX ExchangeRate) 1e9
+    Assert Equal (VToken cZRX UnderlyingBalance Geoff) 50e18
+    Assert Equal (VToken cZRX ExchangeRate) 1e9
     -- Get some brah to borrow then repay
     BorrowAndRepayWithInterest ZRX cZRX 10e18 5e18 interestRate:0.000001 blocks:500000
     -- We've accrued .001% interest for 500000 blocks, or 50% of the principal,
@@ -79,8 +79,8 @@ Test "Mint then redeem with interest - no reserves"
     --   This is due pro-rata to all suppliers, but we just have one, so
     --   let's check that account is given correct new balance.
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 500e8
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) 55e18
-    Assert Equal (CToken cZRX ExchangeRate) 1.1e9
+    Assert Equal (VToken cZRX UnderlyingBalance Geoff) 55e18
+    Assert Equal (VToken cZRX ExchangeRate) 1.1e9
     -- Now redeem all with interest
     -- Exchange rate is now 55e18 ÷ 50e9 = 1.1e9
     -- 500e9 * 1.1e9 = 55e18
@@ -88,18 +88,18 @@ Test "Mint then redeem with interest - no reserves"
     Assert Equal (Erc20 ZRX TokenBalance Geoff) 55e18
     Assert Equal (Erc20 ZRX TokenBalance cZRX) 0e18
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 0e8
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) 0e18
-    Assert Equal (CToken cZRX ExchangeRate) 1e9
+    Assert Equal (VToken cZRX UnderlyingBalance Geoff) 0e18
+    Assert Equal (VToken cZRX ExchangeRate) 1e9
 
 Test "Mint then redeem part with interest - no reserves"
-    NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
-    Invariant Remains (CToken cZRX Reserves) Zero
+    NewController
+    ListedVToken ZRX cZRX initialExchangeRate:1e9
+    Invariant Remains (VToken cZRX Reserves) Zero
     Prep Geoff 50e18 ZRX cZRX
     Mint Geoff 50e18 cZRX
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 500e8
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) 50e18
-    Assert Equal (CToken cZRX ExchangeRate) 1e9
+    Assert Equal (VToken cZRX UnderlyingBalance Geoff) 50e18
+    Assert Equal (VToken cZRX ExchangeRate) 1e9
     -- Get some brah to borrow then repay
     BorrowAndRepayWithInterest ZRX cZRX 10e18 5e18 interestRate:0.000001 blocks:500000
     -- We've accrued .001% interest for 500000 blocks, or 50% of the principal,
@@ -107,24 +107,24 @@ Test "Mint then redeem part with interest - no reserves"
     --   This is due pro-rata to all suppliers, but we just have one, so
     --   let's check that account is given correct new balance.
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 500e8
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) 55e18
-    Assert Equal (CToken cZRX ExchangeRate) 1.1e9
+    Assert Equal (VToken cZRX UnderlyingBalance Geoff) 55e18
+    Assert Equal (VToken cZRX ExchangeRate) 1.1e9
     -- Now redeem all with interest
     -- Exchange rate is now 55e18 ÷ 50e9 = 1.1e9
     -- 499e9 * 1.1e9 = 54.89e18
     RedeemUnderlying Geoff 54.89e18 cZRX
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 1e8
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) 0.11e18
-    Assert Equal (CToken cZRX ExchangeRate) 1.1e9
+    Assert Equal (VToken cZRX UnderlyingBalance Geoff) 0.11e18
+    Assert Equal (VToken cZRX ExchangeRate) 1.1e9
 
 Test "Mint then redeem with reserves and interest"
-    NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
+    NewController
+    ListedVToken ZRX cZRX initialExchangeRate:1e9
     Prep Geoff 50e18 ZRX cZRX
     Mint Geoff 50e18 cZRX
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 500e8
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) 50e18
-    Assert Equal (CToken cZRX ExchangeRate) 1e9
+    Assert Equal (VToken cZRX UnderlyingBalance Geoff) 50e18
+    Assert Equal (VToken cZRX ExchangeRate) 1e9
     -- Get some brah to borrow then repay
     BorrowAndRepayWithInterest ZRX cZRX 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
     -- We've accrued .001% interest for 500000 blocks, or 50% of the principal,
@@ -133,10 +133,10 @@ Test "Mint then redeem with reserves and interest"
     --   is due pro-rata to all suppliers. We just have one, so
     --   let's check that account is given correct new balance.
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 500e8
-    Assert Equal (CToken cZRX Reserves) 1e18
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) 54e18
+    Assert Equal (VToken cZRX Reserves) 1e18
+    Assert Equal (VToken cZRX UnderlyingBalance Geoff) 54e18
     -- 55e18 + 0e18 - 1e18 / 500
-    Assert Equal (CToken cZRX ExchangeRate) 1.08e9
+    Assert Equal (VToken cZRX ExchangeRate) 1.08e9
     -- Now redeem all with interest
     -- Exchange rate is 1.08e9
     -- 500e8 * 1.08e9 = 54e18
@@ -144,13 +144,13 @@ Test "Mint then redeem with reserves and interest"
     Assert Equal (Erc20 ZRX TokenBalance Geoff) 54e18
     Assert Equal (Erc20 ZRX TokenBalance cZRX) 1e18
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 0e8
-    Assert Equal (CToken cZRX Reserves) 1e18
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) 0e18
-    Assert Equal (CToken cZRX ExchangeRate) 1e9
+    Assert Equal (VToken cZRX Reserves) 1e18
+    Assert Equal (VToken cZRX UnderlyingBalance Geoff) 0e18
+    Assert Equal (VToken cZRX ExchangeRate) 1e9
 
 Test "Two users Mint, one redeems"
-    NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
+    NewController
+    ListedVToken ZRX cZRX initialExchangeRate:1e9
     Prep Geoff Some ZRX cZRX
     Prep Torrey Some ZRX cZRX
     Mint Geoff 2e18 cZRX
@@ -166,8 +166,8 @@ Test "Two users Mint, one redeems"
     Assert Equal (Erc20 cZRX TotalSupply) 30e8
 
 Test "Mint then Redeem 1 wei of underlying"
-    NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
+    NewController
+    ListedVToken ZRX cZRX initialExchangeRate:1e9
     Prep Geoff 70e18 ZRX cZRX
     Mint Geoff 50e18 cZRX
     AllowFailures
@@ -175,7 +175,7 @@ Test "Mint then Redeem 1 wei of underlying"
     Invariant Remains (Erc20 cZRX TokenBalance Geoff) 500e8
     Invariant Remains (Erc20 ZRX TokenBalance Geoff) 20e18
     -- Any other good invariants?
-    Invariant Static (CToken cZRX ExchangeRateStored)
+    Invariant Static (VToken cZRX ExchangeRateStored)
     -- Now redeem after some time
     FastForward 2 Blocks
     RedeemUnderlying Geoff 1 cZRX

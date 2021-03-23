@@ -43,6 +43,6 @@ Test "Withdraw Ether 1 when contract paused"
 	Assert Equal (SupplyBalance Geoff Ether) (Exactly "1.0e18")
 	PolicyHook Ether (SetPaused True)
 	Withdraw Geoff Ether "1.0e18"
-	Assert Failure COMPTROLLER_REJECTION WITHDRAW_COMPTROLLER_REJECTION 1
+	Assert Failure CONTROLLER_REJECTION WITHDRAW_CONTROLLER_REJECTION 1
 	Assert Equal (SupplyBalance Geoff Ether) (Exactly "1e18")
 	Assert Equal (TokenBalance Geoff Ether) (Exactly "0e18")

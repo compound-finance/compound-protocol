@@ -1,15 +1,15 @@
 Macro DeployGov
     Counter Deploy CNT1
     Timelock Deploy Jared 604800
-    Comp Deploy Bank
-    Governor Deploy Alpha LegitGov (Address Timelock) (Address Comp) Guardian
+    Vtx Deploy Bank
+    Governor Deploy Alpha LegitGov (Address Timelock) (Address Vtx) Guardian
     Timelock SetAdmin (Address LegitGov)
     Enfranchise Root 400001e18
     MineBlock
 
 Macro Enfranchise user amount
-    From Bank (Comp Transfer user amount)
-    From user (Comp Delegate user)
+    From Bank (Vtx Transfer user amount)
+    From user (Vtx Delegate user)
     MineBlock
 
 Macro QueueLastProposal
@@ -117,10 +117,10 @@ Test "Revert when queuing an already executed proposal"
     Assert Revert "revert GovernorAlpha::queue: proposal can only be queued if it is succeeded"
 
 Test "Revert when queuing on invalid Timelock"
-    Comp Deploy Bank
+    Vtx Deploy Bank
     Enfranchise Root 600001e18
     Counter Deploy CNT1
-    Governor Deploy Alpha LegitGov (Address Zero) (Address Comp) Guardian
+    Governor Deploy Alpha LegitGov (Address Zero) (Address Vtx) Guardian
     Governor LegitGov Propose "Add 5" [(Address CNT1)] [1] ["increment(uint256)"] [["2"]]
     MineBlock
     Governor LegitGov Proposal LastProposal Vote For

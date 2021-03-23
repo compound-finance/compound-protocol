@@ -4,8 +4,8 @@ import "./InterestRateModel.sol";
 import "./SafeMath.sol";
 
 /**
-  * @title Compound's JumpRateModel Contract
-  * @author Compound
+  * @title Vortex's JumpRateModel Contract
+  * @author Vortex
   */
 contract JumpRateModel is InterestRateModel {
     using SafeMath for uint;

@@ -1,0 +1,26 @@
+-- Sets for `_setController` Admin Function
+
+Test "Set Controller"
+    NewController
+    NewVToken ZRX cZRX
+    Assert Equal (VToken cZRX Controller) (Unitroller Address)
+    ControllerImpl Deploy Scenario NewController
+    From Root (VToken cZRX SetController (ControllerImpl NewController Address))
+    -- TODO: Fix log assertion
+    -- Assert Log "NewController" ("oldController" (Unitroller Address)) ("newController" (ControllerImpl NewController Address))
+    Assert Equal (VToken cZRX Controller) (ControllerImpl NewController Address)
+
+Test "Fail when is not a controller"
+    NewController
+    NewVToken ZRX cZRX
+    Invariant Remains (VToken cZRX Controller) (Unitroller Address)
+    AllowFailures
+    From Root (VToken cZRX SetController (PriceOracle Address))
+    Assert Revert
+
+Test "Fail to set controller as not admin"
+    NewController
+    NewVToken ZRX cZRX
+    AllowFailures
+    From Geoff (VToken cZRX SetController (PriceOracle Address))
+    Assert Failure UNAUTHORIZED SET_CONTROLLER_OWNER_CHECK

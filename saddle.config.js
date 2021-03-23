@@ -84,7 +84,7 @@ module.exports = {
       providers: [
         {env: "PROVIDER"},
         {file: "~/.ethereum/goerli-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
-        {http: "https://goerli-eth.compound.finance"}
+        {http: "https://goerli-eth.vortex.finance"}
       ],
       web3: {
         gas: [
@@ -110,7 +110,7 @@ module.exports = {
       providers: [
         {env: "PROVIDER"},
         {file: "~/.ethereum/ropsten-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
-        {http: "https://ropsten-eth.compound.finance"}
+        {http: "https://ropsten-eth.vortex.finance"}
       ],
       web3: {
         gas: [
@@ -135,7 +135,7 @@ module.exports = {
       providers: [
         {env: "PROVIDER"},
         {file: "~/.ethereum/rinkeby-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
-        {http: "https://rinkeby-eth.compound.finance"}
+        {http: "https://rinkeby-eth.vortex.finance"}
       ],
       web3: {
         gas: [
@@ -161,7 +161,7 @@ module.exports = {
       providers: [
         {env: "PROVIDER"},
         {file: "~/.ethereum/kovan-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
-        {http: "https://kovan-eth.compound.finance"}
+        {http: "https://kovan-eth.vortex.finance"}
       ],
       web3: {
         gas: [
@@ -187,7 +187,7 @@ module.exports = {
       providers: [
         {env: "PROVIDER"},
         {file: "~/.ethereum/mainnet-url"},                    // Load from given file with contents as the URL (e.g. https://infura.io/api-key)
-        {http: "https://mainnet-eth.compound.finance"}
+        {http: "https://mainnet-eth.vortex.finance"}
       ],
       web3: {
         gas: [

@@ -141,9 +141,9 @@ export abstract class Expression<Args> {
             if (arg.rescue) {
               // Rescue is meant to allow Gate to work for checks that
               // fail due to the missing components, e.g.:
-              // `Gate (CToken Eth Address) (... deploy cToken)`
-              // could be used to deploy a cToken if it doesn't exist, but
-              // since there is no CToken, that check would raise (when we'd
+              // `Gate (VToken Eth Address) (... deploy vToken)`
+              // could be used to deploy a vToken if it doesn't exist, but
+              // since there is no VToken, that check would raise (when we'd
               // hope it just returns null). So here, we allow our code to rescue
               // errors and recover, but we need to be smarter about catching specific
               // errors instead of all errors. For now, to assist debugging, we may print

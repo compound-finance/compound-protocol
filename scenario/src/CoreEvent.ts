@@ -12,11 +12,11 @@ import { getAddressV, getEventV, getNumberV, getStringV } from './CoreValue';
 import { AddressV, EventV, NothingV, NumberV, StringV, Value } from './Value';
 import { Arg, Command, processCommandEvent, View } from './Command';
 import { assertionCommands, processAssertionEvent } from './Event/AssertionEvent';
-import { comptrollerCommands, processComptrollerEvent } from './Event/ComptrollerEvent';
+import { controllerCommands, processControllerEvent } from './Event/ControllerEvent';
 import { processUnitrollerEvent, unitrollerCommands } from './Event/UnitrollerEvent';
-import { comptrollerImplCommands, processComptrollerImplEvent } from './Event/ComptrollerImplEvent';
-import { cTokenCommands, processCTokenEvent } from './Event/CTokenEvent';
-import { cTokenDelegateCommands, processCTokenDelegateEvent } from './Event/CTokenDelegateEvent';
+import { controllerImplCommands, processControllerImplEvent } from './Event/ControllerImplEvent';
+import { vTokenCommands, processVTokenEvent } from './Event/VTokenEvent';
+import { vTokenDelegateCommands, processVTokenDelegateEvent } from './Event/VTokenDelegateEvent';
 import { erc20Commands, processErc20Event } from './Event/Erc20Event';
 import { interestRateModelCommands, processInterestRateModelEvent } from './Event/InterestRateModelEvent';
 import { priceOracleCommands, processPriceOracleEvent } from './Event/PriceOracleEvent';
@@ -25,7 +25,7 @@ import { maximillionCommands, processMaximillionEvent } from './Event/Maximillio
 import { invariantCommands, processInvariantEvent } from './Event/InvariantEvent';
 import { expectationCommands, processExpectationEvent } from './Event/ExpectationEvent';
 import { timelockCommands, processTimelockEvent } from './Event/TimelockEvent';
-import { compCommands, processCompEvent } from './Event/CompEvent';
+import { vtxCommands, processVtxEvent } from './Event/VtxEvent';
 import { governorCommands, processGovernorEvent } from './Event/GovernorEvent';
 import { processTrxEvent, trxCommands } from './Event/TrxEvent';
 import { getFetchers, getCoreValue } from './CoreValue';
@@ -39,7 +39,7 @@ import { loadContracts } from './Networks';
 import { fork } from './Hypothetical';
 import { buildContractEvent } from './EventBuilder';
 import { Counter } from './Contract/Counter';
-import { CompoundLens } from './Contract/CompoundLens';
+import { VortexLens } from './Contract/VortexLens';
 import { Reservoir } from './Contract/Reservoir';
 import Web3 from 'web3';
 
@@ -221,7 +221,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
         #### Read
 
         * "Read ..." - Reads given value and prints result
-          * E.g. "Read CToken cBAT ExchangeRateStored" - Returns exchange rate of cBAT
+          * E.g. "Read VToken vBAT ExchangeRateStored" - Returns exchange rate of vBAT
       `,
       'Read',
       [new Arg('res', getCoreValue, { variadic: true })],
@@ -435,7 +435,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### Block
 
       * "Block 10 (...event)" - Set block to block N and run event
-        * E.g. "Block 10 (Comp Deploy Admin)"
+        * E.g. "Block 10 (Vtx Deploy Admin)"
     `,
     'Block',
     [
@@ -491,7 +491,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### From
 
       * "From <User> <Event>" - Runs event as the given user
-        * E.g. "From Geoff (CToken cZRX Mint 5e18)"
+        * E.g. "From Geoff (VToken cZRX Mint 5e18)"
     `,
     'From',
     [new Arg('account', getAddressV), new Arg('event', getEventV)],
@@ -503,7 +503,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### Trx
 
       * "Trx ...trxEvent" - Handles event to set details of next transaction
-        * E.g. "Trx Value 1.0e18 (CToken cEth Mint 1.0e18)"
+        * E.g. "Trx Value 1.0e18 (VToken vEth Mint 1.0e18)"
     `,
     'Trx',
     [new Arg('event', getEventV, { variadic: true })],
@@ -516,7 +516,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### Invariant
 
       * "Invariant ...invariant" - Adds a new invariant to the world which is checked after each transaction
-        * E.g. "Invariant Static (CToken cZRX TotalSupply)"
+        * E.g. "Invariant Static (VToken cZRX TotalSupply)"
     `,
     'Invariant',
     [new Arg('event', getEventV, { variadic: true })],
@@ -529,7 +529,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### Expect
 
       * "Expect ...expectation" - Adds an expectation to hold after the next transaction
-        * E.g. "Expect Changes (CToken cZRX TotalSupply) +10.0e18"
+        * E.g. "Expect Changes (VToken cZRX TotalSupply) +10.0e18"
     `,
     'Expect',
     [new Arg('event', getEventV, { variadic: true })],
@@ -605,7 +605,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### Given
 
       * "Given value event" - Runs event only if value is truthy. Thus, given can be used to build existence checks.
-        * E.g. "Given ($var) (PriceOracle SetPrice cBAT $var)"
+        * E.g. "Given ($var) (PriceOracle SetPrice vBAT $var)"
     `,
     'Given',
     [new Arg('given', getCoreValue, { rescue: new NothingV() }), new Arg('event', getEventV)],
@@ -623,7 +623,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### Send
 
       * "Send <Address> <Amount>" - Sends a given amount of eth to given address
-        * E.g. "Send cETH 0.5e18"
+        * E.g. "Send vETH 0.5e18"
     `,
     'Send',
     [new Arg('address', getAddressV), new Arg('amount', getNumberV)],
@@ -635,7 +635,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### Unitroller
 
       * "Unitroller ...event" - Runs given Unitroller event
-        * E.g. "Unitroller SetPendingImpl MyComptrollerImpl"
+        * E.g. "Unitroller SetPendingImpl MyControllerImpl"
     `,
     'Unitroller',
     [new Arg('event', getEventV, { variadic: true })],
@@ -645,54 +645,54 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
 
   new Command<{ event: EventV }>(
     `
-      #### Comptroller
+      #### Controller
 
-      * "Comptroller ...event" - Runs given Comptroller event
-        * E.g. "Comptroller _setReserveFactor 0.5"
+      * "Controller ...event" - Runs given Controller event
+        * E.g. "Controller _setReserveFactor 0.5"
     `,
-    'Comptroller',
+    'Controller',
     [new Arg('event', getEventV, { variadic: true })],
-    (world, from, { event }) => processComptrollerEvent(world, event.val, from),
-    { subExpressions: comptrollerCommands() }
+    (world, from, { event }) => processControllerEvent(world, event.val, from),
+    { subExpressions: controllerCommands() }
   ),
 
   new Command<{ event: EventV }>(
     `
-      #### ComptrollerImpl
+      #### ControllerImpl
 
-      * "ComptrollerImpl ...event" - Runs given ComptrollerImpl event
-        * E.g. "ComptrollerImpl MyImpl Become"
+      * "ControllerImpl ...event" - Runs given ControllerImpl event
+        * E.g. "ControllerImpl MyImpl Become"
     `,
-    'ComptrollerImpl',
+    'ControllerImpl',
     [new Arg('event', getEventV, { variadic: true })],
-    (world, from, { event }) => processComptrollerImplEvent(world, event.val, from),
-    { subExpressions: comptrollerImplCommands() }
+    (world, from, { event }) => processControllerImplEvent(world, event.val, from),
+    { subExpressions: controllerImplCommands() }
   ),
 
   new Command<{ event: EventV }>(
     `
-      #### CToken
+      #### VToken
 
-      * "CToken ...event" - Runs given CToken event
-        * E.g. "CToken cZRX Mint 5e18"
+      * "VToken ...event" - Runs given VToken event
+        * E.g. "VToken cZRX Mint 5e18"
     `,
-    'CToken',
+    'VToken',
     [new Arg('event', getEventV, { variadic: true })],
-    (world, from, { event }) => processCTokenEvent(world, event.val, from),
-    { subExpressions: cTokenCommands() }
+    (world, from, { event }) => processVTokenEvent(world, event.val, from),
+    { subExpressions: vTokenCommands() }
   ),
 
   new Command<{ event: EventV }>(
     `
-      #### CTokenDelegate
+      #### VTokenDelegate
 
-      * "CTokenDelegate ...event" - Runs given CTokenDelegate event
-        * E.g. "CTokenDelegate Deploy CDaiDelegate cDaiDelegate"
+      * "VTokenDelegate ...event" - Runs given VTokenDelegate event
+        * E.g. "VTokenDelegate Deploy VDaiDelegate vDaiDelegate"
     `,
-    'CTokenDelegate',
+    'VTokenDelegate',
     [new Arg('event', getEventV, { variadic: true })],
-    (world, from, { event }) => processCTokenDelegateEvent(world, event.val, from),
-    { subExpressions: cTokenDelegateCommands() }
+    (world, from, { event }) => processVTokenDelegateEvent(world, event.val, from),
+    { subExpressions: vTokenDelegateCommands() }
   ),
 
   new Command<{ event: EventV }>(
@@ -739,7 +739,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### PriceOracleProxy
 
       * "PriceOracleProxy ...event" - Runs given Price Oracle event
-      * E.g. "PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (CToken cETH Address)"
+      * E.g. "PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (VToken vETH Address)"
     `,
     'PriceOracleProxy',
     [new Arg('event', getEventV, { variadic: true })],
@@ -754,7 +754,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### Maximillion
 
       * "Maximillion ...event" - Runs given Maximillion event
-      * E.g. "Maximillion Deploy (CToken cETH Address)"
+      * E.g. "Maximillion Deploy (VToken vETH Address)"
     `,
     'Maximillion',
     [new Arg('event', getEventV, { variadic: true })],
@@ -781,17 +781,17 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
 
   new Command<{ event: EventV }>(
     `
-      #### Comp
+      #### Vtx
 
-      * "Comp ...event" - Runs given comp event
-      * E.g. "Comp Deploy"
+      * "Vtx ...event" - Runs given vtx event
+      * E.g. "Vtx Deploy"
     `,
-    'Comp',
+    'Vtx',
     [new Arg('event', getEventV, { variadic: true })],
     (world, from, { event }) => {
-      return processCompEvent(world, event.val, from);
+      return processVtxEvent(world, event.val, from);
     },
-    { subExpressions: compCommands() }
+    { subExpressions: vtxCommands() }
   ),
 
   new Command<{ event: EventV }>(
@@ -810,7 +810,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
   ),
 
   buildContractEvent<Counter>("Counter", false),
-  buildContractEvent<CompoundLens>("CompoundLens", false),
+  buildContractEvent<VortexLens>("VortexLens", false),
   buildContractEvent<Reservoir>("Reservoir", true),
 
   new View<{ event: EventV }>(

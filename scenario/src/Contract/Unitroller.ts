@@ -7,8 +7,8 @@ interface UnitrollerMethods {
   _acceptAdmin(): Sendable<number>;
   _setPendingAdmin(pendingAdmin: string): Sendable<number>;
   _setPendingImplementation(pendingImpl: string): Sendable<number>;
-  comptrollerImplementation(): Callable<string>;
-  pendingComptrollerImplementation(): Callable<string>;
+  controllerImplementation(): Callable<string>;
+  pendingControllerImplementation(): Callable<string>;
 }
 
 export interface Unitroller extends Contract {

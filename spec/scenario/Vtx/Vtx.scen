@@ -1,0 +1,300 @@
+
+Test "Check Name"
+    Vtx Deploy Geoff
+    Assert Equal (Vtx Name) "Vortex"
+
+Test "Check Symbol"
+    Vtx Deploy Geoff
+    Assert Equal (Vtx Symbol) "VTX"
+
+Test "Check Decimals"
+    Vtx Deploy Geoff
+    Assert Equal (Vtx Decimals) 18
+
+Test "Check Total Supply"
+    Vtx Deploy Geoff
+    Assert Equal (Vtx TotalSupply) 10000000e18
+
+Test "Check account receives Total Supply after deploy and emits Transfer event"
+    Vtx Deploy Geoff
+    Assert Equal (Vtx TokenBalance Geoff) 10000000e18
+    Assert Log Transfer (from (Address Zero)) (to (Address Geoff)) (amount "10000000000000000000000000")
+
+Test "Check approve sets correct approval and emits Approval event"
+    Vtx Deploy Geoff
+    From Geoff (Vtx Approve Jared 10)
+    Assert Equal (Vtx Allowance Geoff Jared) 10
+    Assert Log Approval (owner (Address Geoff)) (spender (Address Jared)) (amount "10")
+
+Test "Check approve with bad allowance reverts"
+    Vtx Deploy Geoff
+    AllowFailures
+    From Geoff (Vtx Approve Jared 1e70)
+    Assert Revert "revert Vtx::approve: amount exceeds 96 bits"
+
+Test "Check transfer updates balances correctly, emits Transfer event, and returns true"
+    Vtx Deploy Geoff
+    From Geoff (Vtx Transfer Jared 10)
+    Assert Equal (Vtx TokenBalance Geoff) 9999999999999999999999990
+    Assert Equal (Vtx TokenBalance Jared) 10
+    Assert Log Transfer (from (Address Geoff)) (to (Address Jared)) (amount "10")
+
+Test "Check self-transfer updates balances correctly, emits Transfer event, and returns true"
+    Vtx Deploy Geoff
+    Expect Changes (Vtx VotesLength Geoff) Zero
+    Expect Changes (Vtx TokenBalance Geoff) Zero
+    From Geoff (Vtx Transfer Geoff 10)
+    Assert Log Transfer (from (Address Geoff)) (to (Address Geoff)) (amount "10")
+    Expect Changes (Vtx VotesLength Geoff) Zero
+    Expect Changes (Vtx TokenBalance Geoff) Zero
+    From Geoff (Vtx Transfer Geoff 0)
+    Assert Log Transfer (from (Address Geoff)) (to (Address Geoff)) (amount "0")
+
+Test "Check transferFrom with unlimited allowance updates balances correctly, emits Transfer event, and returns true"
+    Vtx Deploy Geoff
+    From Geoff (Vtx Approve Jared UInt256Max)
+    From Jared (Vtx TransferFrom Geoff Jared 10)
+    Assert Equal (Vtx TokenBalance Geoff) 9999999999999999999999990
+    Assert Equal (Vtx TokenBalance Jared) 10
+    Assert Equal (Vtx Allowance Geoff Jared) UInt96Max
+    Assert Log Transfer (from (Address Geoff)) (to (Address Jared)) (amount "10")
+
+Test "Check transferFrom with unlimited allowance updates balances correctly, emits Transfer event, and returns true"
+    Vtx Deploy Geoff
+    From Geoff (Vtx Approve Jared UInt96Max)
+    From Jared (Vtx TransferFrom Geoff Jared 10)
+    Assert Equal (Vtx TokenBalance Geoff) 9999999999999999999999990
+    Assert Equal (Vtx TokenBalance Jared) 10
+    Assert Equal (Vtx Allowance Geoff Jared) UInt96Max
+    Assert Log Transfer (from (Address Geoff)) (to (Address Jared)) (amount "10")
+
+Test "Check transferFrom with allowance updates balances correctly, emits Transfer event, and returns true"
+    Vtx Deploy Geoff
+    From Geoff (Vtx Approve Jared 10)
+    From Jared (Vtx TransferFrom Geoff Jared 9)
+    Assert Equal (Vtx TokenBalance Geoff) 9999999999999999999999991
+    Assert Equal (Vtx TokenBalance Jared) 9
+    Assert Equal (Vtx Allowance Geoff Jared) 1
+    Assert Log Transfer (from (Address Geoff)) (to (Address Jared)) (amount "9")
+    Assert Log Approval (owner (Address Geoff)) (spender (Address Jared)) (amount "1")
+
+Test "Check transferFrom reverts with not sufficient allowance"
+    Vtx Deploy Geoff
+    From Geoff (Vtx Approve Jared 10)
+    AllowFailures
+    From Jared (Vtx TransferFrom Geoff Jared 11)
+    Assert Revert "revert Vtx::transferFrom: transfer amount exceeds spender allowance"
+
+Test "Check transfer reverts when transferring too much"
+    Vtx Deploy Geoff
+    AllowFailures
+    From Geoff (Vtx Transfer Jared 10000001e18)
+    Assert Revert "revert Vtx::_transferTokens: transfer amount exceeds balance"
+
+Test "Check transfer reverts when transferring to address 0"
+    Vtx Deploy Geoff
+    AllowFailures
+    From Geoff (Vtx Transfer (Address Zero) 10000000e18)
+    Assert Revert "revert Vtx::_transferTokens: cannot transfer to the zero address"
+
+Test "Delegate with zero balance doesn't change votes checkpoints"
+    Vtx Deploy Geoff
+    Assert Equal (Vtx VotesLength Geoff) 0
+    From Jared (Vtx Delegate Geoff)
+    Assert Equal (Vtx VotesLength Geoff) 0
+    Assert Log DelegateChanged (delegator (Address Jared)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+
+Test "Delegate from address(0) to account with zero checkpoints"
+    Vtx Deploy Geoff
+    From Geoff (Vtx Transfer Jared 10)
+    Assert Equal (Vtx VotesLength Geoff) 0
+    From Jared (Vtx Delegate Geoff)
+    Assert Equal (Vtx VotesLength Geoff) 1
+    Assert Equal (Vtx GetCurrentVotes Geoff) 10
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Equal (Vtx VotesLength Zero) 0
+    Assert Log DelegateChanged (delegator (Address Jared)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "0") (newBalance "10")
+
+Test "Delegate from address(0) to account with existing checkpoints"
+    Vtx Deploy Geoff
+    From Geoff (Vtx Transfer Jared 10)
+    From Geoff (Vtx Transfer Torrey 14)
+    Assert Equal (Vtx VotesLength Geoff) 0
+    From Jared (Vtx Delegate Geoff)
+    Assert Equal (Vtx VotesLength Geoff) 1
+    Assert Equal (Vtx GetCurrentVotes Geoff) 10
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Log DelegateChanged (delegator (Address Jared)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "0") (newBalance "10")
+    From Torrey (Vtx Delegate Geoff)
+    Assert Equal (Vtx VotesLength Geoff) 2
+    Assert Equal (Vtx GetCurrentVotes Geoff) 24
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Equal (Vtx VotesLength Zero) 0
+    Assert Log DelegateChanged (delegator (Address Torrey)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "10") (newBalance "24")
+
+Test "Delegate to address(0)"
+    Vtx Deploy Geoff
+    From Geoff (Vtx Transfer Jared 10)
+    From Geoff (Vtx Transfer Torrey 14)
+    Assert Equal (Vtx VotesLength Geoff) 0
+    From Jared (Vtx Delegate Geoff)
+    Assert Equal (Vtx VotesLength Geoff) 1
+    Assert Equal (Vtx GetCurrentVotes Geoff) 10
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Log DelegateChanged (delegator (Address Jared)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "0") (newBalance "10")
+    From Torrey (Vtx Delegate Geoff)
+    Assert Equal (Vtx VotesLength Geoff) 2
+    Assert Equal (Vtx GetCurrentVotes Geoff) 24
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Log DelegateChanged (delegator (Address Torrey)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "10") (newBalance "24")
+    From Torrey (Vtx Delegate Zero)
+    Assert Equal (Vtx VotesLength Geoff) 3
+    Assert Equal (Vtx GetCurrentVotes Geoff) 10
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Log DelegateChanged (delegator (Address Torrey)) (fromDelegate (Address Geoff)) (toDelegate (Address Zero))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "24") (newBalance "10")
+    Assert Equal (Vtx VotesLength Zero) 0
+
+Test "Delegate from one account to another account with zero checkpoints"
+    Vtx Deploy Geoff
+    From Geoff (Vtx Transfer Jared 10)
+    From Geoff (Vtx Transfer Torrey 14)
+    Assert Equal (Vtx VotesLength Geoff) 0
+    From Jared (Vtx Delegate Geoff)
+    Assert Equal (Vtx VotesLength Geoff) 1
+    Assert Equal (Vtx GetCurrentVotes Geoff) 10
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Log DelegateChanged (delegator (Address Jared)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "0") (newBalance "10")
+    From Torrey (Vtx Delegate Geoff)
+    Assert Equal (Vtx VotesLength Geoff) 2
+    Assert Equal (Vtx GetCurrentVotes Geoff) 24
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Equal (Vtx VotesLength Coburn) 0
+    Assert Log DelegateChanged (delegator (Address Torrey)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "10") (newBalance "24")
+    From Torrey (Vtx Delegate Coburn)
+    Assert Equal (Vtx VotesLength Coburn) 1
+    Assert Equal (Vtx GetCurrentVotes Coburn) 14
+    Assert Equal (Vtx GetCurrentVotesBlock Coburn) LastBlock
+    Assert Equal (Vtx VotesLength Geoff) 3
+    Assert Equal (Vtx GetCurrentVotes Geoff) 10
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Log DelegateChanged (delegator (Address Torrey)) (fromDelegate (Address Geoff)) (toDelegate (Address Coburn))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "24") (newBalance "10")
+    Assert Log DelegateVotesChanged (delegate (Address Coburn)) (previousBalance "0") (newBalance "14")
+
+Test "Delegate from one account to another account with multiple checkpoints"
+    Vtx Deploy Geoff
+    From Geoff (Vtx Transfer Jared 10)
+    From Geoff (Vtx Transfer Torrey 14)
+    From Geoff (Vtx Transfer Coburn 2)
+    Assert Equal (Vtx VotesLength Geoff) 0
+    From Jared (Vtx Delegate Geoff)
+    Assert Equal (Vtx VotesLength Geoff) 1
+    Assert Equal (Vtx GetCurrentVotes Geoff) 10
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Log DelegateChanged (delegator (Address Jared)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "0") (newBalance "10")
+    From Torrey (Vtx Delegate Geoff)
+    Assert Equal (Vtx VotesLength Geoff) 2
+    Assert Equal (Vtx GetCurrentVotes Geoff) 24
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Equal (Vtx VotesLength Coburn) 0
+    Assert Log DelegateChanged (delegator (Address Torrey)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "10") (newBalance "24")
+    From Coburn (Vtx Delegate Coburn)
+    Assert Equal (Vtx VotesLength Coburn) 1
+    Assert Equal (Vtx GetCurrentVotes Coburn) 2
+    Assert Equal (Vtx GetCurrentVotesBlock Coburn) LastBlock
+    Assert Log DelegateChanged (delegator (Address Coburn)) (fromDelegate (Address Zero)) (toDelegate (Address Coburn))
+    Assert Log DelegateVotesChanged (delegate (Address Coburn)) (previousBalance "0") (newBalance "2")
+    From Torrey (Vtx Delegate Coburn)
+    Assert Equal (Vtx VotesLength Coburn) 2
+    Assert Equal (Vtx GetCurrentVotes Coburn) 16
+    Assert Equal (Vtx GetCurrentVotesBlock Coburn) LastBlock
+    Assert Equal (Vtx VotesLength Geoff) 3
+    Assert Equal (Vtx GetCurrentVotes Geoff) 10
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Log DelegateChanged (delegator (Address Torrey)) (fromDelegate (Address Geoff)) (toDelegate (Address Coburn))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "24") (newBalance "10")
+    Assert Log DelegateVotesChanged (delegate (Address Coburn)) (previousBalance "2") (newBalance "16")
+
+Test "Vote checkpoints don't change on transfer when to and from accounts delegate to same account"
+    Vtx Deploy Geoff
+    From Geoff (Vtx Transfer Jared 10)
+    From Geoff (Vtx Transfer Torrey 14)
+    Assert Equal (Vtx VotesLength Geoff) 0
+    From Jared (Vtx Delegate Geoff)
+    Assert Equal (Vtx VotesLength Geoff) 1
+    Assert Equal (Vtx GetCurrentVotes Geoff) 10
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Log DelegateChanged (delegator (Address Jared)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "0") (newBalance "10")
+    From Torrey (Vtx Delegate Geoff)
+    Assert Equal (Vtx VotesLength Geoff) 2
+    Assert Equal (Vtx GetCurrentVotes Geoff) 24
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Log DelegateChanged (delegator (Address Torrey)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "10") (newBalance "24")
+    Invariant Static (Vtx VotesLength Geoff)
+    Invariant Static (Vtx GetCurrentVotes Geoff)
+    Invariant Static (Vtx GetCurrentVotesBlock Geoff)
+    From Torrey (Vtx Transfer Jared 14)
+
+Test "Only one checkpoint is added per block for multiple increased balance updates"
+    Vtx Deploy Scenario Geoff
+    Assert Equal (Vtx VotesLength Geoff) 0
+    Assert Equal (Vtx GetCurrentVotes Geoff) 0
+    From Jared (Vtx Delegate Geoff)
+    Assert Log DelegateChanged (delegator (Address Jared)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    From Torrey (Vtx Delegate Geoff)
+    Assert Log DelegateChanged (delegator (Address Torrey)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    From Geoff (Vtx TransferScenario (Jared Torrey) 10)
+    Assert Equal (Vtx VotesLength Geoff) 1
+    Assert Equal (Vtx GetCurrentVotes Geoff) 20
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Equal (Vtx VotesLength Zero) 0
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "0") (newBalance "10")
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "10") (newBalance "20")
+
+Test "Only one checkpoint is added per block for multiple decreased balance updates"
+    Vtx Deploy Scenario Geoff
+    From Geoff (Vtx Transfer Jared 10)
+    From Geoff (Vtx Transfer Torrey 10)
+    Assert Equal (Vtx VotesLength Geoff) 0
+    Assert Equal (Vtx GetCurrentVotes Geoff) 0
+    From Jared (Vtx Delegate Geoff)
+    Assert Equal (Vtx VotesLength Geoff) 1
+    Assert Equal (Vtx GetCurrentVotes Geoff) 10
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Log DelegateChanged (delegator (Address Jared)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "0") (newBalance "10")
+    From Torrey (Vtx Delegate Geoff)
+    Assert Equal (Vtx VotesLength Geoff) 2
+    Assert Equal (Vtx GetCurrentVotes Geoff) 20
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Log DelegateChanged (delegator (Address Torrey)) (fromDelegate (Address Zero)) (toDelegate (Address Geoff))
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "10") (newBalance "20")
+    From Jared (Vtx Approve Geoff 10)
+    From Torrey (Vtx Approve Geoff 10)
+    From Geoff (Vtx TransferFromScenario (Jared Torrey) 10)
+    Assert Equal (Vtx VotesLength Geoff) 3
+    Assert Equal (Vtx GetCurrentVotes Geoff) 0
+    Assert Equal (Vtx GetCurrentVotesBlock Geoff) LastBlock
+    Assert Equal (Vtx VotesLength Zero) 0
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "20") (newBalance "10")
+    Assert Log DelegateVotesChanged (delegate (Address Geoff)) (previousBalance "10") (newBalance "0")
+
+Test "Check transfer reverts when block number exceeds 32 bits"
+    Vtx Deploy Geoff
+    From Jared (Vtx Delegate Geoff)
+    AllowFailures
+    SetBlockNumber 5000000000
+    From Geoff (Vtx Transfer Jared 10000000e18)
+    Assert Revert "revert Vtx::_writeCheckpoint: block number exceeds 32 bits"

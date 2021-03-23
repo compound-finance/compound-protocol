@@ -141,7 +141,7 @@ export function erc20Fetchers() {
         * "Erc20 <Erc20> Allowance owner:<Address> spender:<Address>" - Returns the ERC-20 allowance from owner to spender
           * E.g. "Erc20 ZRX Allowance Geoff Torrey" - Returns the ZRX allowance of Geoff to Torrey
           * E.g. "Erc20 cZRX Allowance Geoff Coburn" - Returns the cZRX allowance of Geoff to Coburn
-          * E.g. "Erc20 ZRX Allowance Geoff cZRX" - Returns the ZRX allowance of Geoff to the cZRX cToken
+          * E.g. "Erc20 ZRX Allowance Geoff cZRX" - Returns the ZRX allowance of Geoff to the cZRX vToken
       `,
       "Allowance",
       [

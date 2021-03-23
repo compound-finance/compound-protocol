@@ -1,22 +1,22 @@
 pragma solidity ^0.5.16;
 
 import "./PriceOracle.sol";
-import "./CErc20.sol";
+import "./VErc20.sol";
 
 contract SimplePriceOracle is PriceOracle {
     mapping(address => uint) prices;
     event PricePosted(address asset, uint previousPriceMantissa, uint requestedPriceMantissa, uint newPriceMantissa);
 
-    function getUnderlyingPrice(CToken cToken) public view returns (uint) {
-        if (compareStrings(cToken.symbol(), "cETH")) {
+    function getUnderlyingPrice(VToken vToken) public view returns (uint) {
+        if (vtxareStrings(vToken.symbol(), "vETH")) {
             return 1e18;
         } else {
-            return prices[address(CErc20(address(cToken)).underlying())];
+            return prices[address(VErc20(address(vToken)).underlying())];
         }
     }
 
-    function setUnderlyingPrice(CToken cToken, uint underlyingPriceMantissa) public {
-        address asset = address(CErc20(address(cToken)).underlying());
+    function setUnderlyingPrice(VToken vToken, uint underlyingPriceMantissa) public {
+        address asset = address(VErc20(address(vToken)).underlying());
         emit PricePosted(asset, prices[asset], underlyingPriceMantissa, underlyingPriceMantissa);
         prices[asset] = underlyingPriceMantissa;
     }
@@ -31,7 +31,7 @@ contract SimplePriceOracle is PriceOracle {
         return prices[asset];
     }
 
-    function compareStrings(string memory a, string memory b) internal pure returns (bool) {
+    function vtxareStrings(string memory a, string memory b) internal pure returns (bool) {
         return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
     }
 }

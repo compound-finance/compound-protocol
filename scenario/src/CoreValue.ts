@@ -18,11 +18,11 @@ import {
 } from './Value';
 import { Arg, Fetcher, getFetcherValue } from './Command';
 import { getUserValue, userFetchers } from './Value/UserValue';
-import { comptrollerFetchers, getComptrollerValue } from './Value/ComptrollerValue';
-import { comptrollerImplFetchers, getComptrollerImplValue } from './Value/ComptrollerImplValue';
+import { controllerFetchers, getControllerValue } from './Value/ControllerValue';
+import { controllerImplFetchers, getControllerImplValue } from './Value/ControllerImplValue';
 import { getUnitrollerValue, unitrollerFetchers } from './Value/UnitrollerValue';
-import { cTokenFetchers, getCTokenValue } from './Value/CTokenValue';
-import { cTokenDelegateFetchers, getCTokenDelegateValue } from './Value/CTokenDelegateValue';
+import { vTokenFetchers, getVTokenValue } from './Value/VTokenValue';
+import { vTokenDelegateFetchers, getVTokenDelegateValue } from './Value/VTokenDelegateValue';
 import { erc20Fetchers, getErc20Value } from './Value/Erc20Value';
 import { mcdFetchers, getMCDValue } from './Value/MCDValue';
 import { getInterestRateModelValue, interestRateModelFetchers } from './Value/InterestRateModelValue';
@@ -31,7 +31,7 @@ import { getPriceOracleProxyValue, priceOracleProxyFetchers } from './Value/Pric
 import { getAnchoredViewValue, anchoredViewFetchers } from './Value/AnchoredViewValue';
 import { getTimelockValue, timelockFetchers, getTimelockAddress } from './Value/TimelockValue';
 import { getMaximillionValue, maximillionFetchers } from './Value/MaximillionValue';
-import { getCompValue, compFetchers } from './Value/CompValue';
+import { getVtxValue, vtxFetchers } from './Value/VtxValue';
 import { getGovernorValue, governorFetchers } from './Value/GovernorValue';
 import { getAddress } from './ContractLookup';
 import { getCurrentBlockNumber, getCurrentTimestamp, mustArray, sendRPC } from './Utils';
@@ -62,14 +62,14 @@ export async function getEventV(world: World, event: Event): Promise<EventV> {
   return new EventV(event);
 }
 
-// TODO: We may want to handle simple values -> complex values at the parser level
-//       This is currently trying to parse simple values as simple or complex values,
+// TODO: We may want to handle simple values -> vtxlex values at the parser level
+//       This is currently trying to parse simple values as simple or vtxlex values,
 //       and this is because items like `Some` could work either way.
 export async function mapValue<T>(
   world: World,
   event: Event,
   simple: (string) => T,
-  complex: (World, Event) => Promise<Value>,
+  vtxlex: (World, Event) => Promise<Value>,
   type: any
 ): Promise<T> {
   let simpleErr;
@@ -79,19 +79,19 @@ export async function mapValue<T>(
     try {
       return simple(<string>event);
     } catch (err) {
-      // Collect the error, but fallback to a complex expression
+      // Collect the error, but fallback to a vtxlex expression
       simpleErr = err;
     }
   }
 
   try {
-    val = await complex(world, event);
-  } catch (complexErr) {
+    val = await vtxlex(world, event);
+  } catch (vtxlexErr) {
     // If we had an error before and this was the fallback, now throw that one
     if (simpleErr) {
       throw simpleErr;
     } else {
-      throw complexErr;
+      throw vtxlexErr;
     }
   }
 
@@ -472,14 +472,14 @@ const fetchers = [
           let newKeyTwo = sha3(paddedKey + paddedSlot);
           let userInMarket = await world.web3.eth.getStorageAt(addr.val, newKeyTwo);
 
-          let isCompKey = '0x' + toBN(newKey).add(toBN(3)).toString(16);
-          let isCompStr = await world.web3.eth.getStorageAt(addr.val, isCompKey);
+          let isVtxKey = '0x' + toBN(newKey).add(toBN(3)).toString(16);
+          let isVtxStr = await world.web3.eth.getStorageAt(addr.val, isVtxKey);
 
           return new ListV([
             new BoolV(isListed),
             new ExpNumberV(collateralFactor.toString(), 1e18),
             new BoolV(areEqual(userInMarket, 1)),
-            new BoolV(areEqual(isCompStr, 1))
+            new BoolV(areEqual(isVtxStr, 1))
           ]);
         default:
           return new NothingV();
@@ -778,8 +778,8 @@ const fetchers = [
 
       * "Equal given:<Value> expected:<Value>" - Returns true if given values are equal
         * E.g. "Equal (Exactly 0) Zero"
-        * E.g. "Equal (CToken cZRX TotalSupply) (Exactly 55)"
-        * E.g. "Equal (CToken cZRX Comptroller) (Comptroller Address)"
+        * E.g. "Equal (VToken cZRX TotalSupply) (Exactly 55)"
+        * E.g. "Equal (VToken cZRX Controller) (Controller Address)"
     `,
     'Equal',
     [new Arg('given', getCoreValue), new Arg('expected', getCoreValue)],
@@ -825,47 +825,47 @@ const fetchers = [
   ),
   new Fetcher<{ res: Value }, Value>(
     `
-      #### Comptroller
+      #### Controller
 
-      * "Comptroller ...comptrollerArgs" - Returns comptroller value
+      * "Controller ...controllerArgs" - Returns controller value
     `,
-    'Comptroller',
-    [new Arg('res', getComptrollerValue, { variadic: true })],
+    'Controller',
+    [new Arg('res', getControllerValue, { variadic: true })],
     async (world, { res }) => res,
-    { subExpressions: comptrollerFetchers() }
+    { subExpressions: controllerFetchers() }
   ),
   new Fetcher<{ res: Value }, Value>(
     `
-      #### ComptrollerImpl
+      #### ControllerImpl
 
-      * "ComptrollerImpl ...comptrollerImplArgs" - Returns comptroller implementation value
+      * "ControllerImpl ...controllerImplArgs" - Returns controller implementation value
     `,
-    'ComptrollerImpl',
-    [new Arg('res', getComptrollerImplValue, { variadic: true })],
+    'ControllerImpl',
+    [new Arg('res', getControllerImplValue, { variadic: true })],
     async (world, { res }) => res,
-    { subExpressions: comptrollerImplFetchers() }
+    { subExpressions: controllerImplFetchers() }
   ),
   new Fetcher<{ res: Value }, Value>(
     `
-      #### CToken
+      #### VToken
 
-      * "CToken ...cTokenArgs" - Returns cToken value
+      * "VToken ...vTokenArgs" - Returns vToken value
     `,
-    'CToken',
-    [new Arg('res', getCTokenValue, { variadic: true })],
+    'VToken',
+    [new Arg('res', getVTokenValue, { variadic: true })],
     async (world, { res }) => res,
-    { subExpressions: cTokenFetchers() }
+    { subExpressions: vTokenFetchers() }
   ),
   new Fetcher<{ res: Value }, Value>(
     `
-      #### CTokenDelegate
+      #### VTokenDelegate
 
-      * "CTokenDelegate ...cTokenDelegateArgs" - Returns cToken delegate value
+      * "VTokenDelegate ...vTokenDelegateArgs" - Returns vToken delegate value
     `,
-    'CTokenDelegate',
-    [new Arg('res', getCTokenDelegateValue, { variadic: true })],
+    'VTokenDelegate',
+    [new Arg('res', getVTokenDelegateValue, { variadic: true })],
     async (world, { res }) => res,
-    { subExpressions: cTokenDelegateFetchers() }
+    { subExpressions: vTokenDelegateFetchers() }
   ),
   new Fetcher<{ res: Value }, Value>(
     `
@@ -957,14 +957,14 @@ const fetchers = [
   ),
   new Fetcher<{ res: Value }, Value>(
     `
-      #### Comp
+      #### Vtx
 
-      * "Comp ...compArgs" - Returns Comp value
+      * "Vtx ...vtxArgs" - Returns Vtx value
     `,
-    'Comp',
-    [new Arg('res', getCompValue, { variadic: true })],
+    'Vtx',
+    [new Arg('res', getVtxValue, { variadic: true })],
     async (world, { res }) => res,
-    { subExpressions: compFetchers() }
+    { subExpressions: vtxFetchers() }
   ),
   new Fetcher<{ res: Value }, Value>(
     `
@@ -981,7 +981,7 @@ const fetchers = [
 
 let contractFetchers = [
   { contract: "Counter", implicit: false },
-  { contract: "CompoundLens", implicit: false },
+  { contract: "VortexLens", implicit: false },
   { contract: "Reservoir", implicit: true }
 ];
 

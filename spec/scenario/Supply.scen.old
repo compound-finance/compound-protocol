@@ -49,11 +49,11 @@ Test "Can't supply when contract is paused"
 	Faucet Geoff Ether 0.4e18
 	PolicyHook Ether (SetPaused True)
 	Supply Geoff Ether 0.3e18
-	Assert Failure COMPTROLLER_REJECTION SUPPLY_COMPTROLLER_REJECTION 1
+	Assert Failure CONTROLLER_REJECTION SUPPLY_CONTROLLER_REJECTION 1
 	Assert Equal (SupplyBalance Geoff Ether) (Exactly "0e18")
 
 Test "With always paused policy hook, can't supply when contract is paused"
 	AddToken Ether
 	SupportMarket Ether (FixedPrice 1.0) (FixedRate 0.5 0.75) AlwaysPausedPolicyHook
 	Supply Geoff Ether 0.3e18
-	Assert Failure COMPTROLLER_REJECTION SUPPLY_COMPTROLLER_REJECTION 99
+	Assert Failure CONTROLLER_REJECTION SUPPLY_CONTROLLER_REJECTION 99

@@ -1,0 +1,47 @@
+#!/usr/bin/env yarn repl -s
+
+PrintTransactionLogs
+Alias VtxHolder "0xed409c9ff60f3020abf9012bcd45fc294f5608ff"
+Alias VtxHolder2 "0x6626593c237f530d15ae9980a95ef938ac15c35c"
+Alias DaiHolder "0xf977814e90da44bfa03b6295a0616a897441acec"
+Alias CUSDCHolder "0x5e34bc93a7506ecc8562ade4d5c8b090247a6349"
+Alias CUsdtImplementation "0x976aa93ca5aaa569109f4267589c619a097f001d"
+Alias CUsdtIRM "0xFB564da37B41b2F6B6EDcc3e56FbF523bD9F2012"
+Web3Fork "https://mainnet-eth.vortex.finance/@11499832" (VtxHolder VtxHolder2 DaiHolder CUSDCHolder)
+UseConfigs mainnet
+
+
+
+
+-- Fast forward, vote, queue, execute
+MineBlock
+From VtxHolder (Governor GovernorAlpha Proposal LastProposal Vote For)
+From VtxHolder2 (Governor GovernorAlpha Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+Governor GovernorAlpha Proposal LastProposal Queue
+IncreaseTime 604910
+Governor GovernorAlpha Proposal LastProposal Execute
+
+-- Assert Dai retrieved from DSR
+Assert Equal (Erc20 Dai TokenBalance vDai) (247764889541500427246579984)
+
+-- Assert Impl Changed Correctly
+Assert Equal (VToken vDai Implementation) (Address CUsdtImplementation)
+
+-- IRM changed correctly
+Assert Equal (VToken vDai InterestRateModel) (Address CUsdtIRM)
+
+-- Ensure accrue interest works
+VToken vDai AccrueInterest
+
+-- Mint Test
+From DaiHolder (Erc20 Dai Approve (Address vDai) 10000000)
+From DaiHolder (VToken vDai Mint 10000000)
+Assert Equal (Erc20 Dai TokenBalance vDai) (247764889541500427256579984)
+
+-- Borrow Test
+From CUSDCHolder (VToken vDai Borrow 10000000)
+Assert Equal (Erc20 Dai TokenBalance CUSDCHolder) (4235678125976069)
+Assert Equal (Erc20 Dai TokenBalance vDai) (247764889541500427246579984)
+
+Print "vDai implementation migration ok" 

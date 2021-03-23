@@ -44,7 +44,7 @@ export function invariantCommands() {
         #### Static
 
         * "Static <Condition>" - Ensures that the given condition retains a consistent value
-          * E.g ."Invariant Static (CToken cZRX UnderlyingBalance Geoff)"
+          * E.g ."Invariant Static (VToken cZRX UnderlyingBalance Geoff)"
       `,
       "Static",
       [
@@ -56,7 +56,7 @@ export function invariantCommands() {
         #### Remains
 
         * "Invariant Remains <Condition> <Value>" - Ensures that the given condition starts at and remains a given value
-          * E.g ."Invariant Remains (CToken cZRX UnderlyingBalance Geoff) (Exactly 0)"
+          * E.g ."Invariant Remains (VToken cZRX UnderlyingBalance Geoff) (Exactly 0)"
       `,
       "Remains",
       [

@@ -25,28 +25,28 @@ export async function buildGovernor(
 ): Promise<{ world: World; governor: Governor; govData: GovernorData }> {
   const fetchers = [
     new Fetcher<
-      { name: StringV, timelock: AddressV, comp: AddressV, guardian: AddressV },
+      { name: StringV, timelock: AddressV, vtx: AddressV, guardian: AddressV },
       GovernorData
     >(
       `
       #### GovernorAlpha
 
-      * "Governor Deploy Alpha name:<String> timelock:<Address> comp:<Address> guardian:<Address>" - Deploys Compound Governor Alpha
-        * E.g. "Governor Deploy Alpha GovernorAlpha (Address Timelock) (Address Comp) Guardian"
+      * "Governor Deploy Alpha name:<String> timelock:<Address> vtx:<Address> guardian:<Address>" - Deploys Vortex Governor Alpha
+        * E.g. "Governor Deploy Alpha GovernorAlpha (Address Timelock) (Address Vtx) Guardian"
     `,
       "Alpha",
       [
         new Arg("name", getStringV),
         new Arg("timelock", getAddressV),
-        new Arg("comp", getAddressV),
+        new Arg("vtx", getAddressV),
         new Arg("guardian", getAddressV)
       ],
-      async (world, { name, timelock, comp, guardian }) => {
+      async (world, { name, timelock, vtx, guardian }) => {
         return {
           invokation: await GovernorAlphaContract.deploy<Governor>(
             world,
             from,
-            [timelock.val, comp.val, guardian.val]
+            [timelock.val, vtx.val, guardian.val]
           ),
           name: name.val,
           contract: "GovernorAlpha"
@@ -54,28 +54,28 @@ export async function buildGovernor(
       }
     ),
     new Fetcher<
-      { name: StringV, timelock: AddressV, comp: AddressV, guardian: AddressV},
+      { name: StringV, timelock: AddressV, vtx: AddressV, guardian: AddressV},
       GovernorData
     >(
       `
       #### GovernorAlphaHarness
 
-      * "Governor Deploy AlphaHarness name:<String> timelock:<Address> comp:<Address> guardian:<Address>" - Deploys Compound Governor Alpha with a mocked voting period
-        * E.g. "Governor Deploy AlphaHarness GovernorAlphaHarness (Address Timelock) (Address Comp) Guardian"
+      * "Governor Deploy AlphaHarness name:<String> timelock:<Address> vtx:<Address> guardian:<Address>" - Deploys Vortex Governor Alpha with a mocked voting period
+        * E.g. "Governor Deploy AlphaHarness GovernorAlphaHarness (Address Timelock) (Address Vtx) Guardian"
     `,
       "AlphaHarness",
       [
         new Arg("name", getStringV),
         new Arg("timelock", getAddressV),
-        new Arg("comp", getAddressV),
+        new Arg("vtx", getAddressV),
         new Arg("guardian", getAddressV)
       ],
-      async (world, { name, timelock, comp, guardian }) => {
+      async (world, { name, timelock, vtx, guardian }) => {
         return {
           invokation: await GovernorAlphaHarnessContract.deploy<Governor>(
             world,
             from,
-            [timelock.val, comp.val, guardian.val]
+            [timelock.val, vtx.val, guardian.val]
           ),
           name: name.val,
           contract: "GovernorAlphaHarness"

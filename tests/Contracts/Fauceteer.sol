@@ -4,7 +4,7 @@ import "../../contracts/EIP20NonStandardInterface.sol";
 
 /**
   * @title Fauceteer
-  * @author Compound
+  * @author Vortex
   * @notice First computer program to be part of The Giving Pledge
   */
 contract Fauceteer {

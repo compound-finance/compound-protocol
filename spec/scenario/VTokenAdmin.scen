@@ -1,0 +1,43 @@
+
+Test "Set admin"
+    NewController
+    NewVToken ZRX cZRX
+    Assert Equal (VToken cZRX Admin) (Address Root)
+    Assert Equal (VToken cZRX PendingAdmin) (Address Zero)
+    From Root (VToken cZRX SetPendingAdmin Geoff)
+    Assert Equal (VToken cZRX Admin) (Address Root)
+    Assert Equal (VToken cZRX PendingAdmin) (Address Geoff)
+    From Geoff (VToken cZRX AcceptAdmin)
+    Assert Equal (VToken cZRX Admin) (Address Geoff)
+    Assert Equal (VToken cZRX PendingAdmin) (Address Zero)
+
+Test "Set admin to contructor argument"
+    NewController
+    NewVToken ZRX cZRX admin:Torrey
+    Assert Equal (VToken cZRX Admin) (Address Torrey)
+    Assert Equal (VToken cZRX PendingAdmin) (Address Zero)
+    From Torrey (VToken cZRX SetPendingAdmin Geoff)
+    Assert Equal (VToken cZRX Admin) (Address Torrey)
+    Assert Equal (VToken cZRX PendingAdmin) (Address Geoff)
+    From Geoff (VToken cZRX AcceptAdmin)
+    Assert Equal (VToken cZRX Admin) (Address Geoff)
+    Assert Equal (VToken cZRX PendingAdmin) (Address Zero)
+
+
+Test "Fail to set pending admin"
+    NewController
+    NewVToken ZRX cZRX
+    Invariant Remains (VToken cZRX Admin) (Address Root)
+    Invariant Remains (VToken cZRX PendingAdmin) (Address Zero)
+    AllowFailures
+    From Geoff (VToken cZRX SetPendingAdmin Geoff)
+    Assert Failure UNAUTHORIZED SET_PENDING_ADMIN_OWNER_CHECK
+
+Test "Fail to accept admin"
+    NewController
+    NewVToken ZRX cZRX
+    Invariant Remains (VToken cZRX Admin) (Address Root)
+    Invariant Remains (VToken cZRX PendingAdmin) (Address Zero)
+    AllowFailures
+    From Geoff (VToken cZRX AcceptAdmin)
+    Assert Failure UNAUTHORIZED ACCEPT_ADMIN_PENDING_ADMIN_CHECK

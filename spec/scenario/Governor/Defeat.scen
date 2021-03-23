@@ -2,8 +2,8 @@ Macro DeployGov
     SetBlockNumber 1
     Counter Deploy CNT1
     Timelock Deploy Scenario Jared 604800
-    Comp Deploy Bank
-    Governor Deploy Alpha LegitGov (Address Timelock) (Address Comp) Guardian
+    Vtx Deploy Bank
+    Governor Deploy Alpha LegitGov (Address Timelock) (Address Vtx) Guardian
     Timelock SetAdmin (Address LegitGov)
     Enfranchise Root 100001e18
     Enfranchise Jared 200000e18
@@ -11,8 +11,8 @@ Macro DeployGov
     Enfranchise Geoff 700001e18
 
 Macro Enfranchise user amount
-    From Bank (Comp Transfer user amount)
-    From user (Comp Delegate user)
+    From Bank (Vtx Transfer user amount)
+    From user (Vtx Delegate user)
 
 Macro GivenPendingProposal
     DeployGov

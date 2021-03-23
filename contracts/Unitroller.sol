@@ -1,21 +1,21 @@
 pragma solidity ^0.5.16;
 
 import "./ErrorReporter.sol";
-import "./ComptrollerStorage.sol";
+import "./ControllerStorage.sol";
 /**
- * @title ComptrollerCore
- * @dev Storage for the comptroller is at this address, while execution is delegated to the `comptrollerImplementation`.
- * CTokens should reference this contract as their comptroller.
+ * @title ControllerCore
+ * @dev Storage for the controller is at this address, while execution is delegated to the `controllerImplementation`.
+ * VTokens should reference this contract as their controller.
  */
-contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
+contract Unitroller is UnitrollerAdminStorage, ControllerErrorReporter {
 
     /**
-      * @notice Emitted when pendingComptrollerImplementation is changed
+      * @notice Emitted when pendingControllerImplementation is changed
       */
     event NewPendingImplementation(address oldPendingImplementation, address newPendingImplementation);
 
     /**
-      * @notice Emitted when pendingComptrollerImplementation is accepted, which means comptroller implementation is updated
+      * @notice Emitted when pendingControllerImplementation is accepted, which means controller implementation is updated
       */
     event NewImplementation(address oldImplementation, address newImplementation);
 
@@ -41,36 +41,36 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PENDING_IMPLEMENTATION_OWNER_CHECK);
         }
 
-        address oldPendingImplementation = pendingComptrollerImplementation;
+        address oldPendingImplementation = pendingControllerImplementation;
 
-        pendingComptrollerImplementation = newPendingImplementation;
+        pendingControllerImplementation = newPendingImplementation;
 
-        emit NewPendingImplementation(oldPendingImplementation, pendingComptrollerImplementation);
+        emit NewPendingImplementation(oldPendingImplementation, pendingControllerImplementation);
 
         return uint(Error.NO_ERROR);
     }
 
     /**
-    * @notice Accepts new implementation of comptroller. msg.sender must be pendingImplementation
+    * @notice Accepts new implementation of controller. msg.sender must be pendingImplementation
     * @dev Admin function for new implementation to accept it's role as implementation
     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
     */
     function _acceptImplementation() public returns (uint) {
         // Check caller is pendingImplementation and pendingImplementation ≠ address(0)
-        if (msg.sender != pendingComptrollerImplementation || pendingComptrollerImplementation == address(0)) {
+        if (msg.sender != pendingControllerImplementation || pendingControllerImplementation == address(0)) {
             return fail(Error.UNAUTHORIZED, FailureInfo.ACCEPT_PENDING_IMPLEMENTATION_ADDRESS_CHECK);
         }
 
         // Save current values for inclusion in log
-        address oldImplementation = comptrollerImplementation;
-        address oldPendingImplementation = pendingComptrollerImplementation;
+        address oldImplementation = controllerImplementation;
+        address oldPendingImplementation = pendingControllerImplementation;
 
-        comptrollerImplementation = pendingComptrollerImplementation;
+        controllerImplementation = pendingControllerImplementation;
 
-        pendingComptrollerImplementation = address(0);
+        pendingControllerImplementation = address(0);
 
-        emit NewImplementation(oldImplementation, comptrollerImplementation);
-        emit NewPendingImplementation(oldPendingImplementation, pendingComptrollerImplementation);
+        emit NewImplementation(oldImplementation, controllerImplementation);
+        emit NewPendingImplementation(oldPendingImplementation, pendingControllerImplementation);
 
         return uint(Error.NO_ERROR);
     }
@@ -134,7 +134,7 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
      */
     function () payable external {
         // delegate all other functions to current implementation
-        (bool success, ) = comptrollerImplementation.delegatecall(msg.data);
+        (bool success, ) = controllerImplementation.delegatecall(msg.data);
 
         assembly {
               let free_mem_ptr := mload(0x40)

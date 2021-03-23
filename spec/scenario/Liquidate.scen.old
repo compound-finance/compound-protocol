@@ -104,7 +104,7 @@ Test "Can't liquidate when contract is borrow asset is paused"
 	SetMarketPriceOracle OMG (FixedPrice "0.5") -- Max liquidate at this price should be maxClose = 1E for all the supply
 	PolicyHook Ether (SetPaused True)
 	Liquidate Torrey Geoff Ether "1e18" OMG
-	Assert Failure COMPTROLLER_REJECTION LIQUIDATE_POLICY_HOOK_ASSET_BORROW_REJECTION 1
+	Assert Failure CONTROLLER_REJECTION LIQUIDATE_POLICY_HOOK_ASSET_BORROW_REJECTION 1
 	Assert Equal (BalanceSheetBorrow Ether) (Exactly "1.05e18") -- unchanged
 	Assert Equal (BorrowBalance Geoff Ether) (Exactly "1.05e18") -- unchanged
 
@@ -137,6 +137,6 @@ Test "Can't liquidate when contract is collateral asset is paused"
 	SetMarketPriceOracle OMG (FixedPrice "0.5") -- Max liquidate at this price should be maxClose = 1E for all the supply
 	PolicyHook OMG (SetPaused True)
 	Liquidate Torrey Geoff Ether "1e18" OMG
-	Assert Failure COMPTROLLER_REJECTION LIQUIDATE_POLICY_HOOK_ASSET_COLLATERAL_REJECTION 1
+	Assert Failure CONTROLLER_REJECTION LIQUIDATE_POLICY_HOOK_ASSET_COLLATERAL_REJECTION 1
 	Assert Equal (BalanceSheetBorrow Ether) (Exactly "1.05e18") -- unchanged
 	Assert Equal (BorrowBalance Geoff Ether) (Exactly "1.05e18") -- unchanged

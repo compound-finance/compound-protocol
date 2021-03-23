@@ -1,9 +1,9 @@
 
 Macro GivenProposal
     Counter Deploy
-    Comp Deploy Bank
+    Vtx Deploy Bank
     Timelock Deploy Jared 604800
-    Governor Deploy Alpha LegitGov (Address Timelock) (Address Comp) Guardian
+    Governor Deploy Alpha LegitGov (Address Timelock) (Address Vtx) Guardian
     Timelock SetAdmin (Address LegitGov)
     Enfranchise Root 100001e18
     Enfranchise Geoff 100
@@ -11,8 +11,8 @@ Macro GivenProposal
     MineBlock
 
 Macro Enfranchise user amount
-    From Bank (Comp Transfer user amount)
-    From user (Comp Delegate user)
+    From Bank (Vtx Transfer user amount)
+    From user (Vtx Delegate user)
 
 Test "Successfully Cast For Vote"
     GivenProposal

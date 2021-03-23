@@ -1,7 +1,7 @@
 pragma solidity ^0.5.16;
 
-import "../../contracts/CErc20.sol";
-import "../../contracts/CToken.sol";
+import "../../contracts/VErc20.sol";
+import "../../contracts/VToken.sol";
 import "../../contracts/PriceOracle.sol";
 
 interface V1PriceOracleInterface {
@@ -18,8 +18,8 @@ contract PriceOracleProxy is PriceOracle {
     /// @notice Address of the guardian, which may set the SAI price once
     address public guardian;
 
-    /// @notice Address of the cEther contract, which has a constant price
-    address public cEthAddress;
+    /// @notice Address of the vEther contract, which has a constant price
+    address public vEthAddress;
 
     /// @notice Address of the cUSDC contract, which we hand pick a key for
     address public cUsdcAddress;
@@ -30,8 +30,8 @@ contract PriceOracleProxy is PriceOracle {
     /// @notice Address of the cSAI contract, which may have its price set
     address public cSaiAddress;
 
-    /// @notice Address of the cDAI contract, which we hand pick a key for
-    address public cDaiAddress;
+    /// @notice Address of the vDAI contract, which we hand pick a key for
+    address public vDaiAddress;
 
     /// @notice Handpicked key for USDC
     address public constant usdcOracleKey = address(1);
@@ -45,57 +45,57 @@ contract PriceOracleProxy is PriceOracle {
     /**
      * @param guardian_ The address of the guardian, which may set the SAI price once
      * @param v1PriceOracle_ The address of the v1 price oracle, which will continue to operate and hold prices for collateral assets
-     * @param cEthAddress_ The address of cETH, which will return a constant 1e18, since all prices relative to ether
+     * @param vEthAddress_ The address of vETH, which will return a constant 1e18, since all prices relative to ether
      * @param cUsdcAddress_ The address of cUSDC, which will be read from a special oracle key
      * @param cSaiAddress_ The address of cSAI, which may be read directly from storage
-     * @param cDaiAddress_ The address of cDAI, which will be read from a special oracle key
+     * @param vDaiAddress_ The address of vDAI, which will be read from a special oracle key
      * @param cUsdtAddress_ The address of cUSDT, which uses the cUSDC price
      */
     constructor(address guardian_,
                 address v1PriceOracle_,
-                address cEthAddress_,
+                address vEthAddress_,
                 address cUsdcAddress_,
                 address cSaiAddress_,
-                address cDaiAddress_,
+                address vDaiAddress_,
                 address cUsdtAddress_) public {
         guardian = guardian_;
         v1PriceOracle = V1PriceOracleInterface(v1PriceOracle_);
 
-        cEthAddress = cEthAddress_;
+        vEthAddress = vEthAddress_;
         cUsdcAddress = cUsdcAddress_;
         cSaiAddress = cSaiAddress_;
-        cDaiAddress = cDaiAddress_;
+        vDaiAddress = vDaiAddress_;
         cUsdtAddress = cUsdtAddress_;
     }
 
     /**
-     * @notice Get the underlying price of a listed cToken asset
-     * @param cToken The cToken to get the underlying price of
+     * @notice Get the underlying price of a listed vToken asset
+     * @param vToken The vToken to get the underlying price of
      * @return The underlying asset price mantissa (scaled by 1e18)
      */
-    function getUnderlyingPrice(CToken cToken) public view returns (uint) {
-        address cTokenAddress = address(cToken);
+    function getUnderlyingPrice(VToken vToken) public view returns (uint) {
+        address vTokenAddress = address(vToken);
 
-        if (cTokenAddress == cEthAddress) {
+        if (vTokenAddress == vEthAddress) {
             // ether always worth 1
             return 1e18;
         }
 
-        if (cTokenAddress == cUsdcAddress || cTokenAddress == cUsdtAddress) {
+        if (vTokenAddress == cUsdcAddress || vTokenAddress == cUsdtAddress) {
             return v1PriceOracle.assetPrices(usdcOracleKey);
         }
 
-        if (cTokenAddress == cDaiAddress) {
+        if (vTokenAddress == vDaiAddress) {
             return v1PriceOracle.assetPrices(daiOracleKey);
         }
 
-        if (cTokenAddress == cSaiAddress) {
+        if (vTokenAddress == cSaiAddress) {
             // use the frozen SAI price if set, otherwise use the DAI price
             return saiPrice > 0 ? saiPrice : v1PriceOracle.assetPrices(daiOracleKey);
         }
 
         // otherwise just read from v1 oracle
-        address underlying = CErc20(cTokenAddress).underlying();
+        address underlying = VErc20(vTokenAddress).underlying();
         return v1PriceOracle.assetPrices(underlying);
     }
 

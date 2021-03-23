@@ -3,15 +3,15 @@ Macro DeployGov
     IncreaseTime 100
     Counter Deploy CNT1
     Timelock Deploy Jared 604800
-    Comp Deploy Bank
+    Vtx Deploy Bank
     Enfranchise Root 200001e18
     Enfranchise Jared 200000e18
-    Governor Deploy Alpha LegitGov (Address Timelock) (Address Comp) Guardian
+    Governor Deploy Alpha LegitGov (Address Timelock) (Address Vtx) Guardian
     Timelock SetAdmin (Address LegitGov)
 
 Macro Enfranchise user amount
-    From Bank (Comp Transfer user amount)
-    From user (Comp Delegate user)
+    From Bank (Vtx Transfer user amount)
+    From user (Vtx Delegate user)
 
 Macro SucceedProposal
     MineBlock

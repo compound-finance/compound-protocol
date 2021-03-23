@@ -25,18 +25,18 @@ const statesInverted = solparse
 const states = Object.entries(statesInverted).reduce((obj, [key, value]) => ({ ...obj, [value]: key }), {});
 
 describe('GovernorAlpha#state/1', () => {
-  let comp, gov, root, acct, delay, timelock;
+  let vtx, gov, root, acct, delay, timelock;
 
   beforeAll(async () => {
     await freezeTime(100);
     [root, acct, ...accounts] = accounts;
-    comp = await deploy('Comp', [root]);
+    vtx = await deploy('Vtx', [root]);
     delay = etherUnsigned(2 * 24 * 60 * 60).multipliedBy(2)
     timelock = await deploy('TimelockHarness', [root, delay]);
-    gov = await deploy('GovernorAlpha', [timelock._address, comp._address, root]);
+    gov = await deploy('GovernorAlpha', [timelock._address, vtx._address, root]);
     await send(timelock, "harnessSetAdmin", [gov._address])
-    await send(comp, 'transfer', [acct, etherMantissa(4000000)]);
-    await send(comp, 'delegate', [acct], { from: acct });
+    await send(vtx, 'transfer', [acct, etherMantissa(4000000)]);
+    await send(vtx, 'delegate', [acct], { from: acct });
   });
 
   let trivialProposal, targets, values, signatures, callDatas;
@@ -45,7 +45,7 @@ describe('GovernorAlpha#state/1', () => {
     values = ["0"];
     signatures = ["getBalanceOf(address)"]
     callDatas = [encodeParameters(['address'], [acct])];
-    await send(comp, 'delegate', [root]);
+    await send(vtx, 'delegate', [root]);
     await send(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"]);
     proposalId = await call(gov, 'latestProposalIds', [root]);
     trivialProposal = await call(gov, "proposals", [proposalId])
@@ -66,14 +66,14 @@ describe('GovernorAlpha#state/1', () => {
   })
 
   it("Canceled", async () => {
-    await send(comp, 'transfer', [accounts[0], etherMantissa(4000000)]);
-    await send(comp, 'delegate', [accounts[0]], { from: accounts[0] });
+    await send(vtx, 'transfer', [accounts[0], etherMantissa(4000000)]);
+    await send(vtx, 'delegate', [accounts[0]], { from: accounts[0] });
     await mineBlock()
     await send(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: accounts[0] })
     let newProposalId = await call(gov, 'proposalCount')
 
     // send away the delegates
-    await send(comp, 'delegate', [root], { from: accounts[0] });
+    await send(vtx, 'delegate', [root], { from: accounts[0] });
     await send(gov, 'cancel', [newProposalId])
 
     expect(await call(gov, 'state', [+newProposalId])).toEqual(states["Canceled"])

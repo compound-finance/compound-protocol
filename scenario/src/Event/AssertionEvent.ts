@@ -260,8 +260,8 @@ export function assertionCommands() {
 
         * "Approx given:<Value> expected:<Value> tolerance:<Value>" - Asserts that given approximately matches expected.
           * E.g. "Assert Approx (Exactly 0) Zero "
-          * E.g. "Assert Approx (CToken cZRX TotalSupply) (Exactly 55) 1e-18"
-          * E.g. "Assert Approx (CToken cZRX Comptroller) (Comptroller Address) 1"
+          * E.g. "Assert Approx (VToken cZRX TotalSupply) (Exactly 55) 1e-18"
+          * E.g. "Assert Approx (VToken cZRX Controller) (Controller Address) 1"
       `,
       "Approx",
       [
@@ -277,8 +277,8 @@ export function assertionCommands() {
 
         * "Equal given:<Value> expected:<Value>" - Asserts that given matches expected.
           * E.g. "Assert Equal (Exactly 0) Zero"
-          * E.g. "Assert Equal (CToken cZRX TotalSupply) (Exactly 55)"
-          * E.g. "Assert Equal (CToken cZRX Comptroller) (Comptroller Address)"
+          * E.g. "Assert Equal (VToken cZRX TotalSupply) (Exactly 55)"
+          * E.g. "Assert Equal (VToken cZRX Controller) (Controller Address)"
       `,
       "Equal",
       [
@@ -322,7 +322,7 @@ export function assertionCommands() {
         #### True
 
         * "True given:<Value>" - Asserts that given is true.
-          * E.g. "Assert True (Comptroller CheckMembership Geoff cETH)"
+          * E.g. "Assert True (Controller CheckMembership Geoff vETH)"
       `,
       "True",
       [
@@ -335,7 +335,7 @@ export function assertionCommands() {
         #### False
 
         * "False given:<Value>" - Asserts that given is false.
-          * E.g. "Assert False (Comptroller CheckMembership Geoff cETH)"
+          * E.g. "Assert False (Controller CheckMembership Geoff vETH)"
       `,
       "False",
       [
@@ -347,7 +347,7 @@ export function assertionCommands() {
         #### ReadRevert
 
         * "ReadRevert event:<Event> message:<String>" - Asserts that reading the given value reverts with given message.
-          * E.g. "Assert ReadRevert (Comptroller CheckMembership Geoff cETH) \"revert\""
+          * E.g. "Assert ReadRevert (Controller CheckMembership Geoff vETH) \"revert\""
       `,
       "ReadRevert",
       [
@@ -361,7 +361,7 @@ export function assertionCommands() {
         #### ReadError
 
         * "ReadError event:<Event> message:<String>" - Asserts that reading the given value throws given error
-          * E.g. "Assert ReadError (Comptroller Bad Address) \"cannot find comptroller\""
+          * E.g. "Assert ReadError (Controller Bad Address) \"cannot find controller\""
       `,
       "ReadError",
       [

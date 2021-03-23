@@ -2,15 +2,15 @@ Macro DeployGov
     SetBlockNumber 1
     Counter Deploy CNT1
     Timelock Deploy Scenario Jared 604800
-    Comp Deploy Bank
-    Governor Deploy Alpha LegitGov (Address Timelock) (Address Comp) Guardian
+    Vtx Deploy Bank
+    Governor Deploy Alpha LegitGov (Address Timelock) (Address Vtx) Guardian
     Timelock SetAdmin (Address LegitGov)
     Enfranchise Root 200001e18
     Enfranchise Jared 200000e18
 
 Macro Enfranchise user amount
-    From Bank (Comp Transfer user amount)
-    From user (Comp Delegate user)
+    From Bank (Vtx Transfer user amount)
+    From user (Vtx Delegate user)
 
 Macro GivenPendingProposal
     DeployGov
@@ -47,7 +47,7 @@ Macro GivenExecutedProposal
 
 Test "Cancel a Pending proposal"
     GivenPendingProposal
-    From Root (Comp Delegate Geoff)
+    From Root (Vtx Delegate Geoff)
     Assert Equal ("Pending") (Governor LegitGov Proposal LastProposal State)
     --sending away delegates takes a block, so proposal will be "Active" by time it is cancelable
     Governor LegitGov Proposal LastProposal Cancel
@@ -56,14 +56,14 @@ Test "Cancel a Pending proposal"
 
 Test "Cancel an Active proposal"
     GivenActiveProposal
-    From Root (Comp Delegate Geoff)
+    From Root (Vtx Delegate Geoff)
     Governor LegitGov Proposal LastProposal Cancel
     Assert Log ProposalCanceled (id 1)
     Assert Equal ("Canceled") (Governor LegitGov Proposal LastProposal State)
 
 Test "Cancel a Succeded proposal"
     GivenSucceededProposal
-    From Root (Comp Delegate Geoff)
+    From Root (Vtx Delegate Geoff)
     Governor LegitGov Proposal LastProposal Cancel
     Assert Log ProposalCanceled (id 1)
     Assert Equal ("Canceled") (Governor LegitGov Proposal LastProposal State)
@@ -72,7 +72,7 @@ Test "Cancel a queued proposal"
     GivenQueuedProposal
     Assert True (Timelock QueuedTransaction (Timelock TxHash (Address CNT1) 0 (Governor LegitGov Proposal LastProposal Eta) "increment(uint256,uint256)" 7 4))
     Assert True (Timelock QueuedTransaction (Timelock TxHash (Address CNT1) 0 (Governor LegitGov Proposal LastProposal Eta) "decrement(uint256)" 2))
-    From Root (Comp Delegate Geoff)
+    From Root (Vtx Delegate Geoff)
     Governor LegitGov Proposal LastProposal Cancel
     Assert Log ProposalCanceled (id 1)
     Assert False (Timelock QueuedTransaction (Timelock TxHash (Address CNT1) 0 (Governor LegitGov Proposal LastProposal Eta) "increment(uint256,uint256)" 7 4))
@@ -81,7 +81,7 @@ Test "Cancel a queued proposal"
 
 Test "Revert when trying to cancel an executed proposal"
     GivenExecutedProposal
-    From Root (Comp Delegate Geoff)
+    From Root (Vtx Delegate Geoff)
     AllowFailures
     Governor LegitGov Proposal LastProposal Cancel
     Assert Revert "revert GovernorAlpha::cancel: cannot cancel executed proposal"

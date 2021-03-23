@@ -4,7 +4,7 @@ import {encodedNumber} from '../Encoding';
 
 interface PriceOracleMethods {
   assetPrices(asset: string): Callable<number>
-  setUnderlyingPrice(cToken: string, amount: encodedNumber): Sendable<number>
+  setUnderlyingPrice(vToken: string, amount: encodedNumber): Sendable<number>
   setDirectPrice(address: string, amount: encodedNumber): Sendable<number>
 
   // Anchor Price Oracle

@@ -1,24 +1,21 @@
 FROM mhart/alpine-node:13.8.0
 
-RUN apk update && apk add --no-cache --virtual build-dependencies git python g++ make
+RUN apk update && apk add --no-cache --virtual build-dependencies bash git python g++ make perl perl-utils
 RUN wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /bin/solc && chmod +x /bin/solc
 
-RUN mkdir -p /compound-protocol
-WORKDIR /compound-protocol
+RUN mkdir -p /vortex-protocol
+WORKDIR /vortex-protocol
 
 # First add deps
-ADD ./package.json /compound-protocol
-ADD ./yarn.lock /compound-protocol
-RUN yarn install --lock-file
+ADD ./package.json /vortex-protocol
+ADD ./yarn.lock /vortex-protocol
+RUN yarn install --frozen-lockfile
 
 # Then rest of code and build
-ADD . /compound-protocol
+ADD . /vortex-protocol
 
 ENV SADDLE_SHELL=/bin/sh
 ENV SADDLE_CONTRACTS="contracts/*.sol contracts/**/*.sol"
 RUN npx saddle compile
-
-RUN apk del build-dependencies
-RUN yarn cache clean
 
 CMD while :; do sleep 2073600; done

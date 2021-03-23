@@ -1,0 +1,157 @@
+_setPendingAdmin(address currentAdmin, address currentPendingAdmin, address newPendingAdmin)
+description "Failed to set new pending admin $currentPendingAdmin to $newPendingAdmin (admin=$currentAdmin)"
+{
+    // Free Variables
+    env e0;
+    env e1;
+    env e2;
+
+    require currentAdmin == sinvoke admin(e0);
+    require currentPendingAdmin == sinvoke pendingAdmin(e0);
+
+    // Invoke set new pending admin
+    uint256 result = sinvoke _setPendingAdmin(e1, newPendingAdmin);
+
+    // pendingAdmin changes <=> msg.sender == currentAdmin
+    assert (
+            (
+             e1.msg.sender == currentAdmin &&
+             result == 0 &&
+             sinvoke pendingAdmin(e2) == newPendingAdmin
+             )
+            ||
+            (
+             e1.msg.sender != currentAdmin &&
+             result != 0 &&
+             sinvoke pendingAdmin(e2) == currentPendingAdmin
+             )
+            );
+}
+
+_acceptAdmin(address currentAdmin, address currentPendingAdmin, address newAdmin, address newPendingAdmin)
+description "Failed to accept pending admin currentAdmin=$currentAdmin, currentPendingAdmin=$currentPendingAdmin, newPendingAdmin=$newPendingAdmin, newAdmin=$newAdmin"
+{
+    // Free Variables
+    env e0;
+    env e1;
+    env e2;
+
+    require currentAdmin == sinvoke admin(e0);
+    require currentPendingAdmin == sinvoke pendingAdmin(e0);
+
+    // Invoke accept admin
+    uint256 result = sinvoke _acceptAdmin(e1);
+
+    require newAdmin == sinvoke admin(e2);
+    require newPendingAdmin == sinvoke pendingAdmin(e2);
+
+    // admin == pendingAdmin <=> msg.sender == pendingAdmin
+    assert (
+            (
+             e1.msg.sender == currentPendingAdmin &&
+             currentPendingAdmin != 0 &&
+             result == 0 &&
+             newAdmin == currentPendingAdmin &&
+             newPendingAdmin == 0
+             )
+            ||
+            (
+             (
+              e1.msg.sender != currentPendingAdmin ||
+              currentPendingAdmin == 0
+              ) &&
+             result != 0 &&
+             newAdmin == currentAdmin &&
+             newPendingAdmin == currentPendingAdmin
+             )
+            );
+}
+
+// Invariant: To change admin or currentPendingAdmin, must come from current admin
+invariantRequireAdminToChangeAdmin(address caller, address currentAdmin, address currentPendingAdmin, address desiredAdmin, address newAdmin, address newPendingAdmin)
+    description "Failed to prove that required to be admin to change admin (caller=$caller, currentAdmin=$currentAdmin, currentPendingAdmin=$currentPendingAdmin, desiredAdmin=$desiredAdmin, newAdmin=$newAdmin, newPendingAdmin=$newPendingAdmin)"
+{
+    // Free Variables
+    env e0;
+    env e1;
+    env e2;
+    env e3;
+
+    require currentAdmin == sinvoke admin(e0);
+    require currentPendingAdmin == sinvoke pendingAdmin(e0);
+
+    // Start with a zero admin
+    require currentPendingAdmin == 0;
+
+    require caller == e1.msg.sender;
+
+    // Invoke set new pending admin
+    uint256 result0 = sinvoke _setPendingAdmin(e1, desiredAdmin);
+    uint256 result1 = sinvoke _acceptAdmin(e2);
+
+    require newAdmin == sinvoke admin(e3);
+    require newPendingAdmin == sinvoke pendingAdmin(e3);
+
+    assert (
+            e1.msg.sender == currentAdmin ||
+            (
+             newAdmin == currentAdmin &&
+             newPendingAdmin == currentPendingAdmin
+             )
+            );
+}
+
+_setController(address desiredController)
+description "Failed to set controller: result=$result (currAdmin=$currAdmin, currController=$currController, desiredController=$desiredController, nextController=$nextController)" {
+
+    // Free Variables
+    env e0;
+    env e_set;
+    env e1;
+    env e_accept;
+    env e2;
+
+    address currAdmin = sinvoke admin(e0);
+    address currController = sinvoke controllerImplementation(e0);
+
+    // Step 1: Invoke set new pending controller
+    uint256 result_set = sinvoke _setPendingImplementation(e1,desiredController);
+
+    // Results and checks:
+    address updated_pending = sinvoke pendingControllerImplementation(e1);
+    assert (result_set == 0 <=> (e1.msg.sender == currAdmin && desiredController == updated_pending)), "Mismatch in success case: result of setting pending implementation ${result_set}. Sent by ${e1.msg.sender}, current admin ${currAdmin}, wanted to set to ${desiredController} with updated pending controller implementation is ${updated_pending}.";
+    assert (result_set == 1 <=> e1.msg.sender != currAdmin), "Mismatch in unauthorized case: result is ${result_set} and sender is ${e1.msg.sender} when current admin is ${currAdmin}.";
+
+    // Step 2: Invoke accept new controller
+    uint256 result_accept = sinvoke _acceptImplementation(e_accept, desiredController);
+
+    // Results and checks:
+    address nextController = sinvoke controllerImplementation(e2);
+    address finalPendingController = sinvoke pendingControllerImplementation(e2);
+
+    // if succeeded setting: nextController == desiredController <=> msg.sender == desiredController
+    assert result_set == 0 =>
+        (result_accept == 0 <=>
+         (e_accept.msg.sender == desiredController &&
+          nextController == desiredController &&
+          nextController != 0 && // Cannot set new controller to 0
+          finalPendingController == 0)),
+     "If setting pending implementation succeeded, accept will succeed (got ${result_accept}) only if desired controller $desiredController sent the request (sent by ${e_accept.msg.sender}, and set next controller as ${nextController}";
+    assert result_set == 0 =>
+        (result_accept == 1 <=>
+         ((e_accept.msg.sender != desiredController || desiredController == 0) && // fails if bad sender, or trying to effectively erase desired controller
+          nextController == currController &&
+          finalPendingController == desiredController)),
+     "If setting pending implementation succeeded, will fail with unauthorized (got ${result_accept}) only if different implementation tried to accept on behalf of ${desiredController} (sent by ${e_accept.msg.sender}) and did not change the next controller: ${nextController} from current one ${currController}.";
+}
+
+rule mustEnterMarkets(address vToken, address borrower, uint256 borrowAmount) {
+    env e0;
+
+    bool inMarketPre = sinvoke checkMembership(e0, borrower, vToken);
+    bool canBorrow = sinvoke borrowAllowed(e0, vToken, borrower, borrowAmount) == 0;
+    bool inMarketPost = sinvoke checkMembership(e0, borrower, vToken);
+    // We used to require you to be in the market to borrow, now trying to borrow will enter
+    // assert canBorrow => inMarketPre, "Must be in market before being allowed to borrow";
+    assert canBorrow => inMarketPost, "Must be in market if allowed to borrow";
+ }

@@ -63,7 +63,7 @@ jobs:
 
   verify:
     docker:
-      - image: compoundfinance/alpine-java-z3:latest
+      - image: vortexfinance/alpine-java-z3:latest
     working_directory: ~/repo
     steps:
       - checkout

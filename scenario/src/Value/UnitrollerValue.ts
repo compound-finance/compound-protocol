@@ -17,12 +17,12 @@ async function getUnitrollerPendingAdmin(world: World, unitroller: Unitroller): 
   return new AddressV(await unitroller.methods.pendingAdmin().call());
 }
 
-async function getComptrollerImplementation(world: World, unitroller: Unitroller): Promise<AddressV> {
-  return new AddressV(await unitroller.methods.comptrollerImplementation().call());
+async function getControllerImplementation(world: World, unitroller: Unitroller): Promise<AddressV> {
+  return new AddressV(await unitroller.methods.controllerImplementation().call());
 }
 
-async function getPendingComptrollerImplementation(world: World, unitroller: Unitroller): Promise<AddressV> {
-  return new AddressV(await unitroller.methods.pendingComptrollerImplementation().call());
+async function getPendingControllerImplementation(world: World, unitroller: Unitroller): Promise<AddressV> {
+  return new AddressV(await unitroller.methods.pendingControllerImplementation().call());
 }
 
 export function unitrollerFetchers() {
@@ -64,22 +64,22 @@ export function unitrollerFetchers() {
         #### Implementation
 
         * "Unitroller Implementation" - Returns the Implementation of Unitroller contract
-          * E.g. "Unitroller Implementation" - Returns address of comptrollerImplentation
+          * E.g. "Unitroller Implementation" - Returns address of controllerImplentation
       `,
       'Implementation',
       [new Arg('unitroller', getUnitroller, { implicit: true })],
-      (world, { unitroller }) => getComptrollerImplementation(world, unitroller)
+      (world, { unitroller }) => getControllerImplementation(world, unitroller)
     ),
     new Fetcher<{ unitroller: Unitroller }, AddressV>(
       `
         #### PendingImplementation
 
         * "Unitroller PendingImplementation" - Returns the pending implementation of Unitroller contract
-          * E.g. "Unitroller PendingImplementation" - Returns address of pendingComptrollerImplementation
+          * E.g. "Unitroller PendingImplementation" - Returns address of pendingControllerImplementation
       `,
       'PendingImplementation',
       [new Arg('unitroller', getUnitroller, { implicit: true })],
-      (world, { unitroller }) => getPendingComptrollerImplementation(world, unitroller)
+      (world, { unitroller }) => getPendingControllerImplementation(world, unitroller)
     )
   ];
 }

@@ -1,33 +1,33 @@
 
 Test "Fail to seize calling directly"
-    NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
-    ListedCToken BAT cBAT initialExchangeRate:1e9
+    NewController
+    ListedVToken ZRX cZRX initialExchangeRate:1e9
+    ListedVToken BAT vBAT initialExchangeRate:1e9
     Prep Geoff Some ZRX cZRX
     Mint Geoff 50e18 cZRX
     Invariant Remains (Erc20 cZRX TokenBalance Geoff) 50e9
     AllowFailures
     Seize 1e9 cZRX caller:Geoff liquidator:Geoff borrower:Torrey
-    -- The caller must be from another cToken market, thus this fails
-    Assert Failure COMPTROLLER_REJECTION LIQUIDATE_SEIZE_COMPTROLLER_REJECTION MARKET_NOT_LISTED
+    -- The caller must be from another vToken market, thus this fails
+    Assert Failure CONTROLLER_REJECTION LIQUIDATE_SEIZE_CONTROLLER_REJECTION MARKET_NOT_LISTED
 
-Test "Seize tokens with a paused WBTC cToken-- like normal"
-    NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
-    ListedCToken WBTC cWBTC initialExchangeRate:0.1 tokenType:WBTC
+Test "Seize tokens with a paused WBTC vToken-- like normal"
+    NewController
+    ListedVToken ZRX cZRX initialExchangeRate:1e9
+    ListedVToken WBTC cWBTC initialExchangeRate:0.1 tokenType:WBTC
     Prep Geoff Some ZRX cZRX
     Mint Geoff 50e18 cZRX
     Erc20 WBTC Pause
     Invariant Remains (Erc20 cZRX TokenBalance Geoff) 50e9
     AllowFailures
     Seize 1e9 cWBTC caller:Geoff liquidator:Geoff borrower:Torrey
-    -- The caller must be from another cToken market, thus this fails
-    Assert Failure COMPTROLLER_REJECTION LIQUIDATE_SEIZE_COMPTROLLER_REJECTION MARKET_NOT_LISTED
+    -- The caller must be from another vToken market, thus this fails
+    Assert Failure CONTROLLER_REJECTION LIQUIDATE_SEIZE_CONTROLLER_REJECTION MARKET_NOT_LISTED
 
-Test "Not able to seize tokens with a malicious unlisted cToken"
-    NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
-    NewCTokenImmutable EVL cEVL initialExchangeRate:1e9 cTokenType:CEvil
+Test "Not able to seize tokens with a malicious unlisted vToken"
+    NewController
+    ListedVToken ZRX cZRX initialExchangeRate:1e9
+    NewVTokenImmutable EVL cEVL initialExchangeRate:1e9 vTokenType:CEvil
     Prep Geoff Some ZRX cZRX
     Mint Geoff 50e18 cZRX
     Invariant Remains (Erc20 cZRX TokenBalance Geoff) 50e9
@@ -35,13 +35,13 @@ Test "Not able to seize tokens with a malicious unlisted cToken"
     Invariant Static (Erc20 cZRX TokenBalance Torrey)
     AllowFailures
     EvilSeize cEVL 1e9 cZRX seizer:Geoff seizee:Torrey
-    -- The caller must be from another cToken market, thus this fails
-    Assert Failure COMPTROLLER_REJECTION LIQUIDATE_SEIZE_COMPTROLLER_REJECTION MARKET_NOT_LISTED
+    -- The caller must be from another vToken market, thus this fails
+    Assert Failure CONTROLLER_REJECTION LIQUIDATE_SEIZE_CONTROLLER_REJECTION MARKET_NOT_LISTED
 
-Test "Able to seize tokens with a malicious listed cToken"
-    NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
-    ListedCTokenImmutable EVL cEVL initialExchangeRate:1e9 cTokenType:CEvil
+Test "Able to seize tokens with a malicious listed vToken"
+    NewController
+    ListedVToken ZRX cZRX initialExchangeRate:1e9
+    ListedVTokenImmutable EVL cEVL initialExchangeRate:1e9 vTokenType:CEvil
     Prep Geoff Some ZRX cZRX
     Mint Geoff 50e18 cZRX
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 50e9

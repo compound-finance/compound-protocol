@@ -564,11 +564,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "newComptroller",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "_setComptroller",
+            "name": "_setController",
             "outputs": [
                 {
                     "name": "",
@@ -598,7 +598,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptroller",
+            "name": "controller",
             "outputs": [
                 {
                     "name": "",
@@ -1090,7 +1090,7 @@
                     "type": "uint256"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 }
             ],
@@ -1159,7 +1159,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "isCToken",
+            "name": "isVToken",
             "outputs": [
                 {
                     "name": "",
@@ -1178,7 +1178,7 @@
                     "type": "address"
                 },
                 {
-                    "name": "comptroller_",
+                    "name": "controller_",
                     "type": "address"
                 },
                 {
@@ -1357,7 +1357,7 @@
                 },
                 {
                     "indexed": false,
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -1411,16 +1411,16 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "oldComptroller",
+                    "name": "oldController",
                     "type": "address"
                 },
                 {
                     "indexed": false,
-                    "name": "newComptroller",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "NewComptroller",
+            "name": "NewController",
             "type": "event",
             "signature": "0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d"
         },
@@ -2217,11 +2217,11 @@
             "signature": "constructor"
         }
     ],
-    "ZeroComptroller": [
+    "ZeroController": [
         {
             "constant": true,
             "inputs": [],
-            "name": "isComptroller",
+            "name": "isController",
             "outputs": [
                 {
                     "name": "",
@@ -2237,7 +2237,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -2268,7 +2268,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -2366,7 +2366,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -2393,11 +2393,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -2443,7 +2443,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -2491,7 +2491,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -2538,7 +2538,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -2589,11 +2589,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -2625,7 +2625,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -2652,11 +2652,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
@@ -2726,7 +2726,7 @@
                     "type": "address"
                 },
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -2761,7 +2761,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -2800,7 +2800,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptrollerImplementation",
+            "name": "controllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -2816,7 +2816,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -2848,7 +2848,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokens",
+                    "name": "vTokens",
                     "type": "address[]"
                 }
             ],
@@ -2868,11 +2868,11 @@
             "constant": true,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -2900,11 +2900,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
@@ -2956,7 +2956,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -3007,7 +3007,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "pendingComptrollerImplementation",
+            "name": "pendingControllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -3023,7 +3023,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -3062,7 +3062,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -3090,7 +3090,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenAddress",
+                    "name": "vTokenAddress",
                     "type": "address"
                 }
             ],
@@ -3133,7 +3133,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -3146,7 +3146,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -3164,7 +3164,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -3200,7 +3200,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -3311,7 +3311,7 @@
                 },
                 {
                     "internalType": "address",
-                    "name": "cEthAddress_",
+                    "name": "vEthAddress_",
                     "type": "address"
                 },
                 {
@@ -3326,7 +3326,7 @@
                 },
                 {
                     "internalType": "address",
-                    "name": "cDaiAddress_",
+                    "name": "vDaiAddress_",
                     "type": "address"
                 },
                 {
@@ -3343,7 +3343,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "cDaiAddress",
+            "name": "vDaiAddress",
             "outputs": [
                 {
                     "internalType": "address",
@@ -3359,7 +3359,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "cEthAddress",
+            "name": "vEthAddress",
             "outputs": [
                 {
                     "internalType": "address",
@@ -3440,8 +3440,8 @@
             "constant": true,
             "inputs": [
                 {
-                    "internalType": "contract CToken",
-                    "name": "cToken",
+                    "internalType": "contract VToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -3559,7 +3559,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "cEther",
+            "name": "vEther",
             "outputs": [
                 {
                     "name": "",
@@ -3579,7 +3579,7 @@
                     "type": "address"
                 },
                 {
-                    "name": "cEther_",
+                    "name": "vEther_",
                     "type": "address"
                 }
             ],
@@ -3608,7 +3608,7 @@
         {
             "inputs": [
                 {
-                    "name": "cEther_",
+                    "name": "vEther_",
                     "type": "address"
                 }
             ],
@@ -3877,7 +3877,7 @@
             "signature": "0x6e71e2d8"
         }
     ],
-    "cDAI": [
+    "vDAI": [
         {
             "constant": true,
             "inputs": [],
@@ -4123,11 +4123,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "newComptroller",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "_setComptroller",
+            "name": "_setController",
             "outputs": [
                 {
                     "name": "",
@@ -4157,7 +4157,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptroller",
+            "name": "controller",
             "outputs": [
                 {
                     "name": "",
@@ -4649,7 +4649,7 @@
                     "type": "uint256"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 }
             ],
@@ -4718,7 +4718,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "isCToken",
+            "name": "isVToken",
             "outputs": [
                 {
                     "name": "",
@@ -4737,7 +4737,7 @@
                     "type": "address"
                 },
                 {
-                    "name": "comptroller_",
+                    "name": "controller_",
                     "type": "address"
                 },
                 {
@@ -4916,7 +4916,7 @@
                 },
                 {
                     "indexed": false,
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -4970,16 +4970,16 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "oldComptroller",
+                    "name": "oldController",
                     "type": "address"
                 },
                 {
                     "indexed": false,
-                    "name": "newComptroller",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "NewComptroller",
+            "name": "NewController",
             "type": "event",
             "signature": "0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d"
         },
@@ -5112,13 +5112,13 @@
             "signature": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
         }
     ],
-    "CompoundLens": [
+    "VortexLens": [
         {
             "constant": false,
             "inputs": [
                 {
-                    "internalType": "contract CToken",
-                    "name": "cToken",
+                    "internalType": "contract VToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -5127,13 +5127,13 @@
                     "type": "address"
                 }
             ],
-            "name": "cTokenBalances",
+            "name": "vTokenBalances",
             "outputs": [
                 {
                     "components": [
                         {
                             "internalType": "address",
-                            "name": "cToken",
+                            "name": "vToken",
                             "type": "address"
                         },
                         {
@@ -5162,7 +5162,7 @@
                             "type": "uint256"
                         }
                     ],
-                    "internalType": "struct CompoundLens.CTokenBalances",
+                    "internalType": "struct VortexLens.VTokenBalances",
                     "name": "",
                     "type": "tuple"
                 }
@@ -5176,8 +5176,8 @@
             "constant": false,
             "inputs": [
                 {
-                    "internalType": "contract CToken[]",
-                    "name": "cTokens",
+                    "internalType": "contract VToken[]",
+                    "name": "vTokens",
                     "type": "address[]"
                 },
                 {
@@ -5186,13 +5186,13 @@
                     "type": "address"
                 }
             ],
-            "name": "cTokenBalancesAll",
+            "name": "vTokenBalancesAll",
             "outputs": [
                 {
                     "components": [
                         {
                             "internalType": "address",
-                            "name": "cToken",
+                            "name": "vToken",
                             "type": "address"
                         },
                         {
@@ -5221,7 +5221,7 @@
                             "type": "uint256"
                         }
                     ],
-                    "internalType": "struct CompoundLens.CTokenBalances[]",
+                    "internalType": "struct VortexLens.VTokenBalances[]",
                     "name": "",
                     "type": "tuple[]"
                 }
@@ -5235,18 +5235,18 @@
             "constant": false,
             "inputs": [
                 {
-                    "internalType": "contract CToken",
-                    "name": "cToken",
+                    "internalType": "contract VToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
-            "name": "cTokenMetadata",
+            "name": "vTokenMetadata",
             "outputs": [
                 {
                     "components": [
                         {
                             "internalType": "address",
-                            "name": "cToken",
+                            "name": "vToken",
                             "type": "address"
                         },
                         {
@@ -5306,7 +5306,7 @@
                         },
                         {
                             "internalType": "uint256",
-                            "name": "cTokenDecimals",
+                            "name": "vTokenDecimals",
                             "type": "uint256"
                         },
                         {
@@ -5315,7 +5315,7 @@
                             "type": "uint256"
                         }
                     ],
-                    "internalType": "struct CompoundLens.CTokenMetadata",
+                    "internalType": "struct VortexLens.VTokenMetadata",
                     "name": "",
                     "type": "tuple"
                 }
@@ -5329,18 +5329,18 @@
             "constant": false,
             "inputs": [
                 {
-                    "internalType": "contract CToken[]",
-                    "name": "cTokens",
+                    "internalType": "contract VToken[]",
+                    "name": "vTokens",
                     "type": "address[]"
                 }
             ],
-            "name": "cTokenMetadataAll",
+            "name": "vTokenMetadataAll",
             "outputs": [
                 {
                     "components": [
                         {
                             "internalType": "address",
-                            "name": "cToken",
+                            "name": "vToken",
                             "type": "address"
                         },
                         {
@@ -5400,7 +5400,7 @@
                         },
                         {
                             "internalType": "uint256",
-                            "name": "cTokenDecimals",
+                            "name": "vTokenDecimals",
                             "type": "uint256"
                         },
                         {
@@ -5409,7 +5409,7 @@
                             "type": "uint256"
                         }
                     ],
-                    "internalType": "struct CompoundLens.CTokenMetadata[]",
+                    "internalType": "struct VortexLens.VTokenMetadata[]",
                     "name": "",
                     "type": "tuple[]"
                 }
@@ -5423,18 +5423,18 @@
             "constant": false,
             "inputs": [
                 {
-                    "internalType": "contract CToken",
-                    "name": "cToken",
+                    "internalType": "contract VToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
-            "name": "cTokenUnderlyingPrice",
+            "name": "vTokenUnderlyingPrice",
             "outputs": [
                 {
                     "components": [
                         {
                             "internalType": "address",
-                            "name": "cToken",
+                            "name": "vToken",
                             "type": "address"
                         },
                         {
@@ -5443,7 +5443,7 @@
                             "type": "uint256"
                         }
                     ],
-                    "internalType": "struct CompoundLens.CTokenUnderlyingPrice",
+                    "internalType": "struct VortexLens.VTokenUnderlyingPrice",
                     "name": "",
                     "type": "tuple"
                 }
@@ -5457,18 +5457,18 @@
             "constant": false,
             "inputs": [
                 {
-                    "internalType": "contract CToken[]",
-                    "name": "cTokens",
+                    "internalType": "contract VToken[]",
+                    "name": "vTokens",
                     "type": "address[]"
                 }
             ],
-            "name": "cTokenUnderlyingPriceAll",
+            "name": "vTokenUnderlyingPriceAll",
             "outputs": [
                 {
                     "components": [
                         {
                             "internalType": "address",
-                            "name": "cToken",
+                            "name": "vToken",
                             "type": "address"
                         },
                         {
@@ -5477,7 +5477,7 @@
                             "type": "uint256"
                         }
                     ],
-                    "internalType": "struct CompoundLens.CTokenUnderlyingPrice[]",
+                    "internalType": "struct VortexLens.VTokenUnderlyingPrice[]",
                     "name": "",
                     "type": "tuple[]"
                 }
@@ -5491,8 +5491,8 @@
             "constant": false,
             "inputs": [
                 {
-                    "internalType": "contract Comptroller",
-                    "name": "comptroller",
+                    "internalType": "contract Controller",
+                    "name": "controller",
                     "type": "address"
                 },
                 {
@@ -5506,7 +5506,7 @@
                 {
                     "components": [
                         {
-                            "internalType": "contract CToken[]",
+                            "internalType": "contract VToken[]",
                             "name": "markets",
                             "type": "address[]"
                         },
@@ -5521,7 +5521,7 @@
                             "type": "uint256"
                         }
                     ],
-                    "internalType": "struct CompoundLens.AccountLimits",
+                    "internalType": "struct VortexLens.AccountLimits",
                     "name": "",
                     "type": "tuple"
                 }
@@ -5535,8 +5535,8 @@
             "constant": true,
             "inputs": [
                 {
-                    "internalType": "contract Comp",
-                    "name": "comp",
+                    "internalType": "contract Vtx",
+                    "name": "vtx",
                     "type": "address"
                 },
                 {
@@ -5545,7 +5545,7 @@
                     "type": "address"
                 }
             ],
-            "name": "getCompBalanceMetadata",
+            "name": "getVtxBalanceMetadata",
             "outputs": [
                 {
                     "components": [
@@ -5565,7 +5565,7 @@
                             "type": "address"
                         }
                     ],
-                    "internalType": "struct CompoundLens.CompBalanceMetadata",
+                    "internalType": "struct VortexLens.VtxBalanceMetadata",
                     "name": "",
                     "type": "tuple"
                 }
@@ -5579,8 +5579,8 @@
             "constant": true,
             "inputs": [
                 {
-                    "internalType": "contract Comp",
-                    "name": "comp",
+                    "internalType": "contract Vtx",
+                    "name": "vtx",
                     "type": "address"
                 },
                 {
@@ -5594,7 +5594,7 @@
                     "type": "uint32[]"
                 }
             ],
-            "name": "getCompVotes",
+            "name": "getVtxVotes",
             "outputs": [
                 {
                     "components": [
@@ -5609,7 +5609,7 @@
                             "type": "uint256"
                         }
                     ],
-                    "internalType": "struct CompoundLens.CompVotes[]",
+                    "internalType": "struct VortexLens.VtxVotes[]",
                     "name": "",
                     "type": "tuple[]"
                 }
@@ -5703,7 +5703,7 @@
                             "type": "bool"
                         }
                     ],
-                    "internalType": "struct CompoundLens.GovProposal[]",
+                    "internalType": "struct VortexLens.GovProposal[]",
                     "name": "",
                     "type": "tuple[]"
                 }
@@ -5757,7 +5757,7 @@
                             "type": "uint96"
                         }
                     ],
-                    "internalType": "struct CompoundLens.GovReceipt[]",
+                    "internalType": "struct VortexLens.GovReceipt[]",
                     "name": "",
                     "type": "tuple[]"
                 }
@@ -6087,11 +6087,11 @@
             "signature": "0x08bca566"
         }
     ],
-    "StdComptroller": [
+    "StdController": [
         {
             "constant": true,
             "inputs": [],
-            "name": "isComptroller",
+            "name": "isController",
             "outputs": [
                 {
                     "name": "",
@@ -6107,7 +6107,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -6138,7 +6138,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -6236,7 +6236,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -6263,11 +6263,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -6313,7 +6313,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -6361,7 +6361,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -6408,7 +6408,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -6459,11 +6459,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -6495,7 +6495,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -6522,11 +6522,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
@@ -6596,7 +6596,7 @@
                     "type": "address"
                 },
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -6631,7 +6631,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -6670,7 +6670,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptrollerImplementation",
+            "name": "controllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -6686,7 +6686,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -6718,7 +6718,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokens",
+                    "name": "vTokens",
                     "type": "address[]"
                 }
             ],
@@ -6738,11 +6738,11 @@
             "constant": true,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -6770,11 +6770,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
@@ -6826,7 +6826,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -6877,7 +6877,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "pendingComptrollerImplementation",
+            "name": "pendingControllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -6893,7 +6893,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -6932,7 +6932,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -6960,7 +6960,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenAddress",
+                    "name": "vTokenAddress",
                     "type": "address"
                 }
             ],
@@ -7003,7 +7003,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -7016,7 +7016,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -7034,7 +7034,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -7070,7 +7070,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -7205,7 +7205,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptrollerImplementation",
+            "name": "controllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -7235,7 +7235,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "pendingComptrollerImplementation",
+            "name": "pendingControllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -7707,7 +7707,7 @@
             "signature": "0x23b872dd"
         }
     ],
-    "Comptroller": [
+    "Controller": [
         {
             "constant": true,
             "inputs": [],
@@ -7746,7 +7746,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptrollerImplementation",
+            "name": "controllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -7776,7 +7776,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "pendingComptrollerImplementation",
+            "name": "pendingControllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -7948,7 +7948,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "isComptroller",
+            "name": "isController",
             "outputs": [
                 {
                     "name": "",
@@ -7964,7 +7964,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -7995,7 +7995,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -8093,7 +8093,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -8120,11 +8120,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -8170,7 +8170,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -8218,7 +8218,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -8265,7 +8265,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -8316,11 +8316,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -8352,7 +8352,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -8379,11 +8379,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
@@ -8453,7 +8453,7 @@
                     "type": "address"
                 },
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -8488,7 +8488,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -8527,7 +8527,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptrollerImplementation",
+            "name": "controllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -8543,7 +8543,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -8575,7 +8575,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokens",
+                    "name": "vTokens",
                     "type": "address[]"
                 }
             ],
@@ -8595,11 +8595,11 @@
             "constant": true,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -8627,11 +8627,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
@@ -8683,7 +8683,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -8734,7 +8734,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "pendingComptrollerImplementation",
+            "name": "pendingControllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -8750,7 +8750,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -8789,7 +8789,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -8817,7 +8817,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenAddress",
+                    "name": "vTokenAddress",
                     "type": "address"
                 }
             ],
@@ -8860,7 +8860,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -8873,7 +8873,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -8891,7 +8891,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -8927,7 +8927,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -9025,7 +9025,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "isComptroller",
+            "name": "isController",
             "outputs": [
                 {
                     "name": "",
@@ -9041,7 +9041,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -9072,7 +9072,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -9170,7 +9170,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -9197,11 +9197,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -9247,7 +9247,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -9295,7 +9295,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -9342,7 +9342,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -9393,11 +9393,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -9429,7 +9429,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -9456,11 +9456,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
@@ -9530,7 +9530,7 @@
                     "type": "address"
                 },
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -9565,7 +9565,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -9604,7 +9604,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptrollerImplementation",
+            "name": "controllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -9620,7 +9620,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -9652,7 +9652,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokens",
+                    "name": "vTokens",
                     "type": "address[]"
                 }
             ],
@@ -9672,11 +9672,11 @@
             "constant": true,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -9704,11 +9704,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
@@ -9760,7 +9760,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -9811,7 +9811,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "pendingComptrollerImplementation",
+            "name": "pendingControllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -9827,7 +9827,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -9866,7 +9866,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -9894,7 +9894,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenAddress",
+                    "name": "vTokenAddress",
                     "type": "address"
                 }
             ],
@@ -9937,7 +9937,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -9950,7 +9950,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -9968,7 +9968,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -10004,7 +10004,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -10102,7 +10102,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "isComptroller",
+            "name": "isController",
             "outputs": [
                 {
                     "name": "",
@@ -10133,7 +10133,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -10164,7 +10164,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -10266,7 +10266,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -10293,11 +10293,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -10343,7 +10343,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -10391,7 +10391,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -10458,7 +10458,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -10544,11 +10544,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -10580,7 +10580,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -10607,11 +10607,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
@@ -10716,7 +10716,7 @@
                     "type": "address"
                 },
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -10786,7 +10786,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -10840,7 +10840,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptrollerImplementation",
+            "name": "controllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -10856,7 +10856,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -10888,7 +10888,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokens",
+                    "name": "vTokens",
                     "type": "address[]"
                 }
             ],
@@ -10908,11 +10908,11 @@
             "constant": true,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -10940,11 +10940,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
@@ -10996,7 +10996,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -11047,7 +11047,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "pendingComptrollerImplementation",
+            "name": "pendingControllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -11063,7 +11063,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -11102,7 +11102,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -11130,7 +11130,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenAddress",
+                    "name": "vTokenAddress",
                     "type": "address"
                 }
             ],
@@ -11173,7 +11173,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -11186,7 +11186,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -11204,7 +11204,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -11240,7 +11240,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -11381,8 +11381,8 @@
                     "type": "address"
                 },
                 {
-                    "internalType": "contract ComptrollerInterface",
-                    "name": "comptroller_",
+                    "internalType": "contract ControllerInterface",
+                    "name": "controller_",
                     "type": "address"
                 },
                 {
@@ -11571,7 +11571,7 @@
                 {
                     "indexed": false,
                     "internalType": "address",
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -11636,18 +11636,18 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "internalType": "contract ComptrollerInterface",
-                    "name": "oldComptroller",
+                    "internalType": "contract ControllerInterface",
+                    "name": "oldController",
                     "type": "address"
                 },
                 {
                     "indexed": false,
-                    "internalType": "contract ComptrollerInterface",
-                    "name": "newComptroller",
+                    "internalType": "contract ControllerInterface",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "NewComptroller",
+            "name": "NewController",
             "type": "event",
             "signature": "0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d"
         },
@@ -11942,12 +11942,12 @@
             "constant": false,
             "inputs": [
                 {
-                    "internalType": "contract ComptrollerInterface",
-                    "name": "newComptroller",
+                    "internalType": "contract ControllerInterface",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "_setComptroller",
+            "name": "_setController",
             "outputs": [
                 {
                     "internalType": "uint256",
@@ -12299,10 +12299,10 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptroller",
+            "name": "controller",
             "outputs": [
                 {
-                    "internalType": "contract ComptrollerInterface",
+                    "internalType": "contract ControllerInterface",
                     "name": "",
                     "type": "address"
                 }
@@ -12492,7 +12492,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "isCToken",
+            "name": "isVToken",
             "outputs": [
                 {
                     "internalType": "bool",
@@ -12519,8 +12519,8 @@
                     "type": "uint256"
                 },
                 {
-                    "internalType": "contract CTokenInterface",
-                    "name": "cTokenCollateral",
+                    "internalType": "contract VTokenInterface",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 }
             ],
@@ -12904,7 +12904,7 @@
             "signature": "0x6f307dc3"
         }
     ],
-    "cBAT": [
+    "vBAT": [
         {
             "constant": true,
             "inputs": [],
@@ -13150,11 +13150,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "newComptroller",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "_setComptroller",
+            "name": "_setController",
             "outputs": [
                 {
                     "name": "",
@@ -13184,7 +13184,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptroller",
+            "name": "controller",
             "outputs": [
                 {
                     "name": "",
@@ -13676,7 +13676,7 @@
                     "type": "uint256"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 }
             ],
@@ -13745,7 +13745,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "isCToken",
+            "name": "isVToken",
             "outputs": [
                 {
                     "name": "",
@@ -13764,7 +13764,7 @@
                     "type": "address"
                 },
                 {
-                    "name": "comptroller_",
+                    "name": "controller_",
                     "type": "address"
                 },
                 {
@@ -13943,7 +13943,7 @@
                 },
                 {
                     "indexed": false,
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -13997,16 +13997,16 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "oldComptroller",
+                    "name": "oldController",
                     "type": "address"
                 },
                 {
                     "indexed": false,
-                    "name": "newComptroller",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "NewComptroller",
+            "name": "NewController",
             "type": "event",
             "signature": "0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d"
         },
@@ -14558,7 +14558,7 @@
             "signature": "0x08bca566"
         }
     ],
-    "cETH": [
+    "vETH": [
         {
             "constant": true,
             "inputs": [],
@@ -14770,11 +14770,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "newComptroller",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "_setComptroller",
+            "name": "_setController",
             "outputs": [
                 {
                     "name": "",
@@ -14814,7 +14814,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptroller",
+            "name": "controller",
             "outputs": [
                 {
                     "name": "",
@@ -15043,7 +15043,7 @@
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 }
             ],
@@ -15346,7 +15346,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "isCToken",
+            "name": "isVToken",
             "outputs": [
                 {
                     "name": "",
@@ -15361,7 +15361,7 @@
         {
             "inputs": [
                 {
-                    "name": "comptroller_",
+                    "name": "controller_",
                     "type": "address"
                 },
                 {
@@ -15545,7 +15545,7 @@
                 },
                 {
                     "indexed": false,
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -15599,16 +15599,16 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "oldComptroller",
+                    "name": "oldController",
                     "type": "address"
                 },
                 {
                     "indexed": false,
-                    "name": "newComptroller",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "NewComptroller",
+            "name": "NewController",
             "type": "event",
             "signature": "0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d"
         },
@@ -15889,7 +15889,7 @@
                 {
                     "indexed": false,
                     "internalType": "address",
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -15954,18 +15954,18 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "internalType": "contract ComptrollerInterface",
-                    "name": "oldComptroller",
+                    "internalType": "contract ControllerInterface",
+                    "name": "oldController",
                     "type": "address"
                 },
                 {
                     "indexed": false,
-                    "internalType": "contract ComptrollerInterface",
-                    "name": "newComptroller",
+                    "internalType": "contract ControllerInterface",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "NewComptroller",
+            "name": "NewController",
             "type": "event",
             "signature": "0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d"
         },
@@ -16261,12 +16261,12 @@
             "constant": false,
             "inputs": [
                 {
-                    "internalType": "contract ComptrollerInterface",
-                    "name": "newComptroller",
+                    "internalType": "contract ControllerInterface",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "_setComptroller",
+            "name": "_setController",
             "outputs": [
                 {
                     "internalType": "uint256",
@@ -16592,10 +16592,10 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptroller",
+            "name": "controller",
             "outputs": [
                 {
-                    "internalType": "contract ComptrollerInterface",
+                    "internalType": "contract ControllerInterface",
                     "name": "",
                     "type": "address"
                 }
@@ -16731,8 +16731,8 @@
                     "type": "address"
                 },
                 {
-                    "internalType": "contract ComptrollerInterface",
-                    "name": "comptroller_",
+                    "internalType": "contract ControllerInterface",
+                    "name": "controller_",
                     "type": "address"
                 },
                 {
@@ -16772,8 +16772,8 @@
             "constant": false,
             "inputs": [
                 {
-                    "internalType": "contract ComptrollerInterface",
-                    "name": "comptroller_",
+                    "internalType": "contract ControllerInterface",
+                    "name": "controller_",
                     "type": "address"
                 },
                 {
@@ -16828,7 +16828,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "isCToken",
+            "name": "isVToken",
             "outputs": [
                 {
                     "internalType": "bool",
@@ -16855,8 +16855,8 @@
                     "type": "uint256"
                 },
                 {
-                    "internalType": "contract CTokenInterface",
-                    "name": "cTokenCollateral",
+                    "internalType": "contract VTokenInterface",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 }
             ],
@@ -18135,11 +18135,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "newComptroller",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "_setComptroller",
+            "name": "_setController",
             "outputs": [
                 {
                     "name": "",
@@ -18169,7 +18169,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptroller",
+            "name": "controller",
             "outputs": [
                 {
                     "name": "",
@@ -18661,7 +18661,7 @@
                     "type": "uint256"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 }
             ],
@@ -18730,7 +18730,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "isCToken",
+            "name": "isVToken",
             "outputs": [
                 {
                     "name": "",
@@ -18749,7 +18749,7 @@
                     "type": "address"
                 },
                 {
-                    "name": "comptroller_",
+                    "name": "controller_",
                     "type": "address"
                 },
                 {
@@ -18928,7 +18928,7 @@
                 },
                 {
                     "indexed": false,
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -18982,16 +18982,16 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "oldComptroller",
+                    "name": "oldController",
                     "type": "address"
                 },
                 {
                     "indexed": false,
-                    "name": "newComptroller",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "NewComptroller",
+            "name": "NewController",
             "type": "event",
             "signature": "0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d"
         },
@@ -19124,11 +19124,11 @@
             "signature": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
         }
     ],
-    "ComptrollerG2": [
+    "ControllerG2": [
         {
             "constant": true,
             "inputs": [],
-            "name": "isComptroller",
+            "name": "isController",
             "outputs": [
                 {
                     "name": "",
@@ -19159,7 +19159,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -19190,7 +19190,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -19292,7 +19292,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -19319,11 +19319,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -19369,7 +19369,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -19417,7 +19417,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -19484,7 +19484,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -19570,11 +19570,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -19606,7 +19606,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -19633,11 +19633,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
@@ -19742,7 +19742,7 @@
                     "type": "address"
                 },
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -19812,7 +19812,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -19866,7 +19866,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptrollerImplementation",
+            "name": "controllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -19882,7 +19882,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -19914,7 +19914,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokens",
+                    "name": "vTokens",
                     "type": "address[]"
                 }
             ],
@@ -19934,11 +19934,11 @@
             "constant": true,
             "inputs": [
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -19966,11 +19966,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
-                    "name": "cTokenBorrowed",
+                    "name": "vTokenBorrowed",
                     "type": "address"
                 },
                 {
@@ -20022,7 +20022,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -20073,7 +20073,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "pendingComptrollerImplementation",
+            "name": "pendingControllerImplementation",
             "outputs": [
                 {
                     "name": "",
@@ -20089,7 +20089,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -20128,7 +20128,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -20156,7 +20156,7 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "cTokenAddress",
+                    "name": "vTokenAddress",
                     "type": "address"
                 }
             ],
@@ -20199,7 +20199,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 }
             ],
@@ -20212,7 +20212,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -20230,7 +20230,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -20266,7 +20266,7 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "cToken",
+                    "name": "vToken",
                     "type": "address"
                 },
                 {
@@ -20963,11 +20963,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "newComptroller",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "_setComptroller",
+            "name": "_setController",
             "outputs": [
                 {
                     "name": "",
@@ -20997,7 +20997,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptroller",
+            "name": "controller",
             "outputs": [
                 {
                     "name": "",
@@ -21489,7 +21489,7 @@
                     "type": "uint256"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 }
             ],
@@ -21558,7 +21558,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "isCToken",
+            "name": "isVToken",
             "outputs": [
                 {
                     "name": "",
@@ -21577,7 +21577,7 @@
                     "type": "address"
                 },
                 {
-                    "name": "comptroller_",
+                    "name": "controller_",
                     "type": "address"
                 },
                 {
@@ -21756,7 +21756,7 @@
                 },
                 {
                     "indexed": false,
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -21810,16 +21810,16 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "oldComptroller",
+                    "name": "oldController",
                     "type": "address"
                 },
                 {
                     "indexed": false,
-                    "name": "newComptroller",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "NewComptroller",
+            "name": "NewController",
             "type": "event",
             "signature": "0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d"
         },
@@ -22198,11 +22198,11 @@
             "constant": false,
             "inputs": [
                 {
-                    "name": "newComptroller",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "_setComptroller",
+            "name": "_setController",
             "outputs": [
                 {
                     "name": "",
@@ -22232,7 +22232,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "comptroller",
+            "name": "controller",
             "outputs": [
                 {
                     "name": "",
@@ -22724,7 +22724,7 @@
                     "type": "uint256"
                 },
                 {
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 }
             ],
@@ -22793,7 +22793,7 @@
         {
             "constant": true,
             "inputs": [],
-            "name": "isCToken",
+            "name": "isVToken",
             "outputs": [
                 {
                     "name": "",
@@ -22812,7 +22812,7 @@
                     "type": "address"
                 },
                 {
-                    "name": "comptroller_",
+                    "name": "controller_",
                     "type": "address"
                 },
                 {
@@ -22991,7 +22991,7 @@
                 },
                 {
                     "indexed": false,
-                    "name": "cTokenCollateral",
+                    "name": "vTokenCollateral",
                     "type": "address"
                 },
                 {
@@ -23045,16 +23045,16 @@
             "inputs": [
                 {
                     "indexed": false,
-                    "name": "oldComptroller",
+                    "name": "oldController",
                     "type": "address"
                 },
                 {
                     "indexed": false,
-                    "name": "newComptroller",
+                    "name": "newController",
                     "type": "address"
                 }
             ],
-            "name": "NewComptroller",
+            "name": "NewController",
             "type": "event",
             "signature": "0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d"
         },

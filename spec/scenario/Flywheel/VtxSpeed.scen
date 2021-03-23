@@ -1,0 +1,95 @@
+-- Tests for the grants and math patch
+
+Macro FlywheelController price=1.0 borrowRate=0.000005 vtxInitAmount=5000000e18
+    Unitroller Deploy
+    PriceOracle Deploy Fixed price
+    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero)
+    ----g2
+    ControllerImpl Deploy ScenarioG2 ControllerScenG2
+    Unitroller SetPendingImpl ControllerScenG2
+    ControllerImpl ControllerScenG2 BecomeG2
+    --list some tokens
+    Controller SetPriceOracle (PriceOracleProxy Address)
+    Controller SetMaxAssets 20
+    Controller SetCloseFactor 0.5
+    Controller LiquidationIncentive 1.1
+    NewVToken ZRX cZRX
+    NewVToken BAT vBAT
+    Support cZRX collateralFactor:0.5
+    Support vBAT collateralFactor:0.5
+    -- final
+    ControllerImpl Deploy ScenarioG3 ControllerScen
+    Unitroller SetPendingImpl ControllerScen
+    ControllerImpl ControllerScen BecomeG3 1e18 [cZRX vBAT]
+    Erc20 Deploy Standard VTX "VTX Token" 18
+    Give (Address Controller) vtxInitAmount VTX
+
+Macro GrantsController
+    FlywheelController
+    -- g4
+    ControllerImpl Deploy ScenarioG4 ControllerScen
+    Unitroller SetPendingImpl ControllerScen
+    ControllerImpl ControllerScen BecomeG4
+    -- g5
+    ControllerImpl Deploy ScenarioG5 ControllerScen
+    Unitroller SetPendingImpl ControllerScen
+    ControllerImpl ControllerScen BecomeG5
+    -- current
+    ControllerImpl Deploy Scenario ControllerScen
+    Unitroller SetPendingImpl ControllerScen
+    ControllerImpl ControllerScen Become
+
+Macro InitSpeeds
+    Prep Geoff 100e18 ZRX cZRX
+    Mint Geoff 50e18 cZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
+    Prep Coburn Some BAT vBAT
+    Mint Coburn 6e18 vBAT--tokenbalance = 6e18 / 2e9 = 3e9
+    EnterMarkets Coburn vBAT
+    Borrow Coburn 1e18 cZRX
+    Controller SetVtxSpeed cZRX 1
+    Controller SetVtxSpeed vBAT 1
+    Controller RefreshVtxSpeeds
+    Controller Send "setVtxAddress(address)" (Address VTX)
+
+Test "VTX speed can be set per market"
+    GrantsController
+    InitSpeeds
+    -- Baseline vtx amounts
+    Assert Equal (Controller VtxAccrued Geoff) 0
+    Assert Equal (Erc20 VTX TokenBalance Geoff) 0
+    -- Vtx speed can be set
+    Controller SetVtxSpeed cZRX 2
+    FastForward 1000 Blocks
+    Controller ClaimVtx Geoff
+    Assert Equal (Controller VtxAccrued Geoff) 0
+    Assert Equal (Erc20 VTX TokenBalance Geoff) 2000
+    -- Vtx speed can be changed
+    Controller SetVtxSpeed cZRX 4
+    FastForward 1000 Blocks
+    Controller ClaimVtx Geoff
+    Assert Equal (Controller VtxAccrued Geoff) 0
+    Assert Equal (Erc20 VTX TokenBalance Geoff) 6000
+    -- Vtx speed can be removed
+    Controller SetVtxSpeed cZRX 0
+    FastForward 1000 Blocks
+    Controller ClaimVtx Geoff
+    Assert Equal (Controller VtxAccrued Geoff) 0
+    Assert Equal (Erc20 VTX TokenBalance Geoff) 6000
+
+Test "Set vtx rate is removed"
+    GrantsController
+    InitSpeeds
+    AllowFailures
+    Controller SetVtxRate 5
+
+Test "Vtx is not claimed automatically"
+    GrantsController
+    InitSpeeds
+    Controller SetVtxSpeed cZRX 2
+    FastForward 100000 Blocks
+    -- Check vtx is not claimed automatically
+    Mint Geoff 50e18 cZRX
+    Assert Equal (Erc20 VTX TokenBalance Geoff) 0
+    -- Confirm there was vtx to claim
+    Controller ClaimVtx Geoff
+    Assert Equal (Erc20 VTX TokenBalance Geoff) 200000

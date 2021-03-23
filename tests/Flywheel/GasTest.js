@@ -1,7 +1,7 @@
 const {
-  makeComptroller,
-  makeCToken
-} = require('../Utils/Compound');
+  makeController,
+  makeVToken
+} = require('../Utils/Vortex');
 const {
   etherExp,
   etherDouble,
@@ -12,21 +12,21 @@ const {
 // NB: coverage doesn't like this
 describe.skip('Flywheel trace ops', () => {
   let root, a1, a2, a3, accounts;
-  let comptroller, market;
+  let controller, market;
   beforeEach(async () => {
     let interestRateModelOpts = {borrowRate: 0.000001};
     [root, a1, a2, a3, ...accounts] = saddle.accounts;
-    comptroller = await makeComptroller();
-    market = await makeCToken({comptroller, supportMarket: true, underlyingPrice: 3, interestRateModelOpts});
-    await send(comptroller, '_addCompMarkets', [[market].map(c => c._address)]);
+    controller = await makeController();
+    market = await makeVToken({controller, supportMarket: true, underlyingPrice: 3, interestRateModelOpts});
+    await send(controller, '_addVtxMarkets', [[market].map(c => c._address)]);
   });
 
   it('update supply index SSTOREs', async () => {
-    await send(comptroller, 'setBlockNumber', [100]);
+    await send(controller, 'setBlockNumber', [100]);
     await send(market, 'harnessSetTotalBorrows', [etherUnsigned(11e18)]);
-    await send(comptroller, 'setCompSpeed', [market._address, etherExp(0.5)]);
+    await send(controller, 'setVtxSpeed', [market._address, etherExp(0.5)]);
 
-    const tx = await send(comptroller, 'harnessUpdateCompSupplyIndex', [market._address]);
+    const tx = await send(controller, 'harnessUpdateVtxSupplyIndex', [market._address]);
 
     const ops = {};
     await saddle.trace(tx, {
@@ -40,11 +40,11 @@ describe.skip('Flywheel trace ops', () => {
   });
 
   it('update borrow index SSTOREs', async () => {
-    await send(comptroller, 'setBlockNumber', [100]);
+    await send(controller, 'setBlockNumber', [100]);
     await send(market, 'harnessSetTotalBorrows', [etherUnsigned(11e18)]);
-    await send(comptroller, 'setCompSpeed', [market._address, etherExp(0.5)]);
+    await send(controller, 'setVtxSpeed', [market._address, etherExp(0.5)]);
 
-    const tx = await send(comptroller, 'harnessUpdateCompBorrowIndex', [market._address, etherExp(1.1)]);
+    const tx = await send(controller, 'harnessUpdateVtxBorrowIndex', [market._address, etherExp(1.1)]);
 
     const ops = {};
     await saddle.trace(tx, {

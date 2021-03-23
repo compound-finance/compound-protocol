@@ -10,8 +10,8 @@ describe('GovernorAlpha#propose/5', () => {
 
   beforeAll(async () => {
     [root, acct, ...accounts] = accounts;
-    comp = await deploy('Comp', [root]);
-    gov = await deploy('GovernorAlpha', [address(0), comp._address, address(0)]);
+    vtx = await deploy('Vtx', [root]);
+    gov = await deploy('GovernorAlpha', [address(0), vtx._address, address(0)]);
   });
 
   let trivialProposal, targets, values, signatures, callDatas;
@@ -21,7 +21,7 @@ describe('GovernorAlpha#propose/5', () => {
     values = ["0"];
     signatures = ["getBalanceOf(address)"];
     callDatas = [encodeParameters(['address'], [acct])];
-    await send(comp, 'delegate', [root]);
+    await send(vtx, 'delegate', [root]);
     await send(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"]);
     proposalBlock = +(await web3.eth.getBlockNumber());
     proposalId = await call(gov, 'latestProposalIds', [root]);
@@ -119,8 +119,8 @@ describe('GovernorAlpha#propose/5', () => {
     });
 
     it("This function returns the id of the newly created proposal. # proposalId(n) = succ(proposalId(n-1))", async () => {
-      await send(comp, 'transfer', [accounts[2], etherMantissa(400001)]);
-      await send(comp, 'delegate', [accounts[2]], { from: accounts[2] });
+      await send(vtx, 'transfer', [accounts[2], etherMantissa(400001)]);
+      await send(vtx, 'delegate', [accounts[2]], { from: accounts[2] });
 
       await mineBlock();
       let nextProposalId = await gov.methods['propose'](targets, values, signatures, callDatas, "yoot").call({ from: accounts[2] });
@@ -130,8 +130,8 @@ describe('GovernorAlpha#propose/5', () => {
     });
 
     it("emits log with id and description", async () => {
-      await send(comp, 'transfer', [accounts[3], etherMantissa(400001)]);
-      await send(comp, 'delegate', [accounts[3]], { from: accounts[3] });
+      await send(vtx, 'transfer', [accounts[3], etherMantissa(400001)]);
+      await send(vtx, 'delegate', [accounts[3]], { from: accounts[3] });
       await mineBlock();
       let nextProposalId = await gov.methods['propose'](targets, values, signatures, callDatas, "yoot").call({ from: accounts[3] });
 

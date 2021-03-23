@@ -6,7 +6,7 @@ import "../../../contracts/Governance/GovernorAlpha.sol";
 contract GovernorAlphaCertora is GovernorAlpha {
     Proposal proposal;
 
-    constructor(address timelock_, address comp_, address guardian_) GovernorAlpha(timelock_, comp_, guardian_) public {}
+    constructor(address timelock_, address vtx_, address guardian_) GovernorAlpha(timelock_, vtx_, guardian_) public {}
 
     // XXX breaks solver
     /* function certoraPropose() public returns (uint) { */

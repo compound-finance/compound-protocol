@@ -203,19 +203,19 @@
   "fee": 96782,
   "opcodes": {}
  },
- "unitroller-g6 second mint with comp accrued": {
+ "unitroller-g6 second mint with vtx accrued": {
   "fee": 145034,
   "opcodes": {}
  },
- "unitroller-g6 claim comp": {
+ "unitroller-g6 claim vtx": {
   "fee": 142390,
   "opcodes": {}
  },
- "unitroller second mint with comp accrued": {
+ "unitroller second mint with vtx accrued": {
   "fee": 124317,
   "opcodes": {}
  },
- "unitroller claim comp": {
+ "unitroller claim vtx": {
   "fee": 150385,
   "opcodes": {}
  }

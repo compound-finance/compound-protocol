@@ -5,7 +5,7 @@ const {
   makeInterestRateModel,
   getBorrowRate,
   getSupplyRate
-} = require('../Utils/Compound');
+} = require('../Utils/Vortex');
 
 const blocksPerYear = 2102400;
 const secondsPerYear = 60 * 60 * 24 * 365;
@@ -52,7 +52,7 @@ function daiSupplyRate(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves, 
   return cashSupplyRate.plus(lendingSupplyRate).toNumber();
 }
 
-let fork = "https://kovan-eth.compound.finance/@14764778";
+let fork = "https://kovan-eth.vortex.finance/@14764778";
 
 async function getKovanFork() {
   const kovan = new web3.constructor(

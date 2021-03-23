@@ -39,11 +39,11 @@ async function setPriceOracleFn(world: World, params: Event): Promise<World> {
   return nextWorld;
 }
 
-async function setPrice(world: World, from: string, priceOracle: PriceOracle, cToken: string, amount: NumberV): Promise<World> {
+async function setPrice(world: World, from: string, priceOracle: PriceOracle, vToken: string, amount: NumberV): Promise<World> {
   return addAction(
     world,
-    `Set price oracle price for ${cToken} to ${amount.show()}`,
-    await invoke(world, priceOracle.methods.setUnderlyingPrice(cToken, amount.encode()), from)
+    `Set price oracle price for ${vToken} to ${amount.show()}`,
+    await invoke(world, priceOracle.methods.setUnderlyingPrice(vToken, amount.encode()), from)
   );
 }
 
@@ -94,25 +94,25 @@ export function priceOracleCommands() {
       (world, from, {params}) => setPriceOracleFn(world, params.val)
     ),
 
-    new Command<{priceOracle: PriceOracle, cToken: AddressV, amount: NumberV}>(`
+    new Command<{priceOracle: PriceOracle, vToken: AddressV, amount: NumberV}>(`
         #### SetPrice
 
-        * "SetPrice <CToken> <Amount>" - Sets the per-ether price for the given cToken
+        * "SetPrice <VToken> <Amount>" - Sets the per-ether price for the given vToken
           * E.g. "PriceOracle SetPrice cZRX 1.0"
       `,
       "SetPrice",
       [
         new Arg("priceOracle", getPriceOracle, {implicit: true}),
-        new Arg("cToken", getAddressV),
+        new Arg("vToken", getAddressV),
         new Arg("amount", getExpNumberV)
       ],
-      (world, from, {priceOracle, cToken, amount}) => setPrice(world, from, priceOracle, cToken.val, amount)
+      (world, from, {priceOracle, vToken, amount}) => setPrice(world, from, priceOracle, vToken.val, amount)
     ),
 
     new Command<{priceOracle: PriceOracle, address: AddressV, amount: NumberV}>(`
         #### SetDirectPrice
 
-        * "SetDirectPrice <Address> <Amount>" - Sets the per-ether price for the given cToken
+        * "SetDirectPrice <Address> <Amount>" - Sets the per-ether price for the given vToken
           * E.g. "PriceOracle SetDirectPrice (Address Zero) 1.0"
       `,
       "SetDirectPrice",

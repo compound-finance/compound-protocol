@@ -9,25 +9,25 @@ const EIP712 = require('../../Utils/EIP712');
 const BigNumber = require('bignumber.js');
 const chalk = require('chalk');
 
-async function enfranchise(comp, actor, amount) {
-  await send(comp, 'transfer', [actor, etherMantissa(amount)]);
-  await send(comp, 'delegate', [actor], { from: actor });
+async function enfranchise(vtx, actor, amount) {
+  await send(vtx, 'transfer', [actor, etherMantissa(amount)]);
+  await send(vtx, 'delegate', [actor], { from: actor });
 }
 
 describe("governorAlpha#castVote/2", () => {
-  let comp, gov, root, a1, accounts;
+  let vtx, gov, root, a1, accounts;
   let targets, values, signatures, callDatas, proposalId;
 
   beforeAll(async () => {
     [root, a1, ...accounts] = saddle.accounts;
-    comp = await deploy('Comp', [root]);
-    gov = await deploy('GovernorAlpha', [address(0), comp._address, root]);
+    vtx = await deploy('Vtx', [root]);
+    gov = await deploy('GovernorAlpha', [address(0), vtx._address, root]);
 
     targets = [a1];
     values = ["0"];
     signatures = ["getBalanceOf(address)"];
     callDatas = [encodeParameters(['address'], [a1])];
-    await send(comp, 'delegate', [root]);
+    await send(vtx, 'delegate', [root]);
     await send(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"]);
     proposalId = await call(gov, 'latestProposalIds', [root]);
   });
@@ -62,7 +62,7 @@ describe("governorAlpha#castVote/2", () => {
 
       it("and we add that ForVotes", async () => {
         actor = accounts[1];
-        await enfranchise(comp, actor, 400001);
+        await enfranchise(vtx, actor, 400001);
 
         await send(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: actor });
         proposalId = await call(gov, 'latestProposalIds', [actor]);
@@ -77,7 +77,7 @@ describe("governorAlpha#castVote/2", () => {
 
       it("or AgainstVotes corresponding to the caller's support flag.", async () => {
         actor = accounts[3];
-        await enfranchise(comp, actor, 400001);
+        await enfranchise(vtx, actor, 400001);
 
         await send(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: actor });
         proposalId = await call(gov, 'latestProposalIds', [actor]);;
@@ -93,7 +93,7 @@ describe("governorAlpha#castVote/2", () => {
 
     describe('castVoteBySig', () => {
       const Domain = (gov) => ({
-        name: 'Compound Governor Alpha',
+        name: 'Vortex Governor Alpha',
         chainId: 1, // await web3.eth.net.getId(); See: https://github.com/trufflesuite/ganache-core/issues/515
         verifyingContract: gov._address
       });
@@ -109,7 +109,7 @@ describe("governorAlpha#castVote/2", () => {
       });
 
       it('casts vote on behalf of the signatory', async () => {
-        await enfranchise(comp, a1, 400001);
+        await enfranchise(vtx, a1, 400001);
         await send(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: a1 });
         proposalId = await call(gov, 'latestProposalIds', [a1]);;
 
@@ -128,8 +128,8 @@ describe("governorAlpha#castVote/2", () => {
     it("receipt uses one load", async () => {
       let actor = accounts[2];
       let actor2 = accounts[3];
-      await enfranchise(comp, actor, 400001);
-      await enfranchise(comp, actor2, 400001);
+      await enfranchise(vtx, actor, 400001);
+      await enfranchise(vtx, actor2, 400001);
       await send(gov, 'propose', [targets, values, signatures, callDatas, "do nothing"], { from: actor });
       proposalId = await call(gov, 'latestProposalIds', [actor]);
 

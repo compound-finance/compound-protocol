@@ -1,13 +1,13 @@
 {
-  "name": "compound-protocol-alpha",
+  "name": "vortex-protocol-alpha",
   "version": "0.2.1",
-  "description": "The Compound Money Market",
+  "description": "The Vortex Money Market",
   "main": "index.js",
   "scripts": {
     "build": "./script/webpack"
   },
   "repository": "git@github.com:compound-finance/money-market.git",
-  "author": "Compound Finance",
+  "author": "Vortex Finance",
   "license": "UNLICENSED",
   "devDependencies": {
     "request": "^2.88.2",

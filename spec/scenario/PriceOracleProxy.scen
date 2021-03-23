@@ -2,41 +2,41 @@ Macro SetupPriceOracleProxy
     Unitroller Deploy
     PriceOracle Deploy Simple
     -- Update to G1
-    ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
-    Unitroller SetPendingImpl ScenComptrollerG1
+    ControllerImpl Deploy ScenarioG1 ScenControllerG1
+    Unitroller SetPendingImpl ScenControllerG1
     PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero)
-    ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracleProxy Address) 0.1 20
+    ControllerImpl ScenControllerG1 BecomeG1 (PriceOracleProxy Address) 0.1 20
     -- Update to G2
-    ComptrollerImpl Deploy StandardG2 ComptrollerG2
-    Unitroller SetPendingImpl ComptrollerG2
-    ComptrollerImpl ComptrollerG2 BecomeG2
+    ControllerImpl Deploy StandardG2 ControllerG2
+    Unitroller SetPendingImpl ControllerG2
+    ControllerImpl ControllerG2 BecomeG2
     -- Update to G3
-    ComptrollerImpl Deploy StandardG3 ComptrollerG3
-    Unitroller SetPendingImpl ComptrollerG3
-    ComptrollerImpl ComptrollerG3 BecomeG3 1e18 []
+    ControllerImpl Deploy StandardG3 ControllerG3
+    Unitroller SetPendingImpl ControllerG3
+    ControllerImpl ControllerG3 BecomeG3 1e18 []
     -- Update to G*
-    ComptrollerImpl Deploy Scenario ScenComptroller
-    Unitroller SetPendingImpl ScenComptroller
-    ComptrollerImpl ScenComptroller Become
-    NewEtherToken cETH
-    NewCToken USDC cUSDC
-    NewCToken SAI cSAI
-    NewCToken DAI cDAI
-    NewCToken USDT cUSDT
-    Comptroller SupportMarket cETH
-    Comptroller SupportMarket cUSDC
-    Comptroller SupportMarket cSAI
-    Comptroller SupportMarket cDAI
-    Comptroller SupportMarket cUSDT
-    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address cETH) (Address cUSDC) (Address cSAI) (Address cDAI) (Address cUSDT)
-    Comptroller SetPriceOracle (PriceOracleProxy Address)
+    ControllerImpl Deploy Scenario ScenController
+    Unitroller SetPendingImpl ScenController
+    ControllerImpl ScenController Become
+    NewEtherToken vETH
+    NewVToken USDC cUSDC
+    NewVToken SAI cSAI
+    NewVToken DAI vDAI
+    NewVToken USDT cUSDT
+    Controller SupportMarket vETH
+    Controller SupportMarket cUSDC
+    Controller SupportMarket cSAI
+    Controller SupportMarket vDAI
+    Controller SupportMarket cUSDT
+    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address vETH) (Address cUSDC) (Address cSAI) (Address vDAI) (Address cUSDT)
+    Controller SetPriceOracle (PriceOracleProxy Address)
 
 Test "uses address(2) for dai and address(1) for usdc"
     SetupPriceOracleProxy
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000001) 5740564708.572881
     PriceOracle SetDirectPrice (Address 0x0000000000000000000000000000000000000002) 0.005842307360923634
     Assert Equal (PriceOracleProxy Price cUSDC) 5740564708572881000000000000
-    Assert Equal (PriceOracleProxy Price cDAI) 5842307360923634
+    Assert Equal (PriceOracleProxy Price vDAI) 5842307360923634
 
 Test "sai price is dai price until set"
     SetupPriceOracleProxy

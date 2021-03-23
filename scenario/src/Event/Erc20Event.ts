@@ -19,7 +19,7 @@ import {
 import {getErc20V} from '../Value/Erc20Value';
 import {verify} from '../Verify';
 import {Arg, Command, View, processCommandEvent} from '../Command';
-import {CTokenErrorReporter} from '../ErrorReporter';
+import {VTokenErrorReporter} from '../ErrorReporter';
 import {encodedNumber} from '../Encoding';
 import {getErc20Data} from '../ContractLookup';
 
@@ -47,7 +47,7 @@ async function verifyErc20(world: World, erc20: Erc20, name: string, contract: s
 }
 
 async function approve(world: World, from: string, erc20: Erc20, address: string, amount: NumberV): Promise<World> {
-  let invokation = await invoke(world, erc20.methods.approve(address, amount.encode()), from, CTokenErrorReporter);
+  let invokation = await invoke(world, erc20.methods.approve(address, amount.encode()), from, VTokenErrorReporter);
 
   world = addAction(
     world,
@@ -59,7 +59,7 @@ async function approve(world: World, from: string, erc20: Erc20, address: string
 }
 
 async function faucet(world: World, from: string, erc20: Erc20, address: string, amount: NumberV): Promise<World> {
-  let invokation = await invoke(world, erc20.methods.allocateTo(address, amount.encode()), from, CTokenErrorReporter);
+  let invokation = await invoke(world, erc20.methods.allocateTo(address, amount.encode()), from, VTokenErrorReporter);
 
   world = addAction(
     world,
@@ -71,7 +71,7 @@ async function faucet(world: World, from: string, erc20: Erc20, address: string,
 }
 
 async function transfer(world: World, from: string, erc20: Erc20, address: string, amount: NumberV): Promise<World> {
-  let invokation = await invoke(world, erc20.methods.transfer(address, amount.encode()), from, CTokenErrorReporter);
+  let invokation = await invoke(world, erc20.methods.transfer(address, amount.encode()), from, VTokenErrorReporter);
 
   world = addAction(
     world,
@@ -83,7 +83,7 @@ async function transfer(world: World, from: string, erc20: Erc20, address: strin
 }
 
 async function transferFrom(world: World, from: string, erc20: Erc20, owner: string, spender: string, amount: NumberV): Promise<World> {
-  let invokation = await invoke(world, erc20.methods.transferFrom(owner, spender, amount.encode()), from, CTokenErrorReporter);
+  let invokation = await invoke(world, erc20.methods.transferFrom(owner, spender, amount.encode()), from, VTokenErrorReporter);
 
   world = addAction(
     world,
@@ -95,7 +95,7 @@ async function transferFrom(world: World, from: string, erc20: Erc20, owner: str
 }
 
 async function setFail(world: World, from: string, erc20: Erc20, fail: boolean): Promise<World> {
-  let invokation = await invoke(world, erc20.methods.setFail(fail), from, CTokenErrorReporter);
+  let invokation = await invoke(world, erc20.methods.setFail(fail), from, VTokenErrorReporter);
 
   world = addAction(
     world,

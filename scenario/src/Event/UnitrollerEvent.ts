@@ -1,14 +1,14 @@
 import { Event } from '../Event';
 import { addAction, describeUser, World } from '../World';
 import { Unitroller } from '../Contract/Unitroller';
-import { ComptrollerImpl } from '../Contract/ComptrollerImpl';
+import { ControllerImpl } from '../Contract/ControllerImpl';
 import { invoke } from '../Invokation';
 import { getEventV, getStringV, getAddressV } from '../CoreValue';
 import { EventV, StringV, AddressV } from '../Value';
 import { Arg, Command, View, processCommandEvent } from '../Command';
-import { ComptrollerErrorReporter } from '../ErrorReporter';
+import { ControllerErrorReporter } from '../ErrorReporter';
 import { buildUnitroller } from '../Builder/UnitrollerBuilder';
-import { getComptrollerImpl, getUnitroller } from '../ContractLookup';
+import { getControllerImpl, getUnitroller } from '../ContractLookup';
 import { verify } from '../Verify';
 
 async function genUnitroller(world: World, from: string, params: Event): Promise<World> {
@@ -35,7 +35,7 @@ async function verifyUnitroller(world: World, unitroller: Unitroller, apiKey: st
 }
 
 async function acceptAdmin(world: World, from: string, unitroller: Unitroller): Promise<World> {
-  let invokation = await invoke(world, unitroller.methods._acceptAdmin(), from, ComptrollerErrorReporter);
+  let invokation = await invoke(world, unitroller.methods._acceptAdmin(), from, ControllerErrorReporter);
 
   world = addAction(world, `Accept admin as ${from}`, invokation);
 
@@ -52,7 +52,7 @@ async function setPendingAdmin(
     world,
     unitroller.methods._setPendingAdmin(pendingAdmin),
     from,
-    ComptrollerErrorReporter
+    ControllerErrorReporter
   );
 
   world = addAction(world, `Set pending admin to ${pendingAdmin}`, invokation);
@@ -64,16 +64,16 @@ async function setPendingImpl(
   world: World,
   from: string,
   unitroller: Unitroller,
-  comptrollerImpl: ComptrollerImpl
+  controllerImpl: ControllerImpl
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    unitroller.methods._setPendingImplementation(comptrollerImpl._address),
+    unitroller.methods._setPendingImplementation(controllerImpl._address),
     from,
-    ComptrollerErrorReporter
+    ControllerErrorReporter
   );
 
-  world = addAction(world, `Set pending comptroller impl to ${comptrollerImpl.name}`, invokation);
+  world = addAction(world, `Set pending controller impl to ${controllerImpl.name}`, invokation);
 
   return world;
 }
@@ -125,20 +125,20 @@ export function unitrollerCommands() {
       (world, from, { unitroller, pendingAdmin }) =>
         setPendingAdmin(world, from, unitroller, pendingAdmin.val)
     ),
-    new Command<{ unitroller: Unitroller; comptrollerImpl: ComptrollerImpl }>(
+    new Command<{ unitroller: Unitroller; controllerImpl: ControllerImpl }>(
       `
         #### SetPendingImpl
 
-        * "SetPendingImpl impl:<Impl>" - Sets the pending comptroller implementation for this unitroller
-          * E.g. "Unitroller SetPendingImpl MyScenImpl" - Sets the current comptroller implementation to MyScenImpl
+        * "SetPendingImpl impl:<Impl>" - Sets the pending controller implementation for this unitroller
+          * E.g. "Unitroller SetPendingImpl MyScenImpl" - Sets the current controller implementation to MyScenImpl
       `,
       'SetPendingImpl',
       [
         new Arg('unitroller', getUnitroller, { implicit: true }),
-        new Arg('comptrollerImpl', getComptrollerImpl)
+        new Arg('controllerImpl', getControllerImpl)
       ],
-      (world, from, { unitroller, comptrollerImpl }) =>
-        setPendingImpl(world, from, unitroller, comptrollerImpl)
+      (world, from, { unitroller, controllerImpl }) =>
+        setPendingImpl(world, from, unitroller, controllerImpl)
     )
   ];
 }

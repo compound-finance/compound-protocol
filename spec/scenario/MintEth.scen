@@ -1,66 +1,66 @@
 -- Mint Tests
 
-GasTest "Send Mint 1 cETH"
-    NewComptroller
-    ListedEtherTokenMinted cETH initialExchangeRate:0.005e9
+GasTest "Send Mint 1 vETH"
+    NewController
+    ListedEtherTokenMinted vETH initialExchangeRate:0.005e9
     Expect Changes (EtherBalance Geoff) -0.005e18
-    Expect Changes (CToken cETH UnderlyingBalance Geoff) +0.005e18
-    SendMintEth Geoff 0.005e18 cETH
-    Assert Equal (Erc20 cETH TokenBalance Geoff) 10e8
+    Expect Changes (VToken vETH UnderlyingBalance Geoff) +0.005e18
+    SendMintEth Geoff 0.005e18 vETH
+    Assert Equal (Erc20 vETH TokenBalance Geoff) 10e8
     Assert LastGas LessThan 1.2e5
 
-GasTest "Call Mint 1 cETH"
-    NewComptroller
-    ListedEtherTokenMinted cETH initialExchangeRate:0.005e9
+GasTest "Call Mint 1 vETH"
+    NewController
+    ListedEtherTokenMinted vETH initialExchangeRate:0.005e9
     Expect Changes (EtherBalance Geoff) -0.005e18
-    Expect Changes (CToken cETH UnderlyingBalance Geoff) +0.005e18
-    CallMintEth Geoff 0.005e18 cETH
-    Assert Equal (Erc20 cETH TokenBalance Geoff) 10e8
+    Expect Changes (VToken vETH UnderlyingBalance Geoff) +0.005e18
+    CallMintEth Geoff 0.005e18 vETH
+    Assert Equal (Erc20 vETH TokenBalance Geoff) 10e8
     Assert LastGas LessThan 1.2e5
 
 Test "Mint with insufficient eth balance"
-    NewComptroller
-    ListedEtherTokenMinted cETH initialExchangeRate:0.005e9
+    NewController
+    ListedEtherTokenMinted vETH initialExchangeRate:0.005e9
     AllowFailures
-    Invariant Remains (CToken cETH UnderlyingBalance Geoff) 0e18
-    Invariant Remains (Erc20 cETH TokenBalance Geoff) 0e8
+    Invariant Remains (VToken vETH UnderlyingBalance Geoff) 0e18
+    Invariant Remains (Erc20 vETH TokenBalance Geoff) 0e8
     Invariant Static (EtherBalance Geoff)
-    CallMintEth Geoff 1e20 cETH
+    CallMintEth Geoff 1e20 vETH
     Assert Error "sender doesn't have enough funds to send tx. The upfront cost is"
 
 Test "Mint two Eth after minting two Eth, and then I mint two more"
-    NewComptroller
-    ListedEtherToken cETH initialExchangeRate:0.005e9
+    NewController
+    ListedEtherToken vETH initialExchangeRate:0.005e9
     Expect Changes (EtherBalance Geoff) -0.002e18
-    CallMintEth Geoff 0.002e18 cETH
-    Assert Equal (Erc20 cETH TokenBalance Geoff) 4e8
-    Assert Equal (Erc20 cETH TotalSupply) 4e8
+    CallMintEth Geoff 0.002e18 vETH
+    Assert Equal (Erc20 vETH TokenBalance Geoff) 4e8
+    Assert Equal (Erc20 vETH TotalSupply) 4e8
     Expect Changes (EtherBalance Geoff) -0.002e18
-    SendMintEth Geoff 0.002e18 cETH
-    Assert Equal (Erc20 cETH TokenBalance Geoff) 8e8
-    Assert Equal (Erc20 cETH TotalSupply) 8e8
+    SendMintEth Geoff 0.002e18 vETH
+    Assert Equal (Erc20 vETH TokenBalance Geoff) 8e8
+    Assert Equal (Erc20 vETH TotalSupply) 8e8
     Expect Changes (EtherBalance Geoff) -0.002e18
-    CallMintEth Geoff 0.002e18 cETH
-    Assert Equal (Erc20 cETH TokenBalance Geoff) 12e8
-    Assert Equal (Erc20 cETH TotalSupply) 12e8
+    CallMintEth Geoff 0.002e18 vETH
+    Assert Equal (Erc20 vETH TokenBalance Geoff) 12e8
+    Assert Equal (Erc20 vETH TotalSupply) 12e8
 
 Test "Two users Mint"
-    NewComptroller
-    ListedEtherToken cETH initialExchangeRate:0.005e9
-    CallMintEth Geoff 0.002e18 cETH
-    Assert Equal (Erc20 cETH TokenBalance Geoff) 4e8
-    Assert Equal (Erc20 cETH TotalSupply) 4e8
-    CallMintEth Torrey 0.004e18 cETH
-    Assert Equal (Erc20 cETH TokenBalance Geoff) 4e8
-    Assert Equal (Erc20 cETH TokenBalance Torrey) 8e8
-    Assert Equal (Erc20 cETH TotalSupply) 12e8
+    NewController
+    ListedEtherToken vETH initialExchangeRate:0.005e9
+    CallMintEth Geoff 0.002e18 vETH
+    Assert Equal (Erc20 vETH TokenBalance Geoff) 4e8
+    Assert Equal (Erc20 vETH TotalSupply) 4e8
+    CallMintEth Torrey 0.004e18 vETH
+    Assert Equal (Erc20 vETH TokenBalance Geoff) 4e8
+    Assert Equal (Erc20 vETH TokenBalance Torrey) 8e8
+    Assert Equal (Erc20 vETH TotalSupply) 12e8
 
 Test "Mint accrues no interest without borrows"
-    NewComptroller
-    ListedEtherToken cETH initialExchangeRate:0.005e9
-    CallMintEth Geoff 0.002e18 cETH
-    Assert Equal (Erc20 cETH TokenBalance Geoff) 4e8
-    Assert Equal (Erc20 cETH TotalSupply) 4e8
+    NewController
+    ListedEtherToken vETH initialExchangeRate:0.005e9
+    CallMintEth Geoff 0.002e18 vETH
+    Assert Equal (Erc20 vETH TokenBalance Geoff) 4e8
+    Assert Equal (Erc20 vETH TotalSupply) 4e8
     FastForward 1000 Blocks
-    Assert Equal (Erc20 cETH TokenBalance Geoff) 4e8
-    Assert Equal (Erc20 cETH TotalSupply) 4e8
+    Assert Equal (Erc20 vETH TokenBalance Geoff) 4e8
+    Assert Equal (Erc20 vETH TotalSupply) 4e8

@@ -1,4 +1,4 @@
-import {ComptrollerErr, TokenErr} from './ErrorReporterConstants';
+import {ControllerErr, TokenErr} from './ErrorReporterConstants';
 
 export interface ErrorReporter {
   getError(error: any): string | null
@@ -20,7 +20,7 @@ class NoErrorReporterType implements ErrorReporter {
   }
 }
 
-class CTokenErrorReporterType implements ErrorReporter {
+class VTokenErrorReporterType implements ErrorReporter {
   getError(error: any): string | null {
     if (error === null) {
       return null;
@@ -39,11 +39,11 @@ class CTokenErrorReporterType implements ErrorReporter {
 
   getDetail(error: any, detail: number): string {
     // Little hack to let us use proper names for cross-contract errors
-    if (this.getError(error) === "COMPTROLLER_REJECTION") {
-      let comptrollerError = ComptrollerErrorReporter.getError(detail);
+    if (this.getError(error) === "CONTROLLER_REJECTION") {
+      let controllerError = ControllerErrorReporter.getError(detail);
 
-      if (comptrollerError) {
-        return comptrollerError;
+      if (controllerError) {
+        return controllerError;
       }
     }
 
@@ -51,13 +51,13 @@ class CTokenErrorReporterType implements ErrorReporter {
   }
 }
 
-class ComptrollerErrorReporterType implements ErrorReporter {
+class ControllerErrorReporterType implements ErrorReporter {
   getError(error: any): string | null {
     if (error === null) {
       return null;
     } else {
       // TODO: This probably isn't right...
-      return ComptrollerErr.ErrorInv[Number(error)];
+      return ControllerErr.ErrorInv[Number(error)];
     }
   }
 
@@ -66,16 +66,16 @@ class ComptrollerErrorReporterType implements ErrorReporter {
       return null;
     } else {
       // TODO: This probably isn't right...
-      return ComptrollerErr.FailureInfoInv[Number(info)];
+      return ControllerErr.FailureInfoInv[Number(info)];
     }
   }
 
   getDetail(error: any, detail: number): string {
     if (this.getError(error) === "REJECTION") {
-      let comptrollerError = ComptrollerErrorReporter.getError(detail);
+      let controllerError = ControllerErrorReporter.getError(detail);
 
-      if (comptrollerError) {
-        return comptrollerError;
+      if (controllerError) {
+        return controllerError;
       }
     }
 
@@ -94,5 +94,5 @@ export function formatResult(errorReporter: ErrorReporter, result: any): string 
 
 // Singleton instances
 export const NoErrorReporter = new NoErrorReporterType();
-export const CTokenErrorReporter = new CTokenErrorReporterType();
-export const ComptrollerErrorReporter = new ComptrollerErrorReporterType();
+export const VTokenErrorReporter = new VTokenErrorReporterType();
+export const ControllerErrorReporter = new ControllerErrorReporterType();

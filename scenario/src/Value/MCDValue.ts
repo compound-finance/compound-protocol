@@ -22,7 +22,7 @@ export function mcdFetchers() {
         #### PotAt
 
         * "MCD PotAt <potAddress> <method> <args>"
-          * E.g. "MCD PotAt "0xPotAddress" "pie" (CToken cDai Address)"
+          * E.g. "MCD PotAt "0xPotAddress" "pie" (VToken vDai Address)"
       `,
       "PotAt",
       [
@@ -42,7 +42,7 @@ export function mcdFetchers() {
         #### VatAt
 
         * "MCD VatAt <vatAddress> <method> <args>"
-          * E.g. "MCD VatAt "0xVatAddress" "dai" (CToken cDai Address)"
+          * E.g. "MCD VatAt "0xVatAddress" "dai" (VToken vDai Address)"
       `,
       "VatAt",
       [

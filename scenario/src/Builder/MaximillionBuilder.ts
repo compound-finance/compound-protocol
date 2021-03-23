@@ -13,13 +13,13 @@ const MaximillionContract = getContract("Maximillion");
 export interface MaximillionData {
   invokation: Invokation<Maximillion>,
   description: string,
-  cEtherAddress: string,
+  vEtherAddress: string,
   address?: string
 }
 
 export async function buildMaximillion(world: World, from: string, event: Event): Promise<{world: World, maximillion: Maximillion, maximillionData: MaximillionData}> {
   const fetchers = [
-    new Fetcher<{cEther: AddressV}, MaximillionData>(`
+    new Fetcher<{vEther: AddressV}, MaximillionData>(`
         #### Maximillion
 
         * "" - Maximum Eth Repays Contract
@@ -27,13 +27,13 @@ export async function buildMaximillion(world: World, from: string, event: Event)
       `,
       "Maximillion",
       [
-        new Arg("cEther", getAddressV)
+        new Arg("vEther", getAddressV)
       ],
-      async (world, {cEther}) => {
+      async (world, {vEther}) => {
         return {
-          invokation: await MaximillionContract.deploy<Maximillion>(world, from, [cEther.val]),
+          invokation: await MaximillionContract.deploy<Maximillion>(world, from, [vEther.val]),
           description: "Maximillion",
-          cEtherAddress: cEther.val
+          vEtherAddress: vEther.val
         };
       },
       {catchall: true}

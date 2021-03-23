@@ -89,7 +89,7 @@ function loadConf(configArg, addresses) {
   }
   const conf = {
     underlying: getAddress(addresses, config, 'underlying'),
-    comptroller: getAddress(addresses, config, 'comptroller'),
+    controller: getAddress(addresses, config, 'controller'),
     interestRateModel: getAddress(addresses, config, 'interestRateModel'),
     initialExchangeRateMantissa: getNumber(config, 'initialExchangeRateMantissa'),
     name: getString(config, 'name'),

@@ -1,58 +1,58 @@
 #!/usr/bin/env yarn run repl -s
--- Deploys basic ComptrollerG3
+-- Deploys basic ControllerG3
 
 Unitroller Deploy
 PriceOracle Deploy Fixed 1.0
 PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero)
 ----g2
-ComptrollerImpl Deploy ScenarioG2 ComptrollerScenG2
-Unitroller SetPendingImpl ComptrollerScenG2
-ComptrollerImpl ComptrollerScenG2 BecomeG2
+ControllerImpl Deploy ScenarioG2 ControllerScenG2
+Unitroller SetPendingImpl ControllerScenG2
+ControllerImpl ControllerScenG2 BecomeG2
 --list some tokens
-Comptroller SetPriceOracle (PriceOracleProxy Address)
-Comptroller SetMaxAssets 20
-Comptroller SetCloseFactor 0.5
-Comptroller LiquidationIncentive 1.1
-NewCToken ZRX cZRX
-NewCToken BAT cBAT
+Controller SetPriceOracle (PriceOracleProxy Address)
+Controller SetMaxAssets 20
+Controller SetCloseFactor 0.5
+Controller LiquidationIncentive 1.1
+NewVToken ZRX cZRX
+NewVToken BAT vBAT
 Support cZRX collateralFactor:0.5
-Support cBAT collateralFactor:0.5
+Support vBAT collateralFactor:0.5
 -- final
-ComptrollerImpl Deploy Scenario ComptrollerScen
-Unitroller SetPendingImpl ComptrollerScen
+ControllerImpl Deploy Scenario ControllerScen
+Unitroller SetPendingImpl ControllerScen
 
 Prep Geoff 100e18 ZRX cZRX
 Mint Geoff 50e18 cZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
 
-Prep Fourth Some BAT cBAT
-Mint Fourth 6e18 cBAT
-EnterMarkets Fourth cBAT
+Prep Fourth Some BAT vBAT
+Mint Fourth 6e18 vBAT
+EnterMarkets Fourth vBAT
 Borrow Fourth 1e18 cZRX
 
-Prep Fifth Some BAT cBAT
-Mint Fifth 6e18 cBAT
-EnterMarkets Fifth cBAT
+Prep Fifth Some BAT vBAT
+Mint Fifth 6e18 vBAT
+EnterMarkets Fifth vBAT
 Borrow Fifth 1e18 cZRX
 
-Prep Sixth Some BAT cBAT
-Mint Sixth 6e18 cBAT
-EnterMarkets Sixth cBAT
+Prep Sixth Some BAT vBAT
+Mint Sixth 6e18 vBAT
+EnterMarkets Sixth vBAT
 Borrow Sixth 1e18 cZRX
 
-Prep Seventh Some BAT cBAT
-Mint Seventh 6e18 cBAT
-EnterMarkets Seventh cBAT
+Prep Seventh Some BAT vBAT
+Mint Seventh 6e18 vBAT
+EnterMarkets Seventh vBAT
 Borrow Seventh 1e18 cZRX
 
-ComptrollerImpl ComptrollerScen Become 1e18 [cZRX cBAT]
-Erc20 Deploy Standard COMP "COMP Token" 18
-Give (Address Comptroller) 5000000e18 COMP
-Comptroller Send "setCompAddress(address)" (Address COMP)
+ControllerImpl ControllerScen Become 1e18 [cZRX vBAT]
+Erc20 Deploy Standard VTX "VTX Token" 18
+Give (Address Controller) 5000000e18 VTX
+Controller Send "setVtxAddress(address)" (Address VTX)
 
-Comptroller RefreshCompSpeeds
+Controller RefreshVtxSpeeds
 
 FastForward 300000 Blocks
-Read (Comptroller Address)
+Read (Controller Address)
 Read (Address Fourth)
 Read (Address Fifth)
 Read (Address Sixth)

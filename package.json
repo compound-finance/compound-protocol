@@ -1,7 +1,7 @@
 {
-  "name": "compound-protocol",
+  "name": "vortex-protocol",
   "version": "0.2.1",
-  "description": "The Compound Money Market",
+  "description": "The Vortex Money Market",
   "main": "index.js",
   "scripts": {
     "compile": "./script/compile",
@@ -14,10 +14,10 @@
     "report": "npx run ./script/saddle/gasReport.js",
     "test": "./script/test",
     "test:prepare": "NO_RUN=true ./script/test",
-    "checksize": "npx run ./script/saddle/comptrollerSize.js"
+    "checksize": "npx run ./script/saddle/controllerSize.js"
   },
-  "repository": "git@github.com:compound-finance/compound-protocol.git",
-  "author": "Compound Finance",
+  "repository": "git@github.com:compound-finance/vortex-protocol.git",
+  "author": "Vortex Finance",
   "license": "UNLICENSED",
   "devDependencies": {
     "bignumber.js": "9.0.0",
@@ -31,6 +31,6 @@
   },
   "resolutions": {
     "scrypt.js": "https://registry.npmjs.org/@compound-finance/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz",
-    "**/ganache-core": "github:compound-finance/ganache-core.git#jflatow/unbreak-fork"
+    "**/ganache-core": "compound-finance/ganache-core#jflatow/unbreak-fork"
   }
 }

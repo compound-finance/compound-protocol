@@ -9,7 +9,7 @@ contract PriceOracleModel is PriceOracle {
         return true;
     }
 
-    function getUnderlyingPrice(CToken cToken) external view returns (uint) {
+    function getUnderlyingPrice(VToken vToken) external view returns (uint) {
         return dummy;
     }
 }

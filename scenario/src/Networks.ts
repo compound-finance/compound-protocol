@@ -106,7 +106,7 @@ export async function mergeContractABI(
   }
   const fullABI = Object.values(itemBySig);
 
-  // Store Comptroller address
+  // Store Controller address
   networks = networks.setIn(['Contracts', targetName], contractTarget._address);
   world = world.setIn(['contractData', 'Contracts', targetName], contractTarget._address);
 

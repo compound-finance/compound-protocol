@@ -1,16 +1,16 @@
 -- Mint Tests
 
 Test "Mint 1 cWBTC"
-    NewComptroller
-    ListedCToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
+    NewController
+    ListedVToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
     Prep Geoff Some WBTC cWBTC
     Mint Geoff 10e8 cWBTC
     Assert Equal (Erc20 cWBTC TokenBalance Geoff) (Exactly 50e8)
-    Assert Equal (CToken cWBTC UnderlyingBalance Geoff) (Exactly 10e8)
+    Assert Equal (VToken cWBTC UnderlyingBalance Geoff) (Exactly 10e8)
 
 Test "Mint WBTC with insufficient allowance"
-    NewComptroller
-    ListedCToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
+    NewController
+    ListedVToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
     Prep Geoff 5e8 WBTC cWBTC allowanceAmount:4.9e8
     AllowFailures
     Mint Geoff 5e8 cWBTC
@@ -19,8 +19,8 @@ Test "Mint WBTC with insufficient allowance"
     Assert Equal (Erc20 cWBTC TokenBalance Geoff) (Exactly 0e8)
 
 Test "Mint WBTC with insufficient balance"
-    NewComptroller
-    ListedCToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
+    NewController
+    ListedVToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
     Prep Geoff 4.9e8 WBTC cWBTC allowanceAmount:5e8
     AllowFailures
     Mint Geoff 5e8 cWBTC
@@ -29,8 +29,8 @@ Test "Mint WBTC with insufficient balance"
     Assert Equal (Erc20 cWBTC TokenBalance Geoff) (Exactly 0e8)
 
 Test "Mint two WBTC after minting two WBTC, and then I mint two more"
-    NewComptroller
-    ListedCToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
+    NewController
+    ListedVToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
     Prep Geoff Some WBTC cWBTC
     Mint Geoff 2e8 cWBTC
     Assert Equal (Erc20 cWBTC TokenBalance Geoff) (Exactly 10e8)
@@ -43,8 +43,8 @@ Test "Mint two WBTC after minting two WBTC, and then I mint two more"
     Assert Equal (Erc20 cWBTC TotalSupply) (Exactly 30e8)
 
 Test "Two users Mint WBTC"
-    NewComptroller
-    ListedCToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
+    NewController
+    ListedVToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
     Prep Geoff Some WBTC cWBTC
     Prep Torrey Some WBTC cWBTC
     Mint Geoff 2e8 cWBTC
@@ -56,8 +56,8 @@ Test "Two users Mint WBTC"
     Assert Equal (Erc20 cWBTC TotalSupply) (Exactly 20e8)
 
 Test "Mint WBTC accrues no interest without borrows"
-    NewComptroller
-    ListedCToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
+    NewController
+    ListedVToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
     Prep Geoff Some WBTC cWBTC
     Prep Torrey Some WBTC cWBTC
     Mint Geoff 2e8 cWBTC
@@ -68,8 +68,8 @@ Test "Mint WBTC accrues no interest without borrows"
     Assert Equal (Erc20 cWBTC TotalSupply) (Exactly 10e8)
 
 Test "Mint WBTC transfer in fails due to paused"
-    NewComptroller
-    ListedCToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
+    NewController
+    ListedVToken WBTC cWBTC initialExchangeRate:0.2 tokenType:WBTC
     Prep Geoff Some WBTC cWBTC
     Prep Torrey Some WBTC cWBTC
     Invariant Static (Erc20 cWBTC TokenBalance Geoff)
@@ -80,9 +80,9 @@ Test "Mint WBTC transfer in fails due to paused"
     Mint Geoff 2e8 cWBTC
     Assert Revert
 
-Test "Denied by comptroller because WBTC unlisted"
-    NewComptroller
-    NewCToken WBTC cWBTC tokenType:WBTC
+Test "Denied by controller because WBTC unlisted"
+    NewController
+    NewVToken WBTC cWBTC tokenType:WBTC
     Prep Geoff Some WBTC cWBTC
     Prep Torrey Some WBTC cWBTC
     Invariant Static (Erc20 cWBTC TokenBalance Geoff)
@@ -90,4 +90,4 @@ Test "Denied by comptroller because WBTC unlisted"
     Invariant Static (Erc20 WBTC TotalSupply)
     AllowFailures
     Mint Geoff 2e8 cWBTC
-    Assert Failure COMPTROLLER_REJECTION MINT_COMPTROLLER_REJECTION MARKET_NOT_LISTED
+    Assert Failure CONTROLLER_REJECTION MINT_CONTROLLER_REJECTION MARKET_NOT_LISTED

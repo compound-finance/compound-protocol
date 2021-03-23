@@ -1,12 +1,12 @@
 
 # Run a single cvl e.g.:
-#  make -B spec/certora/CErc20/borrowAndRepayFresh.cvl
+#  make -B spec/certora/VErc20/borrowAndRepayFresh.cvl
 
 # TODO:
 #  - mintAndRedeemFresh.cvl in progress and is failing due to issues with tool proving how the exchange rate can change
 #    hoping for better division modelling - currently fails to prove (a + 1) / b >= a / b
-#  - CErc20Delegator/*.cvl cannot yet be run with the tool
-#  - cDAI proofs are WIP, require using the delegate and the new revert message assertions
+#  - VErc20Delegator/*.cvl cannot yet be run with the tool
+#  - vDAI proofs are WIP, require using the delegate and the new revert message assertions
 
 .PHONY: certora-clean
 
@@ -24,108 +24,108 @@ spec/certora/Math/%.cvl:
 	--verify \
 	 MathCertora:$@
 
-spec/certora/Comp/search.cvl:
+spec/certora/Vtx/search.cvl:
 	$(CERTORA_RUN) \
-	spec/certora/contracts/CompCertora.sol \
+	spec/certora/contracts/VtxCertora.sol \
 	--settings -b=4,-graphDrawLimit=0,-assumeUnwindCond,-depth=100 \
 	--solc_args "'--evm-version istanbul'" \
 	--verify \
-	 CompCertora:$@
+	 VtxCertora:$@
 
-spec/certora/Comp/transfer.cvl:
+spec/certora/Vtx/transfer.cvl:
 	$(CERTORA_RUN) \
-	spec/certora/contracts/CompCertora.sol \
+	spec/certora/contracts/VtxCertora.sol \
 	--settings -graphDrawLimit=0,-assumeUnwindCond,-depth=100 \
 	--solc_args "'--evm-version istanbul'" \
 	--verify \
-	 CompCertora:$@
+	 VtxCertora:$@
 
 spec/certora/Governor/%.cvl:
 	$(CERTORA_RUN) \
 	 spec/certora/contracts/GovernorAlphaCertora.sol \
 	 spec/certora/contracts/TimelockCertora.sol \
-	 spec/certora/contracts/CompCertora.sol \
+	 spec/certora/contracts/VtxCertora.sol \
 	 --settings -assumeUnwindCond,-enableWildcardInlining=false \
 	 --solc_args "'--evm-version istanbul'" \
 	 --link \
 	 GovernorAlphaCertora:timelock=TimelockCertora \
-	 GovernorAlphaCertora:comp=CompCertora \
+	 GovernorAlphaCertora:vtx=VtxCertora \
 	--verify \
 	 GovernorAlphaCertora:$@
 
-spec/certora/Comptroller/%.cvl:
+spec/certora/Controller/%.cvl:
 	$(CERTORA_RUN) \
-	 spec/certora/contracts/ComptrollerCertora.sol \
+	 spec/certora/contracts/ControllerCertora.sol \
 	 spec/certora/contracts/PriceOracleModel.sol \
 	--link \
-	 ComptrollerCertora:oracle=PriceOracleModel \
+	 ControllerCertora:oracle=PriceOracleModel \
 	--verify \
-	 ComptrollerCertora:$@
+	 ControllerCertora:$@
 
-spec/certora/cDAI/%.cvl:
+spec/certora/vDAI/%.cvl:
 	$(CERTORA_RUN) \
-	 spec/certora/contracts/CDaiDelegateCertora.sol \
+	 spec/certora/contracts/VDaiDelegateCertora.sol \
 	 spec/certora/contracts/UnderlyingModelNonStandard.sol \
 	 spec/certora/contracts/mcd/dai.sol:Dai \
 	 spec/certora/contracts/mcd/pot.sol:Pot \
 	 spec/certora/contracts/mcd/vat.sol:Vat \
 	 spec/certora/contracts/mcd/join.sol:DaiJoin \
-	 tests/Contracts/BoolComptroller.sol \
+	 tests/Contracts/BoolController.sol \
 	--link \
-	 CDaiDelegateCertora:comptroller=BoolComptroller \
-	 CDaiDelegateCertora:underlying=Dai \
-	 CDaiDelegateCertora:potAddress=Pot \
-	 CDaiDelegateCertora:vatAddress=Vat \
-	 CDaiDelegateCertora:daiJoinAddress=DaiJoin \
+	 VDaiDelegateCertora:controller=BoolController \
+	 VDaiDelegateCertora:underlying=Dai \
+	 VDaiDelegateCertora:potAddress=Pot \
+	 VDaiDelegateCertora:vatAddress=Vat \
+	 VDaiDelegateCertora:daiJoinAddress=DaiJoin \
 	--verify \
-	 CDaiDelegateCertora:$@ \
-	--settings -cache=certora-run-cdai
+	 VDaiDelegateCertora:$@ \
+	--settings -cache=certora-run-vdai
 
-spec/certora/CErc20/%.cvl:
+spec/certora/VErc20/%.cvl:
 	$(CERTORA_RUN) \
-	 spec/certora/contracts/CErc20ImmutableCertora.sol \
-	 spec/certora/contracts/CTokenCollateral.sol \
-	 spec/certora/contracts/ComptrollerCertora.sol \
+	 spec/certora/contracts/VErc20ImmutableCertora.sol \
+	 spec/certora/contracts/VTokenCollateral.sol \
+	 spec/certora/contracts/ControllerCertora.sol \
 	 spec/certora/contracts/InterestRateModelModel.sol \
 	 spec/certora/contracts/UnderlyingModelNonStandard.sol \
 	--link \
-	 CErc20ImmutableCertora:otherToken=CTokenCollateral \
-	 CErc20ImmutableCertora:comptroller=ComptrollerCertora \
-	 CErc20ImmutableCertora:underlying=UnderlyingModelNonStandard \
-	 CErc20ImmutableCertora:interestRateModel=InterestRateModelModel \
-	 CTokenCollateral:comptroller=ComptrollerCertora \
-	 CTokenCollateral:underlying=UnderlyingModelNonStandard \
+	 VErc20ImmutableCertora:otherToken=VTokenCollateral \
+	 VErc20ImmutableCertora:controller=ControllerCertora \
+	 VErc20ImmutableCertora:underlying=UnderlyingModelNonStandard \
+	 VErc20ImmutableCertora:interestRateModel=InterestRateModelModel \
+	 VTokenCollateral:controller=ControllerCertora \
+	 VTokenCollateral:underlying=UnderlyingModelNonStandard \
 	--verify \
-	 CErc20ImmutableCertora:$@ \
-	--settings -cache=certora-run-cerc20-immutable
+	 VErc20ImmutableCertora:$@ \
+	--settings -cache=certora-run-verc20-immutable
 
-spec/certora/CErc20Delegator/%.cvl:
+spec/certora/VErc20Delegator/%.cvl:
 	$(CERTORA_RUN) \
-	 spec/certora/contracts/CErc20DelegatorCertora.sol \
-	 spec/certora/contracts/CErc20DelegateCertora.sol \
-	 spec/certora/contracts/CTokenCollateral.sol \
-	 spec/certora/contracts/ComptrollerCertora.sol \
+	 spec/certora/contracts/VErc20DelegatorCertora.sol \
+	 spec/certora/contracts/VErc20DelegateCertora.sol \
+	 spec/certora/contracts/VTokenCollateral.sol \
+	 spec/certora/contracts/ControllerCertora.sol \
 	 spec/certora/contracts/InterestRateModelModel.sol \
 	 spec/certora/contracts/UnderlyingModelNonStandard.sol \
 	--link \
-	 CErc20DelegatorCertora:implementation=CErc20DelegateCertora \
-	 CErc20DelegatorCertora:otherToken=CTokenCollateral \
-	 CErc20DelegatorCertora:comptroller=ComptrollerCertora \
-	 CErc20DelegatorCertora:underlying=UnderlyingModelNonStandard \
-	 CErc20DelegatorCertora:interestRateModel=InterestRateModelModel \
-	 CTokenCollateral:comptroller=ComptrollerCertora \
-	 CTokenCollateral:underlying=UnderlyingModelNonStandard \
+	 VErc20DelegatorCertora:implementation=VErc20DelegateCertora \
+	 VErc20DelegatorCertora:otherToken=VTokenCollateral \
+	 VErc20DelegatorCertora:controller=ControllerCertora \
+	 VErc20DelegatorCertora:underlying=UnderlyingModelNonStandard \
+	 VErc20DelegatorCertora:interestRateModel=InterestRateModelModel \
+	 VTokenCollateral:controller=ControllerCertora \
+	 VTokenCollateral:underlying=UnderlyingModelNonStandard \
 	--verify \
-	 CErc20DelegatorCertora:$@ \
+	 VErc20DelegatorCertora:$@ \
 	--settings -assumeUnwindCond \
-	--settings -cache=certora-run-cerc20-delegator
+	--settings -cache=certora-run-verc20-delegator
 
 spec/certora/Maximillion/%.cvl:
 	$(CERTORA_RUN) \
 	 spec/certora/contracts/MaximillionCertora.sol \
-	 spec/certora/contracts/CEtherCertora.sol \
+	 spec/certora/contracts/VEtherCertora.sol \
 	--link \
-	 MaximillionCertora:cEther=CEtherCertora \
+	 MaximillionCertora:vEther=VEtherCertora \
 	--verify \
 	 MaximillionCertora:$@
 

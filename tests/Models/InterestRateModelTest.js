@@ -2,7 +2,7 @@ const {
   makeInterestRateModel,
   getBorrowRate,
   getSupplyRate
-} = require('../Utils/Compound');
+} = require('../Utils/Vortex');
 const { UInt256Max } = require('../Utils/Ethereum');
 
 function utilizationRate(cash, borrows, reserves) {

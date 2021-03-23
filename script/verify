@@ -16,7 +16,7 @@ function verify_spec {
 if [ "$CI" ]; then
     all_specs=($(echo "" | circleci tests split --split-by=timings))
 elif [[ $# -eq 0 ]] ; then
-    all_specs=(spec/certora/{Comp,Governor}/*.cvl)
+    all_specs=(spec/certora/{Vtx,Governor}/*.cvl)
 else
     all_specs=($@)
 fi

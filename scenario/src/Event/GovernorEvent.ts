@@ -121,7 +121,7 @@ export function governorCommands() {
         #### Propose
 
         * "Governor <Governor> Propose description:<String> targets:<List> signatures:<List> callDataArgs:<List>" - Creates a new proposal in Governor
-          * E.g. "Governor GovernorScenario Propose "New Interest Rate" [(Address cDAI)] [0] [("_setInterestRateModel(address)")] [[(Address MyInterestRateModel)]]
+          * E.g. "Governor GovernorScenario Propose "New Interest Rate" [(Address vDAI)] [0] [("_setInterestRateModel(address)")] [[(Address MyInterestRateModel)]]
       `,
       "Propose",
       [

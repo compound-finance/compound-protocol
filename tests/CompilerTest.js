@@ -5,12 +5,12 @@ const {
 } = require('./Utils/Ethereum');
 
 const {
-  makeComptroller,
-  makeCToken,
+  makeController,
+  makeVToken,
   makePriceOracle,
   pretendBorrow,
   borrowSnapshot
-} = require('./Utils/Compound');
+} = require('./Utils/Vortex');
 
 describe('Const', () => {
   it("does the right thing and not too expensive", async () => {

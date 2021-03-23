@@ -1,4 +1,4 @@
-import { ErrorReporter, NoErrorReporter, ComptrollerErrorReporter } from './ErrorReporter';
+import { ErrorReporter, NoErrorReporter, ControllerErrorReporter } from './ErrorReporter';
 import { mustArray } from './Utils';
 import { World } from './World';
 import { encodedNumber } from './Encoding';

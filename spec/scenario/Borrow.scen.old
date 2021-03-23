@@ -77,7 +77,7 @@ Test "Can't borrow when contract is paused"
 	Assert Equal (TokenBalance Geoff OMG) (Exactly 0.0e18)
 	PolicyHook OMG (SetPaused True)
 	Borrow Geoff OMG 2.0e18
-	Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION 1
+	Assert Failure CONTROLLER_REJECTION BORROW_CONTROLLER_REJECTION 1
 	Assert Equal (BorrowBalance Geoff OMG) (Exactly 0.0e18)
 	Assert Equal (TokenBalance Geoff OMG) (Exactly 0.0e18)
 

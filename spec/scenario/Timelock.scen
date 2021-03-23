@@ -51,33 +51,33 @@ Test "Queuing and execute a transaction for setPendingAdmin"
     Assert Equal (Timelock Admin) (User Jared Address)
     Assert Equal (Timelock PendingAdmin) (Address Zero)
 
-Test "Accept cToken admin from Timelock"
+Test "Accept vToken admin from Timelock"
     FreezeTime 90
     -- Admin:Geoff Delay:1 week
     Timelock Deploy Geoff 604800
     Assert Equal (Timelock Admin) (User Geoff Address)
-    NewComptroller
-    NewCToken ZRX cZRX
-    Assert Equal (CToken cZRX Admin) (Address Root)
-    Assert Equal (CToken cZRX PendingAdmin) (Address Zero)
-    From Root (CToken cZRX SetPendingAdmin (Timelock Address))
-    Assert Equal (CToken cZRX PendingAdmin) (Timelock Address)
+    NewController
+    NewVToken ZRX cZRX
+    Assert Equal (VToken cZRX Admin) (Address Root)
+    Assert Equal (VToken cZRX PendingAdmin) (Address Zero)
+    From Root (VToken cZRX SetPendingAdmin (Timelock Address))
+    Assert Equal (VToken cZRX PendingAdmin) (Timelock Address)
     -- eta = 1 week (604800) + blockTimestamp (~100) = 604900
-    Assert False (Timelock QueuedTransaction (Timelock TxHash (CToken cZRX Address) 0 604900 "_acceptAdmin()" ""))
-    From Geoff (Timelock QueueTransaction (CToken cZRX Address) 0 604900 "_acceptAdmin()" "")
-    Assert True (Timelock QueuedTransaction (Timelock TxHash (CToken cZRX Address) 0 604900 "_acceptAdmin()" ""))
+    Assert False (Timelock QueuedTransaction (Timelock TxHash (VToken cZRX Address) 0 604900 "_acceptAdmin()" ""))
+    From Geoff (Timelock QueueTransaction (VToken cZRX Address) 0 604900 "_acceptAdmin()" "")
+    Assert True (Timelock QueuedTransaction (Timelock TxHash (VToken cZRX Address) 0 604900 "_acceptAdmin()" ""))
     --  Now execute after delay time
     FreezeTime 604900
-    From Geoff (Timelock ExecuteTransaction (CToken cZRX Address) 0 604900 "_acceptAdmin()" "")
-    Assert False (Timelock QueuedTransaction (Timelock TxHash (CToken cZRX Address) 0 604900 "_acceptAdmin()" ""))
-    Assert Equal (CToken cZRX Admin) (Timelock Address)
-    Assert Equal (CToken cZRX PendingAdmin) (Address Zero)
+    From Geoff (Timelock ExecuteTransaction (VToken cZRX Address) 0 604900 "_acceptAdmin()" "")
+    Assert False (Timelock QueuedTransaction (Timelock TxHash (VToken cZRX Address) 0 604900 "_acceptAdmin()" ""))
+    Assert Equal (VToken cZRX Admin) (Timelock Address)
+    Assert Equal (VToken cZRX PendingAdmin) (Address Zero)
 
 Test "Accept unitroller admin from Timelock"
     -- Admin:Geoff Delay:1 week
     Timelock Deploy Geoff 604800
     Assert Equal (Timelock Admin) (User Geoff Address)
-    NewComptroller
+    NewController
     Assert Equal (Unitroller Admin) (Address Root)
     Assert Equal (Unitroller PendingAdmin) (Address Zero)
     From Root (Unitroller SetPendingAdmin (Timelock Address))
@@ -95,14 +95,14 @@ Test "Accept unitroller admin from Timelock"
     Assert Equal (Unitroller PendingAdmin) (Address Zero)
 
 
-Test "Reduce reserves for CErc20 from Timelock and send reserves to external address"
-    NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
+Test "Reduce reserves for VErc20 from Timelock and send reserves to external address"
+    NewController
+    ListedVToken ZRX cZRX initialExchangeRate:1e9
     Prep Geoff 50e18 ZRX cZRX
     Mint Geoff 50e18 cZRX
     Assert Equal (Erc20 cZRX TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) (Exactly 50e18)
-    Assert Equal (CToken cZRX ExchangeRate) (Exactly 1e9)
+    Assert Equal (VToken cZRX UnderlyingBalance Geoff) (Exactly 50e18)
+    Assert Equal (VToken cZRX ExchangeRate) (Exactly 1e9)
     BorrowAndRepayWithInterest ZRX cZRX 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
     -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
     --   thus, we should have accrued 5e18 of interest for the protocol
@@ -113,41 +113,41 @@ Test "Reduce reserves for CErc20 from Timelock and send reserves to external add
     Assert Equal (Erc20 ZRX TokenBalance cZRX) (Exactly 55e18)
     Assert Equal (Erc20 ZRX TokenBalance (Timelock Address)) (Exactly 0e18)
     Assert Equal (Erc20 cZRX TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (CToken cZRX Reserves) (Exactly 1e18)
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) (Exactly 54e18)
+    Assert Equal (VToken cZRX Reserves) (Exactly 1e18)
+    Assert Equal (VToken cZRX UnderlyingBalance Geoff) (Exactly 54e18)
     -- (55.0e18+0.0e18-1.0e18)/500.0e8
-    Assert Equal (CToken cZRX ExchangeRate) (Exactly 1.08e9)
+    Assert Equal (VToken cZRX ExchangeRate) (Exactly 1.08e9)
     -- Set Timelock as admin
-    From Root (CToken cZRX SetPendingAdmin (Timelock Address))
+    From Root (VToken cZRX SetPendingAdmin (Timelock Address))
     -- Queue Transactions
     FreezeTime 90
-    From Jared (Timelock QueueTransaction (CToken cZRX Address) 0 604900 "_acceptAdmin()" "")
-    From Jared (Timelock QueueTransaction (CToken cZRX Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
+    From Jared (Timelock QueueTransaction (VToken cZRX Address) 0 604900 "_acceptAdmin()" "")
+    From Jared (Timelock QueueTransaction (VToken cZRX Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
     From Jared (Timelock QueueTransaction (Erc20 ZRX Address) 0 604900 "transfer(address,uint256)" "0x0000000000000000000000000000000000000001" "1000000000000000000")
     FreezeTime 604900
-    From Jared (Timelock ExecuteTransaction (CToken cZRX Address) 0 604900 "_acceptAdmin()" "")
+    From Jared (Timelock ExecuteTransaction (VToken cZRX Address) 0 604900 "_acceptAdmin()" "")
     -- Now, let's pull out all of our reserves (1e18)
-    From Jared (Timelock ExecuteTransaction (CToken cZRX Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
+    From Jared (Timelock ExecuteTransaction (VToken cZRX Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
     Assert Equal (Erc20 ZRX TokenBalance cZRX) (Exactly 54e18)
     Assert Equal (Erc20 ZRX TokenBalance (Timelock Address)) (Exactly 1e18)
     Assert Equal (Erc20 cZRX TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (CToken cZRX Reserves) (Exactly 0e18)
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) (Exactly 54e18)
+    Assert Equal (VToken cZRX Reserves) (Exactly 0e18)
+    Assert Equal (VToken cZRX UnderlyingBalance Geoff) (Exactly 54e18)
     -- (54.0e18+0.0e18-0.0e18)/500.0e8
-    Assert Equal (CToken cZRX ExchangeRate) (Exactly 1.08e9)
+    Assert Equal (VToken cZRX ExchangeRate) (Exactly 1.08e9)
     Assert Equal (Erc20 ZRX TokenBalance "0x0000000000000000000000000000000000000001") (Exactly 0e18)
     From Jared (Timelock ExecuteTransaction (Erc20 ZRX Address) 0 604900 "transfer(address,uint256)" "0x0000000000000000000000000000000000000001" "1000000000000000000")
     Assert Equal (Erc20 ZRX TokenBalance (Timelock Address)) (Exactly 0e18)
     Assert Equal (Erc20 ZRX TokenBalance "0x0000000000000000000000000000000000000001") (Exactly 1e18)
 
-Test "Reduce reserves for CEther from Timelock and send reserves to external address"
-    NewComptroller
-    ListedEtherToken cETH initialExchangeRate:1e9
-    CallMintEth Geoff 50e18 cETH
-    Assert Equal (Erc20 cETH TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (CToken cETH UnderlyingBalance Geoff) (Exactly 50e18)
-    Assert Equal (CToken cETH ExchangeRate) (Exactly 1e9)
-    BorrowAndRepayEthWithInterest cETH 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
+Test "Reduce reserves for VEther from Timelock and send reserves to external address"
+    NewController
+    ListedEtherToken vETH initialExchangeRate:1e9
+    CallMintEth Geoff 50e18 vETH
+    Assert Equal (Erc20 vETH TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (VToken vETH UnderlyingBalance Geoff) (Exactly 50e18)
+    Assert Equal (VToken vETH ExchangeRate) (Exactly 1e9)
+    BorrowAndRepayEthWithInterest vETH 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
     -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
     --   thus, we should have accrued 5e18 of interest for the protocol
     --   The reserves should get 20% of this, or 1e18, and the rest
@@ -155,57 +155,57 @@ Test "Reduce reserves for CEther from Timelock and send reserves to external add
     --   let's check that account is given correct new balance.
     FreezeTime 90
     Timelock Deploy Jared 604800
-    Assert Equal (EtherBalance cETH) (Exactly 55e18)
+    Assert Equal (EtherBalance vETH) (Exactly 55e18)
     Assert Equal (EtherBalance (Timelock Address)) (Exactly 0e18)
-    Assert Equal (Erc20 cETH TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (CToken cETH Reserves) (Exactly 1e18)
-    Assert Equal (CToken cETH UnderlyingBalance Geoff) (Exactly 54e18)
+    Assert Equal (Erc20 vETH TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (VToken vETH Reserves) (Exactly 1e18)
+    Assert Equal (VToken vETH UnderlyingBalance Geoff) (Exactly 54e18)
     -- (55.0e18+0.0e18-1.0e18)/500.0e8
-    Assert Equal (CToken cETH ExchangeRate) (Exactly 1.08e9)
+    Assert Equal (VToken vETH ExchangeRate) (Exactly 1.08e9)
     -- Set Timelock as admin
-    From Root (CToken cETH SetPendingAdmin (Timelock Address))
+    From Root (VToken vETH SetPendingAdmin (Timelock Address))
     -- Queue Transactions
-    From Jared (Timelock QueueTransaction (CToken cETH Address) 0 604900 "_acceptAdmin()" "")
-    From Jared (Timelock QueueTransaction (CToken cETH Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
+    From Jared (Timelock QueueTransaction (VToken vETH Address) 0 604900 "_acceptAdmin()" "")
+    From Jared (Timelock QueueTransaction (VToken vETH Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
     From Jared (Timelock QueueTransaction Jared 1000000000000000000 604900 "" "")
     FreezeTime 604900
-    From Jared (Timelock ExecuteTransaction (CToken cETH Address) 0 604900 "_acceptAdmin()" "")
+    From Jared (Timelock ExecuteTransaction (VToken vETH Address) 0 604900 "_acceptAdmin()" "")
     -- Now, let's pull out all of our reserves (1e18)
-    From Jared (Timelock ExecuteTransaction (CToken cETH Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
+    From Jared (Timelock ExecuteTransaction (VToken vETH Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
     Assert Equal (EtherBalance (Timelock Address)) 1e18
-    Assert Equal (EtherBalance cETH) (Exactly 54e18)
-    Assert Equal (Erc20 cETH TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (CToken cETH Reserves) (Exactly 0e18)
-    Assert Equal (CToken cETH UnderlyingBalance Geoff) (Exactly 54e18)
+    Assert Equal (EtherBalance vETH) (Exactly 54e18)
+    Assert Equal (Erc20 vETH TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (VToken vETH Reserves) (Exactly 0e18)
+    Assert Equal (VToken vETH UnderlyingBalance Geoff) (Exactly 54e18)
     -- (54.0e18+0.0e18-0.0e18)/500.0e8
-    Assert Equal (CToken cETH ExchangeRate) (Exactly 1.08e9)
+    Assert Equal (VToken vETH ExchangeRate) (Exactly 1.08e9)
     Expect Changes (EtherBalance Jared) 1e18
     Trx GasPrice 0 (From Jared (Timelock ExecuteTransaction Jared 1000000000000000000 604900 "" ""))
     Assert Equal (EtherBalance (Timelock Address)) (Exactly 0e18)
 
-Test "Set Pending Comptroller implementation on Unitroller from Timelock"
+Test "Set Pending Controller implementation on Unitroller from Timelock"
     Unitroller Deploy
     PriceOracle Deploy Simple
-    ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
-    Unitroller SetPendingImpl ScenComptrollerG1
-    Assert Equal (Unitroller PendingImplementation) (ComptrollerImpl ScenComptrollerG1 Address)
-    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero) -- if listing cEther use ListedEtherToken to replace proxy
-    ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracleProxy Address) 0.1 20
+    ControllerImpl Deploy ScenarioG1 ScenControllerG1
+    Unitroller SetPendingImpl ScenControllerG1
+    Assert Equal (Unitroller PendingImplementation) (ControllerImpl ScenControllerG1 Address)
+    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero) -- if listing vEther use ListedEtherToken to replace proxy
+    ControllerImpl ScenControllerG1 BecomeG1 (PriceOracleProxy Address) 0.1 20
     Assert Equal (Unitroller PendingImplementation) (Address Zero)
-    Assert Equal (Unitroller Implementation) (Address ScenComptrollerG1)
+    Assert Equal (Unitroller Implementation) (Address ScenControllerG1)
     FreezeTime 90
     Timelock Deploy Coburn 604800
-    ComptrollerImpl Deploy Scenario ScenComptroller
-    Unitroller SetPendingImpl ScenComptroller
+    ControllerImpl Deploy Scenario ScenController
+    Unitroller SetPendingImpl ScenController
     Unitroller SetPendingAdmin (Timelock Address)
     Assert Equal (Unitroller PendingAdmin) (Timelock Address)
-    Assert Equal (Unitroller PendingImplementation) (ComptrollerImpl ScenComptroller Address)
+    Assert Equal (Unitroller PendingImplementation) (ControllerImpl ScenController Address)
     From Coburn (Timelock QueueTransaction (Unitroller Address) 0 604900 "_acceptAdmin()" "")
-    From Coburn (Timelock QueueTransaction (ComptrollerImpl ScenComptroller Address) 0 604900 "_become(address)" (Unitroller Address))
+    From Coburn (Timelock QueueTransaction (ControllerImpl ScenController Address) 0 604900 "_become(address)" (Unitroller Address))
     FreezeTime 604900
     From Coburn (Timelock ExecuteTransaction (Unitroller Address) 0 604900 "_acceptAdmin()" "")
     Assert Equal (Unitroller Admin) (Timelock Address)
     Assert Equal (Unitroller PendingAdmin) (Address Zero)
-    From Coburn (Timelock ExecuteTransaction (ComptrollerImpl ScenComptroller Address) 0 604900 "_become(address)" (Unitroller Address))
-    Assert Equal (Unitroller Implementation) (Address ScenComptroller)
+    From Coburn (Timelock ExecuteTransaction (ControllerImpl ScenController Address) 0 604900 "_become(address)" (Unitroller Address))
+    Assert Equal (Unitroller Implementation) (Address ScenController)
     Assert Equal (Unitroller PendingImplementation) (Address Zero)
