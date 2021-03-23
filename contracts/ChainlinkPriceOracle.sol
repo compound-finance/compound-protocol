@@ -2,10 +2,9 @@ pragma solidity ^0.5.16;
 
 import "./AggregatorInterface.sol";
 import "./PriceOracle.sol";
-import "./ErrorReporter.sol";
 import "./SafeMath.sol";
 
-contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
+contract ChainlinkPriceOracle is PriceOracle {
     using SafeMath for uint;
 
     struct AggregatorDetails {
@@ -73,54 +72,45 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
      * since this role will be held by a governance contract whose voters can reasonably be expected to thoroughly
      * verify any new admin prior to voting.
      * @param newAdmin The new administrator address
-     * @return Success code uint
+     * @return New admin address
      */
-    function _setAdmin(address newAdmin) external returns (uint) {
+    function _setAdmin(address newAdmin) external returns (address) {
         address currentAdmin = admin;
-
         // Check caller is admin
-        if (msg.sender != currentAdmin) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.SET_ADMIN_OWNER_CHECK);
-        }
+        require(msg.sender == currentAdmin, "Must be admin");
 
         // Check if new admin is different to old
-        if (newAdmin == currentAdmin) {
-            return fail(Error.BAD_INPUT, FailureInfo.SET_ADMIN_NO_CHANGE);
-        }
+        require(newAdmin != currentAdmin, "Addresses are equal");
 
         // Set new admin
         admin = newAdmin;
 
         emit AdminChanged(currentAdmin, newAdmin);
 
-        return uint(Error.NO_ERROR);
+        return admin;
     }
 
     /**
      * @notice Set a new failover admin for this contract
      * @dev Only the admin can call this function
      * @param newFailoverAdmin The new failvover admin address
-     * @return Success code uint
+     * @return New admin address
      */
-    function _setFailoverAdmin(address newFailoverAdmin) external returns (uint) {
+    function _setFailoverAdmin(address newFailoverAdmin) external returns (address) {
         // Check caller is admin
-        if (msg.sender != admin) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.SET_FAILOVER_ADMIN_OWNER_CHECK);
-        }
+        require(msg.sender == admin, "Must be admin");
 
         address currentFailoverAdmin = failoverAdmin;
 
-        // Check if new failover admin is different to old
-        if (newFailoverAdmin == currentFailoverAdmin) {
-            return fail(Error.BAD_INPUT, FailureInfo.SET_FAILOVER_ADMIN_NO_CHANGE);
-        }
+        // Check that new failover admin is different to current
+        require(newFailoverAdmin != currentFailoverAdmin, "Addresses are equal");
 
         // Set new admin
         failoverAdmin = newFailoverAdmin;
 
         emit FailoverAdminChanged(currentFailoverAdmin, newFailoverAdmin);
 
-        return uint(Error.NO_ERROR);
+        return failoverAdmin;
     }
 
     /**
@@ -131,27 +121,23 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
      * @param newPriceFeedExtraDecimals The extra decimals required for the new price feed to conform to 18 decimals
      * @param failoverPriceFeedAddress The failover address
      * @param failoverPriceFeedExtraDecimals The extra decimals required for the failover feed to conform to 18 decimals
-     * @return Whether or not the price feed was set
      */
     function _setPriceFeed(address cTokenAddress,
                             address newPriceFeedAddress,
                             uint8 newPriceFeedExtraDecimals,
                             address failoverPriceFeedAddress,
-                            uint8 failoverPriceFeedExtraDecimals) external returns (uint) {
+                            uint8 failoverPriceFeedExtraDecimals) external {
         // Check caller is admin
-        if (msg.sender != admin) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.SET_PRICE_FEED_OWNER_CHECK);
-        }
+        require(msg.sender == admin, "Must be admin");
 
         // Check that neither of the price feed addresses are zero addresses
-        if (newPriceFeedAddress == address(0) || failoverPriceFeedAddress == address(0)) {
-            return fail(Error.BAD_INPUT, FailureInfo.SET_PRICE_FEED_ZERO_ADDRESS);
-        }
+        require(newPriceFeedAddress != address(0) && failoverPriceFeedAddress != address(0), "Cannot be zero address");
+
+        // Check that the extra decimals do not exceed 18
+        require(newPriceFeedExtraDecimals <= 18 && failoverPriceFeedExtraDecimals <= 18, "Max 18 extra decimals");
 
         // Check that the failover price feed address is different to the price feed address
-        if (newPriceFeedAddress == failoverPriceFeedAddress) {
-            return fail(Error.BAD_INPUT, FailureInfo.SET_PRICE_FEED_INVALID_FAILOVER);
-        }
+        require(newPriceFeedAddress != failoverPriceFeedAddress, "Failover must differ from main");
 
         // Set new feed
         priceFeeds[cTokenAddress] = AggregatorDetails({
@@ -167,8 +153,6 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
 
         // Emit that a price feed has been added
         emit PriceFeedSet(cTokenAddress, newPriceFeedAddress, failoverPriceFeedAddress);
-
-        return uint(Error.NO_ERROR);
     }
 
     /*** Admin or Failover Admin Only Functions ***/
@@ -177,13 +161,10 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
      * @notice Failover cToken price feed
      * @dev Only callable by the administrator, or the failover administrator
      * @param cTokenAddress cToken to failover price feed
-     * @return Whether or not the price feed failed over
      */
     function _failoverPriceFeed(address cTokenAddress) external returns (uint) {
-        // Check that caller is admin or failover admin
-        if (msg.sender != admin && msg.sender != failoverAdmin) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.FAILOVER_PRICE_FEED_OWNER_CHECK);
-        }
+        // Check caller is admin or failover admin
+        require(msg.sender == admin || msg.sender == failoverAdmin, "Must be admin or failover admin");
 
         // Current price feed
         AggregatorInterface oldPriceFeed = priceFeeds[cTokenAddress].feed;
@@ -193,16 +174,12 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
         AggregatorInterface failoverPriceFeed = failoverDetails.feed;
 
         // Check if already failed over
-        if (address(oldPriceFeed) == address(failoverPriceFeed)) {
-            return fail(Error.CANNOT_FAILOVER, FailureInfo.ALREADY_FAILED_OVER);
-        }
+        require(address(oldPriceFeed) != address(failoverPriceFeed), "Already failed over");
 
         // Set the cToken to use the failover price feed
         priceFeeds[cTokenAddress] = failoverDetails;
 
         // Emit that a cToken price feed has failed over
         emit PriceFeedFailover(cTokenAddress, address(oldPriceFeed), address(failoverPriceFeed));
-
-        return uint(Error.NO_ERROR);
     }
 }

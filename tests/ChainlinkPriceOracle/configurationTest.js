@@ -25,18 +25,18 @@ describe('admin configuration functions', () => {
 
   describe('_setAdmin()', () => {
     it('should only be callable by admin', async () => {
-      expect(
-        await send(clPriceOracle, '_setAdmin', [accounts[0]], {from: accounts[1]})
-      ).toHaveOracleFailure('UNAUTHORIZED', 'SET_ADMIN_OWNER_CHECK');
+      await expect(
+        send(clPriceOracle, '_setAdmin', [accounts[0]], {from: accounts[1]})
+      ).rejects.toRevert('revert Must be admin');
 
       const response = await call(clPriceOracle, 'admin');
-      expect(response).toEqual(root)
+      expect(response).toEqual(root);
     })
 
     it('should only allow a different admin to be set', async () => {
-      expect(
-        await send(clPriceOracle, '_setAdmin', [root], {from: root})
-      ).toHaveOracleFailure('BAD_INPUT', 'SET_ADMIN_NO_CHANGE');
+      await expect(
+        send(clPriceOracle, '_setAdmin', [root], {from: root})
+      ).rejects.toRevert('revert Addresses are equal');
     })
 
     it('should set the new admin', async () => {
@@ -62,18 +62,18 @@ describe('admin configuration functions', () => {
 
   describe('_setFailoverAdmin()', () => {
     it('should only be callable by admin', async () => {
-      expect(
-        await send(clPriceOracle, '_setFailoverAdmin', [accounts[0]], {from: accounts[1]})
-      ).toHaveOracleFailure('UNAUTHORIZED', 'SET_FAILOVER_ADMIN_OWNER_CHECK');
+      await expect(
+        send(clPriceOracle, '_setFailoverAdmin', [accounts[0]], {from: accounts[1]})
+      ).rejects.toRevert('revert Must be admin');
 
       const response = await call(clPriceOracle, 'failoverAdmin');
       expect(response).toEqual(failoverAdmin)
     })
 
     it('should only allow a different failover admin to be set', async () => {
-      expect(
-        await send(clPriceOracle, '_setFailoverAdmin', [failoverAdmin], {from: root})
-      ).toHaveOracleFailure('BAD_INPUT', 'SET_FAILOVER_ADMIN_NO_CHANGE');
+      await expect(
+        send(clPriceOracle, '_setFailoverAdmin', [failoverAdmin], {from: root})
+      ).rejects.toRevert('revert Addresses are equal');
     })
 
     it('should set the new failover admin', async () => {
@@ -99,9 +99,9 @@ describe('admin configuration functions', () => {
 
   describe('_setPriceFeed()', () => {
     it('should only be callable by admin', async () => {
-      expect(
-        await send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, failoverFeed, decimals], {from: accounts[0]})
-      ).toHaveOracleFailure('UNAUTHORIZED', 'SET_PRICE_FEED_OWNER_CHECK');
+      await expect(
+        send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, failoverFeed, decimals], {from: accounts[0]})
+      ).rejects.toRevert('revert Must be admin');
 
       // Check feed has not been added
       const response = await call(clPriceOracle, 'priceFeeds', [cToken]);
@@ -110,19 +110,29 @@ describe('admin configuration functions', () => {
 
     it('should not allow zero addresses', async () => {
       const zeroAddress = address(0);
-      expect(
-        await send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, zeroAddress, decimals], {from: root})
-      ).toHaveOracleFailure('BAD_INPUT', 'SET_PRICE_FEED_ZERO_ADDRESS')
+      await expect(
+        send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, zeroAddress, decimals], {from: root})
+      ).rejects.toRevert('revert Cannot be zero address');
 
-      expect(
-        await send(clPriceOracle, '_setPriceFeed', [cToken, zeroAddress, decimals, failoverFeed, decimals], {from: root})
-      ).toHaveOracleFailure('BAD_INPUT', 'SET_PRICE_FEED_ZERO_ADDRESS')
+      await expect(
+        send(clPriceOracle, '_setPriceFeed', [cToken, zeroAddress, decimals, failoverFeed, decimals], {from: root})
+      ).rejects.toRevert('revert Cannot be zero address');
+    })
+
+    it('should not allow extra decimals above 18', async () => {
+      await expect(
+        send(clPriceOracle, '_setPriceFeed', [cToken, feed, 19, failoverFeed, decimals], {from: root})
+      ).rejects.toRevert('revert Max 18 extra decimals');
+
+      await expect(
+        send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, failoverFeed, 19], {from: root})
+      ).rejects.toRevert('revert Max 18 extra decimals');
     })
 
     it('should not allow failover to equal price feed', async () => {
-      expect(
-        await send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, feed, decimals], {from: root})
-      ).toHaveOracleFailure('BAD_INPUT', 'SET_PRICE_FEED_INVALID_FAILOVER')
+      await expect(
+        send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, feed, decimals], {from: root})
+      ).rejects.toRevert('revert Failover must differ from main')
     })
 
     it('should properly add the new price feed', async () => {
@@ -161,9 +171,9 @@ describe('admin configuration functions', () => {
     })
 
     it('should only be callable by admin or failoverAdmin', async () => {
-      expect(
-        await send(clPriceOracle, '_failoverPriceFeed', [cToken], {from: accounts[0]})
-      ).toHaveOracleFailure('UNAUTHORIZED', 'FAILOVER_PRICE_FEED_OWNER_CHECK');
+      await expect(
+        send(clPriceOracle, '_failoverPriceFeed', [cToken], {from: accounts[0]})
+      ).rejects.toRevert('revert Must be admin or failover admin');
 
       const response = await call(clPriceOracle, 'priceFeeds', [cToken])
       expect(response[0]).toEqual(feed)
@@ -174,9 +184,9 @@ describe('admin configuration functions', () => {
         await send(clPriceOracle, '_failoverPriceFeed', [cToken], {from: failoverAdmin})
       ).toSucceed();
 
-      expect(
-        await send(clPriceOracle, '_failoverPriceFeed', [cToken], {from: root})
-      ).toHaveOracleFailure('CANNOT_FAILOVER', 'ALREADY_FAILED_OVER');
+      await expect(
+        send(clPriceOracle, '_failoverPriceFeed', [cToken], {from: root})
+      ).rejects.toRevert('revert Already failed over');
     })
 
     it('should properly fail over', async () => {

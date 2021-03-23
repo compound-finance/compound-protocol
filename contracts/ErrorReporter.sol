@@ -205,39 +205,3 @@ contract TokenErrorReporter {
         return uint(err);
     }
 }
-
-contract OracleErrorReporter {
-    enum Error {
-        NO_ERROR,
-        UNAUTHORIZED,
-        BAD_INPUT,
-        CANNOT_FAILOVER
-    }
-
-    enum FailureInfo {
-        SET_PRICE_FEED_OWNER_CHECK,
-        SET_PRICE_FEED_ZERO_ADDRESS,
-        SET_PRICE_FEED_INVALID_FAILOVER,
-        SET_ADMIN_OWNER_CHECK,
-        SET_ADMIN_NO_CHANGE,
-        SET_FAILOVER_ADMIN_OWNER_CHECK,
-        SET_FAILOVER_ADMIN_NO_CHANGE,
-        FAILOVER_PRICE_FEED_OWNER_CHECK,
-        ALREADY_FAILED_OVER
-    }
-
-    /**
-      * @dev `error` corresponds to enum Error; `info` corresponds to enum FailureInfo, and `detail` is an arbitrary
-      * contract-specific code that enables us to report opaque error codes from upgradeable contracts.
-      **/
-    event Failure(uint error, uint info, uint detail);
-
-    /**
-      * @dev use this when reporting a known error from the money market or a non-upgradeable collaborator
-      */
-    function fail(Error err, FailureInfo info) internal returns (uint) {
-        emit Failure(uint(err), uint(info), 0);
-
-        return uint(err);
-    }
-}
