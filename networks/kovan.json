@@ -60,7 +60,7 @@
         "cWBTC": "0xa1fAA15655B0e7b6B6470ED3d096390e6aD93Abb",
         "USDC": "0xb7a4F3E9097C08dA09517b5aB877F7a917224ede",
         "ComptrollerKovan": "0x9211aaf5b7a68ECD30D905dd24071e5139B3A172",
-        "ChainlinkPriceOracle": "0x483b2a022D4dE20289A99b183e5952289d5eeC78"
+        "ChainlinkPriceOracle": "0x824eBFd9f8E8452888fc3C7f44e108d4ecedC037"
     },
     "Blocks": {
         "ZRX": 18751052,
