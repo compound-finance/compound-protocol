@@ -29,7 +29,7 @@ describe('getUnderlyingPrice', () => {
 
         // Add the feed to the oracle
         expect(
-            await send(clPriceOracle, '_setPriceFeed', [cToken, feed.options.address, failoverFeed.options.address], {from: root})
+            await send(clPriceOracle, '_setPriceFeed', [cToken, feed.options.address, 0, failoverFeed.options.address, 0], {from: root})
         ).toSucceed();
 
         // Run the test
@@ -52,12 +52,30 @@ describe('getUnderlyingPrice', () => {
         ).toSucceed();
         // Add the feed to the oracle
         expect(
-            await send(clPriceOracle, '_setPriceFeed', [cToken, feed.options.address, failoverFeed.options.address], {from: root})
+            await send(clPriceOracle, '_setPriceFeed', [cToken, feed.options.address, 0, failoverFeed.options.address, 0], {from: root})
         ).toSucceed();
         // Run the test
         expect(
             await call(clPriceOracle, 'getUnderlyingPrice', [cToken])
         ).toEqual(answer.toString());
+    })
+
+    it('should transform the answer using extra decimals', async () => {
+        const protocolPrecision = 18;
+        const feedPrecision = 6;
+        const difference = protocolPrecision - feedPrecision
+        const answer = 3
+
+        // Set the answer in the feed
+        expect(
+            await send(feed, 'setAnswer', [(answer*10**feedPrecision).toString()], {from: root})
+        ).toSucceed();
+        expect(
+            await send(clPriceOracle, '_setPriceFeed', [cToken, feed.options.address, difference, failoverFeed.options.address, 0], {from: root})
+        ).toSucceed();
+        expect(
+            await call(clPriceOracle, 'getUnderlyingPrice', [cToken])
+        ).toEqual((answer*10**protocolPrecision).toString());
     })
 
 })

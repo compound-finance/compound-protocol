@@ -3,6 +3,7 @@ const {
 } = require('../Utils/Ethereum');
 
 describe('admin configuration functions', () => {
+  const decimals = 0
   let root, failoverAdmin, cToken, feed, failoverFeed, accounts;
   let clPriceOracle;
   beforeEach(async () => {
@@ -99,53 +100,53 @@ describe('admin configuration functions', () => {
   describe('_setPriceFeed()', () => {
     it('should only be callable by admin', async () => {
       expect(
-        await send(clPriceOracle, '_setPriceFeed', [cToken, feed, failoverFeed], {from: accounts[0]})
+        await send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, failoverFeed, decimals], {from: accounts[0]})
       ).toHaveOracleFailure('UNAUTHORIZED', 'SET_PRICE_FEED_OWNER_CHECK');
 
       // Check feed has not been added
       const response = await call(clPriceOracle, 'priceFeeds', [cToken]);
-      expect(response).toBeAddressZero();
+      expect(response[0]).toBeAddressZero();
     });
 
     it('should not allow zero addresses', async () => {
       const zeroAddress = address(0);
       expect(
-        await send(clPriceOracle, '_setPriceFeed', [cToken, feed, zeroAddress], {from: root})
+        await send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, zeroAddress, decimals], {from: root})
       ).toHaveOracleFailure('BAD_INPUT', 'SET_PRICE_FEED_ZERO_ADDRESS')
 
       expect(
-        await send(clPriceOracle, '_setPriceFeed', [cToken, zeroAddress, failoverFeed], {from: root})
+        await send(clPriceOracle, '_setPriceFeed', [cToken, zeroAddress, decimals, failoverFeed, decimals], {from: root})
       ).toHaveOracleFailure('BAD_INPUT', 'SET_PRICE_FEED_ZERO_ADDRESS')
     })
 
     it('should not allow failover to equal price feed', async () => {
       expect(
-        await send(clPriceOracle, '_setPriceFeed', [cToken, feed, feed], {from: root})
+        await send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, feed, decimals], {from: root})
       ).toHaveOracleFailure('BAD_INPUT', 'SET_PRICE_FEED_INVALID_FAILOVER')
     })
 
     it('should properly add the new price feed', async () => {
       expect(
-        await send(clPriceOracle, '_setPriceFeed', [cToken, feed, failoverFeed], {from: root})
+        await send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, failoverFeed, decimals], {from: root})
       ).toSucceed();
 
       // Check that the feed was added for the cToken
       const response = await call(clPriceOracle, 'priceFeeds', [cToken]);
-      expect(response).toEqual(feed);
+      expect(response[0]).toEqual(feed);
     });
 
     it('should properly add the failover price feed', async () => {
       expect(
-        await send(clPriceOracle, '_setPriceFeed', [cToken, feed, failoverFeed], {from: root})
+        await send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, failoverFeed, decimals], {from: root})
       ).toSucceed();
 
       // Check that the failover feed was added for the cToken
       const response = await call(clPriceOracle, 'failoverFeeds', [cToken]);
-      expect(response).toEqual(failoverFeed);
+      expect(response[0]).toEqual(failoverFeed);
     })
 
     it('should emit event', async () => {
-      const result = await send(clPriceOracle, '_setPriceFeed', [cToken, feed, failoverFeed], {from: root})
+      const result = await send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, failoverFeed, decimals], {from: root})
       expect(result).toHaveLog('PriceFeedSet', {
         cTokenAddress: cToken,
         newPriceFeed: feed,
@@ -156,7 +157,7 @@ describe('admin configuration functions', () => {
 
   describe('_failoverPriceFeed()', () => {
     beforeEach(async () => {
-      await send(clPriceOracle, '_setPriceFeed', [cToken, feed, failoverFeed], {from: root})
+      await send(clPriceOracle, '_setPriceFeed', [cToken, feed, decimals, failoverFeed, decimals], {from: root})
     })
 
     it('should only be callable by admin or failoverAdmin', async () => {
@@ -165,7 +166,7 @@ describe('admin configuration functions', () => {
       ).toHaveOracleFailure('UNAUTHORIZED', 'FAILOVER_PRICE_FEED_OWNER_CHECK');
 
       const response = await call(clPriceOracle, 'priceFeeds', [cToken])
-      expect(response).toEqual(feed)
+      expect(response[0]).toEqual(feed)
     })
 
     it('should fail if already failed over', async () => {
@@ -184,7 +185,7 @@ describe('admin configuration functions', () => {
       ).toSucceed();
 
       const response = await call(clPriceOracle, 'priceFeeds', [cToken]);
-      expect(response).toEqual(failoverFeed);
+      expect(response[0]).toEqual(failoverFeed);
     })
 
     it('should emit an event', async () => {

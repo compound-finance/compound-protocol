@@ -8,6 +8,11 @@ import "./SafeMath.sol";
 contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
     using SafeMath for uint;
 
+    struct AggregatorDetails {
+        AggregatorInterface feed;
+        uint8 decimals;
+    }
+
     /// @notice Administrator for this contract. Full control of contract.
     address public admin;
 
@@ -15,10 +20,10 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
     address public failoverAdmin;
 
     /// @notice Mapping of (cToken Address => price feed AggregatorInterface)
-    mapping(address => AggregatorInterface) public priceFeeds;
+    mapping(address => AggregatorDetails) public priceFeeds;
 
     /// @notice Failover price feeds to switch to in emergency
-    mapping(address => AggregatorInterface) public failoverFeeds;
+    mapping(address => AggregatorDetails) public failoverFeeds;
 
     /// @notice Emitted when a new administrator is set
     event AdminChanged(address indexed oldAdmin, address indexed newAdmin);
@@ -49,13 +54,14 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
      */
     function getUnderlyingPrice(CToken cToken) public view returns (uint) {
         // Check that a price feed exists for the cToken
-        AggregatorInterface feed = priceFeeds[address(cToken)];
-        require(address(feed) != address(0), "Price feed doesn't exist");
+        AggregatorDetails memory feedDetails = priceFeeds[address(cToken)];
+        require(address(feedDetails.feed) != address(0), "Price feed doesn't exist");
 
         // Get the price
-        int price = feed.latestAnswer();
+        int price = feedDetails.feed.latestAnswer();
         require(price >= 0, "Price cannot be negative");
-        return uint(price);
+
+        return uint(price).mul(uint(10)**feedDetails.decimals);
     }
 
     /*** Admin Only Functions ***/
@@ -125,7 +131,11 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
      * @param failoverPriceFeedAddress The failover address
      * @return Whether or not the price feed was set
      */
-    function _setPriceFeed(address cTokenAddress, address newPriceFeedAddress, address failoverPriceFeedAddress) external returns (uint) {
+    function _setPriceFeed(address cTokenAddress,
+                            address newPriceFeedAddress,
+                            uint8 newPriceFeedExtraDecimals,
+                            address failoverPriceFeedAddress,
+                            uint8 failoverPriceFeedExtraDecimals) external returns (uint) {
         // Check caller is admin
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PRICE_FEED_OWNER_CHECK);
@@ -142,10 +152,16 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
         }
 
         // Set new feed
-        priceFeeds[cTokenAddress] = AggregatorInterface(newPriceFeedAddress);
+        priceFeeds[cTokenAddress] = AggregatorDetails({
+            feed: AggregatorInterface(newPriceFeedAddress),
+            decimals: newPriceFeedExtraDecimals
+        });
 
         // Set failover feed
-        failoverFeeds[cTokenAddress] = AggregatorInterface(failoverPriceFeedAddress);
+        failoverFeeds[cTokenAddress] = AggregatorDetails({
+            feed: AggregatorInterface(failoverPriceFeedAddress),
+            decimals: failoverPriceFeedExtraDecimals
+        });
 
         // Emit that a price feed has been added
         emit PriceFeedSet(cTokenAddress, newPriceFeedAddress, failoverPriceFeedAddress);
@@ -168,21 +184,22 @@ contract ChainlinkPriceOracle is PriceOracle, OracleErrorReporter {
         }
 
         // Current price feed
-        AggregatorInterface oldPriceFeed = priceFeeds[cTokenAddress];
+        AggregatorInterface oldPriceFeed = priceFeeds[cTokenAddress].feed;
 
         // Failover price feed
-        AggregatorInterface failedOverPriceFeed = failoverFeeds[cTokenAddress];
+        AggregatorDetails memory failoverDetails = failoverFeeds[cTokenAddress];
+        AggregatorInterface failoverPriceFeed = failoverDetails.feed;
 
         // Check if already failed over
-        if (address(oldPriceFeed) == address(failedOverPriceFeed)) {
+        if (address(oldPriceFeed) == address(failoverPriceFeed)) {
             return fail(Error.CANNOT_FAILOVER, FailureInfo.ALREADY_FAILED_OVER);
         }
 
         // Set the cToken to use the failover price feed
-        priceFeeds[cTokenAddress] = failedOverPriceFeed;
+        priceFeeds[cTokenAddress] = failoverDetails;
 
         // Emit that a cToken price feed has failed over
-        emit PriceFeedFailover(cTokenAddress, address(oldPriceFeed), address(failedOverPriceFeed));
+        emit PriceFeedFailover(cTokenAddress, address(oldPriceFeed), address(failoverPriceFeed));
 
         return uint(Error.NO_ERROR);
     }
