@@ -1261,7 +1261,7 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         if (cooldownPeriod == 0) {
             // revert to existing functionality if cooldown is not in effect
             return grantCompInternal(user, amount);
-        } else if (lastCooldownBlock[user] == 0 || lastCooldownBlock[user] + cooldownPeriod <= getBlockNumber()) {
+        } else if (lastCooldownBlock[user] == 0 || add_(lastCooldownBlock[user], cooldownPeriod) <= getBlockNumber()) {
             // if previous cooldown has expired for this user
             uint notTransferred = amount;
             if (lastCooldownBlock[user] > 0) {
