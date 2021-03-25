@@ -977,6 +977,70 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     /*** Admin Functions ***/
 
     /**
+      * @notice Sets the whitelist enforcement for the comptroller
+      * @dev Admin function to set a new whitelist enforcement boolean
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
+    function _setWhitelistEnforcement(bool enforce) external returns (uint) {
+        // Check caller is admin
+        if (!hasAdminRights()) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_WHITELIST_ENFORCEMENT_OWNER_CHECK);
+        }
+
+        // Check if `enforceWhitelist` already equals `enforce`
+        if (enforceWhitelist == enforce) {
+            return uint(Error.NO_ERROR);
+        }
+
+        // Set comptroller's `enforceWhitelist` to `enforce`
+        enforceWhitelist = enforce;
+
+        // Emit WhitelistEnforcementChanged(bool enforce);
+        emit WhitelistEnforcementChanged(enforce);
+
+        return uint(Error.NO_ERROR);
+    }
+
+    /**
+      * @notice Sets the whitelist `statuses` for `suppliers`
+      * @dev Admin function to set the whitelist `statuses` for `suppliers`
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
+    function _setWhitelistStatuses(address[] calldata suppliers, bool[] calldata statuses) external returns (uint) {
+        // Check caller is admin
+        if (!hasAdminRights()) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_WHITELIST_STATUS_OWNER_CHECK);
+        }
+
+        // Set whitelist statuses for suppliers
+        for (uint i = 0; i < suppliers.length; i++) {
+            address supplier = suppliers[i];
+
+            if (statuses[i]) {
+                // If not already whitelisted, add to whitelist
+                if (!whitelist[supplier]) {
+                    whitelist[supplier] = true;
+                    whitelistArray.push(supplier);
+                    whitelistIndexes[supplier] = whitelistArray.length - 1;
+                }
+            } else {
+                // If whitelisted, remove from whitelist
+                if (whitelist[supplier]) {
+                    whitelist[supplier] = false;
+
+                    // Copy last item in list to location of item to be removed and reduce length by 1
+                    address[] storage storedList = whitelistArray;
+                    storedList[whitelistIndexes[supplier]] = storedList[storedList.length - 1];
+                    storedList.length--;
+                    whitelistIndexes[storedList[whitelistIndexes[supplier]]] = whitelistIndexes[supplier];
+                }
+            }
+        }
+
+        return uint(Error.NO_ERROR);
+    }
+
+    /**
       * @notice Sets a new price oracle for the comptroller
       * @dev Admin function to set a new price oracle
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -1304,5 +1368,14 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      */
     function getAllBorrowers() public view returns (address[] memory) {
         return allBorrowers;
+    }
+
+    /**
+     * @notice Return all of the whitelist
+     * @dev The automatic getter may be used to access an individual whitelist status.
+     * @return The list of borrower account addresses
+     */
+    function getWhitelist() external view returns (address[] memory) {
+        return whitelistArray;
     }
 }
