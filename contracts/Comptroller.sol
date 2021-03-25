@@ -1251,6 +1251,18 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
+     * @notice Reset cooldown for the current user
+     */
+    function resetCooldown() public {
+        address user = msg.sender;
+        if (cooldownPeriod != 0) {
+            compLocked[user] = add_(compLocked[user], compAccrued[user]);
+            compAccrued[user] = 0;
+            lastCooldownBlock[user] = getBlockNumber();
+        }
+    }
+
+    /**
     * @notice Transfer COMP to the user while respecting cooldown
     * @dev Note: If there is not enough COMP, we do not perform the transfer all.
     * @param user The address of the user to transfer COMP to

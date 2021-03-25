@@ -949,5 +949,37 @@ describe('Flywheel', () => {
         expect(finalCooldownBlock).toEqualNumber(0);
       });
     });
+
+    describe('resetCooldown', () => {
+      it('should reset cooldown if active', async () => {
+        // send some COMP to facilitate claims
+        const compRemaining = compRate.multipliedBy(100);
+        await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+
+        // start streaming some COMP to user
+        await send(comptroller, '_setContributorCompSpeed', [a1, 2000]);
+
+        // set cooldown period
+        await send(comptroller, '_setCooldownPeriod', [1000]);
+
+        // accrue small amount of COMP
+        await fastForward(comptroller, 10);
+        await send(comptroller, 'updateContributorRewards', [a1]);
+
+        // initial cooldown and early claim
+        await send(comptroller, 'claimComp', [a1]);
+        await fastForward(comptroller, 500);
+        await send(comptroller, 'claimComp', [a1]);
+        const bal1 = await compBalance(comptroller, a1);
+        expect(bal1).toEqualNumber(0);
+
+        // reset cooldown (fastest possible accrual)
+        await send(comptroller, 'resetCooldown', []);
+        await fastForward(comptroller, 1000);
+        await send(comptroller, 'claimComp', [a1]);
+        const bal2 = await compBalance(comptroller, a1);
+        expect(bal2).toEqualNumber(20000);
+      });
+    });
   });
 });
