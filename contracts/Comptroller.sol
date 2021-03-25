@@ -1237,27 +1237,27 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
                 updateCompBorrowIndex(address(cToken), borrowIndex);
                 for (uint j = 0; j < holders.length; j++) {
                     distributeBorrowerComp(address(cToken), holders[j], borrowIndex);
-                    compAccrued[holders[j]] = grantCompCooldownInternal(holders[j], compAccrued[holders[j]]);
+                    compAccrued[holders[j]] = grantCompCooldownInternal(holders[j]);
                 }
             }
             if (suppliers == true) {
                 updateCompSupplyIndex(address(cToken));
                 for (uint j = 0; j < holders.length; j++) {
                     distributeSupplierComp(address(cToken), holders[j]);
-                    compAccrued[holders[j]] = grantCompCooldownInternal(holders[j], compAccrued[holders[j]]);
+                    compAccrued[holders[j]] = grantCompCooldownInternal(holders[j]);
                 }
             }
         }
     }
 
     /**
-    * @notice Transfer COMP to the user while respecting cooldown
+    * @notice Transfer accrued COMP to the user while respecting cooldown
     * @dev Note: If there is not enough COMP, we do not perform the transfer all.
     * @param user The address of the user to transfer COMP to
-    * @param amount The amount of COMP to (possibly) transfer
     * @return The amount of COMP which was NOT transferred to the user
     */
-    function grantCompCooldownInternal(address user, uint amount) internal returns (uint) {
+    function grantCompCooldownInternal(address user) internal returns (uint) {
+        uint amount = compAccrued[user];
         if (cooldownPeriod == 0) {
             // revert to existing functionality if cooldown is not in effect
             return grantCompInternal(user, amount);
