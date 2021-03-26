@@ -1247,22 +1247,34 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
             }
         }
         for (uint i = 0; i < holders.length; i++) {
-            compAccrued[holders[i]] = grantCompCooldownInternal(holders[i], compAccrued[holders[i]]);
+            compAccrued[holders[i]] = grantCompCooldownInternal(holders[i]);
         }
     }
 
     /**
-    * @notice Transfer COMP to the user while respecting cooldown
+     * @notice Reset cooldown for the current user
+     */
+    function resetCooldown() public {
+        address user = msg.sender;
+        if (cooldownPeriod != 0) {
+            compLocked[user] = add_(compLocked[user], compAccrued[user]);
+            compAccrued[user] = 0;
+            lastCooldownBlock[user] = getBlockNumber();
+        }
+    }
+
+    /**
+    * @notice Transfer accrued COMP to the user while respecting cooldown
     * @dev Note: If there is not enough COMP, we do not perform the transfer all.
     * @param user The address of the user to transfer COMP to
-    * @param amount The amount of COMP to (possibly) transfer
     * @return The amount of COMP which was NOT transferred to the user
     */
-    function grantCompCooldownInternal(address user, uint amount) internal returns (uint) {
+    function grantCompCooldownInternal(address user) internal returns (uint) {
+        uint amount = compAccrued[user];
         if (cooldownPeriod == 0) {
             // revert to existing functionality if cooldown is not in effect
             return grantCompInternal(user, amount);
-        } else if (lastCooldownBlock[user] == 0 || lastCooldownBlock[user] + cooldownPeriod <= getBlockNumber()) {
+        } else if (lastCooldownBlock[user] == 0 || add_(lastCooldownBlock[user], cooldownPeriod) <= getBlockNumber()) {
             // if previous cooldown has expired for this user
             uint notTransferred = amount;
             if (lastCooldownBlock[user] > 0) {
