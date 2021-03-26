@@ -41,7 +41,23 @@ Macro InitSpeeds
     Comptroller SetCompSpeed cZRX 1
     Comptroller SetCompSpeed cBAT 1
     Comptroller RefreshCompSpeeds
+    Comptroller SetCompSpeed cBAT 1e18
     Comptroller Send "setCompAddress(address)" (Address COMP)
+
+Test "COMP from multiple tokens can be claimed frequently"
+    CooldownComptroller
+    InitSpeeds
+    Comptroller SetCooldownPeriod 2000
+    -- Make repeated claims, initiating cooldown for next period
+    FastForward 2000 Blocks
+    Comptroller ClaimComp Coburn
+    Assert Equal (Erc20 COMP TokenBalance Coburn) 0
+    FastForward 2000 Blocks
+    Comptroller ClaimComp Coburn
+    Assert Equal (Erc20 COMP TokenBalance Coburn) (3999999999999999999999)
+    FastForward 2000 Blocks
+    Comptroller ClaimComp Coburn
+    Assert Equal (Erc20 COMP TokenBalance Coburn) (7999999999999999999998)
 
 Test "COMP cooldown affects ability to claim"
     CooldownComptroller
