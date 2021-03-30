@@ -27,10 +27,6 @@ interface GovernorBravoInterface {
         uint id;
         address proposer;
         uint eta;
-        address[] targets;
-        uint[] values;
-        string[] signatures;
-        bytes[] calldatas;
         uint startBlock;
         uint endBlock;
         uint forVotes;
