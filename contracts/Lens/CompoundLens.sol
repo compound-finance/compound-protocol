@@ -17,6 +17,34 @@ interface ComptrollerLensInterface {
     function compAccrued(address) external view returns (uint);
 }
 
+interface GovernorBravoInterface {
+    struct Receipt {
+        bool hasVoted;
+        uint8 support;
+        uint96 votes;
+    }
+    struct Proposal {
+        uint id;
+        address proposer;
+        uint eta;
+        address[] targets;
+        uint[] values;
+        string[] signatures;
+        bytes[] calldatas;
+        uint startBlock;
+        uint endBlock;
+        uint forVotes;
+        uint againstVotes;
+        uint abstainVotes;
+        bool canceled;
+        bool executed;
+        mapping (address => Receipt) receipts;
+    }
+    function getActions(uint proposalId) external view returns (address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas);
+    function proposals(uint proposalId) external view returns (Proposal memory);
+    function getReceipt(uint proposalId, address voter) external view returns (Receipt memory);
+}
+
 contract CompoundLens {
     struct CTokenMetadata {
         address cToken;
@@ -193,12 +221,12 @@ contract CompoundLens {
         uint96 votes;
     }
 
-    function getGovBravoReceipts(GovernorBravo governor, address voter, uint[] memory proposalIds) public view returns (GovBravoReceipt[] memory) {
+    function getGovBravoReceipts(GovernorBravoInterface governor, address voter, uint[] memory proposalIds) public view returns (GovBravoReceipt[] memory) {
         uint proposalCount = proposalIds.length;
-        GovReceipt[] memory res = new GovReceipt[](proposalCount);
+        GovReceipt[] memory res = new GovBravoReceipt[](proposalCount);
         for (uint i = 0; i < proposalCount; i++) {
-            GovernorBravo.Receipt memory receipt = governor.getReceipt(proposalIds[i], voter);
-            res[i] = GovReceipt({
+            GovernorBravoInterface.Receipt memory receipt = governor.getReceipt(proposalIds[i], voter);
+            res[i] = GovBravoReceipt({
                 proposalId: proposalIds[i],
                 hasVoted: receipt.hasVoted,
                 support: receipt.support,
@@ -293,7 +321,7 @@ contract CompoundLens {
         bool executed;
     }
 
-    function setBravoProposal(GovBravoProposal memory res, GovernorBravo governor, uint proposalId) internal view {
+    function setBravoProposal(GovBravoProposal memory res, GovernorBravoInterface governor, uint proposalId) internal view {
         (
             ,
             address proposer,
@@ -313,13 +341,13 @@ contract CompoundLens {
         res.endBlock = endBlock;
         res.forVotes = forVotes;
         res.againstVotes = againstVotes;
-        res.abstainVotes = abstainVotes
+        res.abstainVotes = abstainVotes;
         res.canceled = canceled;
         res.executed = executed;
     }
 
-    function getGovBravoProposals(GovernorBravo governor, uint[] calldata proposalIds) external view returns (GovBravoProposal[] memory) {
-        GovProposal[] memory res = new GovProposal[](proposalIds.length);
+    function getGovBravoProposals(GovernorBravoInterface governor, uint[] calldata proposalIds) external view returns (GovBravoProposal[] memory) {
+        GovProposal[] memory res = new GovBravoProposal[](proposalIds.length);
         for (uint i = 0; i < proposalIds.length; i++) {
             (
                 address[] memory targets,
@@ -327,7 +355,7 @@ contract CompoundLens {
                 string[] memory signatures,
                 bytes[] memory calldatas
             ) = governor.getActions(proposalIds[i]);
-            res[i] = GovProposal({
+            res[i] = GovBravoProposal({
                 proposalId: 0,
                 proposer: address(0),
                 eta: 0,
