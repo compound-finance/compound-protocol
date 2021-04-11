@@ -195,7 +195,7 @@ contract CErc20 is CToken, CErc20Interface {
                 case 0 {                      // This is a non-standard ERC-20
                     success := not(0)          // set success to true
                 }
-                case 32 {                     // This is a complaint ERC-20
+                case 32 {                     // This is a compliant ERC-20
                     returndatacopy(0, 0, 32)
                     success := mload(0)        // Set `success = returndata` of external call
                 }
