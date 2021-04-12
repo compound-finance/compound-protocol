@@ -1257,8 +1257,7 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
     function resetCooldown() public {
         address user = msg.sender;
         if (cooldownPeriod != 0) {
-            compLocked[user] = add_(compLocked[user], compAccrued[user]);
-            compAccrued[user] = 0;
+            compLocked[user] = compAccrued[user];
             lastCooldownBlock[user] = getBlockNumber();
         }
     }
@@ -1280,14 +1279,13 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
             if (lastCooldownBlock[user] > 0) {
                 // only attempt to claim if cooldown has been triggered before
 
-                uint amountToTransfer = compLocked[user] < amount ? compLocked[user] : amount;
+                uint amountToTransfer = compLocked[user];
                 if (amountToTransfer > 0) {
                     // first, immediately transfer any amount that has expired cooldown
                     notTransferred = grantCompInternal(user, amountToTransfer);
 
-                    uint lockedAmountLeft = add_(sub_(compLocked[user], amountToTransfer), notTransferred);
-                    compLocked[user] = lockedAmountLeft;
-                    if (lockedAmountLeft == 0) {
+                    compLocked[user] = notTransferred;
+                    if (notTransferred == 0) {
                         // release storage if no locked amount left
                         lastCooldownBlock[user] = 0;
                     }
