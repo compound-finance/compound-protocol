@@ -96,6 +96,8 @@ function loadConf(configArg, addresses) {
     symbol: getString(config, 'symbol'),
     decimals: getNumber(config, 'decimals'),
     admin: getAddress(addresses, config, 'admin'),
+    implementation: getAddress(addresses, config, 'implementation'),
+    becomeImplementationData: getRaw(config, 'becomeImplementationData'),
   };
 
   return conf;
