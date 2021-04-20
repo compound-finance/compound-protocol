@@ -260,6 +260,18 @@ async function updateContributorRewards(world: World, from: string, comptroller:
   return world;
 }
 
+async function resetCooldown(world: World, from: string, comptroller: Comptroller): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods.resetCooldown(), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Comp cooldown reset for ${from}`,
+    invokation
+  );
+
+  return world;
+}
+
 async function grantComp(world: World, from: string, comptroller: Comptroller, recipient: string, amount: NumberV): Promise<World> {
   let invokation = await invoke(world, comptroller.methods._grantComp(recipient, amount.encode()), from, ComptrollerErrorReporter);
 
@@ -786,6 +798,18 @@ export function comptrollerCommands() {
         new Arg("amount", getNumberV)
       ],
       (world, from, {comptroller, recipient, amount}) => grantComp(world, from, comptroller, recipient.val, amount)
+    ),
+    new Command<{comptroller: Comptroller}>(`
+      #### ResetCooldown
+
+      * "Comptroller ResetCooldown" - Reset cooldown for this account
+      * E.g. "Comptroller ResetCooldown
+      `,
+      "ResetCooldown",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+      ],
+      (world, from, {comptroller}) => resetCooldown(world, from, comptroller)
     ),
     new Command<{comptroller: Comptroller, rate: NumberV}>(`
       #### SetCompRate

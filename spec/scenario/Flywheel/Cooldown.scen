@@ -44,6 +44,21 @@ Macro InitSpeeds
     Comptroller SetCompSpeed cBAT 1e18
     Comptroller Send "setCompAddress(address)" (Address COMP)
 
+Test "COMP cooldown can be reset to claim earlier"
+    CooldownComptroller
+    InitSpeeds
+    Comptroller SetCooldownPeriod 2000
+    -- Accrue some COMP
+    FastForward 1000 Blocks
+    -- Claim to accrue COMP and reset cooldown
+    Comptroller ClaimComp Geoff
+    From Geoff (Comptroller ResetCooldown)
+    -- Wait until it's available
+    FastForward 2000 Blocks
+    -- Claim the COMP from 0.5 period immediately
+    Comptroller ClaimComp Geoff
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 1e21
+
 Test "COMP from multiple tokens can be claimed frequently"
     CooldownComptroller
     InitSpeeds
