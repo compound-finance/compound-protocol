@@ -1,3 +1,4 @@
+var bignumber = require('bignumber.js');
 
 function getRaw(config, key, required=true) {
   let value = config[key];
@@ -46,6 +47,18 @@ function getNumber(config, key, required=true) {
   if (value == null && !required){
     return null;
   } else if (Number.isNaN(result)) {
+    throw new Error(`Invalid number for \`${key}\`=${value}`);
+  } else {
+    return result;
+  }
+}
+
+function getBigNumber(config, key, required=true) {
+  let value = getRaw(config, key, required);
+  let result = new bignumber.BigNumber(value);
+  if (value == null && !required){
+    return null;
+  } else if (result.isNaN()) {
     throw new Error(`Invalid number for \`${key}\`=${value}`);
   } else {
     return result;
