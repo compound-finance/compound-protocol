@@ -104,7 +104,7 @@ function loadConf(configArg, addresses) {
     underlying: getAddress(addresses, config, 'underlying'),
     comptroller: getAddress(addresses, config, 'comptroller'),
     interestRateModel: getAddress(addresses, config, 'interestRateModel'),
-    initialExchangeRateMantissa: getNumber(config, 'initialExchangeRateMantissa'),
+    initialExchangeRateMantissa: getBigNumber(config, 'initialExchangeRateMantissa'),
     name: getString(config, 'name'),
     symbol: getString(config, 'symbol'),
     decimals: getNumber(config, 'decimals'),
