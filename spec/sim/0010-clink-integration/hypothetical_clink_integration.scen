@@ -1,0 +1,52 @@
+#!/usr/bin/env -S yarn repl -s
+
+PrintTransactionLogs
+
+-- Token holder addresses for mocking
+Alias CompHolder "0x7587caefc8096f5f40acb83a09df031a018c66ec"
+Alias LinkHolder "0x98c63b7b319dfbdf3d811530f2ab9dfe4983af9d"
+Alias CUSDCHolder "0x5e34bc93a7506ecc8562ade4d5c8b090247a6349"
+
+Web3Fork "https://mainnet-eth.compound.finance/@12343387" (CompHolder LinkHolder CUSDCHolder)
+UseConfigs mainnet
+
+-- Delegate and propose update
+From CompHolder (Comp Delegate CompHolder)
+From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Add LINK Market" [(Address Comptroller) (Address Comptroller) (Address Comptroller) (Address Comptroller) (Address Comptroller) (Address Comptroller) (Address cLINK)] [0 0 0 0 0 0 0] ["_supportMarket(address)" "_setCollateralFactor(address,uint256)" "_setCompSpeed(address,uint256)" "_setCompSpeed(address,uint256)" "_setCompSpeed(address,uint256)" "_setCompSpeed(address,uint256)" "_setReserveFactor(uint256)"] [[(address cLINK)] [(address cLINK) 0] [(address cLINK) 1462500000000000] [(address cBAT) 1462500000000000] [(address cUNI) 1462500000000000] [(address cZRX) 1462500000000000] [250000000000000000]])
+
+-- Fast forward, vote, queue, execute
+MineBlock
+AdvanceBlocks 14000
+From CompHolder (GovernorBravo GovernorBravoDelegator Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+GovernorBravo GovernorBravoDelegator Proposal LastProposal Queue
+IncreaseTime 604910
+GovernorBravo GovernorBravoDelegator Proposal LastProposal Execute
+
+-- Assert cLINK market supported
+Assert True (Comptroller CheckListed cLINK)
+
+-- Ensure accrue interest works
+CToken cLINK AccrueInterest
+
+-- Mint test
+From LinkHolder (Erc20 LINK Approve (Address cLINK) 10e18)
+From LinkHolder (CToken cLINK Mint 10e18)
+Assert Equal (Erc20 LINK TokenBalance LinkHolder) (350000011777777777777777777)
+Assert Equal (Erc20 LINK TokenBalance cLINK) (10e18)
+
+-- Borrow test
+From CUSDCHolder (CToken cLINK Borrow 1e18)
+Assert Equal (Erc20 LINK TokenBalance CUSDCHolder) (1e18)
+Assert Equal (Erc20 LINK TokenBalance cLINK) (9e18)
+
+-- Repay borrow test
+From CUSDCHolder (Erc20 LINK Approve (Address cLINK) 1e18)
+From CUSDCHolder (CToken cLINK RepayBorrow 1e18)
+Assert Equal (Erc20 LINK TokenBalance CUSDCHolder) (0)
+Assert Equal (Erc20 LINK TokenBalance cLINK) (10e18)
+
+-- Redeem test (note: 50 cLINK == 1 LINK initially)
+From LinkHolder (CToken cLINK Redeem 50e8)
+
+Print "cLINK integration ok"
