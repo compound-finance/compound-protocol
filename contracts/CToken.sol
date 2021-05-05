@@ -1061,6 +1061,11 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         MathError mathErr;
         uint borrowerTokensNew;
         uint liquidatorTokensNew;
+        uint liquidatorSeizeTokens;
+        uint protocolSeizeTokens;
+        uint protocolSeizeAmount;
+        uint exchangeRateMantissa;
+        uint totalReservesNew;
 
         /*
          * We calculate the new borrower and liquidator token balances, failing on underflow/overflow:
@@ -1072,7 +1077,17 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
             return failOpaque(Error.MATH_ERROR, FailureInfo.LIQUIDATE_SEIZE_BALANCE_DECREMENT_FAILED, uint(mathErr));
         }
 
-        (mathErr, liquidatorTokensNew) = addUInt(accountTokens[liquidator], seizeTokens);
+        protocolSeizeTokens = mul_(seizeTokens, Exp({mantissa: protocolSeizeShareMantissa}));
+        liquidatorSeizeTokens = sub_(seizeTokens, protocolSeizeTokens);
+
+        (mathErr, exchangeRateMantissa) = exchangeRateStoredInternal();
+        require(mathErr == MathError.NO_ERROR, "exchange rate math error");
+
+        protocolSeizeAmount = mul_ScalarTruncate(Exp({mantissa: exchangeRateMantissa}), protocolSeizeTokens);
+
+        totalReservesNew = add_(totalReserves, protocolSeizeAmount);
+
+        (mathErr, liquidatorTokensNew) = addUInt(accountTokens[liquidator], liquidatorSeizeTokens);
         if (mathErr != MathError.NO_ERROR) {
             return failOpaque(Error.MATH_ERROR, FailureInfo.LIQUIDATE_SEIZE_BALANCE_INCREMENT_FAILED, uint(mathErr));
         }
@@ -1082,11 +1097,13 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         // (No safe failures beyond this point)
 
         /* We write the previously calculated values into storage */
+        totalReserves = totalReservesNew;
         accountTokens[borrower] = borrowerTokensNew;
         accountTokens[liquidator] = liquidatorTokensNew;
 
         /* Emit a Transfer event */
         emit Transfer(borrower, liquidator, seizeTokens);
+        emit ReservesAdded(address(this), protocolSeizeAmount, totalReservesNew);
 
         /* We call the defense hook */
         // unused function
@@ -1186,6 +1203,18 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         }
         // _setReserveFactorFresh emits reserve-factor-specific logs on errors, so we don't need to.
         return _setReserveFactorFresh(newReserveFactorMantissa);
+    }
+
+    /**
+      * @notice sets a new protocol share of seize assets
+      * @dev Admin function to set a new protocolSeizeShareMantissa
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
+    function _setProtocolSeizeShare(uint newProtocolSeizeShareMantissa) external nonReentrant returns (uint) {
+        require(msg.sender == admin, "Must be admin to set protocol seize share");
+        require(newProtocolSeizeShareMantissa < protocolSeizeShareMaxMantissa, "New protocol seize share higher than maximum");
+        
+        protocolSeizeShareMantissa = newProtocolSeizeShareMantissa;
     }
 
     /**

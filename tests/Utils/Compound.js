@@ -354,6 +354,11 @@ async function getBalances(cTokens, accounts) {
   return balances;
 }
 
+async function adjustReserves(cToken, balances, delta) {
+  balances[cToken._address][cToken._address]["reserves"] = new BigNumber(balances[cToken._address][cToken._address]["reserves"]).plus(delta);
+  return balances;
+}
+
 async function adjustBalances(balances, deltas) {
   for (let delta of deltas) {
     let cToken, account, key, diff;
@@ -363,7 +368,6 @@ async function adjustBalances(balances, deltas) {
       ([cToken, key, diff] = delta);
       account = cToken._address;
     }
-
     balances[cToken._address][account][key] = new BigNumber(balances[cToken._address][account][key]).plus(diff);
   }
   return balances;
@@ -462,6 +466,7 @@ module.exports = {
   setEtherBalance,
   getBalances,
   adjustBalances,
+  adjustReserves,
 
   preApprove,
   quickMint,
