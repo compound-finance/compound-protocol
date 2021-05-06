@@ -473,22 +473,31 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
             return uint(Error.MARKET_NOT_LISTED);
         }
 
-        /* The borrower must have shortfall in order to be liquidatable */
-        (Error err, , uint shortfall) = getAccountLiquidityInternal(borrower);
-        if (err != Error.NO_ERROR) {
-            return uint(err);
-        }
-        if (shortfall == 0) {
-            return uint(Error.INSUFFICIENT_SHORTFALL);
-        }
-
-        /* The liquidator may not repay more than what is allowed by the closeFactor */
         uint borrowBalance = CToken(cTokenBorrowed).borrowBalanceStored(borrower);
-        uint maxClose = mul_ScalarTruncate(Exp({mantissa: closeFactorMantissa}), borrowBalance);
-        if (repayAmount > maxClose) {
-            return uint(Error.TOO_MUCH_REPAY);
-        }
 
+        /* allow accounts to be liquidated if the market is deprecated */
+        if (
+            markets[address(cTokenBorrowed)].collateralFactorMantissa == 0 && 
+            borrowGuardianPaused[cTokenBorrowed] == true
+        ) {
+            require(borrowBalance >= repayAmount, "LiquidateBorrowAllowed: Can not repay more than the total borrow");
+        } else {
+            /* The borrower must have shortfall in order to be liquidatable */
+            (Error err, , uint shortfall) = getAccountLiquidityInternal(borrower);
+            if (err != Error.NO_ERROR) {
+                return uint(err);
+            }
+
+            if (shortfall == 0) {
+                return uint(Error.INSUFFICIENT_SHORTFALL);
+            }
+
+            /* The liquidator may not repay more than what is allowed by the closeFactor */
+            uint maxClose = mul_ScalarTruncate(Exp({mantissa: closeFactorMantissa}), borrowBalance);
+            if (repayAmount > maxClose) {
+                return uint(Error.TOO_MUCH_REPAY);
+            }
+        }
         return uint(Error.NO_ERROR);
     }
 
