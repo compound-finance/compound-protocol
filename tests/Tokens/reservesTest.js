@@ -1,10 +1,11 @@
 const {
   etherUnsigned,
   etherMantissa,
-  both
+  both,
+  etherExp
 } = require('../Utils/Ethereum');
 
-const {fastForward, makeCToken} = require('../Utils/Compound');
+const {fastForward, makeCToken, adjustETHBalance, getBalances, adjustReserves} = require('../Utils/Compound');
 
 const factor = etherMantissa(.02);
 
@@ -177,6 +178,50 @@ describe('CToken', function () {
       expect(await call(cToken, 'totalReserves')).toEqualNumber(reserves);
       expect(await send(cToken, 'harnessFastForward', [5])).toSucceed();
       expect(await send(cToken, '_reduceReserves', [reduction])).toSucceed();
+    });
+  });
+
+  describe("_setProtocolSeizeShare", () => {
+    let cToken;
+    beforeEach(async () => {
+      cToken = await makeCToken();
+    });
+
+    it("reverts when setting protocol seize share greater than maximum", async() => {
+      await expect(send(cToken, '_setProtocolSeizeShare', [etherExp(1.1)])).rejects.toRevert("revert New protocol seize share higher than maximum");
+    });
+
+    it("reverts when non-admin sets protocol seize share", async() => {
+      await expect(send(cToken, '_setProtocolSeizeShare', [etherExp(0.3)], {from: accounts[0]})).rejects.toRevert("revert Must be admin to set protocol seize share");
+    });
+
+    it("sets protocol seize share", async() => {
+      expect(await call(cToken, 'protocolSeizeShareMantissa')).toEqualNumber(0);
+      await send(cToken, '_setProtocolSeizeShare', [etherExp(0.3)]);
+      expect(await call(cToken, 'protocolSeizeShareMantissa')).toEqualNumber(etherExp(0.3));
+    });
+  });
+
+  describe("CEther addReserves", () => {
+    let cToken;
+    beforeEach(async () => {
+      cToken = await makeCToken({kind: 'cether'});
+    });
+
+    it("add reserves for CEther", async () => {
+      const balanceBefore = await getBalances([cToken], [])
+      const reservedAdded = etherExp(1);
+      const result = await send(cToken, "_addReserves", {value: reservedAdded}); //assert no erro
+      expect(result).toSucceed();
+      expect(result).toHaveLog('ReservesAdded', {
+        benefactor: root,
+        addAmount: reservedAdded.toString(),
+        newTotalReserves: reservedAdded.toString()
+      });
+      const balanceAfter = await getBalances([cToken], []);
+      let expectedBalance = await adjustETHBalance(cToken, balanceBefore, reservedAdded);
+      expectedBalance = await adjustReserves(cToken, expectedBalance, reservedAdded);
+      expect(balanceAfter).toEqual(expectedBalance);
     });
   });
 });
