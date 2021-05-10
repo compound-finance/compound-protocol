@@ -1,7 +1,8 @@
 const {
   etherGasCost,
   etherUnsigned,
-  UInt256Max
+  UInt256Max, 
+  etherExp
 } = require('../Utils/Ethereum');
 
 const {
@@ -11,7 +12,8 @@ const {
   getBalances,
   adjustBalances,
   pretendBorrow,
-  preApprove
+  preApprove,
+  enterMarkets
 } = require('../Utils/Compound');
 
 const repayAmount = etherUnsigned(10e2);
@@ -240,3 +242,39 @@ describe('CToken', function () {
     });
   });
 });
+
+describe('Comptroller', () => {
+  it('liquidateBorrowAllowed allows deprecated markets to be liquidated', async () => {
+    let [root, liquidator, borrower] = saddle.accounts;
+    let collatAmount = 10;
+    let borrowAmount = 2;
+    const cTokenCollat = await makeCToken({supportMarket: true, underlyingPrice: 1, collateralFactor: .5});
+    const cTokenBorrow = await makeCToken({supportMarket: true, underlyingPrice: 1, comptroller: cTokenCollat.comptroller});
+    const comptroller = cTokenCollat.comptroller;
+
+    // borrow some tokens
+    await send(cTokenCollat.underlying, 'harnessSetBalance', [borrower, collatAmount]);
+    await send(cTokenCollat.underlying, 'approve', [cTokenCollat._address, collatAmount], {from: borrower});
+    await send(cTokenBorrow.underlying, 'harnessSetBalance', [cTokenBorrow._address, collatAmount]);
+    await send(cTokenBorrow, 'harnessSetTotalSupply', [collatAmount * 10]);
+    await send(cTokenBorrow, 'harnessSetExchangeRate', [etherExp(1)]);
+    expect(await enterMarkets([cTokenCollat], borrower)).toSucceed();
+    expect(await send(cTokenCollat, 'mint', [collatAmount], {from: borrower})).toSucceed();
+    expect(await send(cTokenBorrow, 'borrow', [borrowAmount], {from: borrower})).toSucceed();
+
+    // show the account is healthy
+    expect(await call(comptroller, 'isDeprecated', [cTokenBorrow._address])).toEqual(false);
+    expect(await call(comptroller, 'liquidateBorrowAllowed', [cTokenBorrow._address, cTokenCollat._address, liquidator, borrower, borrowAmount])).toHaveTrollError('INSUFFICIENT_SHORTFALL');
+
+    // show deprecating a market works
+    expect(await send(comptroller, '_setCollateralFactor', [cTokenBorrow._address, 0])).toSucceed();
+    expect(await send(comptroller, '_setBorrowPaused', [cTokenBorrow._address, true])).toSucceed();
+    expect(await call(comptroller, 'isDeprecated', [cTokenBorrow._address])).toEqual(true);
+
+    // show deprecated markets can be liquidated even if healthy
+    expect(await send(comptroller, 'liquidateBorrowAllowed', [cTokenBorrow._address, cTokenCollat._address, liquidator, borrower, borrowAmount])).toSucceed();
+    
+    // even if deprecated, cant over repay
+    await expect(send(comptroller, 'liquidateBorrowAllowed', [cTokenBorrow._address, cTokenCollat._address, liquidator, borrower, borrowAmount * 2])).rejects.toRevert('revert Can not repay more than the total borrow');
+  });
+})

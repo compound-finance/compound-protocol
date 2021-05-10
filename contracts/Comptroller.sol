@@ -476,11 +476,8 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         uint borrowBalance = CToken(cTokenBorrowed).borrowBalanceStored(borrower);
 
         /* allow accounts to be liquidated if the market is deprecated */
-        if (
-            markets[address(cTokenBorrowed)].collateralFactorMantissa == 0 && 
-            borrowGuardianPaused[cTokenBorrowed] == true
-        ) {
-            require(borrowBalance >= repayAmount, "LiquidateBorrowAllowed: Can not repay more than the total borrow");
+        if (isDeprecated(CToken(cTokenBorrowed))) {
+            require(borrowBalance >= repayAmount, "Can not repay more than the total borrow");
         } else {
             /* The borrower must have shortfall in order to be liquidatable */
             (Error err, , uint shortfall) = getAccountLiquidityInternal(borrower);
@@ -1326,6 +1323,15 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      */
     function getAllMarkets() public view returns (CToken[] memory) {
         return allMarkets;
+    }
+
+    /**
+     * @notice Returns true if the given cToken market has been deprecated
+     * @dev All borrows in a deprecated cToken market can be immediately liquidated
+     * @param cToken The market to check if deprecated
+     */
+    function isDeprecated(CToken cToken) public view returns (bool) {
+        return markets[address(cToken)].collateralFactorMantissa == 0 && borrowGuardianPaused[address(cToken)] == true;
     }
 
     function getBlockNumber() public view returns (uint) {
