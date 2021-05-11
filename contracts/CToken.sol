@@ -1206,18 +1206,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-      * @notice sets a new protocol share of seize assets
-      * @dev Admin function to set a new protocolSeizeShareMantissa
-      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-      */
-    function _setProtocolSeizeShare(uint newProtocolSeizeShareMantissa) external nonReentrant returns (uint) {
-        require(msg.sender == admin, "Must be admin to set protocol seize share");
-        require(newProtocolSeizeShareMantissa < protocolSeizeShareMaxMantissa, "New protocol seize share higher than maximum");
-        
-        protocolSeizeShareMantissa = newProtocolSeizeShareMantissa;
-    }
-
-    /**
       * @notice Sets a new reserve factor for the protocol (*requires fresh interest accrual)
       * @dev Admin function to set a new reserve factor
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)

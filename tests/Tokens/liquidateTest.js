@@ -11,7 +11,6 @@ const {
   setBalance,
   getBalances,
   adjustBalances,
-  adjustReserves,
   pretendBorrow,
   preApprove
 } = require('../Utils/Compound');
@@ -58,12 +57,21 @@ describe('CToken', function () {
   let root, liquidator, borrower, accounts;
   let cToken, cTokenCollateral;
 
+  const protocolSeizeShareMantissa = 28e16; // 2.8%
+  const exchangeRate = etherExp(.2);
+
+  const protocolShareTokens = seizeTokens.multipliedBy(protocolSeizeShareMantissa).dividedBy(etherExp(1));
+  const liquidatorShareTokens = seizeTokens.minus(protocolShareTokens);
+
+  const addReservesAmount = protocolShareTokens.multipliedBy(exchangeRate).dividedBy(etherExp(1));
+
   beforeEach(async () => {
     [root, liquidator, borrower, ...accounts] = saddle.accounts;
     cToken = await makeCToken({comptrollerOpts: {kind: 'bool'}});
     cTokenCollateral = await makeCToken({comptroller: cToken.comptroller});
+    expect(await send(cTokenCollateral, 'harnessSetExchangeRate', [exchangeRate])).toSucceed();
   });
-
+  
   beforeEach(async () => {
     await preLiquidate(cToken, liquidator, borrower, repayAmount, cTokenCollateral);
   });
@@ -165,9 +173,10 @@ describe('CToken', function () {
         [cToken, 'cash', repayAmount],
         [cToken, 'borrows', -repayAmount],
         [cToken, liquidator, 'cash', -repayAmount],
-        [cTokenCollateral, liquidator, 'tokens', seizeTokens],
+        [cTokenCollateral, liquidator, 'tokens', liquidatorShareTokens],
         [cToken, borrower, 'borrows', -repayAmount],
-        [cTokenCollateral, borrower, 'tokens', -seizeTokens]
+        [cTokenCollateral, borrower, 'tokens', -seizeTokens],
+        [cTokenCollateral, cTokenCollateral._address, 'reserves', addReservesAmount]
       ]));
     });
   });
@@ -199,7 +208,8 @@ describe('CToken', function () {
         [cToken, liquidator, 'eth', -gasCost],
         [cToken, liquidator, 'cash', -repayAmount],
         [cTokenCollateral, liquidator, 'eth', -gasCost],
-        [cTokenCollateral, liquidator, 'tokens', seizeTokens],
+        [cTokenCollateral, liquidator, 'tokens', liquidatorShareTokens],
+        [cTokenCollateral, cTokenCollateral._address, 'reserves', addReservesAmount],
         [cToken, borrower, 'borrows', -repayAmount],
         [cTokenCollateral, borrower, 'tokens', -seizeTokens]
       ]));
@@ -225,17 +235,6 @@ describe('CToken', function () {
     });
 
     it("succeeds, updates balances, adds to reserves, and emits Transfer and ReservesAdded events", async () => {
-      // 30% seize share
-      const protocolSeizeShare = 0.3;
-      const exchangeRate = .2;
-      expect(await send(cTokenCollateral, 'harnessSetExchangeRate', [etherExp(exchangeRate)])).toSucceed();
-      await send(cTokenCollateral, '_setProtocolSeizeShare', [etherExp(protocolSeizeShare)]);
-  
-      const protocolShareTokens = seizeTokens.multipliedBy(protocolSeizeShare);
-      const liquidatorShareTokens = seizeTokens.minus(protocolShareTokens);
-
-      const addReservesAmount = protocolShareTokens.multipliedBy(exchangeRate);
-
       const beforeBalances = await getBalances([cTokenCollateral], [liquidator, borrower]);
       const result = await seize(cTokenCollateral, liquidator, borrower, seizeTokens);
       const afterBalances = await getBalances([cTokenCollateral], [liquidator, borrower]);
@@ -251,10 +250,10 @@ describe('CToken', function () {
         newTotalReserves: addReservesAmount.toString()
       });
 
-      const newBalances = await adjustReserves(cTokenCollateral, beforeBalances, addReservesAmount);
-      expect(afterBalances).toEqual(await adjustBalances(newBalances, [
+      expect(afterBalances).toEqual(await adjustBalances(beforeBalances, [
         [cTokenCollateral, liquidator, 'tokens', liquidatorShareTokens],
-        [cTokenCollateral, borrower, 'tokens', -seizeTokens]
+        [cTokenCollateral, borrower, 'tokens', -seizeTokens],
+        [cTokenCollateral, cTokenCollateral._address, 'reserves', addReservesAmount],
       ]));
     });
   });

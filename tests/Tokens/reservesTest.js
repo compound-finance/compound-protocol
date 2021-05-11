@@ -5,7 +5,7 @@ const {
   etherExp
 } = require('../Utils/Ethereum');
 
-const {fastForward, makeCToken, adjustETHBalance, getBalances, adjustReserves} = require('../Utils/Compound');
+const {fastForward, makeCToken, getBalances, adjustBalances} = require('../Utils/Compound');
 
 const factor = etherMantissa(.02);
 
@@ -181,27 +181,6 @@ describe('CToken', function () {
     });
   });
 
-  describe("_setProtocolSeizeShare", () => {
-    let cToken;
-    beforeEach(async () => {
-      cToken = await makeCToken();
-    });
-
-    it("reverts when setting protocol seize share greater than maximum", async() => {
-      await expect(send(cToken, '_setProtocolSeizeShare', [etherExp(1.1)])).rejects.toRevert("revert New protocol seize share higher than maximum");
-    });
-
-    it("reverts when non-admin sets protocol seize share", async() => {
-      await expect(send(cToken, '_setProtocolSeizeShare', [etherExp(0.3)], {from: accounts[0]})).rejects.toRevert("revert Must be admin to set protocol seize share");
-    });
-
-    it("sets protocol seize share", async() => {
-      expect(await call(cToken, 'protocolSeizeShareMantissa')).toEqualNumber(0);
-      await send(cToken, '_setProtocolSeizeShare', [etherExp(0.3)]);
-      expect(await call(cToken, 'protocolSeizeShareMantissa')).toEqualNumber(etherExp(0.3));
-    });
-  });
-
   describe("CEther addReserves", () => {
     let cToken;
     beforeEach(async () => {
@@ -219,9 +198,10 @@ describe('CToken', function () {
         newTotalReserves: reservedAdded.toString()
       });
       const balanceAfter = await getBalances([cToken], []);
-      let expectedBalance = await adjustETHBalance(cToken, balanceBefore, reservedAdded);
-      expectedBalance = await adjustReserves(cToken, expectedBalance, reservedAdded);
-      expect(balanceAfter).toEqual(expectedBalance);
+      expect(balanceAfter).toEqual(await adjustBalances(balanceBefore, [
+        [cToken, cToken._address, 'eth', reservedAdded],
+        [cToken, cToken._address, 'reserves', reservedAdded]
+      ]));
     });
   });
 });

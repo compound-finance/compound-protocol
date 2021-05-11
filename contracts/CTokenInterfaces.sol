@@ -119,12 +119,7 @@ contract CTokenStorage {
     /**
      * @notice Share of seized collateral that is added to reserves
      */
-    uint public protocolSeizeShareMantissa;
-
-    /**
-     * @notice Maximum fraction of interest that can be set aside for reserves
-     */
-    uint internal constant protocolSeizeShareMaxMantissa = 1e18;
+    uint internal constant protocolSeizeShareMantissa = 28e16;
 
 }
 
