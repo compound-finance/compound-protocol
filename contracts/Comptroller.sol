@@ -1331,7 +1331,11 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @param cToken The market to check if deprecated
      */
     function isDeprecated(CToken cToken) public view returns (bool) {
-        return markets[address(cToken)].collateralFactorMantissa == 0 && borrowGuardianPaused[address(cToken)] == true;
+        return
+            markets[address(cToken)].collateralFactorMantissa == 0 && 
+            borrowGuardianPaused[address(cToken)] == true && 
+            cToken.reserveFactorMantissa() == 1e18
+        ;
     }
 
     function getBlockNumber() public view returns (uint) {

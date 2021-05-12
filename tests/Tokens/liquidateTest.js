@@ -1,6 +1,7 @@
 const {
   etherGasCost,
   etherUnsigned,
+  etherMantissa,
   UInt256Max, 
   etherExp
 } = require('../Utils/Ethereum');
@@ -269,6 +270,8 @@ describe('Comptroller', () => {
     // show deprecating a market works
     expect(await send(comptroller, '_setCollateralFactor', [cTokenBorrow._address, 0])).toSucceed();
     expect(await send(comptroller, '_setBorrowPaused', [cTokenBorrow._address, true])).toSucceed();
+    expect(await send(cTokenBorrow, '_setReserveFactor', [etherMantissa(1)])).toSucceed();
+
     expect(await call(comptroller, 'isDeprecated', [cTokenBorrow._address])).toEqual(true);
 
     // show deprecated markets can be liquidated even if healthy
