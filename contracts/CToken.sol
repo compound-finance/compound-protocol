@@ -1093,7 +1093,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         vars.totalReservesNew = add_(totalReserves, vars.protocolSeizeAmount);
         vars.totalSupplyNew = sub_(totalSupply, vars.protocolSeizeTokens);
 
-        vars.liquidatorTokensNew = add_(accountTokens[liquidator], vars.liquidatorSeizeTokens);
         (vars.mathErr, vars.liquidatorTokensNew) = addUInt(accountTokens[liquidator], vars.liquidatorSeizeTokens);
         if (vars.mathErr != MathError.NO_ERROR) {
             return failOpaque(Error.MATH_ERROR, FailureInfo.LIQUIDATE_SEIZE_BALANCE_INCREMENT_FAILED, uint(vars.mathErr));

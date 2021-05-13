@@ -119,7 +119,7 @@ contract CTokenStorage {
     /**
      * @notice Share of seized collateral that is added to reserves
      */
-    uint internal constant protocolSeizeShareMantissa = 28e16;
+    uint internal constant protocolSeizeShareMantissa = 2.8e16; //2.8%
 
 }
 

@@ -1,6 +1,5 @@
 const {
   etherGasCost,
-  etherUnsigned,
   etherExp,
   UInt256Max
 } = require('../Utils/Ethereum');
@@ -15,7 +14,7 @@ const {
   preApprove
 } = require('../Utils/Compound');
 
-const repayAmount = etherUnsigned(10e2);
+const repayAmount = etherExp(10);
 const seizeTokens = repayAmount.multipliedBy(4); // forced
 
 async function preLiquidate(cToken, liquidator, borrower, repayAmount, cTokenCollateral) {
@@ -31,6 +30,7 @@ async function preLiquidate(cToken, liquidator, borrower, repayAmount, cTokenCol
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cTokenCollateral.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cTokenCollateral.comptroller, 'setCalculatedSeizeTokens', [seizeTokens]);
+  await send(cTokenCollateral, 'harnessSetTotalSupply', [etherExp(10)]);
   await setBalance(cTokenCollateral, liquidator, 0);
   await setBalance(cTokenCollateral, borrower, seizeTokens);
   await pretendBorrow(cTokenCollateral, borrower, 0, 1, 0);
@@ -57,7 +57,7 @@ describe('CToken', function () {
   let root, liquidator, borrower, accounts;
   let cToken, cTokenCollateral;
 
-  const protocolSeizeShareMantissa = 28e16; // 2.8%
+  const protocolSeizeShareMantissa = 2.8e16; // 2.8%
   const exchangeRate = etherExp(.2);
 
   const protocolShareTokens = seizeTokens.multipliedBy(protocolSeizeShareMantissa).dividedBy(etherExp(1));
@@ -176,7 +176,8 @@ describe('CToken', function () {
         [cTokenCollateral, liquidator, 'tokens', liquidatorShareTokens],
         [cToken, borrower, 'borrows', -repayAmount],
         [cTokenCollateral, borrower, 'tokens', -seizeTokens],
-        [cTokenCollateral, cTokenCollateral._address, 'reserves', addReservesAmount]
+        [cTokenCollateral, cTokenCollateral._address, 'reserves', addReservesAmount],
+        [cTokenCollateral, cTokenCollateral._address, 'tokens', -protocolShareTokens]
       ]));
     });
   });
@@ -211,7 +212,8 @@ describe('CToken', function () {
         [cTokenCollateral, liquidator, 'tokens', liquidatorShareTokens],
         [cTokenCollateral, cTokenCollateral._address, 'reserves', addReservesAmount],
         [cToken, borrower, 'borrows', -repayAmount],
-        [cTokenCollateral, borrower, 'tokens', -seizeTokens]
+        [cTokenCollateral, borrower, 'tokens', -seizeTokens],
+        [cTokenCollateral, cTokenCollateral._address, 'tokens', -protocolShareTokens], // total supply decreases
       ]));
     });
   });
@@ -254,6 +256,7 @@ describe('CToken', function () {
         [cTokenCollateral, liquidator, 'tokens', liquidatorShareTokens],
         [cTokenCollateral, borrower, 'tokens', -seizeTokens],
         [cTokenCollateral, cTokenCollateral._address, 'reserves', addReservesAmount],
+        [cTokenCollateral, cTokenCollateral._address, 'tokens', -protocolShareTokens], // total supply decreases
       ]));
     });
   });
