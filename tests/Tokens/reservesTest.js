@@ -1,10 +1,11 @@
 const {
   etherUnsigned,
   etherMantissa,
-  both
+  both,
+  etherExp
 } = require('../Utils/Ethereum');
 
-const {fastForward, makeCToken} = require('../Utils/Compound');
+const {fastForward, makeCToken, getBalances, adjustBalances} = require('../Utils/Compound');
 
 const factor = etherMantissa(.02);
 
@@ -177,6 +178,30 @@ describe('CToken', function () {
       expect(await call(cToken, 'totalReserves')).toEqualNumber(reserves);
       expect(await send(cToken, 'harnessFastForward', [5])).toSucceed();
       expect(await send(cToken, '_reduceReserves', [reduction])).toSucceed();
+    });
+  });
+
+  describe("CEther addReserves", () => {
+    let cToken;
+    beforeEach(async () => {
+      cToken = await makeCToken({kind: 'cether'});
+    });
+
+    it("add reserves for CEther", async () => {
+      const balanceBefore = await getBalances([cToken], [])
+      const reservedAdded = etherExp(1);
+      const result = await send(cToken, "_addReserves", {value: reservedAdded}); //assert no erro
+      expect(result).toSucceed();
+      expect(result).toHaveLog('ReservesAdded', {
+        benefactor: root,
+        addAmount: reservedAdded.toString(),
+        newTotalReserves: reservedAdded.toString()
+      });
+      const balanceAfter = await getBalances([cToken], []);
+      expect(balanceAfter).toEqual(await adjustBalances(balanceBefore, [
+        [cToken, cToken._address, 'eth', reservedAdded],
+        [cToken, cToken._address, 'reserves', reservedAdded]
+      ]));
     });
   });
 });

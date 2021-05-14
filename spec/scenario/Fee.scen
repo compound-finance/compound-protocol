@@ -66,8 +66,9 @@ Test "Should be able to liquidate fee token borrow"
     -- OK! should be ready to liquidate, so lets do that
     Prep Coburn 2e18 USDT cUSDT
     Liquidate Coburn "->" Torrey 0.1e18 cUSDT "Seizing" cZRX
-    -- 5.445e7 = 0.1 (amount liquidated) * 1.1 (liq discount) * .99 (fee) / 2e9 (exchange rate)
-    Assert Equal (Erc20 cZRX TokenBalance Coburn) 5.445e7
+    -- effective liquidation incentive after deducting protocolSeizeShare is 1.1 * (1-.028) = 1.0692
+    -- 5.29254e7 = 0.1e18 (amount liquidated) * 1.0692 (liq discount) * .99 (fee) / 2e9 (exchange rate)
+    Assert Equal (Erc20 cZRX TokenBalance Coburn) 5.29254e7
     Assert Equal (CToken cUSDT BorrowBalance Torrey) 1.881e18 -- 1.98 - (0.1 * .99) was liquidated
     Assert Equal (Erc20 USDT TokenBalance Coburn) 1.9e18
 
