@@ -72,7 +72,8 @@
         "USDC": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         "DSR_Updateable": "0xfeD941d39905B23D6FAf02C8301d40bD4834E27F",
         "GovernorBravoDelegator": "0xc0da02939e1441f497fd74f78ce7decb17b66529",
-        "GovernorBravoDelegate": "0xAAAaaAAAaaaa8FdB04F544F4EEe52939CddCe378"
+        "GovernorBravoDelegate": "0xAAAaaAAAaaaa8FdB04F544F4EEe52939CddCe378",
+        "cLINK": "0xface851a4921ce59e912d19329929ce6da6eb0c7"
     },
     "Blocks": {
         "cUSDC": 7710760,
@@ -122,7 +123,8 @@
         "cWBTC": 8163813,
         "DSR_Updateable": 10504587,
         "GovernorBravoDelegator": 12006099,
-        "GovernorBravoDelegate": 12005518
+        "GovernorBravoDelegate": 12005518,
+        "cLINK": 12286030
     },
     "PriceFeed": {
         "description": "Open Oracle Uniswap Anchored View + UNI",
@@ -483,6 +485,15 @@
             "contract": "CErc20",
             "initial_exchange_rate_mantissa": "20000000000000000",
             "address": "0xC11b1268C1A384e55C48c2391d8d480264A3A7F4"
+        },
+        "cLINK": {
+            "name": "Compound ChainLink Token",
+            "symbol": "cLINK",
+            "decimals": 8,
+            "underlying": "0x514910771af9ca656af840dff83e8264ecf986ca",
+            "contract": "CErc20Delegator",
+            "initial_exchange_rate_mantissa": "200000000000000000000000000",
+            "address": "0xFAce851a4921ce59e912d19329929CE6da6EB0c7"
         }
     },
     "InterestRateModel": {
