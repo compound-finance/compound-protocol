@@ -1240,16 +1240,17 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
                 updateCompBorrowIndex(address(cToken), borrowIndex);
                 for (uint j = 0; j < holders.length; j++) {
                     distributeBorrowerComp(address(cToken), holders[j], borrowIndex);
-                    compAccrued[holders[j]] = grantCompInternal(holders[j], compAccrued[holders[j]]);
                 }
             }
             if (suppliers == true) {
                 updateCompSupplyIndex(address(cToken));
                 for (uint j = 0; j < holders.length; j++) {
                     distributeSupplierComp(address(cToken), holders[j]);
-                    compAccrued[holders[j]] = grantCompInternal(holders[j], compAccrued[holders[j]]);
                 }
             }
+        }
+        for (uint j = 0; j < holders.length; j++) {
+            compAccrued[holders[j]] = grantCompInternal(holders[j], compAccrued[holders[j]]);
         }
     }
 
