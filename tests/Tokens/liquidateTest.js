@@ -17,9 +17,8 @@ const {
   enterMarkets
 } = require('../Utils/Compound');
 
-const repayAmount = etherUnsigned(10e2);
-const seizeAmount = repayAmount;
-const seizeTokens = seizeAmount.multipliedBy(4); // forced
+const repayAmount = etherExp(10);
+const seizeTokens = repayAmount.multipliedBy(4); // forced
 
 async function preLiquidate(cToken, liquidator, borrower, repayAmount, cTokenCollateral) {
   // setup for success in liquidating
@@ -34,6 +33,7 @@ async function preLiquidate(cToken, liquidator, borrower, repayAmount, cTokenCol
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cTokenCollateral.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cTokenCollateral.comptroller, 'setCalculatedSeizeTokens', [seizeTokens]);
+  await send(cTokenCollateral, 'harnessSetTotalSupply', [etherExp(10)]);
   await setBalance(cTokenCollateral, liquidator, 0);
   await setBalance(cTokenCollateral, borrower, seizeTokens);
   await pretendBorrow(cTokenCollateral, borrower, 0, 1, 0);
@@ -60,12 +60,21 @@ describe('CToken', function () {
   let root, liquidator, borrower, accounts;
   let cToken, cTokenCollateral;
 
+  const protocolSeizeShareMantissa = 2.8e16; // 2.8%
+  const exchangeRate = etherExp(.2);
+
+  const protocolShareTokens = seizeTokens.multipliedBy(protocolSeizeShareMantissa).dividedBy(etherExp(1));
+  const liquidatorShareTokens = seizeTokens.minus(protocolShareTokens);
+
+  const addReservesAmount = protocolShareTokens.multipliedBy(exchangeRate).dividedBy(etherExp(1));
+
   beforeEach(async () => {
     [root, liquidator, borrower, ...accounts] = saddle.accounts;
     cToken = await makeCToken({comptrollerOpts: {kind: 'bool'}});
     cTokenCollateral = await makeCToken({comptroller: cToken.comptroller});
+    expect(await send(cTokenCollateral, 'harnessSetExchangeRate', [exchangeRate])).toSucceed();
   });
-
+  
   beforeEach(async () => {
     await preLiquidate(cToken, liquidator, borrower, repayAmount, cTokenCollateral);
   });
@@ -167,9 +176,11 @@ describe('CToken', function () {
         [cToken, 'cash', repayAmount],
         [cToken, 'borrows', -repayAmount],
         [cToken, liquidator, 'cash', -repayAmount],
-        [cTokenCollateral, liquidator, 'tokens', seizeTokens],
+        [cTokenCollateral, liquidator, 'tokens', liquidatorShareTokens],
         [cToken, borrower, 'borrows', -repayAmount],
-        [cTokenCollateral, borrower, 'tokens', -seizeTokens]
+        [cTokenCollateral, borrower, 'tokens', -seizeTokens],
+        [cTokenCollateral, cTokenCollateral._address, 'reserves', addReservesAmount],
+        [cTokenCollateral, cTokenCollateral._address, 'tokens', -protocolShareTokens]
       ]));
     });
   });
@@ -201,9 +212,11 @@ describe('CToken', function () {
         [cToken, liquidator, 'eth', -gasCost],
         [cToken, liquidator, 'cash', -repayAmount],
         [cTokenCollateral, liquidator, 'eth', -gasCost],
-        [cTokenCollateral, liquidator, 'tokens', seizeTokens],
+        [cTokenCollateral, liquidator, 'tokens', liquidatorShareTokens],
+        [cTokenCollateral, cTokenCollateral._address, 'reserves', addReservesAmount],
         [cToken, borrower, 'borrows', -repayAmount],
-        [cTokenCollateral, borrower, 'tokens', -seizeTokens]
+        [cTokenCollateral, borrower, 'tokens', -seizeTokens],
+        [cTokenCollateral, cTokenCollateral._address, 'tokens', -protocolShareTokens], // total supply decreases
       ]));
     });
   });
@@ -226,7 +239,7 @@ describe('CToken', function () {
       expect(await seize(cTokenCollateral, liquidator, borrower, seizeTokens)).toHaveTokenMathFailure('LIQUIDATE_SEIZE_BALANCE_INCREMENT_FAILED', 'INTEGER_OVERFLOW');
     });
 
-    it("succeeds, updates balances, and emits Transfer event", async () => {
+    it("succeeds, updates balances, adds to reserves, and emits Transfer and ReservesAdded events", async () => {
       const beforeBalances = await getBalances([cTokenCollateral], [liquidator, borrower]);
       const result = await seize(cTokenCollateral, liquidator, borrower, seizeTokens);
       const afterBalances = await getBalances([cTokenCollateral], [liquidator, borrower]);
@@ -236,9 +249,17 @@ describe('CToken', function () {
         to: liquidator,
         amount: seizeTokens.toString()
       });
+      expect(result).toHaveLog('ReservesAdded', {
+        benefactor: cTokenCollateral._address,
+        addAmount: addReservesAmount.toString(),
+        newTotalReserves: addReservesAmount.toString()
+      });
+
       expect(afterBalances).toEqual(await adjustBalances(beforeBalances, [
-        [cTokenCollateral, liquidator, 'tokens', seizeTokens],
-        [cTokenCollateral, borrower, 'tokens', -seizeTokens]
+        [cTokenCollateral, liquidator, 'tokens', liquidatorShareTokens],
+        [cTokenCollateral, borrower, 'tokens', -seizeTokens],
+        [cTokenCollateral, cTokenCollateral._address, 'reserves', addReservesAmount],
+        [cTokenCollateral, cTokenCollateral._address, 'tokens', -protocolShareTokens], // total supply decreases
       ]));
     });
   });

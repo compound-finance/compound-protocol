@@ -140,8 +140,9 @@ Test "Proper In-Kind Liquidation"
     --
     -- And see what they are now
     Assert Equal (CToken cBAT ExchangeRate) 4e9 --- XXX: Verify this
-    Assert Equal (Erc20 cBAT TokenBalance Geoff) 49.45e9 -- 1:1 -> 1 x 2e18 x 1.1 ÷ 4e9 [exchange rate] = 0.55e9 -> Torrey
-    Assert Equal (Erc20 cBAT TokenBalance Torrey) 0.55e9 -- didn't have any beforehand
+    -- effective liquidation incentive after deducting protocolSeizeShare is 1.1 * (1-.028) = 1.0692
+    Assert Equal (Erc20 cBAT TokenBalance Geoff) 49.45e9 -- 1:1 -> 1 x 2e18 x 1.0692 ÷ 4e9 [exchange rate] = 0.55e9 -> Torrey
+    Assert Equal (Erc20 cBAT TokenBalance Torrey) 0.5346e9 -- didn't have any beforehand XXX
     Assert Equal (Erc20 BAT TokenBalance Torrey) 0e18 -- repaid
     Assert Equal (Erc20 BAT TokenBalance cBAT) 101e18 -- had 100e18, lent 1e18 to geoff, repaid 2
     Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 99e18 -- less closed amount
