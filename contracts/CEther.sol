@@ -157,9 +157,11 @@ contract CEther is CToken, CEtherInterface {
 
         fullMessage[i+0] = byte(uint8(32));
         fullMessage[i+1] = byte(uint8(40));
-        fullMessage[i+2] = byte(uint8(48 + ( errCode / 10 )));
-        fullMessage[i+3] = byte(uint8(48 + ( errCode % 10 )));
-        fullMessage[i+4] = byte(uint8(41));
+        fullMessage[i+2] = byte(uint8(48 + ( errCode / 1000 )));
+        fullMessage[i+3] = byte(uint8(48 + ( errCode / 100 % 10 )));
+        fullMessage[i+4] = byte(uint8(48 + ( errCode / 10 % 10 )));
+        fullMessage[i+5] = byte(uint8(48 + ( errCode % 10 )));
+        fullMessage[i+6] = byte(uint8(41));
 
         require(errCode == uint(Error.NO_ERROR), string(fullMessage));
     }
