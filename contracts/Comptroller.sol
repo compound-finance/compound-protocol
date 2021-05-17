@@ -74,6 +74,11 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      */
     event ActionPaused(CToken cToken, string action, bool pauseState);
 
+    /**
+     * @notice Emitted when the whitelist enforcement is changed
+     */
+    event WhitelistEnforcementChanged(bool enforce);
+
     // closeFactorMantissa must be strictly greater than this value
     uint internal constant closeFactorMinMantissa = 0.05e18; // 0.05
 
