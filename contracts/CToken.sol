@@ -958,6 +958,14 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         (vars.mathErr, vars.accountBorrowsNew) = subUInt(vars.accountBorrows, vars.actualRepayAmount);
         require(vars.mathErr == MathError.NO_ERROR, "REPAY_BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED");
 
+        // Check min borrow for this user for this asset if vars.accountBorrowsNew > 0
+        if (vars.accountBorrowsNew > 0) {
+            allowed = comptroller.borrowWithinLimits(address(this), vars.accountBorrowsNew);
+            if (allowed != 0) {
+                return (failOpaque(Error.COMPTROLLER_REJECTION, FailureInfo.REPAY_BORROW_COMPTROLLER_REJECTION, allowed), 0);
+            }
+        }
+
         (vars.mathErr, vars.totalBorrowsNew) = subUInt(totalBorrows, vars.actualRepayAmount);
         require(vars.mathErr == MathError.NO_ERROR, "REPAY_BORROW_NEW_TOTAL_BALANCE_CALCULATION_FAILED");
 
