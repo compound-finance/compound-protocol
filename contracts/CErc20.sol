@@ -145,25 +145,8 @@ contract CErc20 is CToken, CErc20Interface {
      *            See here: https://medium.com/coinmonks/missing-return-value-bug-at-least-130-tokens-affected-d67bf08521ca
      */
     function doTransferIn(address from, uint amount) internal returns (uint) {
-        EIP20NonStandardInterface token = EIP20NonStandardInterface(underlying);
         uint balanceBefore = EIP20Interface(underlying).balanceOf(address(this));
-        token.transferFrom(from, address(this), amount);
-
-        bool success;
-        assembly {
-            switch returndatasize()
-                case 0 {                       // This is a non-standard ERC-20
-                    success := not(0)          // set success to true
-                }
-                case 32 {                      // This is a compliant ERC-20
-                    returndatacopy(0, 0, 32)
-                    success := mload(0)        // Set `success = returndata` of external call
-                }
-                default {                      // This is an excessively non-compliant ERC-20, revert.
-                    revert(0, 0)
-                }
-        }
-        require(success, "TOKEN_TRANSFER_IN_FAILED");
+        _callOptionalReturn(abi.encodeWithSelector(EIP20NonStandardInterface(underlying).transferFrom.selector, from, address(this), amount), "TOKEN_TRANSFER_IN_FAILED");
 
         // Calculate the amount that was *actually* transferred
         uint balanceAfter = EIP20Interface(underlying).balanceOf(address(this));
@@ -181,23 +164,33 @@ contract CErc20 is CToken, CErc20Interface {
      *            See here: https://medium.com/coinmonks/missing-return-value-bug-at-least-130-tokens-affected-d67bf08521ca
      */
     function doTransferOut(address payable to, uint amount) internal {
-        EIP20NonStandardInterface token = EIP20NonStandardInterface(underlying);
-        token.transfer(to, amount);
+        _callOptionalReturn(abi.encodeWithSelector(EIP20NonStandardInterface(underlying).transfer.selector, to, amount), "TOKEN_TRANSFER_OUT_FAILED");
+    }
 
-        bool success;
-        assembly {
-            switch returndatasize()
-                case 0 {                      // This is a non-standard ERC-20
-                    success := not(0)          // set success to true
+    /**
+     * @dev Imitates a Solidity high-level call (i.e. a regular function call to a contract), relaxing the requirement
+     * on the return value: the return value is optional (but if data is returned, it must not be false).
+     * @param data The call data (encoded using abi.encode or one of its variants).
+     * @param errorMessage The revert string to return on failure.
+     */
+    function _callOptionalReturn(bytes memory data, string memory errorMessage) private {
+        (bool success, bytes memory returndata) = underlying.call(data);
+
+        if (!success) {
+            // Look for revert reason and bubble it up if present
+            if (returndata.length > 0) {
+                // The easiest way to bubble the revert reason is using memory via assembly
+
+                // solhint-disable-next-line no-inline-assembly
+                assembly {
+                    let returndata_size := mload(returndata)
+                    revert(add(32, returndata), returndata_size)
                 }
-                case 32 {                     // This is a complaint ERC-20
-                    returndatacopy(0, 0, 32)
-                    success := mload(0)        // Set `success = returndata` of external call
-                }
-                default {                     // This is an excessively non-compliant ERC-20, revert.
-                    revert(0, 0)
-                }
+            } else {
+                revert(errorMessage);
+            }
         }
-        require(success, "TOKEN_TRANSFER_OUT_FAILED");
+
+        if (returndata.length > 0) require(abi.decode(returndata, (bool)), errorMessage);
     }
 }
