@@ -78,8 +78,29 @@ contract CompoundLens {
             underlyingDecimals = EIP20Interface(cErc20.underlying()).decimals();
         }
 
-        uint compSpeed = comptroller.compSpeeds(address(cToken)); //TODO: try/catch this depending on how it performs on networks where this no exists.
-        uint borrowCap = comptroller.borrowCaps(address(cToken)); //TODO: try/catch this depending on how it performs on networks where this no exists.
+        uint compSpeed = 0;
+        (bool compSpeedSuccess, bytes memory compSpeedReturnData) =
+            address(comptroller).call(
+                abi.encodePacked(
+                    comptroller.compSpeeds.selector,
+                    abi.encode(address(cToken))
+                )
+            );
+        if (compSpeedSuccess) {
+            compSpeed = abi.decode(compSpeedReturnData, (uint));
+        }
+
+        uint borrowCap = 0;
+        (bool borrowCapSuccess, bytes memory borrowCapReturnData) =
+            address(comptroller).call(
+                abi.encodePacked(
+                    comptroller.borrowCaps.selector,
+                    abi.encode(address(cToken))
+                )
+            );
+        if (borrowCapSuccess) {
+            borrowCap = abi.decode(borrowCapReturnData, (uint));
+        }
 
         return CTokenMetadata({
             cToken: address(cToken),
