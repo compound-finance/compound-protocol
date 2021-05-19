@@ -49,7 +49,9 @@ describe('CompoundLens', () => {
           collateralFactorMantissa: "0",
           underlyingAssetAddress: await call(cErc20, 'underlying', []),
           cTokenDecimals: "8",
-          underlyingDecimals: "18"
+          underlyingDecimals: "18",
+          compSpeed: "0",
+          borrowCap: "0",
         }
       );
     });
@@ -73,6 +75,8 @@ describe('CompoundLens', () => {
         totalSupply: "0",
         underlyingAssetAddress: "0x0000000000000000000000000000000000000000",
         underlyingDecimals: "18",
+        compSpeed: "0",
+        borrowCap: "0",
       });
     });
   });
@@ -98,7 +102,9 @@ describe('CompoundLens', () => {
           collateralFactorMantissa: "0",
           underlyingAssetAddress: await call(cErc20, 'underlying', []),
           cTokenDecimals: "8",
-          underlyingDecimals: "18"
+          underlyingDecimals: "18",
+          compSpeed: "0",
+          borrowCap: "0",
         },
         {
           borrowRatePerBlock: "0",
@@ -115,6 +121,8 @@ describe('CompoundLens', () => {
           totalSupply: "0",
           underlyingAssetAddress: "0x0000000000000000000000000000000000000000",
           underlyingDecimals: "18",
+          compSpeed: "0",
+          borrowCap: "0",
         }
       ]);
     });

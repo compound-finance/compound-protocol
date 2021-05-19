@@ -15,6 +15,8 @@ interface ComptrollerLensInterface {
     function getAssetsIn(address) external view returns (CToken[] memory);
     function claimComp(address) external;
     function compAccrued(address) external view returns (uint);
+    function compSpeeds(address) external view returns (uint);
+    function borrowCaps(address) external view returns (uint);
 }
 
 interface GovernorBravoInterface {
@@ -56,6 +58,8 @@ contract CompoundLens {
         address underlyingAssetAddress;
         uint cTokenDecimals;
         uint underlyingDecimals;
+        uint compSpeed;
+        uint borrowCap;
     }
 
     function cTokenMetadata(CToken cToken) public returns (CTokenMetadata memory) {
@@ -74,6 +78,9 @@ contract CompoundLens {
             underlyingDecimals = EIP20Interface(cErc20.underlying()).decimals();
         }
 
+        uint compSpeed = comptroller.compSpeeds(address(cToken)); //TODO: try/catch this depending on how it performs on networks where this no exists.
+        uint borrowCap = comptroller.borrowCaps(address(cToken)); //TODO: try/catch this depending on how it performs on networks where this no exists.
+
         return CTokenMetadata({
             cToken: address(cToken),
             exchangeRateCurrent: exchangeRateCurrent,
@@ -88,7 +95,9 @@ contract CompoundLens {
             collateralFactorMantissa: collateralFactorMantissa,
             underlyingAssetAddress: underlyingAssetAddress,
             cTokenDecimals: cToken.decimals(),
-            underlyingDecimals: underlyingDecimals
+            underlyingDecimals: underlyingDecimals,
+            compSpeed: compSpeed,
+            borrowCap: borrowCap
         });
     }
 
