@@ -824,14 +824,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
             return failOpaque(Error.MATH_ERROR, FailureInfo.BORROW_NEW_TOTAL_BALANCE_CALCULATION_FAILED, uint(vars.mathErr));
         }
 
-        // Check max utilization rate for this asset
-        uint maxUtilizationRate = fuseAdmin.maxUtilizationRate();
-
-        if (maxUtilizationRate < uint(-1)) {
-            uint256 utilizationRate = vars.totalBorrowsNew == 0 ? 0 : vars.totalBorrowsNew * 1e18 / (cashPrior + totalBorrows - (totalReserves + totalFuseFees + totalAdminFees));
-            if (utilizationRate > maxUtilizationRate) return fail(Error.UTILIZATION_ABOVE_MAX, FailureInfo.NEW_UTILIZATION_RATE_ABOVE_MAX);
-        }
-
         /////////////////////////
         // EFFECTS & INTERACTIONS
         // (No safe failures beyond this point)
