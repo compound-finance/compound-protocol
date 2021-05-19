@@ -1,6 +1,6 @@
 {
     "Contracts": {
-        "CompoundLens": "0xEF11D1eff9C559B47B921dFFfF1e3A147e84E283",
+        "CompoundLens": "0xC1A7ab77932cFD41C4164A253fAF5a06AfC3906e",
         "Base200bps_Slope2000bps_Jump20000bps_Kink90": "0xC711a6FA133B8793c43fcDe501ADa359C120Ec8b",
         "Base200bps_Slope3000bps": "0x750fc66DC00506DB83dD1B9F51f2e93dFBB4a2Bd",
         "Base500bps_Slope1200bps": "0xD614D53AC95f32A0827728038b2715C1520A7f55",
@@ -141,7 +141,7 @@
             "description": "Comptroller Description"
         }
     },
-     "Governor": {
+    "Governor": {
         "GovernorBravo": {
             "address": "0x087e98B40f988E0E1D1de476b2b8d2271Ac84B33",
             "contract": "GovernorBravoDelegator",
