@@ -11,7 +11,7 @@ contract ComptrollerKovan is Comptroller {
 
 contract ComptrollerRopsten is Comptroller {
   function getCompAddress() public view returns (address) {
-    return 0x1Fe16De955718CFAb7A44605458AB023838C2793;
+    return 0xf76D4a441E4ba86A923ce32B89AFF89dBccAA075;
   }
 }
 

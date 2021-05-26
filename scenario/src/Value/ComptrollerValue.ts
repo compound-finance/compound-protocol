@@ -573,6 +573,20 @@ export function comptrollerFetchers() {
       async (world, {comptroller, CToken}) => {
         return new NumberV(await comptroller.methods.borrowCaps(CToken._address).call());
       }
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken}, NumberV>(`
+        #### IsDeprecated
+
+        * "Comptroller IsDeprecated cZRX
+      `,
+      "IsDeprecated",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+      ],
+      async (world, {comptroller, CToken}) => {
+        return new NumberV(await comptroller.methods.isDeprecated(CToken._address).call());
+      }
     )
   ];
 }

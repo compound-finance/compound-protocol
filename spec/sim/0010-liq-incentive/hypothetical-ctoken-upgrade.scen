@@ -6,31 +6,31 @@ Alias UniHolder "0x767ecb395def19ab8d1b2fcc89b3ddfbed28fd6b"
 Web3Fork "https://mainnet-eth.compound.finance/@12466889" (CompHolder UniHolder Liquidator)
 UseConfigs mainnet
 
--- CTokenDelegate Deploy CErc20Delegate newCCOMPImpl
+CTokenDelegate Deploy CErc20Delegate newCCOMPImpl
 From CompHolder (Comp Delegate CompHolder)
 
--- From CompHolder (Governor GovernorBravo Propose "Update cCOMP implementation" [(Address cUni)] [0] ["_setImplementation(address,bool,bytes)"] [[(address newCCOMPImpl) true "0x"]])
+From CompHolder (Governor GovernorBravo Propose "Update cCOMP implementation" [(Address cUni)] [0] ["_setImplementation(address,bool,bytes)"] [[(address newCCOMPImpl) true "0x"]])
 
--- AdvanceBlocks 13140
--- From CompHolder (GovernorBravo GovernorBravo Proposal LastProposal Vote For)
--- AdvanceBlocks 20000
--- Governor GovernorBravo Proposal LastProposal Queue
--- IncreaseTime 604910
--- Governor GovernorBravo Proposal LastPropo    sal Execute
+AdvanceBlocks 13140
+From CompHolder (GovernorBravo GovernorBravo Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+Governor GovernorBravo Proposal LastProposal Queue
+IncreaseTime 604910
+Governor GovernorBravo Proposal LastProposal Execute
 
--- -- Test liquidate works and reserves increase
--- From Liquidator (CToken cDAI RedeemUnderlying 20000e18)
--- From UniHolder (CToken cUSDC Borrow 8e13)
--- From CompHolder (Send Liquidator 0.45e18)
+-- Test liquidate works and reserves increase
+From Liquidator (CToken cDAI RedeemUnderlying 20000e18)
+From UniHolder (CToken cUSDC Borrow 8e13)
+From CompHolder (Send Liquidator 0.45e18)
 
--- AdvanceBlocks 200000000
--- CToken cUni AccrueInterest
--- -- ($10000 DAI liq * 1.08 liq incentive/ $27 UNI price) * .03 reserves add amount = delta of 12e18 UNI reserves
--- -- approximately matches
--- Expect Changes (cToken cUni Reserves) +12e18 
--- From Liquidator (CToken cDai Liquidate UniHolder cUni 10000e18)
+AdvanceBlocks 200000000
+CToken cUni AccrueInterest
+-- ($10000 DAI liq * 1.08 liq incentive/ $27 UNI price) * .03 reserves add amount = delta of 12e18 UNI reserves
+-- approximately matches
+Expect Changes (cToken cUni Reserves) +12e18 
+From Liquidator (CToken cDai Liquidate UniHolder cUni 10000e18)
 
--- Print "Migration to reserve delegate is ok"
+Print "Migration to reserve delegate is ok"
 
 ComptrollerImpl Deploy Standard ComptrollerG8
 From CompHolder (GovernorBravo GovernorBravo Propose "Update Comptroller implementation" [(Address Unitroller) (Address ComptrollerG8)] [0 0] ["_setPendingImplementation(address)" "_become(address)"] [[(Address ComptrollerG8)] [(Address Unitroller)]])
