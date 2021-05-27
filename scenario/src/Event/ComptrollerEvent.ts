@@ -260,6 +260,18 @@ async function updateContributorRewards(world: World, from: string, comptroller:
   return world;
 }
 
+async function resetCooldown(world: World, from: string, comptroller: Comptroller): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods.resetCooldown(), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Comp cooldown reset for ${from}`,
+    invokation
+  );
+
+  return world;
+}
+
 async function grantComp(world: World, from: string, comptroller: Comptroller, recipient: string, amount: NumberV): Promise<World> {
   let invokation = await invoke(world, comptroller.methods._grantComp(recipient, amount.encode()), from, ComptrollerErrorReporter);
 
@@ -278,6 +290,18 @@ async function setCompRate(world: World, from: string, comptroller: Comptroller,
   world = addAction(
     world,
     `Comp rate set to ${rate.show()}`,
+    invokation
+  );
+
+  return world;
+}
+
+async function setCooldownPeriod(world: World, from: string, comptroller: Comptroller, cooldownPeriod: NumberV): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setCooldownPeriod(cooldownPeriod.encode()), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Cooldown period set to ${cooldownPeriod.show()}`,
     invokation
   );
 
@@ -775,6 +799,18 @@ export function comptrollerCommands() {
       ],
       (world, from, {comptroller, recipient, amount}) => grantComp(world, from, comptroller, recipient.val, amount)
     ),
+    new Command<{comptroller: Comptroller}>(`
+      #### ResetCooldown
+
+      * "Comptroller ResetCooldown" - Reset cooldown for this account
+      * E.g. "Comptroller ResetCooldown
+      `,
+      "ResetCooldown",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+      ],
+      (world, from, {comptroller}) => resetCooldown(world, from, comptroller)
+    ),
     new Command<{comptroller: Comptroller, rate: NumberV}>(`
       #### SetCompRate
 
@@ -787,6 +823,19 @@ export function comptrollerCommands() {
         new Arg("rate", getNumberV)
       ],
       (world, from, {comptroller, rate}) => setCompRate(world, from, comptroller, rate)
+    ),
+    new Command<{comptroller: Comptroller, _cooldownPeriod: NumberV}>(`
+      #### SetCooldownPeriod
+
+      * "Comptroller SetCooldownPeriod <period>" - Sets cooldown period for claims
+      * E.g. "Comptroller SetCooldownPeriod 1000
+      `,
+      "SetCooldownPeriod",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("_cooldownPeriod", getNumberV)
+      ],
+      (world, from, {comptroller, _cooldownPeriod}) => setCooldownPeriod(world, from, comptroller, _cooldownPeriod)
     ),
     new Command<{comptroller: Comptroller, cToken: CToken, speed: NumberV}>(`
       #### SetCompSpeed

@@ -26,6 +26,9 @@ const ComptrollerScenarioG5Contract = getContract('ComptrollerScenarioG5');
 const ComptrollerG6Contract = getContract('ComptrollerG6');
 const ComptrollerScenarioG6Contract = getContract('ComptrollerScenarioG6');
 
+const ComptrollerG7Contract = getContract('ComptrollerG6');
+const ComptrollerScenarioG7Contract = getContract('ComptrollerScenarioG6');
+
 const ComptrollerScenarioContract = getTestContract('ComptrollerScenario');
 const ComptrollerContract = getContract('Comptroller');
 
@@ -140,6 +143,22 @@ export async function buildComptrollerImpl(
         name: name.val,
         contract: 'ComptrollerScenarioG6Contract',
         description: 'ScenarioG6 Comptroller Impl'
+      })
+    ),
+
+    new Fetcher<{ name: StringV }, ComptrollerImplData>(
+      `
+        #### ScenarioG7
+        * "ScenarioG7 name:<String>" - The Comptroller Scenario for local testing (G7)
+          * E.g. "ComptrollerImpl Deploy ScenarioG7 MyScen"
+      `,
+      'ScenarioG7',
+      [new Arg('name', getStringV)],
+      async (world, { name }) => ({
+        invokation: await ComptrollerScenarioG7Contract.deploy<ComptrollerImpl>(world, from, []),
+        name: name.val,
+        contract: 'ComptrollerScenarioG7Contract',
+        description: 'ScenarioG7 Comptroller Impl'
       })
     ),
 
@@ -268,6 +287,24 @@ export async function buildComptrollerImpl(
           name: name.val,
           contract: 'ComptrollerG6',
           description: 'StandardG6 Comptroller Impl'
+        };
+      }
+    ),
+
+    new Fetcher<{ name: StringV }, ComptrollerImplData>(
+      `
+        #### StandardG7
+        * "StandardG7 name:<String>" - The standard generation 7 Comptroller contract
+          * E.g. "Comptroller Deploy StandardG7 MyStandard"
+      `,
+      'StandardG7',
+      [new Arg('name', getStringV)],
+      async (world, { name }) => {
+        return {
+          invokation: await ComptrollerG7Contract.deploy<ComptrollerImpl>(world, from, []),
+          name: name.val,
+          contract: 'ComptrollerG7',
+          description: 'StandardG7 Comptroller Impl'
         };
       }
     ),
