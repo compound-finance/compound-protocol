@@ -1031,13 +1031,11 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
             } else {
                 // If whitelisted, remove from whitelist
                 if (whitelist[supplier]) {
-                    whitelist[supplier] = false;
-
-                    // Copy last item in list to location of item to be removed and reduce length by 1
-                    address[] storage storedList = whitelistArray;
-                    storedList[whitelistIndexes[supplier]] = storedList[storedList.length - 1];
-                    storedList.length--;
-                    whitelistIndexes[storedList[whitelistIndexes[supplier]]] = whitelistIndexes[supplier];
+                    whitelistArray[whitelistIndexes[supplier]] = whitelistArray[whitelistArray.length - 1]; // Copy last item in list to location of item to be removed
+                    whitelistArray.length--; // Reduce length by 1
+                    whitelistIndexes[whitelistArray[whitelistIndexes[supplier]]] = whitelistIndexes[supplier]; // Set whitelist index of moved item to correct index
+                    whitelistIndexes[supplier] = 0; // Reset supplier whitelist index to 0 for a gas refund
+                    whitelist[supplier] = false; // Tell the contract that the supplier is no longer whitelisted
                 }
             }
         }
