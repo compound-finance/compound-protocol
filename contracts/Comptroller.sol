@@ -272,6 +272,11 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
+        
+        // Make sure minter is whitelisted
+        if (enforceWhitelist && !whitelist[minter]) {
+            return uint(Error.SUPPLIER_NOT_WHITELISTED);
+        }
 
         // *may include Policy Hook-type checks
 
