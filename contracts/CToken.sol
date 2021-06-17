@@ -1109,7 +1109,8 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         accountTokens[liquidator] = vars.liquidatorTokensNew;
 
         /* Emit a Transfer event */
-        emit Transfer(borrower, liquidator, seizeTokens);
+        emit Transfer(borrower, liquidator, vars.liquidatorSeizeTokens);
+        emit Transfer(borrower, address(this), vars.protocolSeizeTokens);
         emit ReservesAdded(address(this), vars.protocolSeizeAmount, vars.totalReservesNew);
 
         /* We call the defense hook */

@@ -170,7 +170,12 @@ describe('CToken', function () {
       expect(result).toHaveLog(['Transfer', 1], {
         from: borrower,
         to: liquidator,
-        amount: seizeTokens.toString()
+        amount: liquidatorShareTokens.toString()
+      });
+      expect(result).toHaveLog(['Transfer', 2], {
+        from: borrower,
+        to: cTokenCollateral._address,
+        amount: protocolShareTokens.toString()
       });
       expect(afterBalances).toEqual(await adjustBalances(beforeBalances, [
         [cToken, 'cash', repayAmount],
@@ -244,10 +249,15 @@ describe('CToken', function () {
       const result = await seize(cTokenCollateral, liquidator, borrower, seizeTokens);
       const afterBalances = await getBalances([cTokenCollateral], [liquidator, borrower]);
       expect(result).toSucceed();
-      expect(result).toHaveLog('Transfer', {
+      expect(result).toHaveLog(['Transfer', 0], {
         from: borrower,
         to: liquidator,
-        amount: seizeTokens.toString()
+        amount: liquidatorShareTokens.toString()
+      });
+      expect(result).toHaveLog(['Transfer', 1], {
+        from: borrower,
+        to: cTokenCollateral._address,
+        amount: protocolShareTokens.toString()
       });
       expect(result).toHaveLog('ReservesAdded', {
         benefactor: cTokenCollateral._address,
