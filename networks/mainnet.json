@@ -71,7 +71,7 @@
         "LINK": "0x514910771af9ca656af840dff83e8264ecf986ca",
         "Base200bps_Slope222bps_Kink90_Jump40": "0x5562024784cc914069d67D89a28e3201bF7b57E7",
         "SAI": "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359",
-        "cErc20ImplG2": "0x3587b2F7E0E2D6166d6C14230e7Fe160252B0ba4",
+        "cErc20ImplG2": "0xa035b9e130F2B1AedC733eEFb1C67Ba4c503491F",
         "REP": "0x1985365e9f78359a9B6AD760e32412f4a445E862",
         "wbtc2_irm": "0xF2e5dB36B0682f2CD6bC805c3a4236194e01f4D5",
         "cZRX": "0xB3319f5D18Bc0D84dD1b4825Dcde5d5f7266d407",
@@ -128,7 +128,7 @@
         "Base200bps_Slope2000bps_Jump8000bps_Kink90": 9847407,
         "cWBTC2Delegate": 11960638,
         "Base200bps_Slope222bps_Kink90_Jump40": 8983555,
-        "cErc20ImplG2": 12615690,
+        "cErc20ImplG2": 12654137,
         "wbtc2_irm": 11998859,
         "cZRX": 7710733,
         "cWBTC": 8163813,
@@ -399,7 +399,7 @@
             "description": "Standard CUni Delegate"
         },
         "cErc20ImplG2": {
-            "address": "0x3587b2F7E0E2D6166d6C14230e7Fe160252B0ba4",
+            "address": "0xa035b9e130F2B1AedC733eEFb1C67Ba4c503491F",
             "contract": "CErc20Delegate",
             "description": "Standard CErc20 Delegate"
         }

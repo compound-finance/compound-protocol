@@ -44471,6 +44471,22 @@
             "signature": "0x26782247"
         },
         {
+            "constant": true,
+            "inputs": [],
+            "name": "protocolSeizeShareMantissa",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x6752e702"
+        },
+        {
             "constant": false,
             "inputs": [
                 {
