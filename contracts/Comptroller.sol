@@ -7,6 +7,7 @@ import "./ComptrollerInterface.sol";
 import "./ComptrollerStorage.sol";
 import "./Unitroller.sol";
 import "./Governance/Comp.sol";
+import "./CErc20.sol";
 
 /**
  * @title Compound's Comptroller Contract
@@ -99,7 +100,7 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @param cToken The cToken to check
      * @return True if the account is in the asset, otherwise false.
      */
-    function checkMembership(address account, CToken cToken) external view returns (bool) {
+    function checkMembership(address account, CToken cToken) public view returns (bool) {
         return markets[address(cToken)].accountMembership[account];
     }
 
@@ -211,6 +212,52 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
 
         return uint(Error.NO_ERROR);
     }
+
+    function canMigrateAccount(address account) public pure returns(bool) {
+        // TODO - block contract accounts? allow according to prefined list? etc.
+        return true;
+    }
+
+    function migrateDeprecatedCToken(address account, CErc20 src, CErc20 dest) external returns(uint) {
+        EIP20Interface underlying = EIP20Interface(src.underlying()); // if ETH, then sfyl
+
+        require(markets[address(src)].isListed && markets[address(src)].isListed, "migrate: invalid src or dest");
+        require(address(underlying) == dest.underlying(), "migrate: different underlying");
+        require(isDeprecated(CToken(src)), "migrate: src not deprecated");
+        require(canMigrateAccount(account), "migrate: cannot migrate account");
+
+        uint amount = src.balanceOf(account);
+        require(amount > 0, "migrate: nothing to migrate");
+
+        uint preSrcBalance = src.balanceOf(address(this));
+        uint oErr = src.seize(address(this), account, amount);
+        require(oErr == 0, "migrate: seize failed"); // semi-opaque error code
+        uint postSrcBalance = src.balanceOf(address(this));
+        require(postSrcBalance > preSrcBalance, "migrate: nothing to seize");
+
+        uint preUnderlyingBalance = underlying.balanceOf(address(this));
+        oErr = src.redeem(postSrcBalance - preSrcBalance); // in old tokens this will be amount.
+        require(oErr == 0, "migrate: redeem failed"); // semi-opaque error code        
+        uint postUnderlyingBalance = underlying.balanceOf(address(this));
+        require(postUnderlyingBalance > preUnderlyingBalance, "migrate: nothing to redeem");
+        uint underlyingBalance = postUnderlyingBalance - preUnderlyingBalance;
+
+        underlying.approve(address(dest), underlyingBalance);
+        uint preCTokenBalance = dest.balanceOf(address(this));
+        oErr = dest.mint(underlyingBalance);
+        require(oErr == 0, "migrate: mint failed"); // semi-opaque error code
+        uint postCTokenBalance = dest.balanceOf(address(this));
+
+        require(postCTokenBalance > preCTokenBalance, "migrate: nothing to transfer");
+        dest.transfer(account, postCTokenBalance - preCTokenBalance);
+
+        if(checkMembership(account, src) && ! checkMembership(account, dest)) {
+            oErr = uint(addToMarketInternal(dest, msg.sender));
+            require(oErr == 0, "migrate: addToMarketInternal failed"); // semi-opaque error code
+        }
+
+        return uint(Error.NO_ERROR);
+    }    
 
     /*** Policy Hooks ***/
 
@@ -547,12 +594,14 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         // Shh - currently unused
         seizeTokens;
 
-        if (!markets[cTokenCollateral].isListed || !markets[cTokenBorrowed].isListed) {
-            return uint(Error.MARKET_NOT_LISTED);
-        }
+        if(cTokenBorrowed != address(this)) {
+            if (!markets[cTokenCollateral].isListed || !markets[cTokenBorrowed].isListed) {
+                return uint(Error.MARKET_NOT_LISTED);
+            }
 
-        if (CToken(cTokenCollateral).comptroller() != CToken(cTokenBorrowed).comptroller()) {
-            return uint(Error.COMPTROLLER_MISMATCH);
+            if (CToken(cTokenCollateral).comptroller() != CToken(cTokenBorrowed).comptroller()) {
+                return uint(Error.COMPTROLLER_MISMATCH);
+            }
         }
 
         // Keep the flywheel moving
