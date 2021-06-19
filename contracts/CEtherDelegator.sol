@@ -16,7 +16,6 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
      * @param name_ ERC-20 name of this token
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
-     * @param admin_ Address of the administrator of this token
      * @param implementation_ The address of the implementation the contract delegates to
      * @param becomeImplementationData The encoded args for becomeImplementation
      */
@@ -26,14 +25,10 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
                 string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
-                address payable admin_,
                 address implementation_,
                 bytes memory becomeImplementationData,
                 uint256 reserveFactorMantissa_,
                 uint256 adminFeeMantissa_) public {
-        // Creator of the contract is admin during initialization
-        admin = msg.sender;
-
         // First delegate gets to initialize the delegator (i.e. storage contract)
         delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,uint256,string,string,uint8,uint256,uint256)",
                                                             comptroller_,
@@ -47,9 +42,6 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
 
         // New implementations always get set via the settor (post-initialize)
         _setImplementation(implementation_, false, becomeImplementationData);
-
-        // Set the proper admin now that initialization is done
-        admin = admin_;
     }
 
     /**
@@ -60,6 +52,7 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
      */
     function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public {
         require(hasAdminRights(), "CErc20Delegator::_setImplementation: Caller must be admin");
+        require(fuseAdmin.cEtherDelegateWhitelist(newPendingImplementation, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
 
         if (allowResign) {
             delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
@@ -105,6 +98,19 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
      * @dev It returns to the external caller whatever the implementation returns or forwards reverts
      */
     function () external payable {
+        // Check for automatic implementation
+        if (autoImplementation) {
+            (address latestCEtherDelegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCEtherDelegate();
+
+            if (implementation != latestCEtherDelegate) {
+                if (allowResign) delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
+                address oldImplementation = implementation;
+                implementation = latestCEtherDelegate;
+                delegateToImplementation(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
+                emit NewImplementation(oldImplementation, implementation);
+            }
+        }
+
         // delegate all other functions to current implementation
         (bool success, ) = implementation.delegatecall(msg.data);
 

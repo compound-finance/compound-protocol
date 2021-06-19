@@ -50,6 +50,10 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PENDING_IMPLEMENTATION_OWNER_CHECK);
         }
 
+        if (!fuseAdmin.comptrollerImplementationWhitelist(newPendingImplementation)) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_PENDING_IMPLEMENTATION_CONTRACT_CHECK);
+        }
+
         address oldPendingImplementation = pendingComptrollerImplementation;
 
         pendingComptrollerImplementation = newPendingImplementation;
@@ -186,6 +190,17 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
      * or forwards reverts.
      */
     function () payable external {
+        // Check for automatic implementation
+        if (autoComptrollerImplementation) {
+            latestComptrollerImplementation = fuseAdmin.latestComptrollerImplementation();
+
+            if (comptrollerImplementation != latestComptrollerImplementation) {
+                address oldImplementation = comptrollerImplementation; // Save current value for inclusion in log
+                comptrollerImplementation = latestComptrollerImplementation;
+                emit NewImplementation(oldImplementation, comptrollerImplementation);
+            }
+        }
+
         // delegate all other functions to current implementation
         (bool success, ) = comptrollerImplementation.delegatecall(msg.data);
 

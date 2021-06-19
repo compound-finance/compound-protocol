@@ -11,25 +11,30 @@ contract CTokenAdminStorage {
     IFuseFeeDistributor internal constant fuseAdmin = IFuseFeeDistributor(0xa731585ab05fC9f83555cf9Bff8F58ee94e18F85);
 
     /**
-     * @notice Administrator for this contract
+     * @dev UNUSED AFTER UPGRADE: Administrator for this contract
      */
-    address payable public admin;
+    address payable private __admin;
 
     /**
-     * @notice Whether or not the Fuse admin has admin rights
+     * @dev UNUSED AFTER UPGRADE: Whether or not the Fuse admin has admin rights
      */
-    bool public fuseAdminHasRights = true;
+    bool private __fuseAdminHasRights = true;
 
     /**
-     * @notice Whether or not the admin has admin rights
+     * @dev UNUSED AFTER UPGRADE: Whether or not the admin has admin rights
      */
-    bool public adminHasRights = true;
+    bool private __adminHasRights = true;
 
     /**
      * @notice Returns a boolean indicating if the sender has admin rights
      */
     function hasAdminRights() internal view returns (bool) {
-        return (msg.sender == admin && adminHasRights) || (msg.sender == address(fuseAdmin) && fuseAdminHasRights);
+        address ct;
+        assembly {
+            ct := sload(8)
+        }
+        ComptrollerInterface comptroller = ComptrollerInterface(ct);
+        return (msg.sender == comptroller.admin() && comptroller.adminHasRights()) || (msg.sender == address(fuseAdmin) && comptroller.fuseAdminHasRights());
     }
 }
 

@@ -1204,7 +1204,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
       * @param cToken The address of the market (token) to list
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
-    function _supportMarket(CToken cToken) public returns (uint) {
+    function _supportMarket(CToken cToken) internal returns (uint) {
         // Check caller is admin
         if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SUPPORT_MARKET_OWNER_CHECK);
@@ -1238,13 +1238,13 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
-      * @notice Add the market to the markets mapping and set it as listed and set the collateral factor
-      * @dev Admin function to set isListed and add support for the market and set the collateral factor
-      * @param cToken The address of the market (token) to list
+      * @notice Deploy cToken, add the market to the markets mapping, and set it as listed and set the collateral factor
+      * @dev Admin function to deploy cToken, set isListed, and add support for the market and set the collateral factor
       * @param newCollateralFactorMantissa The new collateral factor, scaled by 1e18
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
-    function _supportMarketAndSetCollateralFactor(CToken cToken, uint newCollateralFactorMantissa) external returns (uint) {
+    function _deployMarket(bool isCEther, bytes memory constructorData, uint newCollateralFactorMantissa) external returns (uint) {
+        CToken cToken = CToken(isCEther ? fuseAdmin.deployCEther(constructorData) : fuseAdmin.deployCErc20(constructorData));
         uint256 err = _supportMarket(cToken);
         return err == uint(Error.NO_ERROR) ? _setCollateralFactor(cToken, newCollateralFactorMantissa) : err;
     }
