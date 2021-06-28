@@ -5,7 +5,7 @@
 * Support larger error codes in `CEther` (up to 9999 instead of just 99).
 * Complete supplier whitelist feature in `Comptroller`.
 
-## `v1.0.2` (contracts deployed 2021-05-18; all code not yet pushed)
+## `v1.0.2` (contracts deployed 2021-05-18; all code pushed 2021-06-24)
 
 * Fixed `CErc20.doTransferIn` and `CErc20.doTransferOut` to support v2 yVaults.
 * In `CToken._reduceReserves`, send to admin or Fuse admin depending on the caller, not just admin.
