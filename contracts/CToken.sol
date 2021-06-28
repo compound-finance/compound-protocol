@@ -1588,6 +1588,26 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         return uint(Error.NO_ERROR);
     }
 
+    /**
+     * @notice updates the cToken ERC20 name and symbol
+     * @dev Admin function to update the cToken ERC20 name and symbol
+     * @param _name the new ERC20 token name to use
+     * @param _symbol the new ERC20 token symbol to use
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _setNameAndSymbol(string memory _name, string _symbol) public returns (uint) {
+        // Check caller is admin
+        if (!hasAdminRights()) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_INTEREST_RATE_MODEL_OWNER_CHECK);
+        }
+
+        // Set ERC20 name and symbol
+        name = _name;
+        symbol = _symbol;
+
+        return uint(Error.NO_ERROR);
+    }
+
     /*** Safe Token ***/
 
     /**
