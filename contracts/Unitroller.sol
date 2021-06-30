@@ -2,13 +2,13 @@ pragma solidity ^0.5.16;
 
 import "./ErrorReporter.sol";
 import "./ComptrollerStorage.sol";
+
 /**
- * @title ComptrollerCore
+ * @title Unitroller
  * @dev Storage for the comptroller is at this address, while execution is delegated to the `comptrollerImplementation`.
  * CTokens should reference this contract as their comptroller.
  */
 contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
-
     /**
       * @notice Emitted when pendingComptrollerImplementation is changed
       */
@@ -20,14 +20,14 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
     event NewImplementation(address oldImplementation, address newImplementation);
 
     /**
-      * @notice Event emitted when the Fuse admin renounces their rights
+      * @notice Event emitted when the Fuse admin rights are changed
       */
-    event FuseAdminRightsRenounced();
+    event FuseAdminRightsToggled(bool hasRights);
 
     /**
-      * @notice Event emitted when the admin renounces their rights
+      * @notice Event emitted when the admin rights are changed
       */
-    event AdminRightsRenounced();
+    event AdminRightsToggled(bool hasRights);
 
     /**
       * @notice Emitted when pendingAdmin is changed
@@ -45,6 +45,7 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
     }
 
     /*** Admin Functions ***/
+
     function _setPendingImplementation(address newPendingImplementation) public returns (uint) {
         if (!hasAdminRights()) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PENDING_IMPLEMENTATION_OWNER_CHECK);
@@ -88,47 +89,48 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
         return uint(Error.NO_ERROR);
     }
 
-
     /**
-      * @notice Renounce Fuse admin rights.
+      * @notice Toggles Fuse admin rights.
+      * @param hasRights Boolean indicating if the Fuse admin is to have rights.
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _renounceFuseAdminRights() external returns (uint) {
+    function _toggleFuseAdminRights(bool hasRights) external returns (uint) {
         // Check caller = admin
         if (!hasAdminRights()) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_ADMIN_RIGHTS_OWNER_CHECK);
+            return fail(Error.UNAUTHORIZED, FailureInfo.TOGGLE_ADMIN_RIGHTS_OWNER_CHECK);
         }
 
-        // Check that rights have not already been renounced
-        if (!fuseAdminHasRights) return uint(Error.NO_ERROR);
+        // Check that rights have not already been set to the desired value
+        if (fuseAdminHasRights == hasRights) return uint(Error.NO_ERROR);
 
-        // Set fuseAdminHasRights to false
-        fuseAdminHasRights = false;
+        // Set fuseAdminHasRights
+        fuseAdminHasRights = hasRights;
 
-        // Emit FuseAdminRightsRenounced()
-        emit FuseAdminRightsRenounced();
+        // Emit FuseAdminRightsToggled()
+        emit FuseAdminRightsToggled(fuseAdminHasRights);
 
         return uint(Error.NO_ERROR);
     }
 
     /**
-      * @notice Renounce admin rights.
+      * @notice Toggles admin rights.
+      * @param hasRights Boolean indicating if the admin is to have rights.
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _renounceAdminRights() external returns (uint) {
+    function _toggleAdminRights(bool hasRights) external returns (uint) {
         // Check caller = admin
         if (!hasAdminRights()) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.RENOUNCE_ADMIN_RIGHTS_OWNER_CHECK);
+            return fail(Error.UNAUTHORIZED, FailureInfo.TOGGLE_ADMIN_RIGHTS_OWNER_CHECK);
         }
 
-        // Check that rights have not already been renounced
-        if (!adminHasRights) return uint(Error.NO_ERROR);
+        // Check that rights have not already been set to the desired value
+        if (adminHasRights == hasRights) return uint(Error.NO_ERROR);
 
-        // Set adminHasRights to false
-        adminHasRights = false;
+        // Set adminHasRights
+        adminHasRights = hasRights;
 
-        // Emit AdminRightsRenounced()
-        emit AdminRightsRenounced();
+        // Emit AdminRightsToggled()
+        emit AdminRightsToggled(hasRights);
 
         return uint(Error.NO_ERROR);
     }
