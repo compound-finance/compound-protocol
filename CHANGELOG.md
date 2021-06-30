@@ -4,6 +4,13 @@
 
 * Support larger error codes in `CEther` (up to 9999 instead of just 99).
 * Complete supplier whitelist feature in `Comptroller`.
+* Non-redundant admin storage on Comptroller (i.e., remove from cTokens in favor of references to Comptroller).
+* Deploy markets via `Comptroller` in a single transaction.
+* Whitelisted `Comptroller` implementations, `CErc20Delegate`s, `CEtherDelegate`s, `CErc20Delegator`s, and `CEtherDelegator`s.
+* Disable changing Comptroller after cToken initialization.
+* Automatic implementation upgrading.
+* Add `_setNameAndSymbol` admin function to `CToken`.
+* Replace function for renouncing admin/Fuse admin rights with a toggle function.
 
 ## `v1.0.2` (contracts deployed 2021-05-18; all code pushed 2021-06-24)
 
