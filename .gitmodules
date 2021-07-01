@@ -1,0 +1,3 @@
+[submodule "networks"]
+	path = networks
+	url = git@github.com:TRiLeZ/compound-networks.git
