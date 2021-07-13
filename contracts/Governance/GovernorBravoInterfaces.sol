@@ -40,6 +40,9 @@ contract GovernorBravoEvents {
 
     /// @notice Emitted when pendingAdmin is accepted, which means admin is updated
     event NewAdmin(address oldAdmin, address newAdmin);
+
+    /// @notice Emitted when proposer account whitelist status is set
+    event WhitelistProposerSet(address account, bool whitelisted);
 }
 
 contract GovernorBravoDelegatorStorage {
@@ -160,6 +163,10 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
         Expired,
         Executed
     }
+}
+
+contract GovernorBravoDelegateStorageV2 is GovernorBravoDelegateStorageV1 {
+    mapping (address => bool) public whitelistedProposers;
 }
 
 interface TimelockInterface {

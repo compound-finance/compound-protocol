@@ -3,7 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "./GovernorBravoInterfaces.sol";
 
-contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoEvents {
+contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoEvents {
 
     /// @notice The name of this contract
     string public constant name = "Compound Governor Bravo";
@@ -74,7 +74,8 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint) {
         // Reject proposals before initiating as Governor
         require(initialProposalId != 0, "GovernorBravo::propose: Governor Bravo not active");
-        require(comp.getPriorVotes(msg.sender, sub256(block.number, 1)) > proposalThreshold, "GovernorBravo::propose: proposer votes below proposal threshold");
+        // Allow addresses above proposal threshold and whitelisted addresses to propose
+        require(comp.getPriorVotes(msg.sender, sub256(block.number, 1)) > proposalThreshold || whitelistedProposers[msg.sender], "GovernorBravo::propose: proposer votes below proposal threshold");
         require(targets.length == values.length && targets.length == signatures.length && targets.length == calldatas.length, "GovernorBravo::propose: proposal function information arity mismatch");
         require(targets.length != 0, "GovernorBravo::propose: must provide actions");
         require(targets.length <= proposalMaxOperations, "GovernorBravo::propose: too many actions");
@@ -156,7 +157,15 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         require(state(proposalId) != ProposalState.Executed, "GovernorBravo::cancel: cannot cancel executed proposal");
 
         Proposal storage proposal = proposals[proposalId];
-        require(msg.sender == proposal.proposer || comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold, "GovernorBravo::cancel: proposer above threshold");
+
+        // Whitelisted proposers can't be canceled for falling below proposal threshold
+        if(whitelistedProposers[msg.sender]) {
+            // TODO: Possibly add multisig that can cancel 
+            require(msg.sender == proposal.proposer, "GovernorBravo::cancel: whitelisted proposer");
+        }
+        else {
+            require(msg.sender == proposal.proposer || (comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold), "GovernorBravo::cancel: proposer above threshold");
+        }
 
         proposal.canceled = true;
         for (uint i = 0; i < proposal.targets.length; i++) {
@@ -313,6 +322,18 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         proposalThreshold = newProposalThreshold;
 
         emit ProposalThresholdSet(oldProposalThreshold, proposalThreshold);
+    }
+
+    /**
+     * @notice Admin function for setting the whitelist status for a proposer account. Allows accounts to propose without meeting threshold
+     * @param account Account address to set whitelist status for
+     * @param whitelisted New whitelist status to set for proposer account
+     */
+    function _setWhitelistedProposer(address account, bool whitelisted) external {
+        require(msg.sender == admin, "GovernorBravo::_setWhitelistedProposer: admin only");
+        whitelistedProposers[account] = whitelisted;
+
+        emit WhitelistProposerSet(account, whitelisted);
     }
 
     /**
