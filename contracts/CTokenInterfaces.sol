@@ -115,6 +115,12 @@ contract CTokenStorage {
      * @notice Mapping of account addresses to outstanding borrow balances
      */
     mapping(address => BorrowSnapshot) internal accountBorrows;
+
+    /**
+     * @notice Share of seized collateral that is added to reserves
+     */
+    uint public constant protocolSeizeShareMantissa = 2.8e16; //2.8%
+
 }
 
 contract CTokenInterface is CTokenStorage {

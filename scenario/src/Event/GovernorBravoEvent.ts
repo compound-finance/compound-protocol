@@ -67,7 +67,7 @@ async function mergeABI(
     // Skip this specifically on dry runs since it's likely to crash due to a number of reasons
     world = await mergeContractABI(
       world,
-      "BravoDelegator",
+      "GovernorBravo",
       governorDelegator,
       governorDelegator.name,
       governorDelegate.name
