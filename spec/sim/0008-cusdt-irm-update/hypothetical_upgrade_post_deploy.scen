@@ -1,0 +1,29 @@
+#!/usr/bin/env yarn repl -s
+
+PrintTransactionLogs
+Alias CompHolder "0x7587cAefc8096f5F40ACB83A09Df031a018C66ec"
+Web3Fork "https://mainnet-eth.compound.finance/@11780954" (CompHolder)
+UseConfigs mainnet
+
+-- Propose to apply the patch
+
+From CompHolder (Comp Delegate CompHolder)
+From CompHolder (Governor GovernorAlpha Propose "Update cUSDT interest rate model" [(Address cUSDT)] [0] ["_setInterestRateModel(address)"] [[(Address IRM_USDT_Updateable_New)]])
+
+-- Vote for, queue, and execute the proposal
+
+MineBlock
+From CompHolder (Governor GovernorAlpha Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+Governor GovernorAlpha Proposal LastProposal Queue
+IncreaseTime 604910
+Governor GovernorAlpha Proposal LastProposal Execute
+
+MineBlock
+
+Assert Equal (Address (CToken cUSDT InterestRateModel)) (Address IRM_USDT_Updateable_New)
+CToken cUSDT AccrueInterest
+Assert Equal (CToken cUSDT InterestRate) (0.11626473089934719)
+
+
+Print "cUSDT interest rate model upgrade ok" 

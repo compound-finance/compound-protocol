@@ -11,6 +11,7 @@ contract BaseJumpRateModelV2 {
     using SafeMath for uint;
 
     event NewInterestParams(uint baseRatePerBlock, uint multiplierPerBlock, uint jumpMultiplierPerBlock, uint kink);
+    event NewOwner(address oldOwner, address newOwner);
 
     /**
      * @notice The address of the owner, i.e. the Timelock contract, which can update parameters directly
@@ -54,19 +55,6 @@ contract BaseJumpRateModelV2 {
         owner = owner_;
 
         updateJumpRateModelInternal(baseRatePerYear,  multiplierPerYear, jumpMultiplierPerYear, kink_);
-    }
-
-    /**
-     * @notice Update the parameters of the interest rate model (only callable by owner, i.e. Timelock)
-     * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by 1e18)
-     * @param multiplierPerYear The rate of increase in interest rate wrt utilization (scaled by 1e18)
-     * @param jumpMultiplierPerYear The multiplierPerBlock after hitting a specified utilization point
-     * @param kink_ The utilization point at which the jump multiplier is applied
-     */
-    function updateJumpRateModel(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) external {
-        require(msg.sender == owner, "only the owner may call this function.");
-
-        updateJumpRateModelInternal(baseRatePerYear, multiplierPerYear, jumpMultiplierPerYear, kink_);
     }
 
     /**
@@ -133,5 +121,27 @@ contract BaseJumpRateModelV2 {
         kink = kink_;
 
         emit NewInterestParams(baseRatePerBlock, multiplierPerBlock, jumpMultiplierPerBlock, kink);
+    }
+
+    /**
+     * @notice Sets the owner of the contract. Effective immediately
+     * @param newOwner address of the new owner
+	 */
+    function _setOwner(address newOwner) external {
+    	require(msg.sender == owner, "BaseJumpRateModelV2::_setOwner: owner only");
+    	address oldOwner = owner;
+    	owner = newOwner;
+    	emit NewOwner(oldOwner, newOwner);
+    }
+    /**
+     * @notice Update the parameters of the interest rate model (only callable by owner, i.e. Timelock)
+     * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by 1e18)
+     * @param multiplierPerYear The rate of increase in interest rate wrt utilization (scaled by 1e18)
+     * @param jumpMultiplierPerYear The multiplierPerBlock after hitting a specified utilization point
+     * @param kink_ The utilization point at which the jump multiplier is applied
+     */
+    function _updateJumpRateModel(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) external {
+        require(msg.sender == owner, "BaseJumpRateModelV2::_updateJumpRateModel: owner only");
+        updateJumpRateModelInternal(baseRatePerYear, multiplierPerYear, jumpMultiplierPerYear, kink_);
     }
 }
