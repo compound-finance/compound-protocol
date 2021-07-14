@@ -26,6 +26,9 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     /// @notice The max setable voting delay
     uint public constant MAX_VOTING_DELAY = 40320; // About 1 week
 
+    /// @notice The queue period
+    uint public constant queuePeriod = 5760; // About 24 hours
+
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
     uint public constant quorumVotes = 400000e18; // 400,000 = 4% of Comp
 
@@ -203,7 +206,11 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         } else if (proposal.forVotes <= proposal.againstVotes || proposal.forVotes < quorumVotes) {
             return ProposalState.Defeated;
         } else if (proposal.eta == 0) {
-            return ProposalState.Succeeded;
+            if (block.number <= add256(proposal.endBlock, queuePeriod)) {
+               return ProposalState.Succeeded;
+            }else{
+               return ProposalState.Expired;
+            }
         } else if (proposal.executed) {
             return ProposalState.Executed;
         } else if (block.timestamp >= add256(proposal.eta, timelock.GRACE_PERIOD())) {
