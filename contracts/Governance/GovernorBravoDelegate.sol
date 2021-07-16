@@ -159,7 +159,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         Proposal storage proposal = proposals[proposalId];
 
         // Whitelisted proposers can't be canceled for falling below proposal threshold
-        if(isWhitelisted(msg.sender)) {
+        if(isWhitelisted(proposal.proposer)) {
             // TODO: Possibly add multisig that can cancel 
             require(msg.sender == proposal.proposer, "GovernorBravo::cancel: whitelisted proposer");
         }
@@ -284,6 +284,11 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         return votes;
     }
 
+    /**
+     * @notice View function which returns if an account is whitelisted
+     * @param account Account to check white list status of
+     * @ If the account is whitelisted
+     */
     function isWhitelisted(address account) public view returns (bool) {
         return (whitelistedAccountExpirations[account] > now);
     }
@@ -329,12 +334,12 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
     }
 
     /**
-     * @notice Admin function for setting the whitelist expiration as a timestamp for a proposer account. Allows accounts to propose without meeting threshold
+     * @notice Admin function for setting the whitelist expiration as a timestamp for an account. Whitelist status allows accounts to propose without meeting threshold
      * @param account Account address to set whitelist expiration for
-     * @param expiration Expiration for account whitelist status (if now < expiration, whitelisted)
+     * @param expiration Expiration for account whitelist status as timestamp (if now < expiration, whitelisted)
      */
     function _setWhitelistedAccountExpiration(address account, uint expiration) external {
-        require(msg.sender == admin, "GovernorBravo::_setWhitelistedProposer: admin only");
+        require(msg.sender == admin, "GovernorBravo::_setWhitelistedAccountExpiration: admin only");
         whitelistedAccountExpirations[account] = expiration;
 
         emit WhitelistAccountSet(account, expiration);

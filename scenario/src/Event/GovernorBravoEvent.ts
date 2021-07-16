@@ -168,6 +168,28 @@ async function setProposalThreshold(
   return world;
 }
 
+async function setWhitelistedAccountExpiration(
+  world: World,
+  from: string,
+  governor: GovernorBravo,
+  account: string,
+  expiration: NumberV
+): Promise<World> {
+  let invokation = await invoke(
+    world,
+    governor.methods._setWhitelistedAccountExpiration(account,expiration.encode()),
+    from
+  );
+
+  world = addAction(
+    world,
+    `Set account whitelist expiration for ${account} to ${expiration.encode()}`,
+    invokation
+  );
+
+  return world;
+}
+
 async function setImplementation(
   world: World,
   from: string,
@@ -450,6 +472,23 @@ export function governorBravoCommands() {
       ],
       (world, from, { governor, newProposalThreshold }) =>
         setProposalThreshold(world, from, governor, newProposalThreshold),
+      { namePos: 1 }
+    ),
+     new Command<{ governor: GovernorBravo; address: AddressV, expiration: NumberV }>(
+      `
+        #### SetWhitelistedAccountExpiration
+
+        * "GovernorBravo <Governor> SetWhitelistedAccountExpiration <Account> <Expiration>" - Sets whitelisted account expiration (account can propose without proposal threshold until expiration)
+        * E.g. "GovernorBravo GovernorBravoScenario SetWhitelistedAccountExpiration Arr00 1626387743"
+    `,
+      "SetWhitelistedAccountExpiration",
+      [
+        new Arg("governor", getGovernorV),
+        new Arg("address", getAddressV),
+        new Arg("expiration", getNumberV),
+      ],
+      (world, from, { governor, address, expiration }) =>
+        setWhitelistedAccountExpiration(world, from, governor, address.val, expiration),
       { namePos: 1 }
     ),
     new Command<{ governor: GovernorBravo; governorAlpha: AddressV }>(
