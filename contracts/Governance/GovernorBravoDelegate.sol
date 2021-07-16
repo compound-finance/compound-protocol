@@ -287,7 +287,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
     /**
      * @notice View function which returns if an account is whitelisted
      * @param account Account to check white list status of
-     * @ If the account is whitelisted
+     * @return If the account is whitelisted
      */
     function isWhitelisted(address account) public view returns (bool) {
         return (whitelistedAccountExpirations[account] > now);
