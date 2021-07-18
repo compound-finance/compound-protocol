@@ -55,7 +55,7 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
      */
     function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public {
         require(hasAdminRights(), "CErc20Delegator::_setImplementation: Caller must be admin");
-        require(fuseAdmin.cErc20DelegateWhitelist(newPendingImplementation, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
+        require(fuseAdmin.cErc20DelegateWhitelist(implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
 
         if (allowResign) {
             delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
