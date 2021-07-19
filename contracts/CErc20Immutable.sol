@@ -26,12 +26,15 @@ contract CErc20Immutable is CErc20 {
                 string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
-                address payable admin_) public {
+                address payable admin_,
+                uint baseRatePerYear_,
+                uint interestRateCeiling_,
+                uint kink_) public {
         // Creator of the contract is admin during initialization
         admin = msg.sender;
 
         // Initialize the market
-        initialize(underlying_, comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
+        initialize(underlying_, comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, baseRatePerYear_, interestRateCeiling_, kink_);
 
         // Set the proper admin now that initialization is done
         admin = admin_;
