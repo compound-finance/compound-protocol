@@ -8,7 +8,14 @@ cache_file="$root_dir/.solcache"
 saddle_config_file="$root_dir/saddle.config.js"
 config_trace=`node -e "console.log(require(\"$saddle_config_file\").trace)"`
 [[ "$*" == "--trace" ]] || [[ "$config_trace" == "true" ]] && cache_file="${cache_file}cov"
-checksum="$(ls $root_dir/{contracts,contracts/**,tests/Contracts}/*.sol | xargs shasum -p | shasum -p | cut -d' ' -f 1)"
+shasumVersion="$(shasum -v)"
+inflectionVersion="6.01"
+
+if [ "$(printf '%s\n' "$inflectionVersion" "$shasumVersion" | sort -V | head -n1)" = "$inflectionVersion" ]; then 
+	checksum="$(ls $root_dir/{contracts,contracts/**,tests/Contracts}/*.sol | xargs shasum -U | shasum -U | cut -d' ' -f 1)"
+else
+	checksum="$(ls $root_dir/{contracts,contracts/**,tests/Contracts}/*.sol | xargs shasum -p | shasum -p | cut -d' ' -f 1)"
+fi
 
 if [ -z "$rebuild" -a -f "$cache_file" ]; then
   cached="$(cat $cache_file)"
