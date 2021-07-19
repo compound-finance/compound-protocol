@@ -79,6 +79,11 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
      */
     event WhitelistEnforcementChanged(bool enforce);
 
+    /**
+     * @notice Emitted when auto implementations are toggled
+     */
+    event AutoImplementationsToggled(bool enabled);
+
     // closeFactorMantissa must be strictly greater than this value
     uint internal constant closeFactorMinMantissa = 0.05e18; // 0.05
 
@@ -1243,7 +1248,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
       * @param newCollateralFactorMantissa The new collateral factor, scaled by 1e18
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
-    function _deployMarket(bool isCEther, bytes memory constructorData, uint newCollateralFactorMantissa) external returns (uint) {
+    function _deployMarket(bool isCEther, bytes calldata constructorData, uint newCollateralFactorMantissa) external returns (uint) {
         CToken cToken = CToken(isCEther ? fuseAdmin.deployCEther(constructorData) : fuseAdmin.deployCErc20(constructorData));
         uint256 err = _supportMarket(cToken);
         return err == uint(Error.NO_ERROR) ? _setCollateralFactor(cToken, newCollateralFactorMantissa) : err;
@@ -1289,6 +1294,28 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
 
         cTokensByUnderlying[cToken.isCEther() ? address(0) : CErc20(address(cToken)).underlying()] = CToken(address(0));
         emit MarketUnlisted(cToken);
+
+        return uint(Error.NO_ERROR);
+    }
+
+    /**
+     * @notice Toggles the auto-implementation feature
+     * @param enabled If the feature is to be enabled
+     * @return uint 0=success, otherwise a failure. (See enum Error for details)
+     */
+    function _toggleAutoImplementations(bool enabled) public returns (uint) {
+        if (!hasAdminRights()) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.TOGGLE_AUTO_IMPLEMENTATIONS_ENABLED_OWNER_CHECK);
+        }
+
+        // Return no error if already set to the desired value
+        if (autoImplementation == enabled) return uint(Error.NO_ERROR);
+
+        // Store autoImplementation with value enabled
+        autoImplementation = enabled;
+
+        // Emit NewPauseGuardian(OldPauseGuardian, NewPauseGuardian)
+        emit AutoImplementationsToggled(enabled);
 
         return uint(Error.NO_ERROR);
     }

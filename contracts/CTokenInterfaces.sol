@@ -1,6 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "./IFuseFeeDistributor.sol";
+import "./ComptrollerStorage.sol";
 import "./ComptrollerInterface.sol";
 import "./InterestRateModel.sol";
 
@@ -18,12 +19,12 @@ contract CTokenAdminStorage {
     /**
      * @dev UNUSED AFTER UPGRADE: Whether or not the Fuse admin has admin rights
      */
-    bool private __fuseAdminHasRights = true;
+    bool private __fuseAdminHasRights;
 
     /**
      * @dev UNUSED AFTER UPGRADE: Whether or not the admin has admin rights
      */
-    bool private __adminHasRights = true;
+    bool private __adminHasRights;
 
     /**
      * @notice Returns a boolean indicating if the sender has admin rights
@@ -33,7 +34,7 @@ contract CTokenAdminStorage {
         assembly {
             ct := sload(8)
         }
-        ComptrollerInterface comptroller = ComptrollerInterface(ct);
+        UnitrollerAdminStorage comptroller = UnitrollerAdminStorage(ct);
         return (msg.sender == comptroller.admin() && comptroller.adminHasRights()) || (msg.sender == address(fuseAdmin) && comptroller.fuseAdminHasRights());
     }
 }
@@ -298,7 +299,6 @@ contract CTokenInterface is CTokenStorage {
 
     function _setPendingAdmin(address payable newPendingAdmin) external returns (uint);
     function _acceptAdmin() external returns (uint);
-    function _setComptroller(ComptrollerInterface newComptroller) public returns (uint);
     function _setReserveFactor(uint newReserveFactorMantissa) external returns (uint);
     function _reduceReserves(uint reduceAmount) external returns (uint);
     function _setInterestRateModel(InterestRateModel newInterestRateModel) public returns (uint);

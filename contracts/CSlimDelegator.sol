@@ -4,13 +4,14 @@ import "./CTokenInterfaces.sol";
 import "./Unitroller.sol";
 
 /**
- * @title Compound's CEtherDelegator Contract
- * @notice CTokens which wrap Ether and delegate to an implementation
+ * @title Compound's CSlimDelegator Contract
+ * @notice CTokens which wrap an EIP-20 underlying and delegate to an implementation
  * @author Compound
  */
-contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
+contract CSlimDelegator is CDelegationStorage {
     /**
-     * @notice Construct a new CEther money market
+     * @notice Construct a new money market
+     * @param underlying_ The address of the underlying asset
      * @param comptroller_ The address of the Comptroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
@@ -20,7 +21,8 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
      * @param implementation_ The address of the implementation the contract delegates to
      * @param becomeImplementationData The encoded args for becomeImplementation
      */
-    constructor(ComptrollerInterface comptroller_,
+    constructor(address underlying_,
+                ComptrollerInterface comptroller_,
                 InterestRateModel interestRateModel_,
                 uint initialExchangeRateMantissa_,
                 string memory name_,
@@ -31,7 +33,8 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
                 uint256 reserveFactorMantissa_,
                 uint256 adminFeeMantissa_) public {
         // First delegate gets to initialize the delegator (i.e. storage contract)
-        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,uint256,string,string,uint8,uint256,uint256)",
+        delegateTo(0x0000000000000000000000000000000000000000, abi.encodeWithSignature("initialize(address,address,address,uint256,string,string,uint8,uint256,uint256)",
+                                                            underlying_,
                                                             comptroller_,
                                                             interestRateModel_,
                                                             initialExchangeRateMantissa_,
@@ -53,7 +56,7 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
      */
     function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public {
         require(hasAdminRights(), "CErc20Delegator::_setImplementation: Caller must be admin");
-        require(fuseAdmin.cEtherDelegateWhitelist(implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
+        require(fuseAdmin.cErc20DelegateWhitelist(implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
 
         if (allowResign) {
             delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
@@ -95,15 +98,16 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
     }
 
     /**
-     * @dev Returns a boolean indicating if the implementation is to be auto-upgraded
-     * Returns false instead of reverting
+     * @notice Returns a boolean indicating if the implementation is to be auto-upgraded
+     * Returns false instead of reverting if the Unitroller does not have this 
      */
     function autoImplementation() internal view returns (bool) {
         address ct;
         assembly {
             ct := sload(8)
         }
-        (bool success, bytes memory returndata) = ct.staticcall(abi.encodePacked(bytes4(keccak256("autoImplementation()"))));
+        Unitroller unitroller = Unitroller(ct);
+        (bool success, bytes memory returndata) = unitroller.call(abi.encodePacked(bytes4(keccak256("autoImplementation()"))));
         if (!success) return false;
         (success) = abi.decode(returndata, (bool));
         return success;
@@ -114,14 +118,16 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
      * @dev It returns to the external caller whatever the implementation returns or forwards reverts
      */
     function () external payable {
+        require(msg.value == 0,"CErc20Delegator:fallback: cannot send value to fallback");
+
         // Check for automatic implementation
         if (autoImplementation()) {
-            (address latestCEtherDelegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCEtherDelegate();
+            (address latestCErc20Delegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCEtherDelegate();
 
-            if (implementation != latestCEtherDelegate) {
+            if (implementation != latestCErc20Delegate) {
                 if (allowResign) delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
                 address oldImplementation = implementation;
-                implementation = latestCEtherDelegate;
+                implementation = latestCErc20Delegate;
                 delegateToImplementation(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
                 emit NewImplementation(oldImplementation, implementation);
             }

@@ -150,4 +150,9 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
     bool public seizeGuardianPaused;
     mapping(address => bool) public mintGuardianPaused;
     mapping(address => bool) public borrowGuardianPaused;
+
+    /**
+     * @dev Whether or not the implementation should be auto-upgraded.
+     */
+    bool public autoImplementation;
 }

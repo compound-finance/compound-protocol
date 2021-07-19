@@ -1,6 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "./CTokenInterfaces.sol";
+import "./Unitroller.sol";
 
 /**
  * @title Compound's CErc20Delegator Contract
@@ -97,6 +98,21 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
     }
 
     /**
+     * @notice Returns a boolean indicating if the implementation is to be auto-upgraded
+     * Returns false instead of reverting if the Unitroller does not have this 
+     */
+    function autoImplementation() internal view returns (bool) {
+        address ct;
+        assembly {
+            ct := sload(8)
+        }
+        (bool success, bytes memory returndata) = ct.staticcall(abi.encodePacked(bytes4(keccak256("autoImplementation()"))));
+        if (!success) return false;
+        (success) = abi.decode(returndata, (bool));
+        return success;
+    }
+
+    /**
      * @notice Delegates execution to an implementation contract
      * @dev It returns to the external caller whatever the implementation returns or forwards reverts
      */
@@ -104,7 +120,7 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
         require(msg.value == 0,"CErc20Delegator:fallback: cannot send value to fallback");
 
         // Check for automatic implementation
-        if (autoImplementation) {
+        if (autoImplementation()) {
             (address latestCErc20Delegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCEtherDelegate();
 
             if (implementation != latestCErc20Delegate) {

@@ -193,8 +193,14 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
      */
     function () payable external {
         // Check for automatic implementation
-        if (autoComptrollerImplementation) {
-            latestComptrollerImplementation = fuseAdmin.latestComptrollerImplementation();
+        bool autoImplementation;
+
+        assembly {
+            autoImplementation := sload(29)
+        }
+
+        if (autoImplementation) {
+            address latestComptrollerImplementation = fuseAdmin.latestComptrollerImplementation();
 
             if (comptrollerImplementation != latestComptrollerImplementation) {
                 address oldImplementation = comptrollerImplementation; // Save current value for inclusion in log
