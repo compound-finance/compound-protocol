@@ -48,21 +48,21 @@ contract PIDControllerV2 {
      * @param kink_ The target utilization point
      * @param owner_ The address of the owner, i.e. the Timelock contract (which has the ability to update parameters directly)
      */
-    constructor(uint baseRatePerYear, uint interestRateCeiling, uint kink_, address owner_) internal {
+    constructor(uint baseRatePerYear_, uint interestRateCeiling_, uint kink_, address owner_) internal {
         owner = owner_;
 
-        updatePIDControllerModelInternal(baseRatePerYear, interestRateCeiling, kink_);
+        updatePIDControllerModelInternal(baseRatePerYear_, interestRateCeiling_, kink_);
     }
 
     /**
      * @notice Update the parameters of the interest rate model (only callable by owner, i.e. Timelock)
-     * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by 1e18)
+     * @param baseRatePerYear_ The approximate target base APR, as a mantissa (scaled by 1e18)
      * @param kink_ The target utilization point
      */
-    function updatePIDControllerModel(uint baseRatePerYear, uint interestRateCeiling, uint kink_) external {
+    function updatePIDControllerModel(uint baseRatePerYear_, uint interestRateCeiling_, uint kink_) external {
         require(msg.sender == owner, "only the owner may call this function.");
 
-        updatePIDControllerModelInternal(baseRatePerYear, interestRateCeiling, kink_);
+        updatePIDControllerModelInternal(baseRatePerYear_, interestRateCeiling_, kink_);
     }
 
     /**
@@ -136,16 +136,16 @@ contract PIDControllerV2 {
      * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by 1e18)
      * @param kink_ The target utilization point
      */
-    function updatePIDControllerModelInternal(uint baseRatePerYear, uint interestRateCeiling, uint kink_) internal {
-        baseRatePerBlock = baseRatePerYear.div(blocksPerYear);
-        interestRateCeiling = interestRateCeiling;
+    function updatePIDControllerModelInternal(uint baseRatePerYear_, uint interestRateCeiling_, uint kink_) internal {
+        baseRatePerBlock = baseRatePerYear_.div(blocksPerYear);
+        interestRateCeiling = interestRateCeiling_;
         kink = kink_;
-        secondsOfLastCross = 0;
+        secondsOfLastCross = block.timestamp;
 
         emit NewInterestParams(baseRatePerBlock, interestRateCeiling, kink, secondsOfLastCross);
     }
 
-    function getTimeAdjustment(uint rate) {
+    function getTimeAdjustment(uint rate) internal returns (uint) {
         uint interestRateCeilingInverted = invert(rate);
         uint secondsSinceLastCross = block.timestamp - secondsOfLastCross;
         uint yearsSinceLastCross = secondsSinceLastCross.mul(1e18).div(secondsPerYear);
@@ -153,7 +153,8 @@ contract PIDControllerV2 {
         return invert(denominator);
     }
 
-    function invert(uint x) returns (uint) {
-        return 1e18.mult(1e18).div(x);
+    function invert(uint x) internal returns (uint) {
+        uint scalar = 1e18;
+        return scalar.mul(scalar).div(x);
     }
 }
