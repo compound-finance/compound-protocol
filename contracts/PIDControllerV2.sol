@@ -10,7 +10,7 @@ import "./SafeMath.sol";
 contract PIDControllerV2 {
     using SafeMath for uint;
 
-    event NewInterestParams(uint baseRatePerBlock, uint kink);
+    event NewInterestParams(uint baseRatePerBlock, uint interestRateCeiling, uint kink, uint secondsOfLastCross);
 
     /**
      * @notice The address of the owner, i.e. the Timelock contract, which can update parameters directly
@@ -23,10 +23,19 @@ contract PIDControllerV2 {
     uint public constant blocksPerYear = 2102400;
 
 
+    // 365 days x 24 hrs x 60 min x 60 sec
+    uint public constant secondsPerYear = 31536000;
+
     /**
      * @notice The base interest rate which is the y-intercept when utilization rate is 0
      */
     uint public baseRatePerBlock;
+
+    uint public interestRateCeiling;
+
+    uint public secondsOfLastCross;
+
+    uint public previousUtilization;
 
     /**
      * @notice The targer utilization point at which the PID Controller multiplier logic is applied
@@ -39,10 +48,10 @@ contract PIDControllerV2 {
      * @param kink_ The target utilization point
      * @param owner_ The address of the owner, i.e. the Timelock contract (which has the ability to update parameters directly)
      */
-    constructor(uint baseRatePerYear, uint kink_, address owner_) internal {
+    constructor(uint baseRatePerYear, uint interestRateCeiling, uint kink_, address owner_) internal {
         owner = owner_;
 
-        updatePIDControllerModelInternal(baseRatePerYear, kink_);
+        updatePIDControllerModelInternal(baseRatePerYear, interestRateCeiling, kink_);
     }
 
     /**
@@ -50,10 +59,10 @@ contract PIDControllerV2 {
      * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by 1e18)
      * @param kink_ The target utilization point
      */
-    function updatePIDControllerModel(uint baseRatePerYear, uint kink_) external {
+    function updatePIDControllerModel(uint baseRatePerYear, uint interestRateCeiling, uint kink_) external {
         require(msg.sender == owner, "only the owner may call this function.");
 
-        updatePIDControllerModelInternal(baseRatePerYear, kink_);
+        updatePIDControllerModelInternal(baseRatePerYear, interestRateCeiling, kink_);
     }
 
     /**
@@ -83,15 +92,28 @@ contract PIDControllerV2 {
         uint util = utilizationRate(cash, borrows, reserves);
 
         if (util == kink) {
+            previousUtilization = util;
             return baseRatePerBlock;
         }
 
+        uint currentBorrowRatePerBlock;
         if (util > kink) {
-            // Decrease base rate
-        } else {
             // Increase base rate
-
+            uint timeAdjustment = getTimeAdjustment(interestRateCeiling);
+            currentBorrowRatePerBlock = baseRatePerBlock.add(interestRateCeiling).sub(timeAdjustment);
+        } else {
+            // Decrease base rate
+            uint timeAdjustment = getTimeAdjustment(baseRatePerBlock);
+            currentBorrowRatePerBlock = baseRatePerBlock.add(timeAdjustment).sub(baseRatePerBlock);
         }
+
+        // Determine if a threshold is crossed
+        if ((util > kink && previousUtilization <= kink) || (util < kink && previousUtilization >= kink)) {
+            secondsOfLastCross = block.timestamp;
+            baseRatePerBlock = currentBorrowRatePerBlock;
+        }
+        previousUtilization = util;
+        return currentBorrowRatePerBlock;
     }
 
     /**
@@ -114,10 +136,24 @@ contract PIDControllerV2 {
      * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by 1e18)
      * @param kink_ The target utilization point
      */
-    function updatePIDControllerModelInternal(uint baseRatePerYear, uint kink_) internal {
+    function updatePIDControllerModelInternal(uint baseRatePerYear, uint interestRateCeiling, uint kink_) internal {
         baseRatePerBlock = baseRatePerYear.div(blocksPerYear);
+        interestRateCeiling = interestRateCeiling;
         kink = kink_;
+        secondsOfLastCross = 0;
 
-        emit NewInterestParams(baseRatePerBlock, kink);
+        emit NewInterestParams(baseRatePerBlock, interestRateCeiling, kink, secondsOfLastCross);
+    }
+
+    function getTimeAdjustment(uint rate) {
+        uint interestRateCeilingInverted = invert(rate);
+        uint secondsSinceLastCross = block.timestamp - secondsOfLastCross;
+        uint yearsSinceLastCross = secondsSinceLastCross.mul(1e18).div(secondsPerYear);
+        uint denominator = yearsSinceLastCross * interestRateCeilingInverted;
+        return invert(denominator);
+    }
+
+    function invert(uint x) returns (uint) {
+        return 1e18.mult(1e18).div(x);
     }
 }
