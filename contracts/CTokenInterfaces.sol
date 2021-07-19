@@ -121,6 +121,34 @@ contract CTokenStorage {
      */
     uint public constant protocolSeizeShareMantissa = 2.8e16; //2.8%
 
+
+
+
+    /**
+     * @notice The approximate number of blocks per year that is assumed by the interest rate model
+     */
+    uint public constant blocksPerYear = 2102400;
+
+
+    // 365 days x 24 hrs x 60 min x 60 sec
+    uint public constant secondsPerYear = 31536000;
+
+    /**
+     * @notice The base interest rate which is the y-intercept when utilization rate is 0
+     */
+    uint public baseRatePerBlock;
+
+    uint public interestRateCeiling;
+
+    uint public secondsOfLastCross;
+
+    uint public previousUtilization;
+
+    /**
+     * @notice The targer utilization point at which the PID Controller multiplier logic is applied
+     */
+    uint public kink;
+
 }
 
 contract CTokenInterface is CTokenStorage {
@@ -245,6 +273,10 @@ contract CTokenInterface is CTokenStorage {
     function _setReserveFactor(uint newReserveFactorMantissa) external returns (uint);
     function _reduceReserves(uint reduceAmount) external returns (uint);
     function _setInterestRateModel(InterestRateModel newInterestRateModel) public returns (uint);
+
+
+    /*** Pid Controller ***/
+    event NewInterestParams(uint baseRatePerBlock, uint interestRateCeiling, uint kink, uint secondsOfLastCross);
 }
 
 contract CErc20Storage {

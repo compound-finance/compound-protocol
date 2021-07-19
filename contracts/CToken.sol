@@ -6,6 +6,7 @@ import "./ErrorReporter.sol";
 import "./Exponential.sol";
 import "./EIP20Interface.sol";
 import "./InterestRateModel.sol";
+import "./SafeMath.sol";
 
 /**
  * @title Compound's CToken Contract
@@ -13,6 +14,8 @@ import "./InterestRateModel.sol";
  * @author Compound
  */
 contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
+    using SafeMath for uint;
+
     /**
      * @notice Initialize the money market
      * @param comptroller_ The address of the Comptroller
@@ -27,7 +30,11 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
                         uint initialExchangeRateMantissa_,
                         string memory name_,
                         string memory symbol_,
-                        uint8 decimals_) public {
+                        uint8 decimals_,
+                        uint baseRatePerYear_,
+                        uint interestRateCeiling_,
+                        uint kink_
+                ) public {
         require(msg.sender == admin, "only admin may initialize the market");
         require(accrualBlockNumber == 0 && borrowIndex == 0, "market may only be initialized once");
 
@@ -53,6 +60,8 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
 
         // The counter starts true to prevent changing it from zero to non-zero (i.e. smaller cost/refund)
         _notEntered = true;
+
+        updatePIDControllerModelInternal(baseRatePerYear_, interestRateCeiling_, kink_);
     }
 
     /**
@@ -1454,5 +1463,114 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         _notEntered = false;
         _;
         _notEntered = true; // get a gas-refund post-Istanbul
+    }
+
+
+
+    // ----------------------------------------PID CONTROLLER----------------------------------------------------
+
+    /**
+     * @notice Update the parameters of the interest rate model (only callable by owner, i.e. Timelock)
+     * @param baseRatePerYear_ The approximate target base APR, as a mantissa (scaled by 1e18)
+     * @param kink_ The target utilization point
+     */
+    function updatePIDControllerModel(uint baseRatePerYear_, uint interestRateCeiling_, uint kink_) external {
+        require(msg.sender == admin, "only the owner may call this function.");
+
+        updatePIDControllerModelInternal(baseRatePerYear_, interestRateCeiling_, kink_);
+    }
+
+    /**
+     * @notice Calculates the utilization rate of the market: `borrows / (cash + borrows - reserves)`
+     * @param cash The amount of cash in the market
+     * @param borrows The amount of borrows in the market
+     * @param reserves The amount of reserves in the market (currently unused)
+     * @return The utilization rate as a mantissa between [0, 1e18]
+     */
+    function utilizationRate(uint cash, uint borrows, uint reserves) public pure returns (uint) {
+        // Utilization rate is 0 when there are no borrows
+        if (borrows == 0) {
+            return 0;
+        }
+
+        return borrows.mul(1e18).div(cash.add(borrows).sub(reserves));
+    }
+
+    /**
+     * @notice Calculates the current borrow rate per block, with the error code expected by the market
+     * @param cash The amount of cash in the market
+     * @param borrows The amount of borrows in the market
+     * @param reserves The amount of reserves in the market
+     * @return The borrow rate percentage per block as a mantissa (scaled by 1e18)
+     */ //todo: need to somehow make this view again
+    function getBorrowRateInternal(uint cash, uint borrows, uint reserves) internal returns (uint) {
+        uint util = utilizationRate(cash, borrows, reserves);
+
+        if (util == kink) {
+            previousUtilization = util;
+            return baseRatePerBlock;
+        }
+
+        uint currentBorrowRatePerBlock;
+        if (util > kink) {
+            // Increase base rate
+            uint timeAdjustment = getTimeAdjustment(interestRateCeiling);
+            currentBorrowRatePerBlock = baseRatePerBlock.add(interestRateCeiling).sub(timeAdjustment);
+        } else {
+            // Decrease base rate
+            uint timeAdjustment = getTimeAdjustment(baseRatePerBlock);
+            currentBorrowRatePerBlock = baseRatePerBlock.add(timeAdjustment).sub(baseRatePerBlock);
+        }
+
+        // Determine if a threshold is crossed
+        if ((util > kink && previousUtilization <= kink) || (util < kink && previousUtilization >= kink)) {
+            secondsOfLastCross = block.timestamp;
+            baseRatePerBlock = currentBorrowRatePerBlock;
+        }
+        previousUtilization = util;
+        return currentBorrowRatePerBlock;
+    }
+
+    /**
+     * @notice Calculates the current supply rate per block
+     * @param cash The amount of cash in the market
+     * @param borrows The amount of borrows in the market
+     * @param reserves The amount of reserves in the market
+     * @param reserveFactorMantissa The current reserve factor for the market
+     * @return The supply rate percentage per block as a mantissa (scaled by 1e18)
+     */ // todo: make this view again
+    function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) public returns (uint) {
+        uint oneMinusReserveFactor = uint(1e18).sub(reserveFactorMantissa);
+        uint borrowRate = getBorrowRateInternal(cash, borrows, reserves);
+        uint rateToPool = borrowRate.mul(oneMinusReserveFactor).div(1e18);
+        return utilizationRate(cash, borrows, reserves).mul(rateToPool).div(1e18);
+    }
+
+    /**
+     * @notice Internal function to update the parameters of the interest rate model
+     * @param baseRatePerYear_ The approximate target base APR, as a mantissa (scaled by 1e18)
+     * @param interestRateCeiling_ todo: document
+     * @param kink_ The target utilization point
+     */
+    function updatePIDControllerModelInternal(uint baseRatePerYear_, uint interestRateCeiling_, uint kink_) internal {
+        baseRatePerBlock = baseRatePerYear_.div(blocksPerYear);
+        interestRateCeiling = interestRateCeiling_;
+        kink = kink_;
+        secondsOfLastCross = block.timestamp;
+
+        emit NewInterestParams(baseRatePerBlock, interestRateCeiling, kink, secondsOfLastCross);
+    }
+
+    function getTimeAdjustment(uint rate) public view returns (uint) {
+        uint interestRateCeilingInverted = invert(rate);
+        uint secondsSinceLastCross = block.timestamp - secondsOfLastCross;
+        uint yearsSinceLastCross = secondsSinceLastCross.mul(1e18).div(secondsPerYear);
+        uint denominator = yearsSinceLastCross * interestRateCeilingInverted;
+        return invert(denominator);
+    }
+
+    function invert(uint x) public pure returns (uint) {
+        uint scalar = 1e18;
+        return scalar.mul(scalar).div(x);
     }
 }
