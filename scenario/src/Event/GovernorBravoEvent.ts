@@ -190,6 +190,27 @@ async function setWhitelistedAccountExpiration(
   return world;
 }
 
+async function setWhitelistGuardian(
+  world: World,
+  from: string,
+  governor: GovernorBravo,
+  account: string
+): Promise<World> {
+  let invokation = await invoke(
+    world,
+    governor.methods._setWhitelistGuardian(account),
+    from
+  );
+
+  world = addAction(
+    world,
+    `Set whitelist guardian to ${account}`,
+    invokation
+  );
+
+  return world;
+}
+
 async function setImplementation(
   world: World,
   from: string,
@@ -489,6 +510,22 @@ export function governorBravoCommands() {
       ],
       (world, from, { governor, address, expiration }) =>
         setWhitelistedAccountExpiration(world, from, governor, address.val, expiration),
+      { namePos: 1 }
+    ),
+    new Command<{ governor: GovernorBravo; address: AddressV, expiration: NumberV }>(
+      `
+        #### SetWhitelistGuardian
+
+        * "GovernorBravo <Governor> SetWhitelistGuardian <Account>" - Sets whitelistGuardian account
+        * E.g. "GovernorBravo GovernorBravoScenario SetWhitelistGuardian Robert"
+    `,
+      "SetWhitelistGuardian",
+      [
+        new Arg("governor", getGovernorV),
+        new Arg("address", getAddressV),
+      ],
+      (world, from, { governor, address, expiration }) =>
+        setWhitelistGuardian(world, from, governor, address.val),
       { namePos: 1 }
     ),
     new Command<{ governor: GovernorBravo; governorAlpha: AddressV }>(
