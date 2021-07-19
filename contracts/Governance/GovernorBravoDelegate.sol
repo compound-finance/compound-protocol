@@ -160,8 +160,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
 
         // Whitelisted proposers can't be canceled for falling below proposal threshold
         if(isWhitelisted(proposal.proposer)) {
-            // TODO: Possibly add multisig that can cancel 
-            require(msg.sender == proposal.proposer, "GovernorBravo::cancel: whitelisted proposer");
+            require(msg.sender == proposal.proposer || msg.sender == whitelistGuardian, "GovernorBravo::cancel: whitelisted proposer");
         }
         else {
             require(msg.sender == proposal.proposer || (comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold), "GovernorBravo::cancel: proposer above threshold");
@@ -344,6 +343,18 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
 
         emit WhitelistAccountSet(account, expiration);
     }
+
+    /**
+     * @notice Admin function for setting the whitelistGuardian. WhitelistGuardian can cancel proposals from whitelisted addresses
+     * @param account Account to set whitelistGuardian to (0x0 to remove whitelistGuardian)
+     */
+     function _setWhitelistGuardian(address account) external {
+        require(msg.sender == admin, "GovernorBravo::_setWhitelistGuardian: admin only");
+        address oldGuardian = whitelistGuardian;
+        whitelistGuardian = account;
+
+        emit WhitelistGuardianSet(oldGuardian, whitelistGuardian);
+     }
 
     /**
       * @notice Initiate the GovernorBravo contract

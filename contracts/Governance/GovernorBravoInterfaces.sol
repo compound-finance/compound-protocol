@@ -43,6 +43,9 @@ contract GovernorBravoEvents {
 
     /// @notice Emitted when proposer account whitelist status is set
     event WhitelistAccountSet(address account, uint expiration);
+
+    /// @notice Emitted when the whitelistGuardian is set
+    event WhitelistGuardianSet(address oldGuardian, address newGuardian);
 }
 
 contract GovernorBravoDelegatorStorage {
@@ -168,6 +171,9 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
 contract GovernorBravoDelegateStorageV2 is GovernorBravoDelegateStorageV1 {
     /// @notice Stores the expiration of account whitelist status as a timestamp
     mapping (address => uint) public whitelistedAccountExpirations;
+
+    /// @notice Address which manages whitelisted proposals
+    address public whitelistGuardian;
 }
 
 interface TimelockInterface {
