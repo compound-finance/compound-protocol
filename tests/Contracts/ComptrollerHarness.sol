@@ -97,6 +97,14 @@ contract BoolComptroller is ComptrollerInterface {
         return allowMint ? noError : opaqueError;
     }
 
+    function mintWithinLimits(address _cToken, uint _exchangeRateMantissa, uint _accountTokens, uint _mintAmount) public returns (uint) {
+        _cToken;
+        _exchangeRateMantissa;
+        _accountTokens;
+        _mintAmount;
+        return allowMint ? noError : opaqueError;
+    }
+
     function mintVerify(address _cToken, address _minter, uint _mintAmount, uint _mintTokens) external {
         _cToken;
         _minter;
@@ -124,6 +132,12 @@ contract BoolComptroller is ComptrollerInterface {
         _cToken;
         _borrower;
         _borrowAmount;
+        return allowBorrow ? noError : opaqueError;
+    }
+
+    function borrowWithinLimits(address _cToken, uint _accountBorrowsNew) public returns (uint) {
+        _cToken;
+        _accountBorrowsNew;
         return allowBorrow ? noError : opaqueError;
     }
 
