@@ -3,14 +3,14 @@ pragma solidity ^0.5.16;
 import "./SafeMath.sol";
 
 /**
-  * @title Logic for Compound's JumpRateModel Contract V2.
+  * @title Logic for Compound's PIDControllerRateModel Contract V2.
   * @author Compound (modified by Dharma Labs, refactored by Arr00)
   * @notice Version 2 modifies Version 1 by enabling updateable parameters.
   */
 contract PIDControllerV2 {
     using SafeMath for uint;
 
-    event NewInterestParams(uint baseRatePerBlock, uint multiplierPerBlock, uint jumpMultiplierPerBlock, uint kink);
+    event NewInterestParams(uint baseRatePerBlock, uint kink);
 
     /**
      * @notice The address of the owner, i.e. the Timelock contract, which can update parameters directly
@@ -22,10 +22,6 @@ contract PIDControllerV2 {
      */
     uint public constant blocksPerYear = 2102400;
 
-    /**
-     * @notice The multiplier of utilization rate that gives the slope of the interest rate
-     */
-    uint public multiplierPerBlock;
 
     /**
      * @notice The base interest rate which is the y-intercept when utilization rate is 0
@@ -33,40 +29,31 @@ contract PIDControllerV2 {
     uint public baseRatePerBlock;
 
     /**
-     * @notice The multiplierPerBlock after hitting a specified utilization point
-     */
-    uint public jumpMultiplierPerBlock;
-
-    /**
-     * @notice The utilization point at which the jump multiplier is applied
+     * @notice The targer utilization point at which the PID Controller multiplier logic is applied
      */
     uint public kink;
 
     /**
      * @notice Construct an interest rate model
      * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by 1e18)
-    //  * @param multiplierPerYear The rate of increase in interest rate wrt utilization (scaled by 1e18)
-    //  * @param jumpMultiplierPerYear The multiplierPerBlock after hitting a specified utilization point
-     * @param kink_ The utilization point at which the jump multiplier is applied
+     * @param kink_ The target utilization point
      * @param owner_ The address of the owner, i.e. the Timelock contract (which has the ability to update parameters directly)
      */
     constructor(uint baseRatePerYear, uint kink_, address owner_) internal {
         owner = owner_;
 
-        updateJumpRateModelInternal(baseRatePerYear, kink_);
+        updatePIDControllerModelInternal(baseRatePerYear, kink_);
     }
 
     /**
      * @notice Update the parameters of the interest rate model (only callable by owner, i.e. Timelock)
      * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by 1e18)
-    //  * @param multiplierPerYear The rate of increase in interest rate wrt utilization (scaled by 1e18)
-    //  * @param jumpMultiplierPerYear The multiplierPerBlock after hitting a specified utilization point
-     * @param kink_ The utilization point at which the jump multiplier is applied
+     * @param kink_ The target utilization point
      */
-    function updateJumpRateModel(uint baseRatePerYear, uint kink_) external {
+    function updatePIDControllerModel(uint baseRatePerYear, uint kink_) external {
         require(msg.sender == owner, "only the owner may call this function.");
 
-        updateJumpRateModelInternal(baseRatePerYear, kink_);
+        updatePIDControllerModelInternal(baseRatePerYear, kink_);
     }
 
     /**
@@ -125,16 +112,12 @@ contract PIDControllerV2 {
     /**
      * @notice Internal function to update the parameters of the interest rate model
      * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by 1e18)
-     * @param multiplierPerYear The rate of increase in interest rate wrt utilization (scaled by 1e18)
-     * @param jumpMultiplierPerYear The multiplierPerBlock after hitting a specified utilization point
-     * @param kink_ The utilization point at which the jump multiplier is applied
+     * @param kink_ The target utilization point
      */
-    function updateJumpRateModelInternal(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) internal {
+    function updatePIDControllerModelInternal(uint baseRatePerYear, uint kink_) internal {
         baseRatePerBlock = baseRatePerYear.div(blocksPerYear);
-        multiplierPerBlock = (multiplierPerYear.mul(1e18)).div(blocksPerYear.mul(kink_));
-        jumpMultiplierPerBlock = jumpMultiplierPerYear.div(blocksPerYear);
         kink = kink_;
 
-        emit NewInterestParams(baseRatePerBlock, multiplierPerBlock, jumpMultiplierPerBlock, kink);
+        emit NewInterestParams(baseRatePerBlock, kink);
     }
 }
