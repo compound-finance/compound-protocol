@@ -1,6 +1,5 @@
 pragma solidity ^0.5.16;
 
-import "./ComptrollerStorage.sol";
 import "./ComptrollerInterface.sol";
 import "./CTokenInterfaces.sol";
 import "./ErrorReporter.sol";
@@ -32,7 +31,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
                         uint8 decimals_,
                         uint256 reserveFactorMantissa_,
                         uint256 adminFeeMantissa_) public {
-        require(msg.sender == address(comptroller_), "only comptroller may initialize the market");
+        require(msg.sender == address(fuseAdmin), "only Fuse admin may initialize the market");
         require(accrualBlockNumber == 0 && borrowIndex == 0, "market may only be initialized once");
 
         // Set initial exchange rate
