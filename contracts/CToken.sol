@@ -242,7 +242,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @return The borrow interest rate per block, scaled by 1e18
      */
     function borrowRatePerBlock() external view returns (uint) {
-        return interestRateModel.getBorrowRate(getCashPrior(), totalBorrows, totalReserves);
+        return getBorrowRateInternal(getCashPrior(), totalBorrows, totalReserves);
     }
 
     /**
@@ -250,7 +250,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @return The supply interest rate per block, scaled by 1e18
      */
     function supplyRatePerBlock() external view returns (uint) {
-        return interestRateModel.getSupplyRate(getCashPrior(), totalBorrows, totalReserves, reserveFactorMantissa);
+        return getSupplyRateInternal(getCashPrior(), totalBorrows, totalReserves, reserveFactorMantissa);
     }
 
     /**
@@ -407,7 +407,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         uint borrowIndexPrior = borrowIndex;
 
         /* Calculate the current borrow interest rate */
-        uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
+        uint borrowRateMantissa = getBorrowRateInternal(cashPrior, borrowsPrior, reservesPrior);
         require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
 
         /* Calculate the number of blocks elapsed since the last accrual */
@@ -463,6 +463,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         borrowIndex = borrowIndexNew;
         totalBorrows = totalBorrowsNew;
         totalReserves = totalReservesNew;
+        updateInterestRate(cashPrior, borrowsPrior, reservesPrior, borrowRateMantissa);
 
         /* We emit an AccrueInterest event */
         emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
@@ -1496,6 +1497,17 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         return borrows.mul(1e18).div(cash.add(borrows).sub(reserves));
     }
 
+    function updateInterestRate(uint cash, uint borrows, uint reserves, uint borrowRatePerBlock_) internal {
+        uint util = utilizationRate(cash, borrows, reserves);
+
+        // Determine if a threshold is crossed
+        if ((util > kink && previousUtilization <= kink) || (util < kink && previousUtilization >= kink)) {
+            secondsOfLastCross = block.timestamp;
+            baseRatePerBlock = borrowRatePerBlock_;
+        }
+        previousUtilization = util;
+    }
+
     /**
      * @notice Calculates the current borrow rate per block, with the error code expected by the market
      * @param cash The amount of cash in the market
@@ -1503,11 +1515,10 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param reserves The amount of reserves in the market
      * @return The borrow rate percentage per block as a mantissa (scaled by 1e18)
      */ //todo: need to somehow make this view again
-    function getBorrowRateInternal(uint cash, uint borrows, uint reserves) internal returns (uint) {
+    function getBorrowRateInternal(uint cash, uint borrows, uint reserves) internal view returns (uint) {
         uint util = utilizationRate(cash, borrows, reserves);
 
         if (util == kink) {
-            previousUtilization = util;
             return baseRatePerBlock;
         }
 
@@ -1522,12 +1533,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
             currentBorrowRatePerBlock = baseRatePerBlock.add(timeAdjustment).sub(baseRatePerBlock);
         }
 
-        // Determine if a threshold is crossed
-        if ((util > kink && previousUtilization <= kink) || (util < kink && previousUtilization >= kink)) {
-            secondsOfLastCross = block.timestamp;
-            baseRatePerBlock = currentBorrowRatePerBlock;
-        }
-        previousUtilization = util;
         return currentBorrowRatePerBlock;
     }
 
@@ -1539,7 +1544,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param reserveFactorMantissa The current reserve factor for the market
      * @return The supply rate percentage per block as a mantissa (scaled by 1e18)
      */ // todo: make this view again
-    function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) public returns (uint) {
+    function getSupplyRateInternal(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) public view returns (uint) {
         uint oneMinusReserveFactor = uint(1e18).sub(reserveFactorMantissa);
         uint borrowRate = getBorrowRateInternal(cash, borrows, reserves);
         uint rateToPool = borrowRate.mul(oneMinusReserveFactor).div(1e18);
