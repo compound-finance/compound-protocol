@@ -28,6 +28,9 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
                 string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
+                uint baseRatePerYear_,
+                uint interestRateCeiling_,
+                uint kink_,
                 address payable admin_,
                 address implementation_,
                 bytes memory becomeImplementationData) public {
@@ -35,14 +38,17 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
         admin = msg.sender;
 
         // First delegate gets to initialize the delegator (i.e. storage contract)
-        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,address,uint256,string,string,uint8)",
+        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,address,uint256,string,string,uint8,uint8,uint8,uint8)",
                                                             underlying_,
                                                             comptroller_,
                                                             interestRateModel_,
                                                             initialExchangeRateMantissa_,
                                                             name_,
                                                             symbol_,
-                                                            decimals_));
+                                                            decimals_,
+                                                             baseRatePerYear_,
+                                                             interestRateCeiling_,
+                                                             kink_));
 
         // New implementations always get set via the settor (post-initialize)
         _setImplementation(implementation_, false, becomeImplementationData);

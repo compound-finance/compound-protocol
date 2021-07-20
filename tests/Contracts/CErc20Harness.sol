@@ -234,6 +234,9 @@ contract CErc20DelegatorScenario is CErc20Delegator {
                 string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
+                uint baseRatePerYear_,
+                uint interestRateCeiling_,
+                uint kink_,
                 address payable admin_,
                 address implementation_,
                 bytes memory becomeImplementationData)
@@ -245,6 +248,9 @@ contract CErc20DelegatorScenario is CErc20Delegator {
     name_,
     symbol_,
     decimals_,
+    baseRatePerYear_,
+    interestRateCeiling_,
+    kink_,
     admin_,
     implementation_,
     becomeImplementationData) public {}
