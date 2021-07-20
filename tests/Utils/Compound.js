@@ -133,7 +133,7 @@ async function makeCToken(opts = {}) {
   const name = opts.name || `CToken ${symbol}`;
   const admin = opts.admin || root;
   const baseRatePerYear = opts.baseRatePerYear || etherMantissa(0.03);
-  const interestRateCeiling = opts.interestRateCeiling || etherMantissa(0.2);
+  const interestRateCeiling = opts.interestRateCeiling || etherMantissa(0.05);
   const targetUtilization = opts.targetUtilization || etherMantissa(0.8);
 
   let cToken, underlying;

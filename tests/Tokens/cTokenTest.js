@@ -69,9 +69,7 @@ describe('CToken', function () {
     it("has a borrow rate at target utilization ratio", async () => {
       const cToken = await makeCToken({ supportMarket: true, baseRatePerYear: etherMantissa(0.05), targetUtilization: etherMantissa(1) });
       // Set utilization ratio to 1 so it equals the target utilization ratio.
-      await send(cToken, 'harnessSetReserveFactorFresh', [etherMantissa(.01)]);
       await send(cToken, 'harnessExchangeRateDetails', [1, 1, 0]);
-      await send(cToken, 'harnessSetExchangeRate', [etherMantissa(1)]);
       const perBlock = await call(cToken, 'borrowRatePerBlock');
       expect(Math.abs(perBlock * 2102400 - 5e16)).toBeLessThanOrEqual(1e8);
     });
@@ -82,8 +80,12 @@ describe('CToken', function () {
       await send(cToken, 'harnessExchangeRateDetails', [1, 1, 0]);
       // Fast forward one day
       await send(cToken, 'harnessFastForwardBlockTimestamp', [86400]); // 1 day
-      const perBlock = await call(cToken, 'borrowRatePerBlock');
-      expect(Math.abs(perBlock * 2102400 - 5.01095290e16)).toBeLessThanOrEqual(1e8);
+      const perBlock1 = await call(cToken, 'borrowRatePerBlock');
+      expect(Math.abs(perBlock1 * 2102400 - 5.00068483e16)).toBeLessThanOrEqual(1e8);
+      // Fast forward one year
+      await send(cToken, 'harnessFastForwardBlockTimestamp', [31536000]); // 365 days 
+      const perBlock2 = await call(cToken, 'borrowRatePerBlock');
+      expect(Math.abs(perBlock2 * 2102400 - 5.23871641e16)).toBeLessThanOrEqual(1e8);
     });
 
     it("has a borrow rate when below target utilization ratio", async () => {
@@ -92,33 +94,31 @@ describe('CToken', function () {
       await send(cToken, 'harnessExchangeRateDetails', [1, 0, 0]);
       // Fast forward one day
       await send(cToken, 'harnessFastForwardBlockTimestamp', [86400]); // 1 day      
-      const perBlock = await call(cToken, 'borrowRatePerBlock');
-      expect(Math.abs(perBlock * 2102400 - 4.99931516e16)).toBeLessThanOrEqual(1e8);
+      const perBlock1 = await call(cToken, 'borrowRatePerBlock');
+      expect(Math.abs(perBlock1 * 2102400 - 4.99931516e16)).toBeLessThanOrEqual(1e8);
+      // Fast forward one year
+      await send(cToken, 'harnessFastForwardBlockTimestamp', [31536000]); // 365 days 
+      const perBlock2 = await call(cToken, 'borrowRatePerBlock');
+      expect(Math.abs(perBlock2 * 2102400 - 4.76128358e16)).toBeLessThanOrEqual(1e8);
     });
   });
 
   describe('supplyRatePerBlock', () => {
     it("returns 0 if there's no supply", async () => {
-      const cToken = await makeCToken({ supportMarket: true, interestRateModelOpts: { kind: 'jump-rate', baseRate: .05, multiplier: 0.45, kink: 0.95, jump: 5 } });
+      const cToken = await makeCToken({ supportMarket: true, baseRatePerYear: etherMantissa(0.05), targetUtilization: etherMantissa(1) });
       const perBlock = await call(cToken, 'supplyRatePerBlock');
       await expect(perBlock).toEqualNumber(0);
     });
 
     it("has a supply rate", async () => {
-      const baseRate = 0.05;
-      const multiplier = 0.45;
-      const kink = 0.95;
-      const jump = 5 * multiplier;
-      const cToken = await makeCToken({ supportMarket: true, interestRateModelOpts: { kind: 'jump-rate', baseRate, multiplier, kink, jump } });
+      const cToken = await makeCToken({ supportMarket: true, baseRatePerYear: etherMantissa(0.05), targetUtilization: etherMantissa(1) });
       await send(cToken, 'harnessSetReserveFactorFresh', [etherMantissa(.01)]);
       await send(cToken, 'harnessExchangeRateDetails', [1, 1, 0]);
       await send(cToken, 'harnessSetExchangeRate', [etherMantissa(1)]);
-      // Full utilization (Over the kink so jump is included), 1% reserves
-      const borrowRate = baseRate + multiplier * kink + jump * .05;
-      const expectedSuplyRate = borrowRate * .99;
-
-      const perBlock = await call(cToken, 'supplyRatePerBlock');
-      expect(Math.abs(perBlock * 2102400 - expectedSuplyRate * 1e18)).toBeLessThanOrEqual(1e8);
+      const borrowRatePerBlock = await call(cToken, 'borrowRatePerBlock');      
+      const expectedSupplyRate = borrowRatePerBlock * .99;
+      const supplyRatePerBlock = await call(cToken, 'supplyRatePerBlock');
+      expect(Math.abs(supplyRatePerBlock - expectedSupplyRate)).toBeLessThanOrEqual(1e8);
     });
   });
 
@@ -136,24 +136,17 @@ describe('CToken', function () {
       await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
     });
 
-    it("reverts if interest accrual fails", async () => {
-      await send(cToken.interestRateModel, 'setFailBorrowRate', [true]);
-      // make sure we accrue interest
-      await send(cToken, 'harnessFastForward', [1]);
-      await expect(send(cToken, 'borrowBalanceCurrent', [borrower])).rejects.toRevert("revert INTEREST_RATE_MODEL_ERROR");
-    });
-
     it("returns successful result from borrowBalanceStored with no interest", async () => {
       await setBorrowRate(cToken, 0);
       await pretendBorrow(cToken, borrower, 1, 1, 5e18);
-      expect(await call(cToken, 'borrowBalanceCurrent', [borrower])).toEqualNumber(5e18)
+      expect(await call(cToken, 'borrowBalanceCurrent', [borrower])).toEqualNumber(5e18);
     });
 
     it("returns successful result from borrowBalanceCurrent with no interest", async () => {
-      await setBorrowRate(cToken, 0);
-      await pretendBorrow(cToken, borrower, 1, 3, 5e18);
+      cToken = await makeCToken({ baseRatePerYear: etherMantissa(0.0), targetUtilization: etherMantissa(1) });
+      await pretendBorrow(cToken, borrower, 1, 1, 5e18);
       expect(await send(cToken, 'harnessFastForward', [5])).toSucceed();
-      expect(await call(cToken, 'borrowBalanceCurrent', [borrower])).toEqualNumber(5e18 * 3)
+      expect(await call(cToken, 'borrowBalanceCurrent', [borrower])).toEqualNumber(5e18)
     });
   });
 
