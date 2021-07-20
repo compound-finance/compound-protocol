@@ -147,7 +147,7 @@ contract CTokenStorage {
     /**
      * @notice The targer utilization point at which the PID Controller multiplier logic is applied
      */
-    uint public kink;
+    uint public targetUtilization;
 
 }
 

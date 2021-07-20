@@ -67,7 +67,7 @@ describe('CToken', function () {
 
   describe('borrowRatePerBlock', () => {
     it("has a borrow rate at target utilization ratio", async () => {
-      const cToken = await makeCToken({ supportMarket: true, baseRatePerYear: etherMantissa(0.05), kink: etherMantissa(1) });
+      const cToken = await makeCToken({ supportMarket: true, baseRatePerYear: etherMantissa(0.05), targetUtilization: etherMantissa(1) });
       // Set utilization ratio to 1 so it equals the target utilization ratio.
       await send(cToken, 'harnessSetReserveFactorFresh', [etherMantissa(.01)]);
       await send(cToken, 'harnessExchangeRateDetails', [1, 1, 0]);
@@ -77,7 +77,7 @@ describe('CToken', function () {
     });
 
     it("has a borrow rate when above target utilization ratio", async () => {
-      const cToken = await makeCToken({ supportMarket: true, baseRatePerYear: etherMantissa(0.05), kink: etherMantissa(0.8) });
+      const cToken = await makeCToken({ supportMarket: true, baseRatePerYear: etherMantissa(0.05), targetUtilization: etherMantissa(0.8) });
       // Set utilization ratio to 1 so it is above the target utilization ratio.
       await send(cToken, 'harnessExchangeRateDetails', [1, 1, 0]);
       // Fast forward one day
@@ -87,7 +87,7 @@ describe('CToken', function () {
     });
 
     it("has a borrow rate when below target utilization ratio", async () => {
-      const cToken = await makeCToken({ supportMarket: true, baseRatePerYear: etherMantissa(0.05), kink: etherMantissa(1) });
+      const cToken = await makeCToken({ supportMarket: true, baseRatePerYear: etherMantissa(0.05), targetUtilization: etherMantissa(1) });
       // Set utilization ratio to 0 so it is below the target utilization ratio.
       await send(cToken, 'harnessExchangeRateDetails', [1, 0, 0]);
       // Fast forward one day

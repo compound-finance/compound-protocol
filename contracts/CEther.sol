@@ -27,11 +27,11 @@ contract CEther is CToken {
                 address payable admin_,
                 uint baseRatePerYear_,
                 uint interestRateCeiling_,
-                uint kink_) public {
+                uint targetUtilization_) public {
         // Creator of the contract is admin during initialization
         admin = msg.sender;
 
-        initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, baseRatePerYear_, interestRateCeiling_, kink_);
+        initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, baseRatePerYear_, interestRateCeiling_, targetUtilization_);
 
         // Set the proper admin now that initialization is done
         admin = admin_;

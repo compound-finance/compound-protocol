@@ -33,7 +33,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
                         uint8 decimals_,
                         uint baseRatePerYear_,
                         uint interestRateCeiling_,
-                        uint kink_
+                        uint targetUtilization_
                 ) public {
         require(msg.sender == admin, "only admin may initialize the market");
         require(accrualBlockNumber == 0 && borrowIndex == 0, "market may only be initialized once");
@@ -64,7 +64,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         // The counter starts true to prevent changing it from zero to non-zero (i.e. smaller cost/refund)
         _notEntered = true;
 
-        updatePIDControllerModelInternal(baseRatePerYear_, interestRateCeiling_, kink_);
+        updatePIDControllerModelInternal(baseRatePerYear_, interestRateCeiling_, targetUtilization_);
     }
 
     /**
@@ -1476,12 +1476,12 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
     /**
      * @notice Update the parameters of the interest rate model (only callable by owner, i.e. Timelock)
      * @param baseRatePerYear_ The approximate target base APR, as a mantissa (scaled by 1e18)
-     * @param kink_ The target utilization point
+     * @param targetUtilization_ The target utilization point
      */
-    function updatePIDControllerModel(uint baseRatePerYear_, uint interestRateCeiling_, uint kink_) external {
+    function updatePIDControllerModel(uint baseRatePerYear_, uint interestRateCeiling_, uint targetUtilization_) external {
         require(msg.sender == admin, "only the owner may call this function.");
 
-        updatePIDControllerModelInternal(baseRatePerYear_, interestRateCeiling_, kink_);
+        updatePIDControllerModelInternal(baseRatePerYear_, interestRateCeiling_, targetUtilization_);
     }
 
     /**
@@ -1504,7 +1504,8 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         uint util = utilizationRate(cash, borrows, reserves);
 
         // Determine if a threshold is crossed
-        if ((util > kink && previousUtilization <= kink) || (util < kink && previousUtilization >= kink)) {
+        if ((util > targetUtilization && previousUtilization <= targetUtilization) || 
+            (util < targetUtilization && previousUtilization >= targetUtilization)) {
             secondsOfLastCross = getBlockTimestamp();
             baseRatePerBlock = borrowRatePerBlock_;
         }
@@ -1521,13 +1522,13 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
     function getBorrowRateInternal(uint cash, uint borrows, uint reserves) internal view returns (uint) {
         uint util = utilizationRate(cash, borrows, reserves);
 
-        if (util == kink) {
+        if (util == targetUtilization) {
             return baseRatePerBlock;
         }
 
         uint baseRatePerYear = baseRatePerBlock.mul(blocksPerYear);
         uint currentBorrowRatePerYear;
-        if (util > kink) {
+        if (util > targetUtilization) {
             // Increase base rate
             uint interestRateCeilingPerYear = interestRateCeiling.mul(blocksPerYear);
             uint timeAdjustment = getTimeAdjustment(interestRateCeilingPerYear);
@@ -1560,15 +1561,15 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @notice Internal function to update the parameters of the interest rate model
      * @param baseRatePerYear_ The approximate target base APR, as a mantissa (scaled by 1e18)
      * @param interestRateCeiling_ todo: document
-     * @param kink_ The target utilization point
+     * @param targetUtilization_ The target utilization point
      */
-    function updatePIDControllerModelInternal(uint baseRatePerYear_, uint interestRateCeiling_, uint kink_) internal {
+    function updatePIDControllerModelInternal(uint baseRatePerYear_, uint interestRateCeiling_, uint targetUtilization_) internal {
         baseRatePerBlock = baseRatePerYear_.div(blocksPerYear);
         interestRateCeiling = interestRateCeiling_.div(blocksPerYear);
-        kink = kink_;
+        targetUtilization = targetUtilization_;
         secondsOfLastCross = getBlockTimestamp();
 
-        emit NewInterestParams(baseRatePerBlock, interestRateCeiling, kink, secondsOfLastCross);
+        emit NewInterestParams(baseRatePerBlock, interestRateCeiling, targetUtilization, secondsOfLastCross);
     }
 
     function getTimeAdjustment(uint ratePerYear) public view returns (uint) {

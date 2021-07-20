@@ -134,7 +134,7 @@ async function makeCToken(opts = {}) {
   const admin = opts.admin || root;
   const baseRatePerYear = opts.baseRatePerYear || etherMantissa(0.03);
   const interestRateCeiling = opts.interestRateCeiling || etherMantissa(0.2);
-  const kink = opts.kink || etherMantissa(0.8);
+  const targetUtilization = opts.targetUtilization || etherMantissa(0.8);
 
   let cToken, underlying;
   let cDelegator, cDelegatee, cDaiMaker;
@@ -152,7 +152,7 @@ async function makeCToken(opts = {}) {
           admin,
           baseRatePerYear,
           interestRateCeiling,
-          kink
+          targetUtilization
         ])
       break;
 
@@ -171,7 +171,7 @@ async function makeCToken(opts = {}) {
           decimals,
           baseRatePerYear,
           interestRateCeiling,
-          kink,
+          targetUtilization,
           admin,
           cDelegatee._address,
           encodeParameters(['address', 'address'], [cDaiMaker._address, cDaiMaker._address])
@@ -194,7 +194,7 @@ async function makeCToken(opts = {}) {
           decimals,
           baseRatePerYear,
           interestRateCeiling,
-          kink,
+          targetUtilization,
           admin,
           cDelegatee._address,
           "0x0"
@@ -218,7 +218,7 @@ async function makeCToken(opts = {}) {
           decimals,
           baseRatePerYear,
           interestRateCeiling,
-          kink,
+          targetUtilization,
           admin,
           cDelegatee._address,
           "0x0"

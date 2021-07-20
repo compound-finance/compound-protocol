@@ -24,7 +24,7 @@ contract CErc20Harness is CErc20Immutable {
                 address payable admin_,                
                 uint baseRatePerYear_,
                 uint interestRateCeiling_,
-                uint kink_)
+                uint targetUtilization_)
     CErc20Immutable(
     underlying_,
     comptroller_,
@@ -36,7 +36,7 @@ contract CErc20Harness is CErc20Immutable {
     admin_,
     baseRatePerYear_,
     interestRateCeiling_,
-    kink_) public {}
+    targetUtilization_) public {}
 
     function doTransferOut(address payable to, uint amount) internal {
         require(failTransferToAddresses[to] == false, "TOKEN_TRANSFER_OUT_FAILED");
@@ -181,7 +181,7 @@ contract CErc20Scenario is CErc20Immutable {
                 address payable admin_,                
                 uint baseRatePerYear_,
                 uint interestRateCeiling_,
-                uint kink_)
+                uint targetUtilization_)
     CErc20Immutable(
     underlying_,
     comptroller_,
@@ -193,7 +193,7 @@ contract CErc20Scenario is CErc20Immutable {
     admin_,
     baseRatePerYear_,
     interestRateCeiling_,
-    kink_) public {}
+    targetUtilization_) public {}
 
     function setTotalBorrows(uint totalBorrows_) public {
         totalBorrows = totalBorrows_;
@@ -220,7 +220,7 @@ contract CEvil is CErc20Scenario {
                 address payable admin_,
                 uint baseRatePerYear_,
                 uint interestRateCeiling_,
-                uint kink_)
+                uint targetUtilization_)
     CErc20Scenario(
     underlying_,
     comptroller_,
@@ -232,7 +232,7 @@ contract CEvil is CErc20Scenario {
     admin_,
     baseRatePerYear_,
     interestRateCeiling_,
-    kink_) public {}
+    targetUtilization_) public {}
 
     function evilSeize(CToken treasure, address liquidator, address borrower, uint seizeTokens) public returns (uint) {
         return treasure.seize(liquidator, borrower, seizeTokens);
@@ -249,7 +249,7 @@ contract CErc20DelegatorScenario is CErc20Delegator {
                 uint8 decimals_,
                 uint baseRatePerYear_,
                 uint interestRateCeiling_,
-                uint kink_,
+                uint targetUtilization_,
                 address payable admin_,
                 address implementation_,
                 bytes memory becomeImplementationData)
@@ -263,7 +263,7 @@ contract CErc20DelegatorScenario is CErc20Delegator {
     decimals_,
     baseRatePerYear_,
     interestRateCeiling_,
-    kink_,
+    targetUtilization_,
     admin_,
     implementation_,
     becomeImplementationData) public {}

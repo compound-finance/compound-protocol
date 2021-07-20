@@ -19,7 +19,7 @@ contract CEtherHarness is CEther {
                 address payable admin_,
                 uint baseRatePerYear_,
                 uint interestRateCeiling_,
-                uint kink_)
+                uint targetUtilization_)
     CEther(
     comptroller_,
     interestRateModel_,
@@ -30,7 +30,7 @@ contract CEtherHarness is CEther {
     admin_,
     baseRatePerYear_,
     interestRateCeiling_,
-    kink_) public {}
+    targetUtilization_) public {}
 
     function doTransferOut(address payable to, uint amount) internal {
         require(failTransferToAddresses[to] == false, "TOKEN_TRANSFER_OUT_FAILED");
@@ -176,7 +176,7 @@ contract CEtherScenario is CEther {
                 address payable admin_,
                 uint baseRatePerYear_,
                 uint interestRateCeiling_,
-                uint kink_,
+                uint targetUtilization_,
                 ComptrollerInterface comptroller_,
                 InterestRateModel interestRateModel_,
                 uint initialExchangeRateMantissa)
@@ -189,7 +189,7 @@ contract CEtherScenario is CEther {
                admin_,
                baseRatePerYear_,
                interestRateCeiling_,
-               kink_) public {
+               targetUtilization_) public {
     }
 
     function setTotalBorrows(uint totalBorrows_) public {

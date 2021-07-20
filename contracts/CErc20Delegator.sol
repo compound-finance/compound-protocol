@@ -30,7 +30,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
                 uint8 decimals_,
                 uint baseRatePerYear_,
                 uint interestRateCeiling_,
-                uint kink_,
+                uint targetUtilization_,
                 address payable admin_,
                 address implementation_,
                 bytes memory becomeImplementationData) public {
@@ -48,7 +48,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
                                                             decimals_,
                                                             baseRatePerYear_,
                                                             interestRateCeiling_,
-                                                            kink_));
+                                                            targetUtilization_));
 
         // New implementations always get set via the settor (post-initialize)
         _setImplementation(implementation_, false, becomeImplementationData);
