@@ -1248,10 +1248,26 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
       * @param newCollateralFactorMantissa The new collateral factor, scaled by 1e18
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
-    function _deployMarket(bool isCEther, bytes calldata constructorData, uint newCollateralFactorMantissa) external returns (uint) {
-        CToken cToken = CToken(isCEther ? fuseAdmin.deployCEther(constructorData) : fuseAdmin.deployCErc20(constructorData));
+    function _deployMarket(
+        address underlying_,
+        address interestRateModel_,
+        string memory name_,
+        string memory symbol_,
+        address implementation_,
+        bytes memory becomeImplementationData,
+        uint256 reserveFactorMantissa_,
+        uint256 adminFeeMantissa_,
+        uint collateralFactorMantissa
+    ) external returns (uint) {
+        uint256 initialExchangeRateMantissa_ = 0.02e18;
+        require(underlying_ == address(0) ? fuseAdmin.cEtherDelegateWhitelist(implementation_, false) : fuseAdmin.cErc20DelegateWhitelist(implementation_, false), "CTokenDelegate contract not whitelisted by Fuse admin.");
+        CToken cToken = CToken(
+            underlying_ == address(0) ?
+            fuseAdmin.deployCEther(abi.encode(address(this), interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, EIP20Interface(underlying_).decimals(), implementation_, becomeImplementationData, reserveFactorMantissa_, adminFeeMantissa_, (address, address, uint256, string, string, uint8, address, bytes, uint256, uint256))) :
+            fuseAdmin.deployCErc20(abi.encode(underlying_, address(this), interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, 18, implementation_, becomeImplementationData, reserveFactorMantissa_, adminFeeMantissa_, (address, address, address, uint256, string, string, uint8, address, bytes, uint256, uint256)))
+        );
         uint256 err = _supportMarket(cToken);
-        return err == uint(Error.NO_ERROR) ? _setCollateralFactor(cToken, newCollateralFactorMantissa) : err;
+        return err == uint(Error.NO_ERROR) ? _setCollateralFactor(cToken, collateralFactorMantissa) : err;
     }
 
     /**
