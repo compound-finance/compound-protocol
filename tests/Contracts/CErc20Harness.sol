@@ -8,6 +8,7 @@ import "./ComptrollerScenario.sol";
 
 contract CErc20Harness is CErc20Immutable {
     uint blockNumber = 100000;
+    uint blockTimestamp = 86400; // 1 day
     uint harnessExchangeRate;
     bool harnessExchangeRateStored;
 
@@ -67,6 +68,18 @@ contract CErc20Harness is CErc20Immutable {
 
     function harnessFastForward(uint blocks) public {
         blockNumber += blocks;
+    }
+
+    function harnessSetBlockTimestamp(uint newBlockTimestamp) public {
+        blockTimestamp = newBlockTimestamp;
+    }
+
+    function harnessFastForwardBlockTimestamp(uint time) public {
+        blockTimestamp += time;
+    }
+
+    function getBlockTimestamp() public view returns (uint) {
+        return blockTimestamp;
     }
 
     function harnessSetBalance(address account, uint amount) external {
@@ -269,6 +282,7 @@ contract CErc20DelegateHarness is CErc20Delegate {
     event Log(string x, uint y);
 
     uint blockNumber = 100000;
+    uint blockTimestamp = 86400; // 1 day
     uint harnessExchangeRate;
     bool harnessExchangeRateStored;
 
@@ -300,6 +314,18 @@ contract CErc20DelegateHarness is CErc20Delegate {
 
     function harnessFastForward(uint blocks) public {
         blockNumber += blocks;
+    }
+
+    function harnessSetBlockTimestamp(uint newBlockTimestamp) public {
+        blockTimestamp = newBlockTimestamp;
+    }
+
+    function harnessFastForwardBlockTimestamp(uint time) public {
+        blockTimestamp += time;
+    }
+
+    function getBlockTimestamp() public view returns (uint) {
+        return blockTimestamp;
     }
 
     function harnessSetBalance(address account, uint amount) external {

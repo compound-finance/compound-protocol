@@ -66,10 +66,34 @@ describe('CToken', function () {
   });
 
   describe('borrowRatePerBlock', () => {
-    it("has a borrow rate", async () => {
-      const cToken = await makeCToken({ supportMarket: true, interestRateModelOpts: { kind: 'jump-rate', baseRate: .05, multiplier: 0.45, kink: 0.95, jump: 5 } });
+    it("has a borrow rate at target utilization ratio", async () => {
+      const cToken = await makeCToken({ supportMarket: true, baseRatePerYear: etherMantissa(0.05), kink: etherMantissa(1) });
+      // Set utilization ratio to 1 so it equals the target utilization ratio.
+      await send(cToken, 'harnessSetReserveFactorFresh', [etherMantissa(.01)]);
+      await send(cToken, 'harnessExchangeRateDetails', [1, 1, 0]);
+      await send(cToken, 'harnessSetExchangeRate', [etherMantissa(1)]);
       const perBlock = await call(cToken, 'borrowRatePerBlock');
       expect(Math.abs(perBlock * 2102400 - 5e16)).toBeLessThanOrEqual(1e8);
+    });
+
+    it("has a borrow rate when above target utilization ratio", async () => {
+      const cToken = await makeCToken({ supportMarket: true, baseRatePerYear: etherMantissa(0.05), kink: etherMantissa(0.8) });
+      // Set utilization ratio to 1 so it is above the target utilization ratio.
+      await send(cToken, 'harnessExchangeRateDetails', [1, 1, 0]);
+      // Fast forward one day
+      await send(cToken, 'harnessFastForwardBlockTimestamp', [86400]); // 1 day
+      const perBlock = await call(cToken, 'borrowRatePerBlock');
+      expect(Math.abs(perBlock * 2102400 - 5.01095290e16)).toBeLessThanOrEqual(1e8);
+    });
+
+    it("has a borrow rate when below target utilization ratio", async () => {
+      const cToken = await makeCToken({ supportMarket: true, baseRatePerYear: etherMantissa(0.05), kink: etherMantissa(1) });
+      // Set utilization ratio to 0 so it is below the target utilization ratio.
+      await send(cToken, 'harnessExchangeRateDetails', [1, 0, 0]);
+      // Fast forward one day
+      await send(cToken, 'harnessFastForwardBlockTimestamp', [86400]); // 1 day      
+      const perBlock = await call(cToken, 'borrowRatePerBlock');
+      expect(Math.abs(perBlock * 2102400 - 4.99931516e16)).toBeLessThanOrEqual(1e8);
     });
   });
 

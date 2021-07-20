@@ -50,6 +50,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         accrualBlockNumber = getBlockNumber();
         borrowIndex = mantissaOne;
 
+        // Initialize seconds of last cross
+        secondsOfLastCross = getBlockTimestamp();
+
         // Set the interest rate model (depends on block number / borrow index)
         err = _setInterestRateModelFresh(interestRateModel_);
         require(err == uint(Error.NO_ERROR), "setting interest rate model failed");
@@ -1502,7 +1505,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
 
         // Determine if a threshold is crossed
         if ((util > kink && previousUtilization <= kink) || (util < kink && previousUtilization >= kink)) {
-            secondsOfLastCross = block.timestamp;
+            secondsOfLastCross = getBlockTimestamp();
             baseRatePerBlock = borrowRatePerBlock_;
         }
         previousUtilization = util;
@@ -1522,18 +1525,20 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
             return baseRatePerBlock;
         }
 
-        uint currentBorrowRatePerBlock;
+        uint baseRatePerYear = baseRatePerBlock.mul(blocksPerYear);
+        uint currentBorrowRatePerYear;
         if (util > kink) {
             // Increase base rate
-            uint timeAdjustment = getTimeAdjustment(interestRateCeiling);
-            currentBorrowRatePerBlock = baseRatePerBlock.add(interestRateCeiling).sub(timeAdjustment);
+            uint interestRateCeilingPerYear = interestRateCeiling.mul(blocksPerYear);
+            uint timeAdjustment = getTimeAdjustment(interestRateCeilingPerYear);
+            currentBorrowRatePerYear = baseRatePerYear.add(interestRateCeilingPerYear).sub(timeAdjustment);
         } else {
             // Decrease base rate
-            uint timeAdjustment = getTimeAdjustment(baseRatePerBlock);
-            currentBorrowRatePerBlock = baseRatePerBlock.add(timeAdjustment).sub(baseRatePerBlock);
+            uint timeAdjustment = getTimeAdjustment(baseRatePerYear);
+            currentBorrowRatePerYear = baseRatePerYear.add(timeAdjustment).sub(baseRatePerYear);
         }
 
-        return currentBorrowRatePerBlock;
+        return currentBorrowRatePerYear.div(blocksPerYear);
     }
 
     /**
@@ -1559,23 +1564,31 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      */
     function updatePIDControllerModelInternal(uint baseRatePerYear_, uint interestRateCeiling_, uint kink_) internal {
         baseRatePerBlock = baseRatePerYear_.div(blocksPerYear);
-        interestRateCeiling = interestRateCeiling_;
+        interestRateCeiling = interestRateCeiling_.div(blocksPerYear);
         kink = kink_;
-        secondsOfLastCross = block.timestamp;
+        secondsOfLastCross = getBlockTimestamp();
 
         emit NewInterestParams(baseRatePerBlock, interestRateCeiling, kink, secondsOfLastCross);
     }
 
-    function getTimeAdjustment(uint rate) public view returns (uint) {
-        uint interestRateCeilingInverted = invert(rate);
-        uint secondsSinceLastCross = block.timestamp - secondsOfLastCross;
+    function getTimeAdjustment(uint ratePerYear) public view returns (uint) {
+        uint interestRateCeilingInverted = invert(ratePerYear);
+        uint secondsSinceLastCross = getBlockTimestamp() - secondsOfLastCross;
         uint yearsSinceLastCross = secondsSinceLastCross.mul(1e18).div(secondsPerYear);
-        uint denominator = yearsSinceLastCross * interestRateCeilingInverted;
+        uint denominator = yearsSinceLastCross.add(interestRateCeilingInverted);
         return invert(denominator);
     }
 
     function invert(uint x) public pure returns (uint) {
         uint scalar = 1e18;
         return scalar.mul(scalar).div(x);
+    }
+
+    function getBlockTimestamp() public view returns (uint) {
+        return block.timestamp;
+    }
+
+    function getSecondsOfLastCross() public view returns (uint) {
+        return secondsOfLastCross;
     }
 }

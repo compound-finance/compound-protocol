@@ -6,6 +6,7 @@ import "./ComptrollerScenario.sol";
 contract CEtherHarness is CEther {
     uint harnessExchangeRate;
     uint public blockNumber = 100000;
+    uint public blockTimestamp = 86400; // 1 day
 
     mapping (address => bool) public failTransferToAddresses;
 
@@ -47,12 +48,16 @@ contract CEtherHarness is CEther {
         return blockNumber;
     }
 
-    function harnessSetBlockNumber(uint newBlockNumber) public {
-        blockNumber = newBlockNumber;
+    function harnessSetBlockTimestamp(uint newBlockTimestamp) public {
+        blockTimestamp = newBlockTimestamp;
     }
 
-    function harnessFastForward(uint blocks) public {
-        blockNumber += blocks;
+    function harnessFastForwardBlockTimestamp(uint time) public {
+        blockTimestamp += time;
+    }
+
+    function getBlockTimestamp() public view returns (uint) {
+        return blockTimestamp;
     }
 
     function harnessSetBalance(address account, uint amount) external {
