@@ -116,7 +116,7 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
     function () external payable {
         // Check for automatic implementation
         if (autoImplementation()) {
-            (address latestCEtherDelegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCEtherDelegate();
+            (address latestCEtherDelegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCEtherDelegate(implementation);
 
             if (implementation != latestCEtherDelegate) {
                 if (allowResign) delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));

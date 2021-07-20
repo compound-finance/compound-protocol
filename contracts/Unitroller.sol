@@ -200,7 +200,7 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
         }
 
         if (autoImplementation) {
-            address latestComptrollerImplementation = fuseAdmin.latestComptrollerImplementation();
+            address latestComptrollerImplementation = fuseAdmin.latestComptrollerImplementation(comptrollerImplementation);
 
             if (comptrollerImplementation != latestComptrollerImplementation) {
                 address oldImplementation = comptrollerImplementation; // Save current value for inclusion in log
