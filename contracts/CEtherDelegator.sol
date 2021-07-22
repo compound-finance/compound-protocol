@@ -52,18 +52,25 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
      * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
      */
     function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public {
-        require(hasAdminRights(), "CErc20Delegator::_setImplementation: Caller must be admin");
-        require(fuseAdmin.cEtherDelegateWhitelist(implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
+        // Check admin rights
+        require(hasAdminRights(), "CEtherDelegator::_setImplementation: Caller must be admin");
 
-        if (allowResign) {
-            delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
-        }
+        // Check whitelist
+        require(fuseAdmin.cEtherDelegateWhitelist(implementaton, implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
 
+        // Delegate _resignImplementation
+        if (allowResign) delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
+
+        // Get old implementation
         address oldImplementation = implementation;
+
+        // Store new implementation
         implementation = implementation_;
 
+        // Delegate _becomeImplementation
         delegateToImplementation(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
 
+        // Emit event
         emit NewImplementation(oldImplementation, implementation);
     }
 

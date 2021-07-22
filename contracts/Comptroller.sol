@@ -1260,7 +1260,6 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         uint collateralFactorMantissa
     ) external returns (uint) {
         uint256 initialExchangeRateMantissa_ = 0.02e18;
-        require(underlying_ == address(0) ? fuseAdmin.cEtherDelegateWhitelist(implementation_, false) : fuseAdmin.cErc20DelegateWhitelist(implementation_, false), "CTokenDelegate contract not whitelisted by Fuse admin.");
         CToken cToken = CToken(
             underlying_ == address(0) ?
             fuseAdmin.deployCEther(abi.encode(address(this), interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, EIP20Interface(underlying_).decimals(), implementation_, becomeImplementationData, reserveFactorMantissa_, adminFeeMantissa_, (address, address, uint256, string, string, uint8, address, bytes, uint256, uint256))) :

@@ -55,18 +55,25 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
      * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
      */
     function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public {
+        // Check admin rights
         require(hasAdminRights(), "CErc20Delegator::_setImplementation: Caller must be admin");
-        require(fuseAdmin.cErc20DelegateWhitelist(implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
 
-        if (allowResign) {
-            delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
-        }
+        // Check whitelist
+        require(fuseAdmin.cErc20DelegateWhitelist(implementaton, implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
 
+        // Delegate _resignImplementation
+        if (allowResign) delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
+
+        // Get old implementation
         address oldImplementation = implementation;
+
+        // Store new implementation
         implementation = implementation_;
 
+        // Delegate _becomeImplementation
         delegateToImplementation(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
 
+        // Emit event
         emit NewImplementation(oldImplementation, implementation);
     }
 
