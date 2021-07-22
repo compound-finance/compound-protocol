@@ -26,9 +26,14 @@ function parse(reporter) {
   return {Error, FailureInfo, ErrorInv, FailureInfoInv};
 }
 
-const carefulMathPath = path.join(__dirname, '..', 'contracts', 'CarefulMath.sol');
-const CarefulMath = solparse.parseFile(carefulMathPath).body.find(k => k.type === 'ContractStatement');
-const MathErrorInv = CarefulMath.body.find(k => k.name == 'MathError').members;
+// const carefulMathPath = path.join(__dirname, '..', 'contracts', 'CarefulMath.sol');
+// const CarefulMath = solparse.parseFile(carefulMathPath).body.find(k => k.type === 'ContractStatement');
+const MathErrorInv = {
+  0: "NO_ERROR",
+  1: "DIVISION_BY_ZERO",
+  2: "INTEGER_OVERFLOW",
+  3: "INTEGER_UNDERFLOW",
+} // CarefulMath.body.find(k => k.name == 'MathError').members;
 const MathError = invert(MathErrorInv);
 
 const whitePaperModelPath = path.join(__dirname, '..', 'contracts', 'WhitePaperInterestRateModel.sol');

@@ -99,7 +99,7 @@
     "@0x/typescript-typings" "^5.1.1"
     lodash "^4.17.11"
 
-"@0x/subproviders@^6.0.0":
+"@0x/subproviders@=6.0.0":
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/@0x/subproviders/-/subproviders-6.0.0.tgz#9d4b32e22c9e71f450b0f6d00978ca6b1129c0b3"
   integrity sha512-5u0JpSGz6RtU0YKckV9FQeJAWkuESG6oR94GQujvkdxg1i1b/QGe9Njq+9VdPq6jhFwl7Hzr8K0JJYTXPlIo5A==
@@ -421,7 +421,7 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@compound-finance/sol-coverage@^4.0.10-alpha.7":
+"@compound-finance/sol-coverage@=4.0.10-alpha.7":
   version "4.0.10-alpha.7"
   resolved "https://registry.yarnpkg.com/@compound-finance/sol-coverage/-/sol-coverage-4.0.10-alpha.7.tgz#7459f23a9934f987e865bc1717a33da137dae696"
   integrity sha512-UtBAc50sdv2KEnG3y5d2Vm/WvN5UvnhhZZ73BSYut67DNu4l22kOvlgivgO+Gd4cfTHRNhoy7cy0mZuUBomDfQ==
@@ -435,7 +435,7 @@
     minimatch "^3.0.4"
     web3-provider-engine "14.0.6"
 
-"@compound-finance/sol-tracing-utils@7.1.0-alpha.7", "@compound-finance/sol-tracing-utils@^7.1.0-alpha.7":
+"@compound-finance/sol-tracing-utils@=7.1.0-alpha.7", "@compound-finance/sol-tracing-utils@^7.1.0-alpha.7":
   version "7.1.0-alpha.7"
   resolved "https://registry.yarnpkg.com/@compound-finance/sol-tracing-utils/-/sol-tracing-utils-7.1.0-alpha.7.tgz#ad4b06320fb2db115d3266ca8fdfdd68e6d57080"
   integrity sha512-7yrJsjg7U6zwrDu09FTRN2ziQAv140dBZnQEasiXGy2UPhv17hToKow/bXtrR233ULQ3xHNR9hlpm2jatE5xVQ==
@@ -4383,19 +4383,19 @@ eth-query@^2.0.2, eth-query@^2.1.0, eth-query@^2.1.2:
     json-rpc-random-id "^1.0.0"
     xtend "^4.0.1"
 
-eth-saddle@^0.1.21:
-  version "0.1.21"
-  resolved "https://registry.yarnpkg.com/eth-saddle/-/eth-saddle-0.1.21.tgz#692ac403f6f68c71f3e81336869e2259ab77d97e"
-  integrity sha512-XsswjrWJaQnixrQk7ycL8fOUoqqyRbkSo9TkGJrgxNNcYjtF6/wFOjxgfwxxd3FIQWLCuAF4jcO6RpFRiEAh4Q==
+eth-saddle@^0.1.25:
+  version "0.1.25"
+  resolved "https://registry.yarnpkg.com/eth-saddle/-/eth-saddle-0.1.25.tgz#8bbfefa6eabcdaca0c88e838fa60213e9fff9d8b"
+  integrity sha512-BUames0/ap3Cm7bJVjp0sFfTxKUv+xK+zbwZLYQghky9KrfowlURqBZgJHPxF3w9HyCh95UQBY5QsIeed1Ppqw==
   dependencies:
-    "@0x/subproviders" "^6.0.0"
-    "@compound-finance/sol-coverage" "^4.0.10-alpha.7"
-    "@compound-finance/sol-tracing-utils" "7.1.0-alpha.7"
+    "@0x/subproviders" "=6.0.0"
+    "@compound-finance/sol-coverage" "=4.0.10-alpha.7"
+    "@compound-finance/sol-tracing-utils" "=7.1.0-alpha.7"
     "@types/jest" "^24.0.15"
     ethereumjs-tx "2.1.2"
     ethereumjs-util "5.2.0"
     fast-glob "^3.2.2"
-    ganache-core "^2.10.2"
+    ganache-core "^2.13.2"
     jest "^24.9.0"
     jest-cli "^24.9.0"
     jest-diff "^25.3.0"
@@ -5346,7 +5346,7 @@ functional-red-black-tree@^1.0.1, functional-red-black-tree@~1.0.1:
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
   integrity sha1-GwqzvVU7Kg1jmdKcDj6gslIHgyc=
 
-ganache-core@^2.10.2, ganache-core@^2.6.0, "ganache-core@github:compound-finance/ganache-core.git#jflatow/unbreak-fork":
+ganache-core@^2.10.2, ganache-core@^2.13.2, ganache-core@^2.6.0, "ganache-core@github:compound-finance/ganache-core.git#jflatow/unbreak-fork":
   version "2.10.2"
   resolved "https://codeload.github.com/compound-finance/ganache-core/tar.gz/4c7e063f6d423e1b3850f4cb328029e819670a64"
   dependencies:

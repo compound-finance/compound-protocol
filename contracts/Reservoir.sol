@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity ^0.8.6;
 
 /**
  * @title Reservoir Contract
@@ -68,7 +68,8 @@ contract Reservoir {
   /* Internal helper functions for safe math */
 
   function add(uint a, uint b, string memory errorMessage) internal pure returns (uint) {
-    uint c = a + b;
+    uint c;
+    unchecked { c = a + b; }
     require(c >= a, errorMessage);
     return c;
   }
@@ -83,7 +84,8 @@ contract Reservoir {
     if (a == 0) {
       return 0;
     }
-    uint c = a * b;
+    uint c;
+    unchecked { c = a * b; }
     require(c / a == b, errorMessage);
     return c;
   }

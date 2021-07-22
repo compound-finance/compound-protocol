@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity ^0.8.6;
 
 import "./JumpRateModelV2.sol";
 import "./SafeMath.sol";
@@ -48,7 +48,7 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      * @param jumpMultiplierPerYear The jumpMultiplierPerYear after hitting a specified utilization point
      * @param kink_ The utilization point at which the jump multiplier is applied
      */
-    function updateJumpRateModel(uint baseRatePerYear, uint gapPerYear, uint jumpMultiplierPerYear, uint kink_) external {
+    function updateJumpRateModel(uint baseRatePerYear, uint gapPerYear, uint jumpMultiplierPerYear, uint kink_) override external {
         require(msg.sender == owner, "only the owner may call this function.");
         gapPerBlock = gapPerYear / blocksPerYear;
         updateJumpRateModelInternal(0, 0, jumpMultiplierPerYear, kink_);
@@ -63,7 +63,7 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      * @param reserveFactorMantissa The current reserve factor the market has
      * @return The supply rate per block (as a percentage, and scaled by 1e18)
      */
-    function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) public view returns (uint) {
+    function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) override public view returns (uint) {
         uint protocolRate = super.getSupplyRate(cash, borrows, reserves, reserveFactorMantissa);
 
         uint underlying = cash.add(borrows).sub(reserves);
@@ -110,7 +110,7 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
 
 /*** Maker Interfaces ***/
 
-contract PotLike {
+interface PotLike {
     function chi() external view returns (uint);
     function dsr() external view returns (uint);
     function rho() external view returns (uint);
@@ -127,6 +127,6 @@ contract JugLike {
         uint256  rho;
     }
 
-   mapping (bytes32 => Ilk) public ilks;
-   uint256 public base;
+    mapping (bytes32 => Ilk) public ilks;
+    uint256 public base;
 }

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity ^0.8.6;
 
 /**
  * @title Exponential module for storing fixed-precision decimals
@@ -97,7 +97,8 @@ contract ExponentialNoError {
     }
 
     function add_(uint a, uint b, string memory errorMessage) pure internal returns (uint) {
-        uint c = a + b;
+        uint c;
+        unchecked { c = a + b; }
         require(c >= a, errorMessage);
         return c;
     }
@@ -151,7 +152,8 @@ contract ExponentialNoError {
         if (a == 0 || b == 0) {
             return 0;
         }
-        uint c = a * b;
+        uint c;
+        unchecked { c = a * b; }
         require(c / a == b, errorMessage);
         return c;
     }

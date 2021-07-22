@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity ^0.8.6;
 
 import "../../contracts/CEther.sol";
 import "./ComptrollerScenario.sol";
@@ -25,19 +25,19 @@ contract CEtherHarness is CEther {
     decimals_,
     admin_) public {}
 
-    function doTransferOut(address payable to, uint amount) internal {
+    function doTransferOut(address payable to, uint amount) override internal {
         require(failTransferToAddresses[to] == false, "TOKEN_TRANSFER_OUT_FAILED");
         return super.doTransferOut(to, amount);
     }
 
-    function exchangeRateStoredInternal() internal view returns (MathError, uint) {
+    function exchangeRateStoredInternal() override internal view returns (MathError, uint) {
         if (harnessExchangeRate != 0) {
             return (MathError.NO_ERROR, harnessExchangeRate);
         }
         return super.exchangeRateStoredInternal();
     }
 
-    function getBlockNumber() internal view returns (uint) {
+    function getBlockNumber() override internal view returns (uint) {
         return blockNumber;
     }
 
@@ -187,7 +187,7 @@ contract CEtherScenario is CEther {
         // no-op
     }
 
-    function getBlockNumber() internal view returns (uint) {
+    function getBlockNumber() override internal view returns (uint) {
         ComptrollerScenario comptrollerScenario = ComptrollerScenario(address(comptroller));
         return comptrollerScenario.blockNumber();
     }

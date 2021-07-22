@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity ^0.8.6;
 
 // From https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/math/Math.sol
 // Subject to the MIT license.
@@ -26,7 +26,8 @@ library SafeMath {
      * - Addition cannot overflow.
      */
     function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
+        uint256 c;
+        unchecked { c = a + b; }
         require(c >= a, "SafeMath: addition overflow");
 
         return c;
@@ -41,7 +42,8 @@ library SafeMath {
      * - Addition cannot overflow.
      */
     function add(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        uint256 c = a + b;
+        uint256 c;
+        unchecked { c = a + b; }
         require(c >= a, errorMessage);
 
         return c;
@@ -90,7 +92,8 @@ library SafeMath {
             return 0;
         }
 
-        uint256 c = a * b;
+        uint256 c;
+        unchecked { c = a * b; }
         require(c / a == b, "SafeMath: multiplication overflow");
 
         return c;
@@ -112,7 +115,8 @@ library SafeMath {
             return 0;
         }
 
-        uint256 c = a * b;
+        uint256 c;
+        unchecked { c = a * b; }
         require(c / a == b, errorMessage);
 
         return c;
