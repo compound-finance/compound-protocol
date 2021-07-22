@@ -1245,26 +1245,14 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
     /**
       * @notice Deploy cToken, add the market to the markets mapping, and set it as listed and set the collateral factor
       * @dev Admin function to deploy cToken, set isListed, and add support for the market and set the collateral factor
-      * @param newCollateralFactorMantissa The new collateral factor, scaled by 1e18
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
     function _deployMarket(
-        address underlying_,
-        address interestRateModel_,
-        string memory name_,
-        string memory symbol_,
-        address implementation_,
-        bytes memory becomeImplementationData,
-        uint256 reserveFactorMantissa_,
-        uint256 adminFeeMantissa_,
+        bool isCEther,
+        bytes calldata constructorData,
         uint collateralFactorMantissa
     ) external returns (uint) {
-        uint256 initialExchangeRateMantissa_ = 0.02e18;
-        CToken cToken = CToken(
-            underlying_ == address(0) ?
-            fuseAdmin.deployCEther(abi.encode(address(this), interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, EIP20Interface(underlying_).decimals(), implementation_, becomeImplementationData, reserveFactorMantissa_, adminFeeMantissa_, (address, address, uint256, string, string, uint8, address, bytes, uint256, uint256))) :
-            fuseAdmin.deployCErc20(abi.encode(underlying_, address(this), interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, 18, implementation_, becomeImplementationData, reserveFactorMantissa_, adminFeeMantissa_, (address, address, address, uint256, string, string, uint8, address, bytes, uint256, uint256)))
-        );
+        CToken cToken = CToken(isCEther ? fuseAdmin.deployCEther(constructorData) : fuseAdmin.deployCErc20(constructorData));
         uint256 err = _supportMarket(cToken);
         return err == uint(Error.NO_ERROR) ? _setCollateralFactor(cToken, collateralFactorMantissa) : err;
     }

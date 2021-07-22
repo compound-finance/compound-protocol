@@ -56,7 +56,7 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
         require(hasAdminRights(), "CEtherDelegator::_setImplementation: Caller must be admin");
 
         // Check whitelist
-        require(fuseAdmin.cEtherDelegateWhitelist(implementaton, implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
+        require(fuseAdmin.cEtherDelegateWhitelist(implementation, implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
 
         // Delegate _resignImplementation
         if (allowResign) delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));

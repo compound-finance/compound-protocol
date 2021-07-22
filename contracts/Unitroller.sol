@@ -51,7 +51,7 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PENDING_IMPLEMENTATION_OWNER_CHECK);
         }
 
-        if (!fuseAdmin.comptrollerImplementationWhitelist(newPendingImplementation)) {
+        if (!fuseAdmin.comptrollerImplementationWhitelist(comptrollerImplementation, newPendingImplementation)) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PENDING_IMPLEMENTATION_CONTRACT_CHECK);
         }
 
