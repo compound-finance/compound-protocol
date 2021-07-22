@@ -143,3 +143,13 @@ contract ComptrollerV5Storage is ComptrollerV4Storage {
     /// @notice Last block at which a contributor's COMP rewards have been allocated
     mapping(address => uint) public lastContributorBlock;
 }
+
+contract ComptrollerV6Storage is ComptrollerV5Storage {
+    /**
+     * @notice Maps each market to a distrubition ratio [0, 1000] of the comp rewards for borrowers vs suppliers.
+     *  A value of 1000 means all of the COMP rewards for the market goes to borrowers whereas 0 means all rewards goes to suppliers.
+     * @dev These ratios are incremented by 1 to reserve 0 as being uninitialized, giving an underlying range of [1, 1001].
+     *  Subtract 1 to get the real ratio in the range of [0, 1000].
+     */
+    mapping(address => uint16) public compRewardDistributionRatios;
+}

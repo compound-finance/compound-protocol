@@ -12,7 +12,7 @@ import "./Governance/Comp.sol";
  * @title Compound's Comptroller Contract
  * @author Compound
  */
-contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError {
+contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError {
     /// @notice Emitted when an admin supports a market
     event MarketListed(CToken cToken);
 
@@ -45,6 +45,13 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
 
     /// @notice Emitted when a new COMP speed is calculated for a market
     event CompSpeedUpdated(CToken indexed cToken, uint newSpeed);
+
+    /**
+     * @notice Emitted when a new COMP rewards distribution is updated for a market.
+     * @dev The ratio is in the range of [0, 1001] to reserve 0 for uninitialized / old style distribution.
+     *  Subtract 1 from ratio to get the real ratio in the range of [0, 1000].
+     */
+    event CompDistributionRatioUpdated(CToken indexed cToken, uint16 ratio);
 
     /// @notice Emitted when a new COMP speed is set for a contributor
     event ContributorCompSpeedUpdated(address indexed contributor, uint newSpeed);
@@ -1063,9 +1070,14 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @notice Set COMP speed for a single market
      * @param cToken The market whose COMP speed to update
      * @param compSpeed New COMP speed for market
+     * @param ratio The ratio [0, 1000] of COMP rewards going to borrowers vs. suppliers.
+     *  A value of 0 means all rewards for the market goes to suppliers whereas 1000 means all rewards go to borrowers.
      */
-    function setCompSpeedInternal(CToken cToken, uint compSpeed) internal {
+    function setCompSpeedInternal(CToken cToken, uint compSpeed, uint16 ratio) internal {
+        require(ratio <= 1001, "COMP rewards distribution ratio out of range.");
+
         uint currentCompSpeed = compSpeeds[address(cToken)];
+        uint16 currentRatio = compRewardDistributionRatios[address(cToken)];
         if (currentCompSpeed != 0) {
             // note that COMP speed could be set to 0 to halt liquidity rewards for a market
             Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
@@ -1095,6 +1107,34 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
             compSpeeds[address(cToken)] = compSpeed;
             emit CompSpeedUpdated(cToken, compSpeed);
         }
+
+        if (currentRatio != ratio) {
+            compRewardDistributionRatios[address(cToken)] = ratio;
+            emit CompDistributionRatioUpdated(cToken, ratio);
+        }
+    }
+
+    /**
+     * Calculates the COMP rewards distribution for a market.
+     * @param cToken The market to calculate the rewards for.
+     * @param forSupply True to calculate the rewards for supply; false for borrow.
+     * @return The COMP speed for the specified market.
+     */
+    function calculateCompDistribution(address cToken, bool forSupply) internal view returns(uint) {
+        uint marketSpeed = compSpeeds[cToken];
+        uint16 distributionRatio = compRewardDistributionRatios[cToken];
+        if (distributionRatio == 0) // Distribution ratio uninitialized
+            return marketSpeed;
+
+        marketSpeed = mul_(marketSpeed, 2); // Multiply by 2 to match the old distribution style
+        distributionRatio -= 1; // Range of [1, 1001] -> [0, 1000] (actual range). No underflow check needed as the value is > 0.
+
+        uint borrowSpeed = div_(mul_(marketSpeed, compRewardDistributionRatios[cToken]), 1000);
+
+        if (forSupply)
+            return sub_(marketSpeed, borrowSpeed); // The sum of borrowSpeed and 'supplySpeed' will always be equal to marketSpeed.
+        else
+            return borrowSpeed;
     }
 
     /**
@@ -1103,7 +1143,7 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      */
     function updateCompSupplyIndex(address cToken) internal {
         CompMarketState storage supplyState = compSupplyState[cToken];
-        uint supplySpeed = compSpeeds[cToken];
+        uint supplySpeed = calculateCompDistribution(cToken, true);
         uint blockNumber = getBlockNumber();
         uint deltaBlocks = sub_(blockNumber, uint(supplyState.block));
         if (deltaBlocks > 0 && supplySpeed > 0) {
@@ -1126,7 +1166,7 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      */
     function updateCompBorrowIndex(address cToken, Exp memory marketBorrowIndex) internal {
         CompMarketState storage borrowState = compBorrowState[cToken];
-        uint borrowSpeed = compSpeeds[cToken];
+        uint borrowSpeed = calculateCompDistribution(cToken, false);
         uint blockNumber = getBlockNumber();
         uint deltaBlocks = sub_(blockNumber, uint(borrowState.block));
         if (deltaBlocks > 0 && borrowSpeed > 0) {
@@ -1293,7 +1333,34 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      */
     function _setCompSpeed(CToken cToken, uint compSpeed) public {
         require(adminOrInitializing(), "only admin can set comp speed");
-        setCompSpeedInternal(cToken, compSpeed);
+        setCompSpeedInternal(cToken, compSpeed, compRewardDistributionRatios[address(cToken)]);
+    }
+
+    /**
+     * @notice Sets the COMP reward distribution ratio for the specified market.
+     * @param cToken The market whose COMP distribution ratio we wish to update.
+     * @param ratio The ratio [0, 1000] of COMP rewards going to borrowers vs. suppliers.
+     *  A value of 0 means all rewards for the market goes to suppliers whereas 1000 means all rewards go to borrowers.
+     */
+    function _setCompDistributionRatio(CToken cToken, uint16 ratio) public {
+        require(adminOrInitializing(), "only admin can set comp distribution ratio");
+
+        // Ratio expected to be in the range of [1, 1001] to reserve 0 as uninitialized
+        setCompSpeedInternal(cToken, compSpeeds[address(cToken)], ratio + 1);
+    }
+
+    /**
+     * @notice Sets the COMP reward speed and distribution ratio for the specified market.
+     * @param cToken The market whose COMP speed and distribution ratio we wish to update.
+     * @param compSpeed New COMP speed for market
+     * @param ratio The ratio [0, 1000] of COMP rewards going to borrowers vs. suppliers.
+     *  A value of 0 means all rewards for the market goes to suppliers whereas 1000 means all rewards go to borrowers.
+     */
+    function _setCompSpeedAndDistributionRatio(CToken cToken, uint compSpeed, uint16 ratio) public {
+        require(adminOrInitializing(), "only admin can set comp speed and distribution ratio");
+
+        // Ratio expected to be in the range of [1, 1001] to reserve 0 as uninitialized
+        setCompSpeedInternal(cToken, compSpeed, ratio + 1);
     }
 
     /**
