@@ -1317,7 +1317,7 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         // Store autoImplementation with value enabled
         autoImplementation = enabled;
 
-        // Emit NewPauseGuardian(OldPauseGuardian, NewPauseGuardian)
+        // Emit AutoImplementationsToggled(enabled)
         emit AutoImplementationsToggled(enabled);
 
         return uint(Error.NO_ERROR);
