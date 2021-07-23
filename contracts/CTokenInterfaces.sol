@@ -12,31 +12,19 @@ contract CTokenAdminStorage {
     IFuseFeeDistributor internal constant fuseAdmin = IFuseFeeDistributor(0xa731585ab05fC9f83555cf9Bff8F58ee94e18F85);
 
     /**
-     * @dev UNUSED AFTER UPGRADE: Administrator for this contract
+     * @dev LEGACY USE ONLY: Administrator for this contract
      */
-    address payable private __admin;
+    address payable internal __admin;
 
     /**
-     * @dev UNUSED AFTER UPGRADE: Whether or not the Fuse admin has admin rights
+     * @dev LEGACY USE ONLY: Whether or not the Fuse admin has admin rights
      */
-    bool private __fuseAdminHasRights;
+    bool internal __fuseAdminHasRights;
 
     /**
-     * @dev UNUSED AFTER UPGRADE: Whether or not the admin has admin rights
+     * @dev LEGACY USE ONLY: Whether or not the admin has admin rights
      */
-    bool private __adminHasRights;
-
-    /**
-     * @notice Returns a boolean indicating if the sender has admin rights
-     */
-    function hasAdminRights() internal view returns (bool) {
-        address ct;
-        assembly {
-            ct := sload(8)
-        }
-        UnitrollerAdminStorage comptroller = UnitrollerAdminStorage(ct);
-        return (msg.sender == comptroller.admin() && comptroller.adminHasRights()) || (msg.sender == address(fuseAdmin) && comptroller.fuseAdminHasRights());
-    }
+    bool internal __adminHasRights;
 }
 
 contract CTokenStorage is CTokenAdminStorage {
@@ -176,7 +164,6 @@ contract CTokenInterface is CTokenStorage {
      * @notice Indicator that this is or is not a CEther contract (for inspection)
      */
     bool public constant isCEther = false;
-
 
     /*** Market Events ***/
 

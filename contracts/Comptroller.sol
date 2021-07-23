@@ -1252,7 +1252,10 @@ contract Comptroller is ComptrollerV2Storage, ComptrollerInterface, ComptrollerE
         bytes calldata constructorData,
         uint collateralFactorMantissa
     ) external returns (uint) {
+        bool oldFuseAdminHasRights = fuseAdminHasRights;
+        fuseAdminHasRights = true;
         CToken cToken = CToken(isCEther ? fuseAdmin.deployCEther(constructorData) : fuseAdmin.deployCErc20(constructorData));
+        fuseAdminHasRights = oldFuseAdminHasRights;
         uint256 err = _supportMarket(cToken);
         return err == uint(Error.NO_ERROR) ? _setCollateralFactor(cToken, collateralFactorMantissa) : err;
     }

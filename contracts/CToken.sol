@@ -15,6 +15,14 @@ import "./InterestRateModel.sol";
  */
 contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
     /**
+     * @notice Returns a boolean indicating if the sender has admin rights
+     */
+    function hasAdminRights() internal view returns (bool) {
+        ComptrollerV2Storage comptrollerStorage = ComptrollerV2Storage(address(comptroller));
+        return (msg.sender == comptrollerStorage.admin() && comptrollerStorage.adminHasRights()) || (msg.sender == address(fuseAdmin) && comptrollerStorage.fuseAdminHasRights());
+    }
+
+    /**
      * @notice Initialize the money market
      * @param comptroller_ The address of the Comptroller
      * @param interestRateModel_ The address of the interest rate model
@@ -1559,7 +1567,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _setInterestRateModelFresh(InterestRateModel newInterestRateModel) internal returns (uint) {
-
         // Used to store old model for use in the event that is emitted on success
         InterestRateModel oldInterestRateModel;
 

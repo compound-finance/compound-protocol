@@ -1,7 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "./CTokenInterfaces.sol";
-import "./Unitroller.sol";
+import "./ComptrollerStorage.sol";
 
 /**
  * @title Compound's CErc20Delegator Contract
@@ -9,6 +9,17 @@ import "./Unitroller.sol";
  * @author Compound
  */
 contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
+    /**
+     * @notice Returns a boolean indicating if the sender has admin rights
+     */
+    function hasAdminRights() internal view returns (bool) {
+        (bool success, bytes memory data) = implementation.staticcall(abi.encodeWithSignature("comptroller()"));
+        require(success);
+        address ct = abi.decode(data, (address));
+        ComptrollerV2Storage comptroller = ComptrollerV2Storage(ct);
+        return (msg.sender == comptroller.admin() && comptroller.adminHasRights()) || (msg.sender == address(fuseAdmin) && comptroller.fuseAdminHasRights());
+    }
+
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset
@@ -45,19 +56,16 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
                                                             adminFeeMantissa_));
 
         // New implementations always get set via the settor (post-initialize)
-        _setImplementation(implementation_, false, becomeImplementationData);
+        __setImplementation(implementation_, false, becomeImplementationData);
     }
 
     /**
-     * @notice Called by the admin to update the implementation of the delegator
+     * @dev Internal function to update the implementation of the delegator
      * @param implementation_ The address of the new implementation for delegation
      * @param allowResign Flag to indicate whether to call _resignImplementation on the old implementation
      * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
      */
-    function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public {
-        // Check admin rights
-        require(hasAdminRights(), "CErc20Delegator::_setImplementation: Caller must be admin");
-
+    function __setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) internal {
         // Check whitelist
         require(fuseAdmin.cErc20DelegateWhitelist(implementation, implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
 
@@ -75,6 +83,20 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
 
         // Emit event
         emit NewImplementation(oldImplementation, implementation);
+    }
+
+    /**
+     * @notice Called by the admin to update the implementation of the delegator
+     * @param implementation_ The address of the new implementation for delegation
+     * @param allowResign Flag to indicate whether to call _resignImplementation on the old implementation
+     * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
+     */
+    function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public {
+        // Check admin rights
+        require(hasAdminRights(), "CErc20Delegator::_setImplementation: Caller must be admin");
+
+        // Set implementation
+        __setImplementation(implementation_, allowResign, becomeImplementationData);
     }
 
     /**
@@ -109,14 +131,10 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
      * Returns false instead of reverting if the Unitroller does not have this 
      */
     function autoImplementation() internal view returns (bool) {
-        address ct;
-        assembly {
-            ct := sload(8)
-        }
-        (bool success, bytes memory returndata) = ct.staticcall(abi.encodePacked(bytes4(keccak256("autoImplementation()"))));
-        if (!success) return false;
-        (success) = abi.decode(returndata, (bool));
-        return success;
+        (bool success, bytes memory data) = implementation.staticcall(abi.encodeWithSignature("comptroller()"));
+        require(success);
+        address ct = abi.decode(data, (address));
+        return ComptrollerV2Storage(ct).autoImplementation();
     }
 
     /**
