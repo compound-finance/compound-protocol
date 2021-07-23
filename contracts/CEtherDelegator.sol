@@ -142,14 +142,7 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
         // Check for automatic implementation
         if (autoImplementation()) {
             (address latestCEtherDelegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCEtherDelegate(implementation);
-
-            if (implementation != latestCEtherDelegate) {
-                if (allowResign) delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
-                address oldImplementation = implementation;
-                implementation = latestCEtherDelegate;
-                delegateToImplementation(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
-                emit NewImplementation(oldImplementation, implementation);
-            }
+            if (implementation != latestCEtherDelegate) __setImplementation(latestCEtherDelegate, allowResign, becomeImplementationData);
         }
 
         // delegate all other functions to current implementation

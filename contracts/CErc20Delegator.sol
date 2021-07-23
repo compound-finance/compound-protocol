@@ -147,14 +147,7 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
         // Check for automatic implementation
         if (autoImplementation()) {
             (address latestCErc20Delegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCEtherDelegate(implementation);
-
-            if (implementation != latestCErc20Delegate) {
-                if (allowResign) delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
-                address oldImplementation = implementation;
-                implementation = latestCErc20Delegate;
-                delegateToImplementation(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
-                emit NewImplementation(oldImplementation, implementation);
-            }
+            if (implementation != latestCErc20Delegate) __setImplementation(latestCErc20Delegate, allowResign, becomeImplementationData);
         }
 
         // delegate all other functions to current implementation
