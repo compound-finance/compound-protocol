@@ -702,7 +702,13 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         emit Redeem(redeemer, vars.redeemAmount, vars.redeemTokens);
 
         /* We call the defense hook */
-        comptroller.redeemVerify(address(this), redeemer, vars.redeemAmount, vars.redeemTokens);
+        // unused function
+        // comptroller.redeemVerify(address(this), redeemer, vars.redeemAmount, vars.redeemTokens);
+
+        // Require tokens is zero or amount is also zero
+        if (vars.redeemTokens == 0 && vars.redeemAmount > 0) {
+            revert("redeemTokens zero");
+        }
 
         return uint(Error.NO_ERROR);
     }

@@ -313,10 +313,12 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         // Shh - currently unused
         cToken;
         redeemer;
+        redeemAmount;
+        redeemTokens;
 
-        // Require tokens is zero or amount is also zero
-        if (redeemTokens == 0 && redeemAmount > 0) {
-            revert("redeemTokens zero");
+        // Shh - we don't ever want this hook to be marked pure
+        if (false) {
+            maxAssets = maxAssets;
         }
     }
 
