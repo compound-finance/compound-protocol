@@ -16,7 +16,7 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
         (bool success, bytes memory data) = implementation.staticcall(abi.encodeWithSignature("comptroller()"));
         require(success);
         address ct = abi.decode(data, (address));
-        ComptrollerV2Storage comptroller = ComptrollerV2Storage(ct);
+        ComptrollerV3Storage comptroller = ComptrollerV3Storage(ct);
         return (msg.sender == comptroller.admin() && comptroller.adminHasRights()) || (msg.sender == address(fuseAdmin) && comptroller.fuseAdminHasRights());
     }
 
@@ -125,7 +125,7 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
         (bool success, bytes memory data) = implementation.staticcall(abi.encodeWithSignature("comptroller()"));
         require(success);
         address ct = abi.decode(data, (address));
-        return ComptrollerV2Storage(ct).autoImplementation();
+        return ComptrollerV3Storage(ct).autoImplementation();
     }
 
     /**

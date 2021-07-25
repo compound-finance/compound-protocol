@@ -18,7 +18,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @notice Returns a boolean indicating if the sender has admin rights
      */
     function hasAdminRights() internal view returns (bool) {
-        ComptrollerV2Storage comptrollerStorage = ComptrollerV2Storage(address(comptroller));
+        ComptrollerV3Storage comptrollerStorage = ComptrollerV3Storage(address(comptroller));
         return (msg.sender == comptrollerStorage.admin() && comptrollerStorage.adminHasRights()) || (msg.sender == address(fuseAdmin) && comptrollerStorage.fuseAdminHasRights());
     }
 

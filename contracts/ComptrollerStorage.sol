@@ -49,7 +49,6 @@ contract UnitrollerAdminStorage {
 }
 
 contract ComptrollerV1Storage is UnitrollerAdminStorage {
-
     /**
      * @notice Oracle which gives the price of any given asset
      */
@@ -137,7 +136,6 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
     /// @notice Indexes of account addresses in the `whitelistArray` array
     mapping(address => uint256) internal whitelistIndexes;
 
-
     /**
      * @notice The Pause Guardian can pause certain actions as a safety mechanism.
      *  Actions which allow users to remove their own assets cannot be paused.
@@ -150,7 +148,9 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
     bool public seizeGuardianPaused;
     mapping(address => bool) public mintGuardianPaused;
     mapping(address => bool) public borrowGuardianPaused;
+}
 
+contract ComptrollerV3Storage is ComptrollerV2Storage {
     /**
      * @dev Whether or not the implementation should be auto-upgraded.
      */
