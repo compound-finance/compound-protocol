@@ -155,4 +155,10 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
      * @dev Whether or not the implementation should be auto-upgraded.
      */
     bool public autoImplementation;
+
+    // @notice The borrowCapGuardian can set borrowCaps to any number for any market. Lowering the borrow cap could disable borrowing on the given market.
+    address public borrowCapGuardian;
+
+    // @notice Borrow caps enforced by borrowAllowed for each cToken address. Defaults to zero which corresponds to unlimited borrowing.
+    mapping(address => uint) public borrowCaps;
 }
