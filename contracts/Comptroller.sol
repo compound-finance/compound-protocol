@@ -84,6 +84,9 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      */
     event AutoImplementationsToggled(bool enabled);
 
+    /// @notice Emitted when supply cap for a cToken is changed
+    event NewSupplyCap(CToken indexed cToken, uint newSupplyCap);
+
     /// @notice Emitted when borrow cap for a cToken is changed
     event NewBorrowCap(CToken indexed cToken, uint newBorrowCap);
 
@@ -290,6 +293,27 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         }
 
         // *may include Policy Hook-type checks
+
+        // Check supply cap
+        uint supplyCap = supplyCaps[cToken];
+        // Supply cap of 0 corresponds to unlimited supplying
+        if (supplyCap != 0) {
+            uint totalCash = CToken(cToken).getCash();
+            uint totalBorrows = CToken(cToken).totalBorrows();
+            uint totalReserves = CToken(cToken).totalReserves();
+            uint totalFuseFees = CToken(cToken).totalFuseFees();
+            uint totalAdminFees = CToken(cToken).totalAdminFees();
+
+            // totalUnderlyingSupply = totalCash + totalBorrows - (totalReserves + totalFuseFees + totalAdminFees)
+            (MathError mathErr, uint totalUnderlyingSupply) = addThenSubUInt(totalCash, totalBorrows, totalReserves + totalFuseFees + totalAdminFees);
+            if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
+
+            uint nextTotalUnderlyingSupply;
+            (mathErr, nextTotalUnderlyingSupply) = addUInt(totalUnderlyingSupply, mintAmount);
+            if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
+
+            require(nextTotalUnderlyingSupply < supplyCap, "market supply cap reached");
+        }
 
         return uint(Error.NO_ERROR);
     }
@@ -1342,6 +1366,26 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         emit AutoImplementationsToggled(enabled);
 
         return uint(Error.NO_ERROR);
+    }
+
+    /**
+      * @notice Set the given supply caps for the given cToken markets. Supplying that brings total underlying supply to or above supply cap will revert.
+      * @dev Admin or borrowCapGuardian function to set the supply caps. A supply cap of 0 corresponds to unlimited supplying.
+      * @param cTokens The addresses of the markets (tokens) to change the supply caps for
+      * @param newSupplyCaps The new supply cap values in underlying to be set. A value of 0 corresponds to unlimited supplying.
+      */
+    function _setMarketSupplyCaps(CToken[] calldata cTokens, uint[] calldata newSupplyCaps) external {
+    	require(msg.sender == admin || msg.sender == borrowCapGuardian, "only admin or borrow cap guardian can set supply caps"); 
+
+        uint numMarkets = cTokens.length;
+        uint numSupplyCaps = newSupplyCaps.length;
+
+        require(numMarkets != 0 && numMarkets == numSupplyCaps, "invalid input");
+
+        for(uint i = 0; i < numMarkets; i++) {
+            supplyCaps[address(cTokens[i])] = newSupplyCaps[i];
+            emit NewSupplyCap(cTokens[i], newSupplyCaps[i]);
+        }
     }
 
     /**
