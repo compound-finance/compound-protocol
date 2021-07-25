@@ -25,33 +25,27 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
      * @param underlying_ The address of the underlying asset
      * @param comptroller_ The address of the Comptroller
      * @param interestRateModel_ The address of the interest rate model
-     * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
      * @param name_ ERC-20 name of this token
      * @param symbol_ ERC-20 symbol of this token
-     * @param decimals_ ERC-20 decimal precision of this token
      * @param implementation_ The address of the implementation the contract delegates to
      * @param becomeImplementationData The encoded args for becomeImplementation
      */
     constructor(address underlying_,
                 ComptrollerInterface comptroller_,
                 InterestRateModel interestRateModel_,
-                uint initialExchangeRateMantissa_,
                 string memory name_,
                 string memory symbol_,
-                uint8 decimals_,
                 address implementation_,
                 bytes memory becomeImplementationData,
                 uint256 reserveFactorMantissa_,
                 uint256 adminFeeMantissa_) public {
         // First delegate gets to initialize the delegator (i.e. storage contract)
-        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,address,uint256,string,string,uint8,uint256,uint256)",
+        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,address,string,string,uint256,uint256)",
                                                             underlying_,
                                                             comptroller_,
                                                             interestRateModel_,
-                                                            initialExchangeRateMantissa_,
                                                             name_,
                                                             symbol_,
-                                                            decimals_,
                                                             reserveFactorMantissa_,
                                                             adminFeeMantissa_));
 
