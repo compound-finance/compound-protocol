@@ -14,74 +14,46 @@ import "./Unitroller.sol";
  * @author Compound
  */
 contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerErrorReporter, Exponential {
-    /**
-     * @notice Emitted when an admin supports a market
-     */
+    /// @notice Emitted when an admin supports a market
     event MarketListed(CToken cToken);
 
-    /**
-     * @notice Emitted when an admin supports a market
-     */
+    /// @notice Emitted when an admin unsupports a market
     event MarketUnlisted(CToken cToken);
 
-    /**
-     * @notice Emitted when an account enters a market
-     */
+    /// @notice Emitted when an account enters a market
     event MarketEntered(CToken cToken, address account);
 
-    /**
-     * @notice Emitted when an account exits a market
-     */
+    /// @notice Emitted when an account exits a market
     event MarketExited(CToken cToken, address account);
 
-    /**
-     * @notice Emitted when close factor is changed by admin
-     */
+    /// @notice Emitted when close factor is changed by admin
     event NewCloseFactor(uint oldCloseFactorMantissa, uint newCloseFactorMantissa);
 
-    /**
-     * @notice Emitted when a collateral factor is changed by admin
-     */
+    /// @notice Emitted when a collateral factor is changed by admin
     event NewCollateralFactor(CToken cToken, uint oldCollateralFactorMantissa, uint newCollateralFactorMantissa);
 
-    /**
-     * @notice Emitted when liquidation incentive is changed by admin
-     */
+    /// @notice Emitted when liquidation incentive is changed by admin
     event NewLiquidationIncentive(uint oldLiquidationIncentiveMantissa, uint newLiquidationIncentiveMantissa);
 
-    /**
-     * @notice Emitted when maxAssets is changed by admin
-     */
+    /// @notice Emitted when maxAssets is changed by admin
     event NewMaxAssets(uint oldMaxAssets, uint newMaxAssets);
 
-    /**
-     * @notice Emitted when price oracle is changed
-     */
+    /// @notice Emitted when price oracle is changed
     event NewPriceOracle(PriceOracle oldPriceOracle, PriceOracle newPriceOracle);
 
-    /**
-     * @notice Emitted when pause guardian is changed
-     */
+    /// @notice Emitted when pause guardian is changed
     event NewPauseGuardian(address oldPauseGuardian, address newPauseGuardian);
 
-    /**
-     * @notice Emitted when an action is paused globally
-     */
+    /// @notice Emitted when an action is paused globally
     event ActionPaused(string action, bool pauseState);
 
-    /**
-     * @notice Emitted when an action is paused on a market
-     */
+    /// @notice Emitted when an action is paused on a market
     event ActionPaused(CToken cToken, string action, bool pauseState);
 
-    /**
-     * @notice Emitted when the whitelist enforcement is changed
-     */
+    /// @notice Emitted when the whitelist enforcement is changed
     event WhitelistEnforcementChanged(bool enforce);
 
-    /**
-     * @notice Emitted when auto implementations are toggled
-     */
+    /// @notice Emitted when auto implementations are toggled
     event AutoImplementationsToggled(bool enabled);
 
     /// @notice Emitted when supply cap for a cToken is changed
@@ -292,8 +264,6 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             return uint(Error.SUPPLIER_NOT_WHITELISTED);
         }
 
-        // *may include Policy Hook-type checks
-
         // Check supply cap
         uint supplyCap = supplyCaps[cToken];
         // Supply cap of 0 corresponds to unlimited supplying
@@ -357,8 +327,6 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             return uint(Error.MARKET_NOT_LISTED);
         }
 
-        // *may include Policy Hook-type checks
-
         /* If the redeemer is not 'in' the market, then we can bypass the liquidity check */
         if (!markets[cToken].accountMembership[redeemer]) {
             return uint(Error.NO_ERROR);
@@ -410,8 +378,6 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             return uint(Error.MARKET_NOT_LISTED);
         }
 
-        // *may include Policy Hook-type checks
-
         if (!markets[cToken].accountMembership[borrower]) {
             // only cTokens may call borrowAllowed if borrower not in market
             require(msg.sender == cToken, "sender must be cToken");
@@ -459,11 +425,21 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      * @param accountBorrowsNew The user's new borrow balance of the underlying asset
      */
     function borrowWithinLimits(address cToken, uint accountBorrowsNew) external returns (uint) {
-        uint oraclePriceMantissa = oracle.getUnderlyingPrice(CToken(cToken));
-        if (oraclePriceMantissa == 0) return uint(Error.PRICE_ERROR);
-        (MathError mathErr, uint borrowBalanceEth) = mulScalarTruncate(Exp({mantissa: oraclePriceMantissa}), accountBorrowsNew);
-        if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
-        if (borrowBalanceEth < fuseAdmin.minBorrowEth()) return uint(Error.BORROW_BELOW_MIN);
+        // Check if min borrow exists
+        uint minBorrowEth = fuseAdmin.minBorrowEth();
+
+        if (minBorrowEth > 0) {
+            // Get new underlying borrow balance of account for this cToken
+            uint oraclePriceMantissa = oracle.getUnderlyingPrice(CToken(cToken));
+            if (oraclePriceMantissa == 0) return uint(Error.PRICE_ERROR);
+            (MathError mathErr, uint borrowBalanceEth) = mulScalarTruncate(Exp({mantissa: oraclePriceMantissa}), accountBorrowsNew);
+            if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
+
+            // Check against min borrow
+            if (borrowBalanceEth < minBorrowEth) return uint(Error.BORROW_BELOW_MIN);
+        }
+
+        // Return no error
         return uint(Error.NO_ERROR);
     }
 
@@ -475,17 +451,23 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      * @param accountTokens Underlying amount to mint
      */
     function mintWithinLimits(address cToken, uint exchangeRateMantissa, uint accountTokens, uint mintAmount) external returns (uint) {
-        // Check max supply
+        // Check if max supply exists
         uint maxSupplyEth = fuseAdmin.maxSupplyEth();
 
         if (maxSupplyEth < uint(-1)) {
+            // Get new underlying balance of account for this cToken
             (MathError mathErr, uint newUnderlyingBalance) = mulScalarTruncateAddUInt(Exp({mantissa: exchangeRateMantissa}), accountTokens, mintAmount);
             if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
             uint newEthBalance;
             (mathErr, newEthBalance) = mulScalarTruncate(Exp({mantissa: oracle.getUnderlyingPrice(CToken(cToken))}), newUnderlyingBalance);
             if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
+
+            // Check against max supply
             if (newEthBalance > maxSupplyEth) return uint(Error.SUPPLY_ABOVE_MAX);
         }
+
+        // Return no error
+        return uint(Error.NO_ERROR);
     }
 
     /**
@@ -524,11 +506,10 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         borrower;
         repayAmount;
 
+        // Make sure market is listed
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
-
-        // *may include Policy Hook-type checks
 
         return uint(Error.NO_ERROR);
     }
@@ -576,11 +557,11 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         // Shh - currently unused
         liquidator;
 
+        // Make sure markets are listed
         if (!markets[cTokenBorrowed].isListed || !markets[cTokenCollateral].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
-        // *may include Policy Hook-type checks
 
         /* The borrower must have shortfall in order to be liquidatable */
         (Error err, , uint shortfall) = getAccountLiquidityInternal(borrower);
@@ -655,15 +636,15 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         borrower;
         seizeTokens;
 
+        // Make sure markets are listed
         if (!markets[cTokenCollateral].isListed || !markets[cTokenBorrowed].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
+        // Make sure cToken Comptrollers are identical
         if (CToken(cTokenCollateral).comptroller() != CToken(cTokenBorrowed).comptroller()) {
             return uint(Error.COMPTROLLER_MISMATCH);
         }
-
-        // *may include Policy Hook-type checks
 
         return uint(Error.NO_ERROR);
     }
@@ -709,8 +690,6 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
 
         // Shh - currently unused
         dst;
-
-        // *may include Policy Hook-type checks
 
         // Currently the only consideration is whether or not
         //  the src is allowed to redeem this many tokens
@@ -1130,6 +1109,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_CLOSE_FACTOR_OWNER_CHECK);
         }
 
+        // Check limits
         Exp memory newCloseFactorExp = Exp({mantissa: newCloseFactorMantissa});
         Exp memory lowLimit = Exp({mantissa: closeFactorMinMantissa});
         if (lessThanOrEqualExp(newCloseFactorExp, lowLimit)) {
@@ -1141,8 +1121,11 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             return fail(Error.INVALID_CLOSE_FACTOR, FailureInfo.SET_CLOSE_FACTOR_VALIDATION);
         }
 
+        // Set pool close factor to new close factor, remember old value
         uint oldCloseFactorMantissa = closeFactorMantissa;
         closeFactorMantissa = newCloseFactorMantissa;
+
+        // Emit event
         emit NewCloseFactor(oldCloseFactorMantissa, closeFactorMantissa);
 
         return uint(Error.NO_ERROR);
