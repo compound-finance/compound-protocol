@@ -289,7 +289,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
      * @return If the account is whitelisted
      */
     function isWhitelisted(address account) public view returns (bool) {
-        return (whitelistedAccountExpirations[account] > now);
+        return (whitelistAccountExpirations[account] > now);
     }
 
     /**
@@ -337,11 +337,11 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
      * @param account Account address to set whitelist expiration for
      * @param expiration Expiration for account whitelist status as timestamp (if now < expiration, whitelisted)
      */
-    function _setWhitelistedAccountExpiration(address account, uint expiration) external {
-        require(msg.sender == admin || msg.sender == whitelistGuardian, "GovernorBravo::_setWhitelistedAccountExpiration: admin only");
-        whitelistedAccountExpirations[account] = expiration;
+    function _setWhitelistAccountExpiration(address account, uint expiration) external {
+        require(msg.sender == admin || msg.sender == whitelistGuardian, "GovernorBravo::_setWhitelistAccountExpiration: admin only");
+        whitelistAccountExpirations[account] = expiration;
 
-        emit WhitelistAccountSet(account, expiration);
+        emit WhitelistAccountExpirationSet(account, expiration);
     }
 
     /**

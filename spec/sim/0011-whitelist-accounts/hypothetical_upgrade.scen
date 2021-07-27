@@ -12,7 +12,7 @@ UseConfigs mainnet
 GovernorBravo Deploy BravoDelegate BravoDelegate2
 
 From CompHolder (Comp Delegate CompHolder)
-From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Whitelist Accounts" [(Address GovernorBravoDelegator) (Address GovernorBravoDelegator) (Address GovernorBravoDelegator)] [0 0 0] ["_setImplementation(address)" "_setWhitelistedAccountExpiration(address,uint256)" "_setWhitelistGuardian(address)"] [[(Address BravoDelegate2)] [(Address Arr00) (FromNow 604911)] [(Address CommunityMultisig)]])
+From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Whitelist Accounts" [(Address GovernorBravoDelegator) (Address GovernorBravoDelegator) (Address GovernorBravoDelegator)] [0 0 0] ["_setImplementation(address)" "_setWhitelistAccountExpiration(address,uint256)" "_setWhitelistGuardian(address)"] [[(Address BravoDelegate2)] [(Address Arr00) (FromNow 604911)] [(Address CommunityMultisig)]])
 
 -- Vote for, queue, and execute the proposal
 MineBlock
@@ -30,7 +30,7 @@ Send CommunityMultisig 1e18
 
 -- Use community multisig
 From CommunityMultisig (GovernorBravo GovernorBravoDelegator Proposal LastProposal Cancel)
-From CommunityMultisig (GovernorBravo GovernorBravoDelegator SetWhitelistedAccountExpiration (Address Arr00) 0)
+From CommunityMultisig (GovernorBravo GovernorBravoDelegator SetWhitelistAccountExpiration (Address Arr00) 0)
 
 AllowFailures
 From Arr00 (GovernorBravo GovernorBravoDelegator Propose "Test Proposal" [(Address GovernorBravoDelegator)] [0] ["_setImplementation(address)"] [[(Address BravoDelegate2)]])
