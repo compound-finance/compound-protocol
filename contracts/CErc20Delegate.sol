@@ -29,10 +29,7 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
         require(hasAdminRights(), "only the admin may call _becomeImplementation");
 
         // Make sure admin storage is set up correctly
-        ComptrollerV3Storage comptrollerStorage = ComptrollerV3Storage(address(comptroller));
-        __admin = address(uint160(comptrollerStorage.admin()));
-        __adminHasRights = comptrollerStorage.adminHasRights();
-        __fuseAdminHasRights = comptrollerStorage.fuseAdminHasRights();
+        _updateLegacyOwnership();
     }
 
     /**
@@ -50,7 +47,7 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
     /**
      * @notice updates the legacy ownership data (admin, adminHasRights, fuseAdminHasRights)
      */
-    function _updateLegacyOwnership() external {
+    function _updateLegacyOwnership() public {
         ComptrollerV3Storage comptrollerStorage = ComptrollerV3Storage(address(comptroller));
         __admin = address(uint160(comptrollerStorage.admin()));
         __adminHasRights = comptrollerStorage.adminHasRights();
