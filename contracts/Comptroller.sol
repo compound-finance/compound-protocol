@@ -1076,7 +1076,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         // Set whitelist statuses for suppliers
         for (uint i = 0; i < distributors.length; i++) {
             // Check marker method
-            require(distributors[i].isRewardsDistributor());
+            require(RewardsDistributor(distributors[i]).isRewardsDistributor());
             rewardsDistributors.push(distributors[i]);
         }
 
