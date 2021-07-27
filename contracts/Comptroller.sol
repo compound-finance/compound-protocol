@@ -1277,11 +1277,20 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         bytes calldata constructorData,
         uint collateralFactorMantissa
     ) external returns (uint) {
+        // Temporarily enable Fuse admin rights for asset deployment (storing the original value)
         bool oldFuseAdminHasRights = fuseAdminHasRights;
         fuseAdminHasRights = true;
+
+        // Deploy via Fuse admin
         CToken cToken = CToken(isCEther ? fuseAdmin.deployCEther(constructorData) : fuseAdmin.deployCErc20(constructorData));
+
+        // Reset Fuse admin rights to the original value
         fuseAdminHasRights = oldFuseAdminHasRights;
+
+        // Support market here in the Comptroller
         uint256 err = _supportMarket(cToken);
+
+        // Set collateral factor
         return err == uint(Error.NO_ERROR) ? _setCollateralFactor(cToken, collateralFactorMantissa) : err;
     }
 
