@@ -4,14 +4,15 @@ PrintTransactionLogs
 
 Alias Arr00 "0x2B384212EDc04Ae8bB41738D05BA20E33277bf33"
 Alias CompHolder "0x7587cAefc8096f5F40ACB83A09Df031a018C66ec"
+Alia CommunityMultisig "0x00000a000a" // fix
 
-Web3Fork "https://mainnet-eth.compound.finance/@12835588" (CompHolder Arr00)
+Web3Fork "https://mainnet-eth.compound.finance/@12835588" (CompHolder Arr00 CommunityMultisig)
 UseConfigs mainnet
 
 GovernorBravo Deploy BravoDelegate BravoDelegate2
 
 From CompHolder (Comp Delegate CompHolder)
-From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Whitelist Accounts" [(Address GovernorBravoDelegator) (Address GovernorBravoDelegator)] [0 0] ["_setImplementation(address)" "_setWhitelistedAccountExpiration(address,uint256)"] [[(Address BravoDelegate2)] [(Address Arr00) (FromNow 604911)]])
+From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Whitelist Accounts" [(Address GovernorBravoDelegator) (Address GovernorBravoDelegator)] [0 0] ["_setImplementation(address)" "_setWhitelistedAccountExpiration(address,uint256)" "_setWhitelistedGuardian(address)"] [[(Address BravoDelegate2)] [(Address Arr00) (FromNow 604911)] [(Address CommunityMultisig)]])
 
 -- Vote for, queue, and execute the proposal
 MineBlock
@@ -23,6 +24,9 @@ IncreaseTime 604910
 GovernorBravo GovernorBravoDelegator Proposal LastProposal Execute
 
 From Arr00 (GovernorBravo GovernorBravoDelegator Propose "Test Proposal" [(Address GovernorBravoDelegator)] [0] ["_setImplementation(address)"] [[(Address BravoDelegate2)]])
+
+From CommunityMultisig (GovernorBravo GovernorBravoDelegator Proposal Last Cancel)
+
 
 Print "Setup whitelisted accounts ok!"
 
