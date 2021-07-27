@@ -592,24 +592,28 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             return uint(Error.MARKET_NOT_LISTED);
         }
 
-
-        /* The borrower must have shortfall in order to be liquidatable */
-        (Error err, , uint shortfall) = getAccountLiquidityInternal(borrower);
-        if (err != Error.NO_ERROR) {
-            return uint(err);
-        }
-        if (shortfall == 0) {
-            return uint(Error.INSUFFICIENT_SHORTFALL);
-        }
-
-        /* The liquidator may not repay more than what is allowed by the closeFactor */
+        // Get borrowers's underlying borrow balance
         uint borrowBalance = CToken(cTokenBorrowed).borrowBalanceStored(borrower);
-        (MathError mathErr, uint maxClose) = mulScalarTruncate(Exp({mantissa: closeFactorMantissa}), borrowBalance);
-        if (mathErr != MathError.NO_ERROR) {
-            return uint(Error.MATH_ERROR);
-        }
-        if (repayAmount > maxClose) {
-            return uint(Error.TOO_MUCH_REPAY);
+
+        /* allow accounts to be liquidated if the market is deprecated */
+        if (isDeprecated(CToken(cTokenBorrowed))) {
+            require(borrowBalance >= repayAmount, "Can not repay more than the total borrow");
+        } else {
+            /* The borrower must have shortfall in order to be liquidatable */
+            (Error err, , uint shortfall) = getAccountLiquidityInternal(borrower);
+            if (err != Error.NO_ERROR) {
+                return uint(err);
+            }
+
+            if (shortfall == 0) {
+                return uint(Error.INSUFFICIENT_SHORTFALL);
+            }
+
+            /* The liquidator may not repay more than what is allowed by the closeFactor */
+            uint maxClose = mul_ScalarTruncate(Exp({mantissa: closeFactorMantissa}), borrowBalance);
+            if (repayAmount > maxClose) {
+                return uint(Error.TOO_MUCH_REPAY);
+            }
         }
 
         return uint(Error.NO_ERROR);
@@ -1576,5 +1580,18 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      */
     function getWhitelist() external view returns (address[] memory) {
         return whitelistArray;
+    }
+
+    /**
+     * @notice Returns true if the given cToken market has been deprecated
+     * @dev All borrows in a deprecated cToken market can be immediately liquidated
+     * @param cToken The market to check if deprecated
+     */
+    function isDeprecated(CToken cToken) public view returns (bool) {
+        return
+            markets[address(cToken)].collateralFactorMantissa == 0 && 
+            borrowGuardianPaused[address(cToken)] == true && 
+            cToken.reserveFactorMantissa() == 1e18
+        ;
     }
 }
