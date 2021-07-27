@@ -338,7 +338,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
      * @param expiration Expiration for account whitelist status as timestamp (if now < expiration, whitelisted)
      */
     function _setWhitelistedAccountExpiration(address account, uint expiration) external {
-        require(msg.sender == admin, "GovernorBravo::_setWhitelistedAccountExpiration: admin only");
+        require(msg.sender == admin || msg.sender == whitelistGuardian, "GovernorBravo::_setWhitelistedAccountExpiration: admin only");
         whitelistedAccountExpirations[account] = expiration;
 
         emit WhitelistAccountSet(account, expiration);
