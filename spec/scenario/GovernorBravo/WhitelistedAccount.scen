@@ -84,3 +84,25 @@ Test "Only Whitelisted User gets whitelisted"
     AllowFailures
     From Geoff (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])
     Assert Revert "revert GovernorBravo::propose: proposer votes below proposal threshold"
+
+Test "WhitelistGuardian can cancel proposal by whitelisted account"
+    GivenWhitelistedUser Robert
+    GovernorBravo LegitGov SetWhitelistGuardian Jared
+    From Robert (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])
+    From Jared (GovernorBravo LegitGov Proposal LastProposal Cancel)
+
+Test "WhitelistGuardian can't cancel other proposals"
+    DeployGov
+    GovernorBravo LegitGov SetWhitelistGuardian Robert
+    From Jared (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])
+    AllowFailures
+    From Robert (GovernorBravo LegitGov Proposal LastProposal Cancel)
+    Assert Revert "revert GovernorBravo::cancel: proposer above threshold"
+
+Test "WhitelistGuardian can't cancel from proposer above threshold"
+    GivenWhitelistedUser Jared
+    GovernorBravo LegitGov SetWhitelistGuardian Robert
+    From Jared (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])
+    AllowFailures
+    From Robert (GovernorBravo LegitGov Proposal LastProposal Cancel)
+    Assert Revert "revert GovernorBravo::cancel: whitelisted proposer"
