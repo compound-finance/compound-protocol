@@ -8,6 +8,7 @@ import "./PriceOracle.sol";
 import "./ComptrollerInterface.sol";
 import "./ComptrollerStorage.sol";
 import "./Unitroller.sol";
+import "./RewardsDistributor.sol";
 
 /**
  * @title Compound's Comptroller Contract
@@ -285,6 +286,12 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             require(nextTotalUnderlyingSupply < supplyCap, "market supply cap reached");
         }
 
+        // Keep the flywheel moving
+        for (uint256 i = 0; i < rewardsDistributors.length; i++) {
+            RewardsDistributor(rewardsDistributors[i]).updateCompSupplyIndex(cToken);
+            RewardsDistributor(rewardsDistributors[i]).distributeSupplierComp(cToken, minter);
+        }
+
         return uint(Error.NO_ERROR);
     }
 
@@ -319,7 +326,18 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      * @return 0 if the redeem is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function redeemAllowed(address cToken, address redeemer, uint redeemTokens) external returns (uint) {
-        return redeemAllowedInternal(cToken, redeemer, redeemTokens);
+        uint allowed = redeemAllowedInternal(cToken, redeemer, redeemTokens);
+        if (allowed != uint(Error.NO_ERROR)) {
+            return allowed;
+        }
+
+        // Keep the flywheel moving
+        for (uint256 i = 0; i < rewardsDistributors.length; i++) {
+            RewardsDistributor(rewardsDistributors[i]).updateCompSupplyIndex(cToken);
+            RewardsDistributor(rewardsDistributors[i]).distributeSupplierComp(cToken, redeemer);
+        }
+
+        return uint(Error.NO_ERROR);
     }
 
     function redeemAllowedInternal(address cToken, address redeemer, uint redeemTokens) internal view returns (uint) {
@@ -405,6 +423,14 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             (MathError mathErr, uint nextTotalBorrows) = addUInt(totalBorrows, borrowAmount);
             if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
             require(nextTotalBorrows < borrowCap, "market borrow cap reached");
+        }
+
+        // Keep the flywheel moving
+        Exp memory borrowIndex = Exp({mantissa: CToken(cToken).borrowIndex()});
+
+        for (uint256 i = 0; i < rewardsDistributors.length; i++) {
+            RewardsDistributor(rewardsDistributors[i]).updateCompBorrowIndex(cToken);
+            RewardsDistributor(rewardsDistributors[i]).distributeBorrowerComp(cToken, borrower);
         }
 
         // Perform a hypothetical liquidity check to guard against shortfall
@@ -509,6 +535,14 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         // Make sure market is listed
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
+        }
+
+        // Keep the flywheel moving
+        Exp memory borrowIndex = Exp({mantissa: CToken(cToken).borrowIndex()});
+
+        for (uint256 i = 0; i < rewardsDistributors.length; i++) {
+            RewardsDistributor(rewardsDistributors[i]).updateCompBorrowIndex(cToken);
+            RewardsDistributor(rewardsDistributors[i]).distributeBorrowerComp(cToken, borrower);
         }
 
         return uint(Error.NO_ERROR);
@@ -646,6 +680,13 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             return uint(Error.COMPTROLLER_MISMATCH);
         }
 
+        // Keep the flywheel moving
+        for (uint256 i = 0; i < rewardsDistributors.length; i++) {
+            RewardsDistributor(rewardsDistributors[i]).updateCompSupplyIndex(cTokenCollateral);
+            RewardsDistributor(rewardsDistributors[i]).distributeSupplierComp(cTokenCollateral, borrower);
+            RewardsDistributor(rewardsDistributors[i]).distributeSupplierComp(cTokenCollateral, liquidator);
+        }
+
         return uint(Error.NO_ERROR);
     }
 
@@ -688,12 +729,21 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         // Pausing is a very serious situation - we revert to sound the alarms
         require(!transferGuardianPaused, "transfer is paused");
 
-        // Shh - currently unused
-        dst;
-
         // Currently the only consideration is whether or not
         //  the src is allowed to redeem this many tokens
-        return redeemAllowedInternal(cToken, src, transferTokens);
+        uint allowed = redeemAllowedInternal(cToken, src, transferTokens);
+        if (allowed != uint(Error.NO_ERROR)) {
+            return allowed;
+        }
+
+        // Keep the flywheel moving
+        for (uint256 i = 0; i < rewardsDistributors.length; i++) {
+            RewardsDistributor(rewardsDistributors[i]).updateCompSupplyIndex(cToken);
+            RewardsDistributor(rewardsDistributors[i]).distributeSupplierComp(cToken, src);
+            RewardsDistributor(rewardsDistributors[i]).distributeSupplierComp(cToken, dst);
+        }
+
+        return uint(Error.NO_ERROR);
     }
 
     /**
@@ -1011,6 +1061,27 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     }
 
     /*** Admin Functions ***/
+
+    /**
+      * @notice Adds RewardsDistributor contracts.
+      * @dev Admin function to adds RewardsDistributor contracts
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
+    function _addRewardsDistributors(address[] calldata distributors) external returns (uint) {
+        // Check caller is admin
+        if (!hasAdminRights()) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_WHITELIST_STATUS_OWNER_CHECK);
+        }
+
+        // Set whitelist statuses for suppliers
+        for (uint i = 0; i < distributors.length; i++) {
+            // Check marker method
+            require(distributors[i].isRewardsDistributor());
+            rewardsDistributors.push(distributors[i]);
+        }
+
+        return uint(Error.NO_ERROR);
+    }
 
     /**
       * @notice Sets the whitelist enforcement for the comptroller

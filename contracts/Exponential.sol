@@ -1,23 +1,17 @@
 pragma solidity ^0.5.16;
 
 import "./CarefulMath.sol";
+import "./ExponentialNoError.sol";
 
 /**
  * @title Exponential module for storing fixed-precision decimals
  * @author Compound
+ * @dev Legacy contract for compatibility reasons with existing contracts that still use MathError
  * @notice Exp is a struct which stores decimals with a fixed precision of 18 decimal places.
  *         Thus, if we wanted to store the 5.1, mantissa would store 5.1e18. That is:
  *         `Exp({mantissa: 5100000000000000000})`.
  */
-contract Exponential is CarefulMath {
-    uint constant expScale = 1e18;
-    uint constant halfExpScale = expScale/2;
-    uint constant mantissaOne = expScale;
-
-    struct Exp {
-        uint mantissa;
-    }
-
+contract Exponential is CarefulMath, ExponentialNoError {
     /**
      * @dev Creates an exponential from numerator and denominator values.
      *      Note: Returns an error if (`num` * 10e18) > MAX_INT,
@@ -185,42 +179,5 @@ contract Exponential is CarefulMath {
      */
     function divExp(Exp memory a, Exp memory b) pure internal returns (MathError, Exp memory) {
         return getExp(a.mantissa, b.mantissa);
-    }
-
-    /**
-     * @dev Truncates the given exp to a whole number value.
-     *      For example, truncate(Exp{mantissa: 15 * expScale}) = 15
-     */
-    function truncate(Exp memory exp) pure internal returns (uint) {
-        // Note: We are not using careful math here as we're performing a division that cannot fail
-        return exp.mantissa / expScale;
-    }
-
-    /**
-     * @dev Checks if first Exp is less than second Exp.
-     */
-    function lessThanExp(Exp memory left, Exp memory right) pure internal returns (bool) {
-        return left.mantissa < right.mantissa;
-    }
-
-    /**
-     * @dev Checks if left Exp <= right Exp.
-     */
-    function lessThanOrEqualExp(Exp memory left, Exp memory right) pure internal returns (bool) {
-        return left.mantissa <= right.mantissa;
-    }
-
-    /**
-     * @dev Checks if left Exp > right Exp.
-     */
-    function greaterThanExp(Exp memory left, Exp memory right) pure internal returns (bool) {
-        return left.mantissa > right.mantissa;
-    }
-
-    /**
-     * @dev returns true if Exp is exactly zero
-     */
-    function isZeroExp(Exp memory value) pure internal returns (bool) {
-        return value.mantissa == 0;
     }
 }
