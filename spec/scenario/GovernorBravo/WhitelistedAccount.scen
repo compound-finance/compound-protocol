@@ -52,7 +52,7 @@ Macro GivenWhitelistedUser user
     SetTime Now
     DeployGov
     MineBlock
-    from root (GovernorBravo LegitGov SetWhitelistedAccountExpiration (Address user) (FromNow 100000))
+    from root (GovernorBravo LegitGov SetWhitelistAccountExpiration (Address user) (FromNow 100000))
     Assert Equal (Comp GetCurrentVotes Robert) 0
 
 Test "Cancel Whitelisted Proposal fail"
@@ -110,5 +110,5 @@ Test "WhitelistGuardian can't cancel from proposer above threshold"
 Test "Set whitelist expiration from whitelist guardian"
     DeployGov
     GovernorBravo LegitGov SetWhitelistGuardian Robert
-    From Robert (GovernorBravo LegitGov SetWhitelistedAccountExpiration (Address Geoff) (FromNow 100000))
+    From Robert (GovernorBravo LegitGov SetWhitelistAccountExpiration (Address Geoff) (FromNow 100000))
     From Geoff (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])

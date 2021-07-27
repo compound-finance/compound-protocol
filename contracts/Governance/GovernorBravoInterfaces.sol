@@ -41,8 +41,8 @@ contract GovernorBravoEvents {
     /// @notice Emitted when pendingAdmin is accepted, which means admin is updated
     event NewAdmin(address oldAdmin, address newAdmin);
 
-    /// @notice Emitted when proposer account whitelist status is set
-    event WhitelistAccountSet(address account, uint expiration);
+    /// @notice Emitted when whitelist account expiration is set
+    event WhitelistAccountExpirationSet(address account, uint expiration);
 
     /// @notice Emitted when the whitelistGuardian is set
     event WhitelistGuardianSet(address oldGuardian, address newGuardian);
@@ -170,9 +170,9 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
 
 contract GovernorBravoDelegateStorageV2 is GovernorBravoDelegateStorageV1 {
     /// @notice Stores the expiration of account whitelist status as a timestamp
-    mapping (address => uint) public whitelistedAccountExpirations;
+    mapping (address => uint) public whitelistAccountExpirations;
 
-    /// @notice Address which manages whitelisted proposals
+    /// @notice Address which manages whitelisted proposals and whitelist accounts
     address public whitelistGuardian;
 }
 
