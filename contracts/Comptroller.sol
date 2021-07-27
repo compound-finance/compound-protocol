@@ -426,8 +426,6 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        Exp memory borrowIndex = Exp({mantissa: CToken(cToken).borrowIndex()});
-
         for (uint256 i = 0; i < rewardsDistributors.length; i++) {
             RewardsDistributor(rewardsDistributors[i]).updateCompBorrowIndex(cToken);
             RewardsDistributor(rewardsDistributors[i]).distributeBorrowerComp(cToken, borrower);
@@ -538,8 +536,6 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        Exp memory borrowIndex = Exp({mantissa: CToken(cToken).borrowIndex()});
-
         for (uint256 i = 0; i < rewardsDistributors.length; i++) {
             RewardsDistributor(rewardsDistributors[i]).updateCompBorrowIndex(cToken);
             RewardsDistributor(rewardsDistributors[i]).distributeBorrowerComp(cToken, borrower);
