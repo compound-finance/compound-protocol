@@ -66,6 +66,9 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     /// @notice Emitted when borrow cap guardian is changed
     event NewBorrowCapGuardian(address oldBorrowCapGuardian, address newBorrowCapGuardian);
 
+    /// @notice Emitted when a new RewardsDistributor contract is added to hooks
+    event AddedRewardsDistributor(address rewardsDistributor);
+
     // closeFactorMantissa must be strictly greater than this value
     uint internal constant closeFactorMinMantissa = 0.05e18; // 0.05
 
@@ -1078,6 +1081,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             // Check marker method
             require(RewardsDistributor(distributors[i]).isRewardsDistributor());
             rewardsDistributors.push(distributors[i]);
+            emit AddedRewardsDistributor(distributors[i]);
         }
 
         return uint(Error.NO_ERROR);
