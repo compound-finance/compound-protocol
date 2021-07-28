@@ -12,7 +12,7 @@ import "./Governance/Comp.sol";
  * @title Compound's Comptroller Contract
  * @author Compound
  */
-contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError {
+contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError {
     /// @notice Emitted when an admin supports a market
     event MarketListed(CToken cToken);
 
@@ -1064,7 +1064,7 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @param cToken The market whose COMP speed to update
      * @param compSpeed New COMP speed for market
      */
-    function setCompSpeedInternal(CToken cToken, uint compSpeed) internal {
+    function setCompSpeedInternal(CToken cToken, uint supplySpeed, uint borrowSpeed) internal {
         uint currentCompSpeed = compSpeeds[address(cToken)];
         if (currentCompSpeed != 0) {
             // note that COMP speed could be set to 0 to halt liquidity rewards for a market
@@ -1103,7 +1103,7 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      */
     function updateCompSupplyIndex(address cToken) internal {
         CompMarketState storage supplyState = compSupplyState[cToken];
-        uint supplySpeed = compSpeeds[cToken];
+        uint supplySpeed = compBorrowSpeeds[cToken];
         uint blockNumber = getBlockNumber();
         uint deltaBlocks = sub_(blockNumber, uint(supplyState.block));
         if (deltaBlocks > 0 && supplySpeed > 0) {
@@ -1126,7 +1126,7 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      */
     function updateCompBorrowIndex(address cToken, Exp memory marketBorrowIndex) internal {
         CompMarketState storage borrowState = compBorrowState[cToken];
-        uint borrowSpeed = compSpeeds[cToken];
+        uint borrowSpeed = compSupplySpeeds[cToken];
         uint blockNumber = getBlockNumber();
         uint deltaBlocks = sub_(blockNumber, uint(borrowState.block));
         if (deltaBlocks > 0 && borrowSpeed > 0) {
@@ -1291,9 +1291,14 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @param cToken The market whose COMP speed to update
      * @param compSpeed New COMP speed for market
      */
-    function _setCompSpeed(CToken cToken, uint compSpeed) public {
+    function _setCompSpeeds(CToken[] cTokens, uint[] supplySpeeds, uint[] borrowSpeeds) public {
         require(adminOrInitializing(), "only admin can set comp speed");
-        setCompSpeedInternal(cToken, compSpeed);
+
+        uint numTokens = cTokens.length;
+        require(numTokens == supplySpeeds.length && numTokens == borrowSpeeds.length, "Comptroller::_setCompSpeeds invalid input");
+
+        for (uint i = 0; i < numTokens; ++i)
+            setCompSpeedInternal(cTokens[i], supplySpeeds[i], borrowSpeeds[i]);
     }
 
     /**
