@@ -33,7 +33,10 @@ contract RewardsDistributor is ExponentialNoError {
     uint public compRate;
 
     /// @notice The portion of compRate that each market currently receives
-    mapping(address => uint) public compSpeeds;
+    mapping(address => uint) public compSupplySpeeds;
+
+    /// @notice The portion of compRate that each market currently receives
+    mapping(address => uint) public compBorrowSpeeds;
 
     /// @notice The COMP market supply state for each market
     mapping(address => CompMarketState) public compSupplyState;
@@ -66,7 +69,10 @@ contract RewardsDistributor is ExponentialNoError {
     event NewAdmin(address oldAdmin, address newAdmin);
 
     /// @notice Emitted when a new COMP speed is calculated for a market
-    event CompSpeedUpdated(CToken indexed cToken, uint newSpeed);
+    event CompSupplySpeedUpdated(CToken indexed cToken, uint newSpeed);
+
+    /// @notice Emitted when a new COMP speed is calculated for a market
+    event CompBorrowSpeedUpdated(CToken indexed cToken, uint newSpeed);
 
     /// @notice Emitted when a new COMP speed is set for a contributor
     event ContributorCompSpeedUpdated(address indexed contributor, uint newSpeed);
@@ -139,13 +145,11 @@ contract RewardsDistributor is ExponentialNoError {
      * @param cToken The market whose COMP speed to update
      * @param compSpeed New COMP speed for market
      */
-    function setCompSpeedInternal(CToken cToken, uint compSpeed) internal {
-        uint currentCompSpeed = compSpeeds[address(cToken)];
+    function setCompSupplySpeedInternal(CToken cToken, uint compSpeed) internal {
+        uint currentCompSpeed = compSupplySpeeds[address(cToken)];
         if (currentCompSpeed != 0) {
             // note that COMP speed could be set to 0 to halt liquidity rewards for a market
-            Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
             updateCompSupplyIndex(address(cToken));
-            updateCompBorrowIndex(address(cToken), borrowIndex);
         } else if (compSpeed != 0) {
             // Add the COMP market
             (bool isListed, ) = ComptrollerV2Storage(address(cToken.comptroller())).markets(address(cToken));
@@ -157,6 +161,29 @@ contract RewardsDistributor is ExponentialNoError {
                     block: safe32(getBlockNumber(), "block number exceeds 32 bits")
                 });
             }
+        }
+
+        if (currentCompSpeed != compSpeed) {
+            compSupplySpeeds[address(cToken)] = compSpeed;
+            emit CompSupplySpeedUpdated(cToken, compSpeed);
+        }
+    }
+
+    /**
+     * @notice Set COMP speed for a single market
+     * @param cToken The market whose COMP speed to update
+     * @param compSpeed New COMP speed for market
+     */
+    function setCompBorrowSpeedInternal(CToken cToken, uint compSpeed) internal {
+        uint currentCompSpeed = compBorrowSpeeds[address(cToken)];
+        if (currentCompSpeed != 0) {
+            // note that COMP speed could be set to 0 to halt liquidity rewards for a market
+            Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
+            updateCompBorrowIndex(address(cToken), borrowIndex);
+        } else if (compSpeed != 0) {
+            // Add the COMP market
+            (bool isListed, ) = ComptrollerV2Storage(address(cToken.comptroller())).markets(address(cToken));
+            require(isListed == true, "comp market is not listed");
 
             if (compBorrowState[address(cToken)].index == 0 && compBorrowState[address(cToken)].block == 0) {
                 compBorrowState[address(cToken)] = CompMarketState({
@@ -167,8 +194,8 @@ contract RewardsDistributor is ExponentialNoError {
         }
 
         if (currentCompSpeed != compSpeed) {
-            compSpeeds[address(cToken)] = compSpeed;
-            emit CompSpeedUpdated(cToken, compSpeed);
+            compBorrowSpeeds[address(cToken)] = compSpeed;
+            emit CompBorrowSpeedUpdated(cToken, compSpeed);
         }
     }
 
@@ -178,7 +205,7 @@ contract RewardsDistributor is ExponentialNoError {
      */
     function updateCompSupplyIndex(address cToken) public {
         CompMarketState storage supplyState = compSupplyState[cToken];
-        uint supplySpeed = compSpeeds[cToken];
+        uint supplySpeed = compSupplySpeeds[cToken];
         uint blockNumber = getBlockNumber();
         uint deltaBlocks = sub_(blockNumber, uint(supplyState.block));
         if (deltaBlocks > 0 && supplySpeed > 0) {
@@ -201,7 +228,7 @@ contract RewardsDistributor is ExponentialNoError {
      */
     function updateCompBorrowIndex(address cToken, Exp memory marketBorrowIndex) internal {
         CompMarketState storage borrowState = compBorrowState[cToken];
-        uint borrowSpeed = compSpeeds[cToken];
+        uint borrowSpeed = compBorrowSpeeds[cToken];
         uint blockNumber = getBlockNumber();
         uint deltaBlocks = sub_(blockNumber, uint(borrowState.block));
         if (deltaBlocks > 0 && borrowSpeed > 0) {
@@ -387,9 +414,19 @@ contract RewardsDistributor is ExponentialNoError {
      * @param cToken The market whose COMP speed to update
      * @param compSpeed New COMP speed for market
      */
-    function _setCompSpeed(CToken cToken, uint compSpeed) public {
+    function _setCompSupplySpeed(CToken cToken, uint compSpeed) public {
         require(msg.sender == admin, "only admin can set comp speed");
-        setCompSpeedInternal(cToken, compSpeed);
+        setCompSupplySpeedInternal(cToken, compSpeed);
+    }
+
+    /**
+     * @notice Set COMP speed for a single market
+     * @param cToken The market whose COMP speed to update
+     * @param compSpeed New COMP speed for market
+     */
+    function _setCompBorrowSpeed(CToken cToken, uint compSpeed) public {
+        require(msg.sender == admin, "only admin can set comp speed");
+        setCompBorrowSpeedInternal(cToken, compSpeed);
     }
 
     /**
