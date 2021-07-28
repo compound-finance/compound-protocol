@@ -43,8 +43,11 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
     /// @notice Emitted when an action is paused on a market
     event ActionPaused(CToken cToken, string action, bool pauseState);
 
-    /// @notice Emitted when a new COMP speed is calculated for a market
-    event CompSpeedUpdated(CToken indexed cToken, uint newSpeed);
+    /// @notice Emitted when a new borrow-side COMP speed is calculated for a market
+    event CompBorrowSpeedUpdated(CToken indexed cToken, uint newSpeed);
+
+    /// @notice Emitted when a new supply-side COMP speed is calculated for a market
+    event CompSupplySpeedUpdated(CToken indexed cToken, uint newSpeed);
 
     /// @notice Emitted when a new COMP speed is set for a contributor
     event ContributorCompSpeedUpdated(address indexed contributor, uint newSpeed);
@@ -1065,24 +1068,29 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
      * @param compSpeed New COMP speed for market
      */
     function setCompSpeedInternal(CToken cToken, uint supplySpeed, uint borrowSpeed) internal {
-        uint currentCompSpeed = compSpeeds[address(cToken)];
-        if (currentCompSpeed != 0) {
-            // note that COMP speed could be set to 0 to halt liquidity rewards for a market
-            Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
-            updateCompSupplyIndex(address(cToken));
-            updateCompBorrowIndex(address(cToken), borrowIndex);
-        } else if (compSpeed != 0) {
-            // Add the COMP market
-            Market storage market = markets[address(cToken)];
-            require(market.isListed == true, "comp market is not listed");
+        Market storage market = markets[address(cToken)];
+        require(market.isListed, "comp market is not listed");
 
+        uint currentSupplySpeed = compSupplySpeeds[address(cToken)];
+        uint currentBorrowSpeed = compBorrowSpeeds[address(cToken)];
+
+        if (currentSupplySpeed != 0) {
+            // note that COMP speed could be set to 0 to halt liquidity rewards for a market
+            updateCompSupplyIndex(address(cToken));
+        } else if (supplySpeed != 0) {
             if (compSupplyState[address(cToken)].index == 0 && compSupplyState[address(cToken)].block == 0) {
                 compSupplyState[address(cToken)] = CompMarketState({
                     index: compInitialIndex,
                     block: safe32(getBlockNumber(), "block number exceeds 32 bits")
                 });
             }
+        }
 
+        if (currentBorrowSpeed != 0) {
+            // note that COMP speed could be set to 0 to halt liquidity rewards for a market
+            Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
+            updateCompBorrowIndex(address(cToken), borrowIndex);
+        } else if (borrowSpeed != 0) {
             if (compBorrowState[address(cToken)].index == 0 && compBorrowState[address(cToken)].block == 0) {
                 compBorrowState[address(cToken)] = CompMarketState({
                     index: compInitialIndex,
@@ -1091,9 +1099,14 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
             }
         }
 
-        if (currentCompSpeed != compSpeed) {
-            compSpeeds[address(cToken)] = compSpeed;
-            emit CompSpeedUpdated(cToken, compSpeed);
+        if (currentSupplySpeed != supplySpeed) {
+            compSupplySpeeds[address(cToken)] = supplySpeed;
+            emit CompSupplySpeedUpdated(cToken, supplySpeed);
+        }
+
+        if (currentBorrowSpeed != borrowSpeed) {
+            compBorrowSpeeds[address(cToken)] = borrowSpeed;
+            emit CompBorrowSpeedUpdated(cToken, borrowSpeed);
         }
     }
 
