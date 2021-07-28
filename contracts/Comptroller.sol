@@ -1065,7 +1065,8 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
     /**
      * @notice Set COMP speed for a single market
      * @param cToken The market whose COMP speed to update
-     * @param compSpeed New COMP speed for market
+     * @param supplySpeed New supply-side COMP speed for market
+     * @param borrowSpeed New borrow-side COMP speed for market
      */
     function setCompSpeedInternal(CToken cToken, uint supplySpeed, uint borrowSpeed) internal {
         Market storage market = markets[address(cToken)];
@@ -1300,11 +1301,12 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
-     * @notice Set COMP speed for a single market
-     * @param cToken The market whose COMP speed to update
-     * @param compSpeed New COMP speed for market
+     * @notice Set COMP borrow and supply speeds for the specified markets.
+     * @param cTokens The markets whose COMP speed to update.
+     * @param supplySpeeds New supply-side COMP speed for the corresponding market.
+     * @param borrowSpeeds New borrow-side COMP speed for the corresponding market.
      */
-    function _setCompSpeeds(CToken[] cTokens, uint[] supplySpeeds, uint[] borrowSpeeds) public {
+    function _setCompSpeeds(CToken[] memory cTokens, uint[] memory supplySpeeds, uint[] memory borrowSpeeds) public {
         require(adminOrInitializing(), "only admin can set comp speed");
 
         uint numTokens = cTokens.length;
