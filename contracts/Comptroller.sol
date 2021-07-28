@@ -1110,9 +1110,8 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
             uint supplyTokens = CToken(cToken).totalSupply();
             uint compAccrued = mul_(deltaBlocks, supplySpeed);
             Double memory ratio = supplyTokens > 0 ? fraction(compAccrued, supplyTokens) : Double({mantissa: 0});
-            Double memory index = add_(Double({mantissa: supplyState.index}), ratio);
 
-            supplyState.index = safe224(index.mantissa, "new index exceeds 224 bits");
+            supplyState.index = safe224(add_(Double({mantissa: supplyState.index}), ratio).mantissa, "new index exceeds 224 bits");
             supplyState.block = uint32(blockNumber); // safe cast check already performed above
         } else if (deltaBlocks > 0) {
             supplyState.block = uint32(blockNumber); // safe cast check already performed above
@@ -1132,9 +1131,8 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
             uint borrowAmount = div_(CToken(cToken).totalBorrows(), marketBorrowIndex);
             uint compAccrued = mul_(deltaBlocks, borrowSpeed);
             Double memory ratio = borrowAmount > 0 ? fraction(compAccrued, borrowAmount) : Double({mantissa: 0});
-            Double memory index = add_(Double({mantissa: borrowState.index}), ratio);
             
-            borrowState.index = safe224(index.mantissa, "new index exceeds 224 bits");
+            borrowState.index = safe224(add_(Double({mantissa: borrowState.index}), ratio).mantissa, "new index exceeds 224 bits");
             borrowState.block = uint32(blockNumber); // safe cast check already performed above
         } else if (deltaBlocks > 0) {
             borrowState.block = uint32(blockNumber); // safe cast check already performed above
