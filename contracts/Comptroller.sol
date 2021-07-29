@@ -1352,6 +1352,11 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         bytes calldata constructorData,
         uint collateralFactorMantissa
     ) external returns (uint) {
+        // Check caller is admin
+        if (!hasAdminRights()) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SUPPORT_MARKET_OWNER_CHECK);
+        }
+
         // Temporarily enable Fuse admin rights for asset deployment (storing the original value)
         bool oldFuseAdminHasRights = fuseAdminHasRights;
         fuseAdminHasRights = true;
