@@ -767,6 +767,65 @@ describe('Flywheel', () => {
     });
   });
 
+  describe('harnessSetCompSpeeds', () => {
+    it('should correctly set differing COMP supply and borrow speeds', async () => {
+      const desiredCompSupplySpeed = 3;
+      const desiredCompBorrowSpeed = 20;
+      await send(comptroller, 'harnessAddCompMarkets', [[cLOW._address]]);
+      const tx = await send(comptroller, '_setCompSpeeds', [[cLOW._address], [desiredCompSupplySpeed], [desiredCompBorrowSpeed]]);
+      expect(tx).toHaveLog(['CompBorrowSpeedUpdated', 0], {
+        cToken: cLOW._address,
+        newSpeed: desiredCompBorrowSpeed
+      });
+      expect(tx).toHaveLog(['CompSupplySpeedUpdated', 0], {
+        cToken: cLOW._address,
+        newSpeed: desiredCompSupplySpeed
+      });
+      const currentCompSupplySpeed = await call(comptroller, 'compSupplySpeeds', [cLOW._address]);
+      const currentCompBorrowSpeed = await call(comptroller, 'compBorrowSpeeds', [cLOW._address]);
+      expect(currentCompSupplySpeed).toEqualNumber(desiredCompSupplySpeed);
+      expect(currentCompBorrowSpeed).toEqualNumber(desiredCompBorrowSpeed);
+    });
+
+    it('should correctly get differing COMP supply and borrow speeds for 4 assets', async () => {
+      const cBAT = await makeCToken({ comptroller, supportMarket: true });
+      const cDAI = await makeCToken({ comptroller, supportMarket: true });
+
+      const borrowSpeed1 = 5;
+      const supplySpeed1 = 10;
+
+      const borrowSpeed2 = 0;
+      const supplySpeed2 = 100;
+
+      const borrowSpeed3 = 0;
+      const supplySpeed3 = 0;
+
+      const borrowSpeed4 = 13;
+      const supplySpeed4 = 0;
+
+      await send(comptroller, 'harnessAddCompMarkets', [[cREP._address, cZRX._address, cBAT._address, cDAI._address]]);
+      await send(comptroller, '_setCompSpeeds', [[cREP._address, cZRX._address, cBAT._address, cDAI._address], [supplySpeed1, supplySpeed2, supplySpeed3, supplySpeed4], [borrowSpeed1, borrowSpeed2, borrowSpeed3, borrowSpeed4]]);
+
+      const currentSupplySpeed1 = await call(comptroller, 'compSupplySpeeds', [cREP._address]);
+      const currentBorrowSpeed1 = await call(comptroller, 'compBorrowSpeeds', [cREP._address]);
+      const currentSupplySpeed2 = await call(comptroller, 'compSupplySpeeds', [cZRX._address]);
+      const currentBorrowSpeed2 = await call(comptroller, 'compBorrowSpeeds', [cZRX._address]);
+      const currentSupplySpeed3 = await call(comptroller, 'compSupplySpeeds', [cBAT._address]);
+      const currentBorrowSpeed3 = await call(comptroller, 'compBorrowSpeeds', [cBAT._address]);
+      const currentSupplySpeed4 = await call(comptroller, 'compSupplySpeeds', [cDAI._address]);
+      const currentBorrowSpeed4 = await call(comptroller, 'compBorrowSpeeds', [cDAI._address]);
+
+      expect(currentSupplySpeed1).toEqualNumber(supplySpeed1);
+      expect(currentBorrowSpeed1).toEqualNumber(borrowSpeed1);
+      expect(currentSupplySpeed2).toEqualNumber(supplySpeed2);
+      expect(currentBorrowSpeed2).toEqualNumber(borrowSpeed2);
+      expect(currentSupplySpeed3).toEqualNumber(supplySpeed3);
+      expect(currentBorrowSpeed3).toEqualNumber(borrowSpeed3);
+      expect(currentSupplySpeed4).toEqualNumber(supplySpeed4);
+      expect(currentBorrowSpeed4).toEqualNumber(borrowSpeed4);
+    });
+  });
+
   describe('harnessAddCompMarkets', () => {
     it('should correctly add a comp market if called by admin', async () => {
       const cBAT = await makeCToken({comptroller, supportMarket: true});
