@@ -1117,7 +1117,7 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
      */
     function updateCompSupplyIndex(address cToken) internal {
         CompMarketState storage supplyState = compSupplyState[cToken];
-        uint supplySpeed = compBorrowSpeeds[cToken];
+        uint supplySpeed = compSupplySpeeds[cToken];
         uint blockNumber = getBlockNumber();
         uint deltaBlocks = sub_(blockNumber, uint(supplyState.block));
         if (deltaBlocks > 0 && supplySpeed > 0) {
@@ -1140,7 +1140,7 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
      */
     function updateCompBorrowIndex(address cToken, Exp memory marketBorrowIndex) internal {
         CompMarketState storage borrowState = compBorrowState[cToken];
-        uint borrowSpeed = compSupplySpeeds[cToken];
+        uint borrowSpeed = compBorrowSpeeds[cToken];
         uint blockNumber = getBlockNumber();
         uint deltaBlocks = sub_(blockNumber, uint(borrowState.block));
         if (deltaBlocks > 0 && borrowSpeed > 0) {
