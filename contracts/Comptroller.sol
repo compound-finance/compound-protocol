@@ -1053,6 +1053,7 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         require(unitroller._acceptImplementation() == 0, "change not authorized");
 
         // compSpeeds -> compBorrowSpeeds & compSupplySpeeds
+        // TODO: Remove this post upgrade
         for (uint i = 0; i < allMarkets.length; i ++) {
             compBorrowSpeeds[address(allMarkets[i])] = compSupplySpeeds[address(allMarkets[i])] = compSpeeds[address(allMarkets[i])];
             delete compSpeeds[address(allMarkets[i])];
