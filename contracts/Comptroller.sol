@@ -1051,6 +1051,12 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
     function _become(Unitroller unitroller) public {
         require(msg.sender == unitroller.admin(), "only unitroller admin can change brains");
         require(unitroller._acceptImplementation() == 0, "change not authorized");
+
+        // compSpeeds -> compBorrowSpeeds & compSupplySpeeds
+        for (uint i = 0; i < allMarkets.length; i ++) {
+            compBorrowSpeeds[address(allMarkets[i])] = compSupplySpeeds[address(allMarkets[i])] = compSpeeds[address(allMarkets[i])];
+            delete compSpeeds[address(allMarkets[i])];
+        }
     }
 
     /**
