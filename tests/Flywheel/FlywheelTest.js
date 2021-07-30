@@ -4,7 +4,9 @@ const {
   balanceOf,
   fastForward,
   pretendBorrow,
-  quickMint
+  quickMint,
+  quickBorrow,
+  enterMarkets
 } = require('../Utils/Compound');
 const {
   etherExp,
@@ -87,6 +89,7 @@ describe('Flywheel', () => {
     cREP = await makeCToken({comptroller, supportMarket: true, underlyingPrice: 2, interestRateModelOpts});
     cZRX = await makeCToken({comptroller, supportMarket: true, underlyingPrice: 3, interestRateModelOpts});
     cEVIL = await makeCToken({comptroller, supportMarket: false, underlyingPrice: 3, interestRateModelOpts});
+    cUSD = await makeCToken({comptroller, supportMarket: true, underlyingPrice: 1, collateralFactor: 0.5, interestRateModelOpts});
   });
 
   describe('_grantComp()', () => {
@@ -823,6 +826,62 @@ describe('Flywheel', () => {
       expect(currentBorrowSpeed3).toEqualNumber(borrowSpeed3);
       expect(currentSupplySpeed4).toEqualNumber(supplySpeed4);
       expect(currentBorrowSpeed4).toEqualNumber(borrowSpeed4);
+    });
+
+    const checkAccrualsBorrowAndSupply = async (compSupplySpeed, compBorrowSpeed) => {
+      const mintAmount = etherUnsigned(1000e18), borrowAmount = etherUnsigned(1e18), borrowCollateralAmount = etherUnsigned(1000e18), compRemaining = compRate.multipliedBy(100), deltaBlocks = 10;
+
+      // Transfer COMP to the comptroller
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+
+      // Setup comptroller
+      await send(comptroller, 'harnessAddCompMarkets', [[cLOW._address, cUSD._address]]);
+
+      // Set comp speeds to 0 while we setup
+      await send(comptroller, '_setCompSpeeds', [[cLOW._address, cUSD._address], [0, 0], [0, 0]]);
+
+      // a2 - supply
+      await quickMint(cLOW, a2, mintAmount); // a2 is the supplier
+
+      // a1 - borrow (with supplied collateral)
+      await quickMint(cUSD, a1, borrowCollateralAmount);
+      await enterMarkets([cUSD], a1);
+      await quickBorrow(cLOW, a1, borrowAmount); // a1 is the borrower
+
+      // Initialize comp speeds
+      await send(comptroller, '_setCompSpeeds', [[cLOW._address], [compSupplySpeed], [compBorrowSpeed]]);
+
+      // Get initial COMP balances
+      const a1TotalCompPre = await totalCompAccrued(comptroller, a1);
+      const a2TotalCompPre = await totalCompAccrued(comptroller, a2);
+
+      // Start off with no COMP accrued and no COMP balance
+      expect(a1TotalCompPre).toEqualNumber(0);
+      expect(a2TotalCompPre).toEqualNumber(0);
+
+      // Fast forward blocks
+      await fastForward(comptroller, deltaBlocks);
+
+      // Accrue COMP
+      await send(comptroller, 'claimComp', [[a1, a2], [cLOW._address], true, true]);
+
+      // Get accrued COMP balances
+      const a1TotalCompPost = await totalCompAccrued(comptroller, a1);
+      const a2TotalCompPost = await totalCompAccrued(comptroller, a2);
+
+      // check accrual for borrow
+      expect(a1TotalCompPost).toEqualNumber(Number(compBorrowSpeed) > 0 ? compBorrowSpeed.multipliedBy(deltaBlocks).minus(1) : 0);
+
+      // check accrual for supply
+      expect(a2TotalCompPost).toEqualNumber(Number(compSupplySpeed) > 0 ? compSupplySpeed.multipliedBy(deltaBlocks) : 0);
+    };
+
+    it('should accrue comp correctly with only supply-side rewards', async () => {
+      await checkAccrualsBorrowAndSupply(/* supply speed */ etherExp(0.5), /* borrow speed */ 0);
+    });
+
+    it('should accrue comp correctly with only borrow-side rewards', async () => {
+      await checkAccrualsBorrowAndSupply(/* supply speed */ 0, /* borrow speed */ etherExp(0.5));
     });
   });
 

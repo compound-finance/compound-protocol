@@ -391,6 +391,16 @@ async function quickMint(cToken, minter, mintAmount, opts = {}) {
   return send(cToken, 'mint', [mintAmount], { from: minter });
 }
 
+async function quickBorrow(cToken, minter, borrowAmount, opts = {}) {
+  // make sure to accrue interest
+  await fastForward(cToken, 1);
+
+  if (dfn(opts.exchangeRate))
+    expect(await send(cToken, 'harnessSetExchangeRate', [etherMantissa(opts.exchangeRate)])).toSucceed();
+
+  return send(cToken, 'borrow', [borrowAmount], { from: minter });
+}
+
 
 async function preSupply(cToken, account, tokens, opts = {}) {
   if (dfn(opts.total, true)) {
@@ -465,6 +475,7 @@ module.exports = {
 
   preApprove,
   quickMint,
+  quickBorrow,
 
   preSupply,
   quickRedeem,
