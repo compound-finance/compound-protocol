@@ -61,7 +61,7 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
         require(fuseAdmin.cEtherDelegateWhitelist(implementation, implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
 
         // Delegate _resignImplementation
-        if (allowResign) delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
+        if (allowResign) callSelf(abi.encodeWithSignature("_resignImplementation()"));
 
         // Get old implementation
         address oldImplementation = implementation;
@@ -70,7 +70,7 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
         implementation = implementation_;
 
         // Delegate _becomeImplementation
-        delegateToImplementation(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
+        callSelf(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
 
         // Emit event
         emit NewImplementation(oldImplementation, implementation);
@@ -88,6 +88,22 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
 
         // Set implementation
         __setImplementation(implementation_, allowResign, becomeImplementationData);
+    }
+
+    /**
+     * @notice Internal method to call the self
+     * @dev It returns to the external caller whatever the call returns or forwards reverts
+     * @param data The raw data to call
+     * @return The returned bytes from the call
+     */
+    function callSelf(bytes memory data) internal returns (bytes memory) {
+        (bool success, bytes memory returnData) = address(this).call(data);
+        assembly {
+            if eq(success, 0) {
+                revert(add(returnData, 0x20), returndatasize)
+            }
+        }
+        return returnData;
     }
 
     /**
@@ -121,19 +137,11 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
      * @notice Returns a boolean indicating if the implementation is to be auto-upgraded
      * Returns false instead of reverting if the Unitroller does not have this 
      */
-    function autoImplementation() public view returns (bool) {
-        (bool success, bytes memory returnData) = address(this).staticcall(abi.encodeWithSignature("_comptroller()"));
+    function autoImplementation() internal view returns (bool) {
+        (bool success, bytes memory returnData) = address(this).staticcall(abi.encodeWithSignature("comptroller()"));
         require(success);
         address ct = abi.decode(returnData, (address));
         return ComptrollerV3Storage(ct).autoImplementation();
-    }
-
-    /**
-     * @notice Returns the current per-block supply interest rate for this cToken
-     * @return The supply interest rate per block, scaled by 1e18
-     */
-    function _comptroller() external returns (address) {
-        return abi.decode(delegateToImplementation(abi.encodeWithSignature("comptroller()")), (address));
     }
 
     /**
@@ -142,7 +150,7 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
      */
     function () external payable {
         // Check for automatic implementation
-        if (autoImplementation()) {
+        if (msg.sender != address(this) && autoImplementation()) {
             (address latestCEtherDelegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCEtherDelegate(implementation);
             if (implementation != latestCEtherDelegate) __setImplementation(latestCEtherDelegate, allowResign, becomeImplementationData);
         }
