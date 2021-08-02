@@ -59,9 +59,9 @@ contract CTokenStorage is CTokenAdminStorage {
     uint internal constant reserveFactorPlusFeesMaxMantissa = 1e18;
 
     /**
-     * @notice Pending administrator for this contract
+     * @notice LEGACY USE ONLY: Pending administrator for this contract
      */
-    address payable public pendingAdmin;
+    address payable private __pendingAdmin;
 
     /**
      * @notice Contract which oversees inter-cToken operations
@@ -204,16 +204,6 @@ contract CTokenInterface is CTokenStorage {
 
 
     /*** Admin Events ***/
-
-    /**
-     * @notice Event emitted when pendingAdmin is changed
-     */
-    event NewPendingAdmin(address oldPendingAdmin, address newPendingAdmin);
-
-    /**
-     * @notice Event emitted when pendingAdmin is accepted, which means admin is updated
-     */
-    event NewAdmin(address oldAdmin, address newAdmin);
 
     /**
      * @notice Event emitted when comptroller is changed
