@@ -154,7 +154,7 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
     /**
      * @dev Whether or not the implementation should be auto-upgraded.
      */
-    bool public autoImplementation;
+    bool public autoImplementation = true;
 
     // @notice The borrowCapGuardian can set borrowCaps to any number for any market. Lowering the borrow cap could disable borrowing on the given market.
     address public borrowCapGuardian;

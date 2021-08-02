@@ -116,7 +116,7 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
      * @param data The raw data to delegatecall
      * @return The returned bytes from the delegatecall
      */
-    function delegateToImplementation(bytes memory data) public returns (bytes memory) {
+    function delegateToImplementation(bytes memory data) internal returns (bytes memory) {
         return delegateTo(implementation, data);
     }
 
@@ -124,11 +124,18 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
      * @notice Returns a boolean indicating if the implementation is to be auto-upgraded
      * Returns false instead of reverting if the Unitroller does not have this 
      */
-    function autoImplementation() internal view returns (bool) {
-        (bool success, bytes memory data) = implementation.staticcall(abi.encodeWithSignature("comptroller()"));
+    function autoImplementation() public view returns (bool) {
+        (bool success, bytes memory returnData) = address(this).staticcall(abi.encodeWithSignature("_comptroller()"));
         require(success);
-        address ct = abi.decode(data, (address));
+        address ct = abi.decode(returnData, (address));
         return ComptrollerV3Storage(ct).autoImplementation();
+    }
+
+    /**
+     * @dev Non-view function to get the Comptroller without checking autoImplementation (for use within autoImplementation function)
+     */
+    function _comptroller() external returns (address) {
+        return abi.decode(delegateToImplementation(abi.encodeWithSignature("comptroller()")), (address));
     }
 
     /**

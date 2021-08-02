@@ -51,7 +51,7 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
     }
 
     /**
-     * @notice Internal function to update the implementation of the delegator
+     * @dev Internal function to update the implementation of the delegator
      * @param implementation_ The address of the new implementation for delegation
      * @param allowResign Flag to indicate whether to call _resignImplementation on the old implementation
      * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
@@ -113,7 +113,7 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
      * @param data The raw data to delegatecall
      * @return The returned bytes from the delegatecall
      */
-    function delegateToImplementation(bytes memory data) public returns (bytes memory) {
+    function delegateToImplementation(bytes memory data) internal returns (bytes memory) {
         return delegateTo(implementation, data);
     }
 
@@ -121,11 +121,19 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
      * @notice Returns a boolean indicating if the implementation is to be auto-upgraded
      * Returns false instead of reverting if the Unitroller does not have this 
      */
-    function autoImplementation() internal view returns (bool) {
-        (bool success, bytes memory data) = implementation.staticcall(abi.encodeWithSignature("comptroller()"));
+    function autoImplementation() public view returns (bool) {
+        (bool success, bytes memory returnData) = address(this).staticcall(abi.encodeWithSignature("_comptroller()"));
         require(success);
-        address ct = abi.decode(data, (address));
+        address ct = abi.decode(returnData, (address));
         return ComptrollerV3Storage(ct).autoImplementation();
+    }
+
+    /**
+     * @notice Returns the current per-block supply interest rate for this cToken
+     * @return The supply interest rate per block, scaled by 1e18
+     */
+    function _comptroller() external returns (address) {
+        return abi.decode(delegateToImplementation(abi.encodeWithSignature("comptroller()")), (address));
     }
 
     /**
