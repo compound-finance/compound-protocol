@@ -193,17 +193,19 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
      */
     function () payable external {
         // Check for automatic implementation
-        (bool callSuccess, bytes memory data) = comptrollerImplementation.staticcall(abi.encodeWithSignature("autoImplementation()"));
-        bool autoImplementation;
-        if (callSuccess) (autoImplementation) = abi.decode(data, (bool));
+        if (msg.sender != address(this)) {
+            (bool callSuccess, bytes memory data) = address(this).staticcall(abi.encodeWithSignature("autoImplementation()"));
+            bool autoImplementation;
+            if (callSuccess) (autoImplementation) = abi.decode(data, (bool));
 
-        if (autoImplementation) {
-            address latestComptrollerImplementation = fuseAdmin.latestComptrollerImplementation(comptrollerImplementation);
+            if (autoImplementation) {
+                address latestComptrollerImplementation = fuseAdmin.latestComptrollerImplementation(comptrollerImplementation);
 
-            if (comptrollerImplementation != latestComptrollerImplementation) {
-                address oldImplementation = comptrollerImplementation; // Save current value for inclusion in log
-                comptrollerImplementation = latestComptrollerImplementation;
-                emit NewImplementation(oldImplementation, comptrollerImplementation);
+                if (comptrollerImplementation != latestComptrollerImplementation) {
+                    address oldImplementation = comptrollerImplementation; // Save current value for inclusion in log
+                    comptrollerImplementation = latestComptrollerImplementation;
+                    emit NewImplementation(oldImplementation, comptrollerImplementation);
+                }
             }
         }
 
