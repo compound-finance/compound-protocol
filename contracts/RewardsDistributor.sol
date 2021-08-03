@@ -450,6 +450,15 @@ contract RewardsDistributor is ExponentialNoError {
         emit ContributorCompSpeedUpdated(contributor, compSpeed);
     }
 
+    /**
+     * @notice Add a default market to claim rewards for in `claimRewards()`
+     * @param cToken The market to add
+     */
+    function _addMarket(CToken cToken) public {
+        require(msg.sender == admin, "only admin can add markets");
+        allMarkets.push(cToken);
+    }
+
     /*** Helper Functions */
 
     function getBlockNumber() public view returns (uint) {

@@ -1066,23 +1066,25 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     /*** Admin Functions ***/
 
     /**
-      * @notice Adds RewardsDistributor contracts.
-      * @dev Admin function to adds RewardsDistributor contracts
+      * @notice Add a RewardsDistributor contracts.
+      * @dev Admin function to add a RewardsDistributor contract
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _addRewardsDistributors(address[] calldata distributors) external returns (uint) {
+    function _addRewardsDistributor(address distributor) external returns (uint) {
         // Check caller is admin
         if (!hasAdminRights()) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.SET_WHITELIST_STATUS_OWNER_CHECK);
+            return fail(Error.UNAUTHORIZED, FailureInfo.ADD_REWARDS_DISTRIBUTOR_OWNER_CHECK);
         }
 
-        // Set whitelist statuses for suppliers
-        for (uint i = 0; i < distributors.length; i++) {
-            // Check marker method
-            require(RewardsDistributor(distributors[i]).isRewardsDistributor());
-            rewardsDistributors.push(distributors[i]);
-            emit AddedRewardsDistributor(distributors[i]);
-        }
+        // Check marker method
+        require(RewardsDistributor(distributor).isRewardsDistributor(), "marker method returned false");
+
+        // Check for existing RewardsDistributor
+        for (uint i = 0; i < rewardsDistributors.length; i++) require(distributor != rewardsDistributors[i], "RewardsDistributor contract already added");
+
+        // Add RewardsDistributor to array
+        rewardsDistributors.push(distributor);
+        emit AddedRewardsDistributor(distributor);
 
         return uint(Error.NO_ERROR);
     }
