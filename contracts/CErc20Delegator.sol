@@ -13,7 +13,7 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
      * @notice Returns a boolean indicating if the sender has admin rights
      */
     function hasAdminRights() internal view returns (bool) {
-        (bool success, bytes memory data) = implementation.staticcall(abi.encodeWithSignature("comptroller()"));
+        (bool success, bytes memory data) = address(this).staticcall(abi.encodeWithSignature("comptroller()"));
         require(success);
         address ct = abi.decode(data, (address));
         ComptrollerV3Storage comptroller = ComptrollerV3Storage(ct);
