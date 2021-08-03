@@ -36,9 +36,6 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     /// @notice Emitted when liquidation incentive is changed by admin
     event NewLiquidationIncentive(uint oldLiquidationIncentiveMantissa, uint newLiquidationIncentiveMantissa);
 
-    /// @notice Emitted when maxAssets is changed by admin
-    event NewMaxAssets(uint oldMaxAssets, uint newMaxAssets);
-
     /// @notice Emitted when price oracle is changed
     event NewPriceOracle(PriceOracle oldPriceOracle, PriceOracle newPriceOracle);
 
@@ -146,11 +143,6 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         if (marketToJoin.accountMembership[borrower] == true) {
             // already joined
             return Error.NO_ERROR;
-        }
-
-        if (accountAssets[borrower].length >= maxAssets)  {
-            // no space, cannot join
-            return Error.TOO_MANY_ASSETS;
         }
 
         // survived the gauntlet, add to list
@@ -1246,25 +1238,6 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
 
         // Emit event with asset, old collateral factor, and new collateral factor
         emit NewCollateralFactor(cToken, oldCollateralFactorMantissa, newCollateralFactorMantissa);
-
-        return uint(Error.NO_ERROR);
-    }
-
-    /**
-      * @notice Sets maxAssets which controls how many markets can be entered
-      * @dev Admin function to set maxAssets
-      * @param newMaxAssets New max assets
-      * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
-      */
-    function _setMaxAssets(uint newMaxAssets) external returns (uint) {
-        // Check caller is admin
-        if (!hasAdminRights()) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.SET_MAX_ASSETS_OWNER_CHECK);
-        }
-
-        uint oldMaxAssets = maxAssets;
-        maxAssets = newMaxAssets;
-        emit NewMaxAssets(oldMaxAssets, newMaxAssets);
 
         return uint(Error.NO_ERROR);
     }

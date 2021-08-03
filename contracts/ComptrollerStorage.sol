@@ -65,9 +65,9 @@ contract ComptrollerV1Storage is UnitrollerAdminStorage {
     uint public liquidationIncentiveMantissa;
 
     /**
-     * @notice Max number of assets a single account can participate in (borrow or use as collateral)
+     * @notice UNUSED AFTER UPGRADE: Max number of assets a single account can participate in (borrow or use as collateral)
      */
-    uint public maxAssets;
+    uint internal maxAssets;
 
     /**
      * @notice Per-account mapping of "assets you are in", capped by maxAssets
