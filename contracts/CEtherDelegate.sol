@@ -26,7 +26,7 @@ contract CEtherDelegate is CDelegateInterface, CEther {
             implementation = address(0);
         }
 
-        require(msg.sender == address(this), "only self may call _becomeImplementation");
+        require(msg.sender == address(this) || hasAdminRights(), "only self or admin may call _becomeImplementation");
 
         // Make sure legacy admin storage is set up correctly
         _updateLegacyOwnership();
@@ -41,7 +41,7 @@ contract CEtherDelegate is CDelegateInterface, CEther {
             implementation = address(0);
         }
 
-        require(msg.sender == address(this), "only self may call _resignImplementation");
+        require(msg.sender == address(this) || hasAdminRights(), "only self or admin may call _resignImplementation");
     }
 
     /**
