@@ -470,21 +470,6 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      * @param accountTokens Underlying amount to mint
      */
     function mintWithinLimits(address cToken, uint exchangeRateMantissa, uint accountTokens, uint mintAmount) external returns (uint) {
-        // Check if max supply exists
-        uint maxSupplyEth = fuseAdmin.maxSupplyEth();
-
-        if (maxSupplyEth < uint(-1)) {
-            // Get new underlying balance of account for this cToken
-            (MathError mathErr, uint newUnderlyingBalance) = mulScalarTruncateAddUInt(Exp({mantissa: exchangeRateMantissa}), accountTokens, mintAmount);
-            if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
-            uint newEthBalance;
-            (mathErr, newEthBalance) = mulScalarTruncate(Exp({mantissa: oracle.getUnderlyingPrice(CToken(cToken))}), newUnderlyingBalance);
-            if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
-
-            // Check against max supply
-            if (newEthBalance > maxSupplyEth) return uint(Error.SUPPLY_ABOVE_MAX);
-        }
-
         // Return no error
         return uint(Error.NO_ERROR);
     }
