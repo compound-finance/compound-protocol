@@ -127,16 +127,6 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
     }
 
     /**
-     * @notice Delegates execution to the implementation contract
-     * @dev It returns to the external caller whatever the implementation returns or forwards reverts
-     * @param data The raw data to delegatecall
-     * @return The returned bytes from the delegatecall
-     */
-    function delegateToImplementation(bytes memory data) internal returns (bytes memory) {
-        return delegateTo(implementation, data);
-    }
-
-    /**
      * @notice Returns a boolean indicating if the implementation is to be auto-upgraded
      * Returns false instead of reverting if the Unitroller does not have this 
      */
