@@ -142,11 +142,11 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
      * @dev It returns to the external caller whatever the implementation returns or forwards reverts
      */
     function () external payable {
-        require(msg.value == 0,"CErc20Delegator:fallback: cannot send value to fallback");
+        require(msg.value == 0, "CErc20Delegator:fallback: cannot send value to fallback");
 
         // Check for automatic implementation
         if (msg.sender != address(this) && autoImplementation()) {
-            (address latestCErc20Delegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCEtherDelegate(implementation);
+            (address latestCErc20Delegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCErc20Delegate(implementation);
             if (implementation != latestCErc20Delegate) __setImplementation(latestCErc20Delegate, allowResign, becomeImplementationData);
         }
 
