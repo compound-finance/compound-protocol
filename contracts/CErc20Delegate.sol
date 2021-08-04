@@ -65,7 +65,7 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
         require(fuseAdmin.cErc20DelegateWhitelist(implementation, implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
 
         // Delegate _resignImplementation
-        if (allowResign) callSelf(abi.encodeWithSignature("_resignImplementation()"));
+        if (allowResign) this._resignImplementation();
 
         // Get old implementation
         address oldImplementation = implementation;
@@ -74,7 +74,7 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
         implementation = implementation_;
 
         // Delegate _becomeImplementation
-        callSelf(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
+        this._becomeImplementation(becomeImplementationData);
 
         // Emit event
         emit NewImplementation(oldImplementation, implementation);
@@ -88,26 +88,10 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
      */
     function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public {
         // Check admin rights
-        require(hasAdminRights(), "CErc20Delegator::_setImplementation: Caller must be admin");
+        require(hasAdminRights(), "only admin may call _setImplementation");
 
         // Set implementation
         __setImplementation(implementation_, allowResign, becomeImplementationData);
-    }
-
-    /**
-     * @notice Internal method to call the self
-     * @dev It returns to the external caller whatever the call returns or forwards reverts
-     * @param data The raw data to call
-     * @return The returned bytes from the call
-     */
-    function callSelf(bytes memory data) internal returns (bytes memory) {
-        (bool success, bytes memory returnData) = address(this).call(data);
-        assembly {
-            if eq(success, 0) {
-                revert(add(returnData, 0x20), returndatasize)
-            }
-        }
-        return returnData;
     }
 
     /**
