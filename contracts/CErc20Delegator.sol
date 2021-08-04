@@ -8,7 +8,6 @@ import "./ComptrollerStorage.sol";
  * @notice CTokens which wrap an EIP-20 underlying and delegate to an implementation
  * @author Compound
  */
-contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
     /**
      * @notice Returns a boolean indicating if the sender has admin rights
      */
@@ -20,6 +19,7 @@ contract CErc20Delegator is CDelegatorInterface, CTokenAdminStorage {
         return (msg.sender == comptroller.admin() && comptroller.adminHasRights()) || (msg.sender == address(fuseAdmin) && comptroller.fuseAdminHasRights());
     }
 
+contract CErc20Delegator is CDelegatorInterface {
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset

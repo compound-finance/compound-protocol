@@ -8,7 +8,6 @@ import "./ComptrollerStorage.sol";
  * @notice CTokens which wrap Ether and delegate to an implementation
  * @author Compound
  */
-contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
     /**
      * @notice Returns a boolean indicating if the sender has admin rights
      */
@@ -20,6 +19,7 @@ contract CEtherDelegator is CDelegatorInterface, CTokenAdminStorage {
         return (msg.sender == comptroller.admin() && comptroller.adminHasRights()) || (msg.sender == address(fuseAdmin) && comptroller.fuseAdminHasRights());
     }
 
+contract CEtherDelegator is CDelegatorInterface {
     /**
      * @notice Construct a new CEther money market
      * @param comptroller_ The address of the Comptroller
