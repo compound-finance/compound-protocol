@@ -1676,9 +1676,27 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @dev Prevents a contract from calling itself, directly or indirectly.
      */
     modifier nonReentrant() {
+        _beforeNonReentrant();
+        _;
+        _afterNonReentrant();
+    }
+
+    /**
+     * @dev Split off from `nonReentrant` to keep contract below the 24 KB size limit.
+     * Saves space because function modifier code is "inlined" into every function with the modifier).
+     * In this specific case, the optimization saves around 1500 bytes of that valuable 24 KB limit.
+     */
+    function _beforeNonReentrant() private {
         require(_notEntered, "re-entered");
         _notEntered = false;
-        _;
+    }
+
+    /**
+     * @dev Split off from `nonReentrant` to keep contract below the 24 KB size limit.
+     * Saves space because function modifier code is "inlined" into every function with the modifier).
+     * In this specific case, the optimization saves around 150 bytes of that valuable 24 KB limit.
+     */
+    function _afterNonReentrant() private {
         _notEntered = true; // get a gas-refund post-Istanbul
     }
 }
