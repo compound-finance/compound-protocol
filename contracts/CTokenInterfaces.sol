@@ -323,7 +323,7 @@ contract CDelegationStorage {
     address public implementation;
 }
 
-contract CDelegatorInterface is CDelegationStorage {
+contract CDelegateInterface is CDelegationStorage {
     /**
      * @notice Emitted when implementation is changed
      */
@@ -336,9 +336,7 @@ contract CDelegatorInterface is CDelegationStorage {
      * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
      */
     function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public;
-}
 
-contract CDelegateInterface is CDelegationStorage {
     /**
      * @notice Called by the delegator on a delegate to initialize it for duty
      * @dev Should revert if any issues arise which make it unfit for delegation

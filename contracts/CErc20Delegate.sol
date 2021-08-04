@@ -53,4 +53,71 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
         __adminHasRights = comptrollerStorage.adminHasRights();
         __fuseAdminHasRights = comptrollerStorage.fuseAdminHasRights();
     }
+
+    /**
+     * @dev Internal function to update the implementation of the delegator
+     * @param implementation_ The address of the new implementation for delegation
+     * @param allowResign Flag to indicate whether to call _resignImplementation on the old implementation
+     * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
+     */
+    function __setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) internal {
+        // Check whitelist
+        require(fuseAdmin.cErc20DelegateWhitelist(implementation, implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
+
+        // Delegate _resignImplementation
+        if (allowResign) callSelf(abi.encodeWithSignature("_resignImplementation()"));
+
+        // Get old implementation
+        address oldImplementation = implementation;
+
+        // Store new implementation
+        implementation = implementation_;
+
+        // Delegate _becomeImplementation
+        callSelf(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
+
+        // Emit event
+        emit NewImplementation(oldImplementation, implementation);
+    }
+
+    /**
+     * @notice Called by the admin to update the implementation of the delegator
+     * @param implementation_ The address of the new implementation for delegation
+     * @param allowResign Flag to indicate whether to call _resignImplementation on the old implementation
+     * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
+     */
+    function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public {
+        // Check admin rights
+        require(hasAdminRights(), "CErc20Delegator::_setImplementation: Caller must be admin");
+
+        // Set implementation
+        __setImplementation(implementation_, allowResign, becomeImplementationData);
+    }
+
+    /**
+     * @notice Internal method to call the self
+     * @dev It returns to the external caller whatever the call returns or forwards reverts
+     * @param data The raw data to call
+     * @return The returned bytes from the call
+     */
+    function callSelf(bytes memory data) internal returns (bytes memory) {
+        (bool success, bytes memory returnData) = address(this).call(data);
+        assembly {
+            if eq(success, 0) {
+                revert(add(returnData, 0x20), returndatasize)
+            }
+        }
+        return returnData;
+    }
+
+    /**
+     * @notice Function called before all delegator functions
+     * @dev Checks comptroller.autoImplementation and upgrades the implementation if necessary
+     */
+    function _prepare() external {
+        if (msg.sender != address(this) && ComptrollerV3Storage(address(comptroller)).autoImplementation()) {
+            (address latestCErc20Delegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCErc20Delegate(implementation);
+            if (implementation != latestCErc20Delegate) __setImplementation(latestCErc20Delegate, allowResign, becomeImplementationData);
+        }
+    }
 }

@@ -8,18 +8,7 @@ import "./ComptrollerStorage.sol";
  * @notice CTokens which wrap an EIP-20 underlying and delegate to an implementation
  * @author Compound
  */
-    /**
-     * @notice Returns a boolean indicating if the sender has admin rights
-     */
-    function hasAdminRights() internal view returns (bool) {
-        (bool success, bytes memory data) = address(this).staticcall(abi.encodeWithSignature("comptroller()"));
-        require(success);
-        address ct = abi.decode(data, (address));
-        ComptrollerV3Storage comptroller = ComptrollerV3Storage(ct);
-        return (msg.sender == comptroller.admin() && comptroller.adminHasRights()) || (msg.sender == address(fuseAdmin) && comptroller.fuseAdminHasRights());
-    }
-
-contract CErc20Delegator is CDelegatorInterface {
+contract CErc20Delegator is CDelegationStorage {
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset
@@ -50,63 +39,7 @@ contract CErc20Delegator is CDelegatorInterface {
                                                             adminFeeMantissa_));
 
         // New implementations always get set via the settor (post-initialize)
-        __setImplementation(implementation_, false, becomeImplementationData);
-    }
-
-    /**
-     * @dev Internal function to update the implementation of the delegator
-     * @param implementation_ The address of the new implementation for delegation
-     * @param allowResign Flag to indicate whether to call _resignImplementation on the old implementation
-     * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
-     */
-    function __setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) internal {
-        // Check whitelist
-        require(fuseAdmin.cErc20DelegateWhitelist(implementation, implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
-
-        // Delegate _resignImplementation
-        if (allowResign) callSelf(abi.encodeWithSignature("_resignImplementation()"));
-
-        // Get old implementation
-        address oldImplementation = implementation;
-
-        // Store new implementation
-        implementation = implementation_;
-
-        // Delegate _becomeImplementation
-        callSelf(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
-
-        // Emit event
-        emit NewImplementation(oldImplementation, implementation);
-    }
-
-    /**
-     * @notice Called by the admin to update the implementation of the delegator
-     * @param implementation_ The address of the new implementation for delegation
-     * @param allowResign Flag to indicate whether to call _resignImplementation on the old implementation
-     * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
-     */
-    function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public {
-        // Check admin rights
-        require(hasAdminRights(), "CErc20Delegator::_setImplementation: Caller must be admin");
-
-        // Set implementation
-        __setImplementation(implementation_, allowResign, becomeImplementationData);
-    }
-
-    /**
-     * @notice Internal method to call the self
-     * @dev It returns to the external caller whatever the call returns or forwards reverts
-     * @param data The raw data to call
-     * @return The returned bytes from the call
-     */
-    function callSelf(bytes memory data) internal returns (bytes memory) {
-        (bool success, bytes memory returnData) = address(this).call(data);
-        assembly {
-            if eq(success, 0) {
-                revert(add(returnData, 0x20), returndatasize)
-            }
-        }
-        return returnData;
+        delegateTo(implementation_, abi.encodeWithSignature("_setImplementation(address,bool,bytes)", implementation_, false, becomeImplementationData));
     }
 
     /**
@@ -127,28 +60,15 @@ contract CErc20Delegator is CDelegatorInterface {
     }
 
     /**
-     * @notice Returns a boolean indicating if the implementation is to be auto-upgraded
-     * Returns false instead of reverting if the Unitroller does not have this 
-     */
-    function autoImplementation() internal view returns (bool) {
-        (bool success, bytes memory returnData) = address(this).staticcall(abi.encodeWithSignature("comptroller()"));
-        require(success);
-        address ct = abi.decode(returnData, (address));
-        return ComptrollerV3Storage(ct).autoImplementation();
-    }
-
-    /**
      * @notice Delegates execution to an implementation contract
      * @dev It returns to the external caller whatever the implementation returns or forwards reverts
      */
     function () external payable {
+        // Cannot send value to CErc20Delegator
         require(msg.value == 0, "CErc20Delegator:fallback: cannot send value to fallback");
 
         // Check for automatic implementation
-        if (msg.sender != address(this) && autoImplementation()) {
-            (address latestCErc20Delegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCErc20Delegate(implementation);
-            if (implementation != latestCErc20Delegate) __setImplementation(latestCErc20Delegate, allowResign, becomeImplementationData);
-        }
+        delegateTo(implementation, abi.encodeWithSignature("_prepare()"));
 
         // delegate all other functions to current implementation
         (bool success, ) = implementation.delegatecall(msg.data);
