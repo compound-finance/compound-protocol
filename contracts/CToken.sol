@@ -562,10 +562,11 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         }
 
         // Check max supply
-        allowed = comptroller.mintWithinLimits(address(this), vars.exchangeRateMantissa, accountTokens[minter], mintAmount);
+        // unused function
+        /* allowed = comptroller.mintWithinLimits(address(this), vars.exchangeRateMantissa, accountTokens[minter], mintAmount);
         if (allowed != 0) {
             return (failOpaque(Error.COMPTROLLER_REJECTION, FailureInfo.MINT_COMPTROLLER_REJECTION, allowed), 0);
-        }
+        } */
 
         /////////////////////////
         // EFFECTS & INTERACTIONS
