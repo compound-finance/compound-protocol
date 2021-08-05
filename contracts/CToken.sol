@@ -70,10 +70,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         err = _setAdminFeeFresh(adminFeeMantissa_);
         require(err == uint(Error.NO_ERROR), "setting admin fee failed");
 
-        // Set Fuse fee
-        err = _setFuseFeeFresh(getPendingFuseFeeFromAdmin());
-        require(err == uint(Error.NO_ERROR), "setting Fuse fee failed");
-
         // The counter starts true to prevent changing it from zero to non-zero (i.e. smaller cost/refund)
         _notEntered = true;
     }
@@ -1189,69 +1185,46 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
     function _setAdminFeeFresh(uint newAdminFeeMantissa) internal returns (uint) {
-        // Check caller is admin
-        if (!hasAdminRights()) {
-            return fail(Error.UNAUTHORIZED, FailureInfo.SET_ADMIN_FEE_ADMIN_CHECK);
-        }
-
         // Verify market's block number equals current block number
         if (accrualBlockNumber != getBlockNumber()) {
             return fail(Error.MARKET_NOT_FRESH, FailureInfo.SET_ADMIN_FEE_FRESH_CHECK);
         }
 
-        // Check newAdminFee ≤ maxAdminFee
-        if (reserveFactorMantissa + newAdminFeeMantissa + fuseFeeMantissa > reserveFactorPlusFeesMaxMantissa) {
+        // Sanitize newAdminFeeMantissa
+        if (newAdminFeeMantissa == uint(-1)) newAdminFeeMantissa = adminFeeMantissa;
+
+        // Get latest Fuse fee
+        uint newFuseFeeMantissa = getPendingFuseFeeFromAdmin();
+
+        // Check reserveFactorMantissa + newAdminFeeMantissa + newFuseFeeMantissa ≤ reserveFactorPlusFeesMaxMantissa
+        if (reserveFactorMantissa + newAdminFeeMantissa + newFuseFeeMantissa > reserveFactorPlusFeesMaxMantissa) {
             return fail(Error.BAD_INPUT, FailureInfo.SET_ADMIN_FEE_BOUNDS_CHECK);
         }
 
-        uint oldAdminFeeMantissa = adminFeeMantissa;
-        adminFeeMantissa = newAdminFeeMantissa;
+        // If setting admin fee
+        if (adminFeeMantissa != newAdminFeeMantissa) {
+            // Check caller is admin
+            if (!hasAdminRights()) {
+                return fail(Error.UNAUTHORIZED, FailureInfo.SET_ADMIN_FEE_ADMIN_CHECK);
+            }
 
-        emit NewAdminFee(oldAdminFeeMantissa, newAdminFeeMantissa);
+            // Set admin fee
+            uint oldAdminFeeMantissa = adminFeeMantissa;
+            adminFeeMantissa = newAdminFeeMantissa;
 
-        return uint(Error.NO_ERROR);
-    }
-
-    /**
-      * @notice accrues interest and sets a new Fuse fee for the protocol using _setFuseFeeFresh
-      * @dev Function to accrue interest and set a new Fuse fee
-      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-      */
-    function _setFuseFee() external nonReentrant returns (uint) {
-        uint error = accrueInterest();
-        if (error != uint(Error.NO_ERROR)) {
-            // accrueInterest emits logs on errors, but on top of that we want to log the fact that an attempted admin fee change failed.
-            return fail(Error(error), FailureInfo.SET_FUSE_FEE_ACCRUE_INTEREST_FAILED);
-        }
-        // _setAdminFeeFresh emits reserve-factor-specific logs on errors, so we don't need to.
-        return _setFuseFeeFresh(getPendingFuseFeeFromAdmin());
-    }
-
-    /**
-      * @notice Sets a new Fuse fee for the protocol (*requires fresh interest accrual)
-      * @dev Function to set a new Fuse fee
-      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-      */
-    function _setFuseFeeFresh(uint newFuseFeeMantissa) internal returns (uint) {
-        // Check newFuseFeeMantissa != fuseFeeMantissa
-        if (newFuseFeeMantissa == fuseFeeMantissa) {
-            return uint(Error.NO_ERROR);
+            // Emit event
+            emit NewAdminFee(oldAdminFeeMantissa, newAdminFeeMantissa);
         }
 
-        // Verify market's block number equals current block number
-        if (accrualBlockNumber != getBlockNumber()) {
-            return fail(Error.MARKET_NOT_FRESH, FailureInfo.SET_FUSE_FEE_FRESH_CHECK);
+        // If setting Fuse fee
+        if (fuseFeeMantissa != newFuseFeeMantissa) {
+            // Set Fuse fee
+            uint oldFuseFeeMantissa = fuseFeeMantissa;
+            fuseFeeMantissa = newFuseFeeMantissa;
+
+            // Emit event
+            emit NewFuseFee(oldFuseFeeMantissa, newFuseFeeMantissa);
         }
-
-        // Check newAdminFee ≤ maxFuseFee
-        if (reserveFactorMantissa + adminFeeMantissa + newFuseFeeMantissa > reserveFactorPlusFeesMaxMantissa) {
-            return fail(Error.BAD_INPUT, FailureInfo.SET_FUSE_FEE_BOUNDS_CHECK);
-        }
-
-        uint oldFuseFeeMantissa = fuseFeeMantissa;
-        fuseFeeMantissa = newFuseFeeMantissa;
-
-        emit NewFuseFee(oldFuseFeeMantissa, newFuseFeeMantissa);
 
         return uint(Error.NO_ERROR);
     }
