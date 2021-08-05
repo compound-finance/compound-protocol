@@ -447,49 +447,13 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
          *  borrowIndexNew = simpleInterestFactor * borrowIndex + borrowIndex
          */
 
-        MathError mathErr;
-        Exp memory simpleInterestFactor;
-        uint interestAccumulated;
-        uint totalBorrowsNew;
-        uint totalReservesNew;
-        uint totalFuseFeesNew;
-        uint totalAdminFeesNew;
-        uint borrowIndexNew;
-
-        (mathErr, simpleInterestFactor) = mulScalar(Exp({mantissa: borrowRateMantissa}), blockDelta);
-        if (mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_SIMPLE_INTEREST_FACTOR_CALCULATION_FAILED, uint(mathErr));
-        }
-
-        (mathErr, interestAccumulated) = mulScalarTruncate(simpleInterestFactor, totalBorrows);
-        if (mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_ACCUMULATED_INTEREST_CALCULATION_FAILED, uint(mathErr));
-        }
-
-        (mathErr, totalBorrowsNew) = addUInt(interestAccumulated, totalBorrows);
-        if (mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_BORROWS_CALCULATION_FAILED, uint(mathErr));
-        }
-
-        (mathErr, totalReservesNew) = mulScalarTruncateAddUInt(Exp({mantissa: reserveFactorMantissa}), interestAccumulated, totalReserves);
-        if (mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_RESERVES_CALCULATION_FAILED, uint(mathErr));
-        }
-
-        (mathErr, totalFuseFeesNew) = mulScalarTruncateAddUInt(Exp({mantissa: fuseFeeMantissa}), interestAccumulated, totalFuseFees);
-        if (mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_FUSE_FEES_CALCULATION_FAILED, uint(mathErr));
-        }
-
-        (mathErr, totalAdminFeesNew) = mulScalarTruncateAddUInt(Exp({mantissa: adminFeeMantissa}), interestAccumulated, totalAdminFees);
-        if (mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_ADMIN_FEES_CALCULATION_FAILED, uint(mathErr));
-        }
-
-        (mathErr, borrowIndexNew) = mulScalarTruncateAddUInt(simpleInterestFactor, borrowIndex, borrowIndex);
-        if (mathErr != MathError.NO_ERROR) {
-            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_BORROW_INDEX_CALCULATION_FAILED, uint(mathErr));
-        }
+        Exp memory simpleInterestFactor = mul_(Exp({mantissa: borrowRateMantissa}), blockDelta);
+        uint interestAccumulated = mul_ScalarTruncate(simpleInterestFactor, totalBorrows);
+        uint totalBorrowsNew = add_(interestAccumulated, totalBorrows);
+        uint totalReservesNew = mul_ScalarTruncateAddUInt(Exp({mantissa: reserveFactorMantissa}), interestAccumulated, totalReserves);
+        uint totalFuseFeesNew = mul_ScalarTruncateAddUInt(Exp({mantissa: fuseFeeMantissa}), interestAccumulated, totalFuseFees);
+        uint totalAdminFeesNew = mul_ScalarTruncateAddUInt(Exp({mantissa: adminFeeMantissa}), interestAccumulated, totalAdminFees);
+        uint borrowIndexNew = mul_ScalarTruncateAddUInt(simpleInterestFactor, borrowIndex, borrowIndex);
 
         /////////////////////////
         // EFFECTS & INTERACTIONS
