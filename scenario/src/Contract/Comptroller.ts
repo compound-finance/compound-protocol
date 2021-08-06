@@ -66,6 +66,7 @@ interface ComptrollerMethods {
   _setBorrowCapGuardian(string): Sendable<void>
   borrowCapGuardian(): Callable<string>
   borrowCaps(string): Callable<string>
+  isDeprecated(cToken: string): Callable<string>
 }
 
 export interface Comptroller extends Contract {

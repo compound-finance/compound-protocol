@@ -107,6 +107,14 @@ contract CEther is CToken {
     }
 
     /**
+     * @notice The sender adds to reserves.
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _addReserves() external payable returns (uint) {
+        return _addReservesInternal(msg.value);
+    }
+
+    /**
      * @notice Send Ether to CEther to mint
      */
     function () external payable {

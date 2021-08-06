@@ -130,7 +130,7 @@ export async function getComp(
   world: World,
   compArg: Event
 ): Promise<Comp> {
-  return getWorldContract(world, [['Comp', 'address']]);
+  return getWorldContract(world, [['COMP', 'address']]);
 }
 
 export async function getCompData(

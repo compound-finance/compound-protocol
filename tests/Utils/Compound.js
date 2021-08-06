@@ -170,10 +170,10 @@ async function makeCToken(opts = {}) {
       );
       cToken = await saddle.getContractAt('CDaiDelegateHarness', cDelegator._address);
       break;
-
+    
     case 'ccomp':
       underlying = await deploy('Comp', [opts.compHolder || root]);
-      cDelegatee = await deploy('CCompLikeDelegate');
+      cDelegatee = await deploy('CErc20DelegateHarness');
       cDelegator = await deploy('CErc20Delegator',
         [
           underlying._address,
@@ -188,7 +188,7 @@ async function makeCToken(opts = {}) {
           "0x0"
         ]
       );
-      cToken = await saddle.getContractAt('CCompLikeDelegate', cDelegator._address);
+      cToken = await saddle.getContractAt('CErc20DelegateHarness', cDelegator._address);
       break;
 
     case 'cerc20':
@@ -211,6 +211,7 @@ async function makeCToken(opts = {}) {
       );
       cToken = await saddle.getContractAt('CErc20DelegateHarness', cDelegator._address);
       break;
+      
   }
 
   if (opts.supportMarket) {
@@ -363,7 +364,6 @@ async function adjustBalances(balances, deltas) {
       ([cToken, key, diff] = delta);
       account = cToken._address;
     }
-
     balances[cToken._address][account][key] = new BigNumber(balances[cToken._address][account][key]).plus(diff);
   }
   return balances;
