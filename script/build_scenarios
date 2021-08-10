@@ -7,7 +7,14 @@ root_dir="$(cd $dir/.. && pwd)"
 tests_dir="$(cd $root_dir/tests && pwd)"
 scenario_dir="$tests_dir/Scenarios"
 cache_file="$root_dir/.scencache"
-checksum="$(echo $root_dir/spec/scenario{,/**}/*.scen | xargs shasum -p | shasum -p | cut -d' ' -f 1)"
+shasumVersion="$(shasum -v)"
+inflectionVersion="6.01"
+
+if [ "$(printf '%s\n' "$inflectionVersion" "$shasumVersion" | sort -V | head -n1)" = "$inflectionVersion" ]; then 
+  checksum="$(echo $root_dir/spec/scenario{,/**}/*.scen | xargs shasum -U | shasum -U | cut -d' ' -f 1)"
+else
+  checksum="$(echo $root_dir/spec/scenario{,/**}/*.scen | xargs shasum -p | shasum -p | cut -d' ' -f 1)"
+fi
 
 if [ -z "$rebuild" -a -f "$cache_file" ]; then
   cached="$(cat $cache_file)"
