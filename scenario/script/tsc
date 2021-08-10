@@ -6,7 +6,14 @@ dir=`dirname $0`
 scenario_dir="$(cd $dir/.. && pwd)"
 parent_dir="$(cd $dir/../.. && pwd)"
 cache_file="$scenario_dir/.tscache"
-checksum="$(echo $scenario_dir/src/{*,**/}*.* | xargs shasum -p | shasum -p | cut -d' ' -f 1)"
+shasumVersion="$(shasum -v)"
+inflectionVersion="6.01"
+
+if [ "$(printf '%s\n' "$inflectionVersion" "$shasumVersion" | sort -V | head -n1)" = "$inflectionVersion" ]; then
+    checksum="$(echo $scenario_dir/src/{*,**/}*.* | xargs shasum -U | shasum -U | cut -d' ' -f 1)"
+else
+    checksum="$(echo $scenario_dir/src/{*,**/}*.* | xargs shasum -p | shasum -p | cut -d' ' -f 1)"
+fi
 
 if [ ! -d "$scenario_dir/node_modules" ]; then
 	echo "Getting scenario packages..."
