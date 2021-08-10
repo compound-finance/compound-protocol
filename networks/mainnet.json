@@ -91,7 +91,9 @@
     "CrowdProposalFactory": "0x54a06047087927D9B0fb21c1cf0ebd792764dDB8",
     "IRM_USDT_Updateable": "0xFB564da37B41b2F6B6EDcc3e56FbF523bD9F2012",
     "IRM_USDC_Updateable": "0xD8EC56013EA119E7181d231E5048f90fBbe753c0",
-    "IRM_UNI_Updateable": "0xd88b94128ff2b8cf2d7886cd1c1e46757418ca2a"
+    "IRM_UNI_Updateable": "0xd88b94128ff2b8cf2d7886cd1c1e46757418ca2a",
+    "GovernorBravoDelegator": "0xc0da02939e1441f497fd74f78ce7decb17b66529",
+    "GovernorBravoDelegate": "0xAAAaaAAAaaaa8FdB04F544F4EEe52939CddCe378"
   },
   "Blocks": {
     "cAAVEDelegate": 12654137,
