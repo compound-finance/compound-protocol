@@ -8,15 +8,17 @@ note: pass VERIFY=true and ETHERSCAN_API_KEY=<api key> to verify contract on Eth
 
 example:
 
-npx saddle -n rinkeby script token:deploy '{
-  "underlying": "0x577D296678535e4903D59A4C929B718e1D575e0A",
+npx saddle -n mainnet script token:deploy '{
+  "underlying": "0x514910771af9ca656af840dff83e8264ecf986ca",
   "comptroller": "$Comptroller",
-  "interestRateModel": "$Base200bps_Slope3000bps",
-  "initialExchangeRateMantissa": "2.0e18",
-  "name": "Compound Kyber Network Crystal",
-  "symbol": "cKNC",
+  "interestRateModel": "0xd956188795ca6f4a74092ddca33e0ea4ca3a1395",
+  "initialExchangeRateMantissa": "2.0e26",
+  "name": "Compound ChainLink Token",
+  "symbol": "cLINK",
   "decimals": "8",
-  "admin": "$Timelock"
+  "admin": "$Timelock",
+  "implementation": "0x24aa720906378bb8364228bddb8cabbc1f6fe1ba",
+  "becomeImplementationData": "0x"
 }'
   `);
 }
@@ -41,8 +43,8 @@ function sleep(timeout) {
 
   console.log(`Deploying cToken with ${JSON.stringify(conf)}`);
 
-  let deployArgs = [conf.underlying, conf.comptroller, conf.interestRateModel, conf.initialExchangeRateMantissa.toString(), conf.name, conf.symbol, conf.decimals, conf.admin];
-  let contract = await saddle.deploy('CErc20Immutable', deployArgs);
+  let deployArgs = [conf.underlying, conf.comptroller, conf.interestRateModel, conf.initialExchangeRateMantissa.toString(), conf.name, conf.symbol, conf.decimals, conf.admin, conf.implementation, conf.becomeImplementationData];
+  let contract = await saddle.deploy('CErc20Delegator', deployArgs);
 
   console.log(`Deployed contract to ${contract._address}`);
 
@@ -56,7 +58,7 @@ function sleep(timeout) {
     await sleep(30000); // Give Etherscan time to learn about contract
     console.log(`Now verifying contract on Etherscan...`);
 
-    await saddle.verify(etherscanApiKey, contract._address, 'CErc20Immutable', deployArgs, 0);
+    await saddle.verify(etherscanApiKey, contract._address, 'CErc20Delegator', deployArgs, 0);
     console.log(`Contract verified at https://${network}.etherscan.io/address/${contract._address}`);
   }
 
