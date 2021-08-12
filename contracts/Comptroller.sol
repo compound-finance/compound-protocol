@@ -1122,40 +1122,23 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         Market storage market = markets[address(cToken)];
         require(market.isListed, "comp market is not listed");
 
-        uint currentSupplySpeed = compSupplySpeeds[address(cToken)];
-        uint currentBorrowSpeed = compBorrowSpeeds[address(cToken)];
-
-        if (currentSupplySpeed != 0) {
-            // note that COMP speed could be set to 0 to halt liquidity rewards for a market
+        if (compSupplySpeeds[address(cToken)] != supplySpeed) {
+            // Supply speed updated so let's update supply state to ensure that 1. COMP accrued properly for the old speed, and
+            // 2. COMP accrued at the new speed starts after this block.
             updateCompSupplyIndex(address(cToken));
-        } else if (supplySpeed != 0) {
-            if (compSupplyState[address(cToken)].index == 0 && compSupplyState[address(cToken)].block == 0) {
-                compSupplyState[address(cToken)] = CompMarketState({
-                    index: compInitialIndex,
-                    block: safe32(getBlockNumber(), "block number exceeds 32 bits")
-                });
-            }
-        }
 
-        if (currentBorrowSpeed != 0) {
-            // note that COMP speed could be set to 0 to halt liquidity rewards for a market
-            Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
-            updateCompBorrowIndex(address(cToken), borrowIndex);
-        } else if (borrowSpeed != 0) {
-            if (compBorrowState[address(cToken)].index == 0 && compBorrowState[address(cToken)].block == 0) {
-                compBorrowState[address(cToken)] = CompMarketState({
-                    index: compInitialIndex,
-                    block: safe32(getBlockNumber(), "block number exceeds 32 bits")
-                });
-            }
-        }
-
-        if (currentSupplySpeed != supplySpeed) {
+            // Update speed and emit event
             compSupplySpeeds[address(cToken)] = supplySpeed;
             emit CompSupplySpeedUpdated(cToken, supplySpeed);
         }
 
-        if (currentBorrowSpeed != borrowSpeed) {
+        if (compBorrowSpeeds[address(cToken)] != borrowSpeed) {
+            // Borrow speed updated so let's update borrow state to ensure that 1. COMP accrued properly for the old speed, and
+            // 2. COMP accrued at the new speed starts after this block.
+            Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
+            updateCompBorrowIndex(address(cToken), borrowIndex);
+
+            // Update speed and emit event
             compBorrowSpeeds[address(cToken)] = borrowSpeed;
             emit CompBorrowSpeedUpdated(cToken, borrowSpeed);
         }
