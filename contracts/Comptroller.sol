@@ -937,6 +937,7 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         markets[address(cToken)] = Market({isListed: true, isComped: false, collateralFactorMantissa: 0});
 
         _addMarketInternal(address(cToken));
+        _initializeMarket(address(cToken));
 
         emit MarketListed(cToken);
 
@@ -948,6 +949,32 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
             require(allMarkets[i] != CToken(cToken), "market already added");
         }
         allMarkets.push(CToken(cToken));
+    }
+
+    function _initializeMarket(address cToken) internal {
+        uint32 blockNumber = safe32(getBlockNumber(), "block number exceeds 32 bits");
+
+        CompMarketState storage supplyState = compSupplyState[cToken];
+        CompMarketState storage borrowState = compBorrowState[cToken];
+
+        /*
+         * Update market state indices
+         */
+
+        if (supplyState.index == 0) {
+            // Initialize supply state index with default value
+            supplyState.index = compInitialIndex;
+        }
+
+        if (borrowState.index == 0) {
+            // Initialize borrow state index with default value
+            borrowState.index = compInitialIndex;
+        }
+
+        /*
+         * Update market state block numbers
+         */
+         supplyState.block = borrowState.block = blockNumber;
     }
 
 
