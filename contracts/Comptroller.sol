@@ -1084,6 +1084,22 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         for (uint i = 0; i < allMarkets.length; i ++) {
             compBorrowSpeeds[address(allMarkets[i])] = compSupplySpeeds[address(allMarkets[i])] = compSpeeds[address(allMarkets[i])];
             delete compSpeeds[address(allMarkets[i])];
+
+            /*
+             * Ensure supply and borrow state indices are all set. If not set, update to default value
+             */
+            CompMarketState storage supplyState = compSupplyState[address(allMarkets[i])];
+            CompMarketState storage borrowState = compBorrowState[address(allMarkets[i])];
+
+            if (supplyState.index == 0) {
+                // Initialize supply state index with default value
+                supplyState.index = compInitialIndex;
+            }
+
+            if (borrowState.index == 0) {
+                // Initialize borrow state index with default value
+                borrowState.index = compInitialIndex;
+            }
         }
     }
 
