@@ -17,6 +17,8 @@ const {
 
 const compRate = etherUnsigned(1e18);
 
+const compInitialIndex = 1e36;
+
 async function compAccrued(comptroller, user) {
   return etherUnsigned(await call(comptroller, 'compAccrued', [user]));
 }
@@ -231,7 +233,7 @@ describe('Flywheel', () => {
       ]);
 
       const {index, block} = await call(comptroller, 'compBorrowState', [mkt._address]);
-      expect(index).toEqualNumber(0);
+      expect(index).toEqualNumber(compInitialIndex);
       expect(block).toEqualNumber(100);
       const supplySpeed = await call(comptroller, 'compSupplySpeeds', [mkt._address]);
       expect(supplySpeed).toEqualNumber(0);
@@ -248,7 +250,7 @@ describe('Flywheel', () => {
       ]);
 
       const {index, block} = await call(comptroller, 'compBorrowState', [mkt._address]);
-      expect(index).toEqualNumber(1e36);
+      expect(index).toEqualNumber(compInitialIndex);
       expect(block).toEqualNumber(0);
     });
 
@@ -263,7 +265,7 @@ describe('Flywheel', () => {
       ]);
 
       const {index, block} = await call(comptroller, 'compBorrowState', [mkt._address]);
-      expect(index).toEqualNumber(1e36);
+      expect(index).toEqualNumber(compInitialIndex);
       expect(block).toEqualNumber(100);
     });
   });
@@ -299,7 +301,7 @@ describe('Flywheel', () => {
       ]);
 
       const {index, block} = await call(comptroller, 'compSupplyState', [mkt._address]);
-      expect(index).toEqualNumber(0);
+      expect(index).toEqualNumber(compInitialIndex);
       expect(block).toEqualNumber(100);
       const supplySpeed = await call(comptroller, 'compSupplySpeeds', [mkt._address]);
       expect(supplySpeed).toEqualNumber(0);
@@ -317,7 +319,7 @@ describe('Flywheel', () => {
       await send(comptroller, 'harnessUpdateCompSupplyIndex', [mkt._address]);
 
       const {index, block} = await call(comptroller, 'compSupplyState', [mkt._address]);
-      expect(index).toEqualNumber(1e36);
+      expect(index).toEqualNumber(compInitialIndex);
       expect(block).toEqualNumber(0);
     });
 
@@ -438,7 +440,7 @@ describe('Flywheel', () => {
       await send(comptroller, "harnessDistributeBorrowerComp", [mkt._address, a1, etherExp(1.1)]);
       expect(await compAccrued(comptroller, a1)).toEqualNumber(0);
       expect(await compBalance(comptroller, a1)).toEqualNumber(0);
-      expect(await call(comptroller, 'compBorrowerIndex', [mkt._address, a1])).toEqualNumber(0);
+      expect(await call(comptroller, 'compBorrowerIndex', [mkt._address, a1])).toEqualNumber(compInitialIndex);
     });
   });
 
