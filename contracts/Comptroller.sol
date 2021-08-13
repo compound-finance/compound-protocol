@@ -1152,19 +1152,16 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
     function updateCompSupplyIndex(address cToken) internal {
         CompMarketState storage supplyState = compSupplyState[cToken];
         uint supplySpeed = compSupplySpeeds[cToken];
-        uint blockNumber = getBlockNumber();
+        uint blockNumber = safe32(getBlockNumber(), "block number exceeds 32 bits");
         uint deltaBlocks = sub_(blockNumber, uint(supplyState.block));
         if (deltaBlocks > 0 && supplySpeed > 0) {
             uint supplyTokens = CToken(cToken).totalSupply();
             uint compAccrued = mul_(deltaBlocks, supplySpeed);
             Double memory ratio = supplyTokens > 0 ? fraction(compAccrued, supplyTokens) : Double({mantissa: 0});
-            Double memory index = add_(Double({mantissa: supplyState.index}), ratio);
-            compSupplyState[cToken] = CompMarketState({
-                index: safe224(index.mantissa, "new index exceeds 224 bits"),
-                block: safe32(blockNumber, "block number exceeds 32 bits")
-            });
+            supplyState.index = safe224(add_(Double({mantissa: supplyState.index}), ratio).mantissa, "new index exceeds 224 bits");
+            supplyState.block = uint32(blockNumber); // safe cast check already performed above
         } else if (deltaBlocks > 0) {
-            supplyState.block = safe32(blockNumber, "block number exceeds 32 bits");
+            supplyState.block = uint32(blockNumber); // safe cast check already performed above
         }
     }
 
@@ -1175,19 +1172,16 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
     function updateCompBorrowIndex(address cToken, Exp memory marketBorrowIndex) internal {
         CompMarketState storage borrowState = compBorrowState[cToken];
         uint borrowSpeed = compBorrowSpeeds[cToken];
-        uint blockNumber = getBlockNumber();
+        uint blockNumber = safe32(getBlockNumber(), "block number exceeds 32 bits");
         uint deltaBlocks = sub_(blockNumber, uint(borrowState.block));
         if (deltaBlocks > 0 && borrowSpeed > 0) {
             uint borrowAmount = div_(CToken(cToken).totalBorrows(), marketBorrowIndex);
             uint compAccrued = mul_(deltaBlocks, borrowSpeed);
             Double memory ratio = borrowAmount > 0 ? fraction(compAccrued, borrowAmount) : Double({mantissa: 0});
-            Double memory index = add_(Double({mantissa: borrowState.index}), ratio);
-            compBorrowState[cToken] = CompMarketState({
-                index: safe224(index.mantissa, "new index exceeds 224 bits"),
-                block: safe32(blockNumber, "block number exceeds 32 bits")
-            });
+            borrowState.index = safe224(add_(Double({mantissa: borrowState.index}), ratio).mantissa, "new index exceeds 224 bits");
+            borrowState.block = uint32(blockNumber); // safe cast check already performed above
         } else if (deltaBlocks > 0) {
-            borrowState.block = safe32(blockNumber, "block number exceeds 32 bits");
+            borrowState.block = uint32(blockNumber); // safe cast check already performed above
         }
     }
 
@@ -1198,20 +1192,20 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
      */
     function distributeSupplierComp(address cToken, address supplier) internal {
         CompMarketState storage supplyState = compSupplyState[cToken];
-        Double memory supplyIndex = Double({mantissa: supplyState.index});
-        Double memory supplierIndex = Double({mantissa: compSupplierIndex[cToken][supplier]});
-        compSupplierIndex[cToken][supplier] = supplyIndex.mantissa;
+        uint supplyIndex = supplyState.index;
+        uint supplierIndex = compSupplierIndex[cToken][supplier];
+        compSupplierIndex[cToken][supplier] = supplyIndex;
 
-        if (supplierIndex.mantissa == 0 && supplyIndex.mantissa > 0) {
-            supplierIndex.mantissa = compInitialIndex;
+        if (supplierIndex == 0 && supplyIndex > 0) {
+            supplierIndex = compInitialIndex;
         }
 
-        Double memory deltaIndex = sub_(supplyIndex, supplierIndex);
+        Double memory deltaIndex = Double({mantissa: sub_(supplyIndex, supplierIndex)});
         uint supplierTokens = CToken(cToken).balanceOf(supplier);
         uint supplierDelta = mul_(supplierTokens, deltaIndex);
         uint supplierAccrued = add_(compAccrued[supplier], supplierDelta);
         compAccrued[supplier] = supplierAccrued;
-        emit DistributedSupplierComp(CToken(cToken), supplier, supplierDelta, supplyIndex.mantissa);
+        emit DistributedSupplierComp(CToken(cToken), supplier, supplierDelta, supplyIndex);
     }
 
     /**
@@ -1222,17 +1216,17 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
      */
     function distributeBorrowerComp(address cToken, address borrower, Exp memory marketBorrowIndex) internal {
         CompMarketState storage borrowState = compBorrowState[cToken];
-        Double memory borrowIndex = Double({mantissa: borrowState.index});
-        Double memory borrowerIndex = Double({mantissa: compBorrowerIndex[cToken][borrower]});
-        compBorrowerIndex[cToken][borrower] = borrowIndex.mantissa;
+        uint borrowIndex = borrowState.index;
+        uint borrowerIndex = compBorrowerIndex[cToken][borrower];
+        compBorrowerIndex[cToken][borrower] = borrowIndex;
 
-        if (borrowerIndex.mantissa > 0) {
-            Double memory deltaIndex = sub_(borrowIndex, borrowerIndex);
+        if (borrowerIndex > 0) {
+            Double memory deltaIndex = Double({mantissa: sub_(borrowIndex, borrowerIndex)});
             uint borrowerAmount = div_(CToken(cToken).borrowBalanceStored(borrower), marketBorrowIndex);
             uint borrowerDelta = mul_(borrowerAmount, deltaIndex);
             uint borrowerAccrued = add_(compAccrued[borrower], borrowerDelta);
             compAccrued[borrower] = borrowerAccrued;
-            emit DistributedBorrowerComp(CToken(cToken), borrower, borrowerDelta, borrowIndex.mantissa);
+            emit DistributedBorrowerComp(CToken(cToken), borrower, borrowerDelta, borrowIndex);
         }
     }
 
