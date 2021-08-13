@@ -960,7 +960,6 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         /*
          * Update market state indices
          */
-
         if (supplyState.index == 0) {
             // Initialize supply state index with default value
             supplyState.index = compInitialIndex;
@@ -1123,8 +1122,9 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         require(market.isListed, "comp market is not listed");
 
         if (compSupplySpeeds[address(cToken)] != supplySpeed) {
-            // Supply speed updated so let's update supply state to ensure that 1. COMP accrued properly for the old speed, and
-            // 2. COMP accrued at the new speed starts after this block.
+            // Supply speed updated so let's update supply state to ensure that
+            //  1. COMP accrued properly for the old speed, and
+            //  2. COMP accrued at the new speed starts after this block.
             updateCompSupplyIndex(address(cToken));
 
             // Update speed and emit event
@@ -1133,8 +1133,9 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         }
 
         if (compBorrowSpeeds[address(cToken)] != borrowSpeed) {
-            // Borrow speed updated so let's update borrow state to ensure that 1. COMP accrued properly for the old speed, and
-            // 2. COMP accrued at the new speed starts after this block.
+            // Borrow speed updated so let's update borrow state to ensure that
+            //  1. COMP accrued properly for the old speed, and
+            //  2. COMP accrued at the new speed starts after this block.
             Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
             updateCompBorrowIndex(address(cToken), borrowIndex);
 
