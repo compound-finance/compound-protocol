@@ -158,14 +158,17 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
 
         Proposal storage proposal = proposals[proposalId];
 
-        // Whitelisted proposers can't be canceled for falling below proposal threshold
-        if(isWhitelisted(proposal.proposer)) {
-            require(msg.sender == proposal.proposer || ((comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold) && msg.sender == whitelistGuardian), "GovernorBravo::cancel: whitelisted proposer");
+        // Proposer can cancel
+        if(msg.sender != proposal.proposer) {
+             // Whitelisted proposers can't be canceled for falling below proposal threshold
+            if(isWhitelisted(proposal.proposer)) {
+                require(msg.sender == proposal.proposer || ((comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold) && msg.sender == whitelistGuardian), "GovernorBravo::cancel: whitelisted proposer");
+            }
+            else {
+                require(msg.sender == proposal.proposer || (comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold), "GovernorBravo::cancel: proposer above threshold");
+            }
         }
-        else {
-            require(msg.sender == proposal.proposer || (comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold), "GovernorBravo::cancel: proposer above threshold");
-        }
-
+        
         proposal.canceled = true;
         for (uint i = 0; i < proposal.targets.length; i++) {
             timelock.cancelTransaction(proposal.targets[i], proposal.values[i], proposal.signatures[i], proposal.calldatas[i], proposal.eta);
