@@ -78,8 +78,8 @@ async function getIsWhitelisted(
   world: World,
   governor: GovernorBravo,
   account: string
- ): Promise<BoolV> {
-  return new BoolV(await governor.methods.isWhitelisted(account).call())
+): Promise<BoolV> {
+  return new BoolV(await governor.methods.isWhitelisted(account).call());
 }
 
 export function governorBravoFetchers() {
@@ -192,7 +192,7 @@ export function governorBravoFetchers() {
       { namePos: 1 }
     ),
 
-    new Fetcher<{ governor: GovernorBravo, account: AddressV }, BoolV>(
+    new Fetcher<{ governor: GovernorBravo; account: AddressV }, BoolV>(
       `
         #### IsWhitelisted
 
@@ -200,11 +200,9 @@ export function governorBravoFetchers() {
         * E.g. "GovernorBravo GovernorBravoScenario IsWhitelisted Jared"
       `,
       "IsWhitelisted",
-      [
-        new Arg("governor", getGovernorV),
-        new Arg("account", getAddressV)
-      ],
-      (world, { governor, account }) => getIsWhitelisted(world, governor, account.val),
+      [new Arg("governor", getGovernorV), new Arg("account", getAddressV)],
+      (world, { governor, account }) =>
+        getIsWhitelisted(world, governor, account.val),
       { namePos: 1 }
     ),
   ];
