@@ -1,43 +1,26 @@
 -- Tests for the grants and math patch
 
-Macro FlywheelComptroller price=1.0 borrowRate=0.000005 compInitAmount=5000000e18
+Macro FlywheelComptroller price=1.0 compInitAmount=5000000e18
     Unitroller Deploy
     PriceOracle Deploy Fixed price
     PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero)
-    ----g2
-    ComptrollerImpl Deploy ScenarioG2 ComptrollerScenG2
-    Unitroller SetPendingImpl ComptrollerScenG2
-    ComptrollerImpl ComptrollerScenG2 BecomeG2
-    --list some tokens
+    -- Deploy Comptroller
+    ComptrollerImpl Deploy Scenario ComptrollerScen
+    Unitroller SetPendingImpl ComptrollerScen
+    ComptrollerImpl ComptrollerScen Become
+    -- Configure Comptroller
     Comptroller SetPriceOracle (PriceOracleProxy Address)
-    Comptroller SetMaxAssets 20
     Comptroller SetCloseFactor 0.5
     Comptroller LiquidationIncentive 1.1
+    -- Add markets
     NewCToken ZRX cZRX
     NewCToken BAT cBAT
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
-    -- final
-    ComptrollerImpl Deploy ScenarioG3 ComptrollerScen
-    Unitroller SetPendingImpl ComptrollerScen
-    ComptrollerImpl ComptrollerScen BecomeG3 1e18 [cZRX cBAT]
+    -- Setup COMP token
     Erc20 Deploy Standard COMP "COMP Token" 18
     Give (Address Comptroller) compInitAmount COMP
-
-Macro GrantsComptroller
-    FlywheelComptroller
-    -- g4
-    ComptrollerImpl Deploy ScenarioG4 ComptrollerScen
-    Unitroller SetPendingImpl ComptrollerScen
-    ComptrollerImpl ComptrollerScen BecomeG4
-    -- g5
-    ComptrollerImpl Deploy ScenarioG5 ComptrollerScen
-    Unitroller SetPendingImpl ComptrollerScen
-    ComptrollerImpl ComptrollerScen BecomeG5
-    -- current
-    ComptrollerImpl Deploy Scenario ComptrollerScen
-    Unitroller SetPendingImpl ComptrollerScen
-    ComptrollerImpl ComptrollerScen Become
+    Comptroller Send "setCompAddress(address)" (Address COMP)
 
 Macro InitSpeeds
     Prep Geoff 100e18 ZRX cZRX
@@ -48,10 +31,9 @@ Macro InitSpeeds
     Borrow Coburn 1e18 cZRX
     Comptroller SetCompSpeeds (cZRX cBAT) (1 1) (1 1)
     Comptroller RefreshCompSpeeds
-    Comptroller Send "setCompAddress(address)" (Address COMP)
 
 Test "COMP speed can be set per market"
-    GrantsComptroller
+    FlywheelComptroller
     InitSpeeds
     -- Baseline comp amounts
     Assert Equal (Comptroller CompAccrued Geoff) 0
@@ -75,14 +57,8 @@ Test "COMP speed can be set per market"
     Assert Equal (Comptroller CompAccrued Geoff) 0
     Assert Equal (Erc20 COMP TokenBalance Geoff) 6000
 
-Test "Set comp rate is removed"
-    GrantsComptroller
-    InitSpeeds
-    AllowFailures
-    Comptroller SetCompRate 5
-
 Test "Comp is not claimed automatically"
-    GrantsComptroller
+    FlywheelComptroller
     InitSpeeds
     Comptroller SetCompSpeeds (cZRX) (2) (2)
     FastForward 100000 Blocks
