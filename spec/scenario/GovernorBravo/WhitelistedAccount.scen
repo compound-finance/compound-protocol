@@ -57,6 +57,7 @@ Macro GivenWhitelistedUser user
 
 Test "Cancel Whitelisted Proposal fail"
     GivenWhitelistedUser Robert
+    Assert Equal (GovernorBravo LegitGov IsWhitelisted Robert) (True)
     From Robert (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])
     AllowFailures
     GovernorBravo LegitGov Proposal LastProposal Cancel
