@@ -1078,8 +1078,14 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         require(msg.sender == unitroller.admin(), "only unitroller admin can change brains");
         require(unitroller._acceptImplementation() == 0, "change not authorized");
 
-        // compSpeeds -> compBorrowSpeeds & compSupplySpeeds
         // TODO: Remove this post upgrade
+        Comptroller(address(unitroller))._upgradeSlitCompRewards();
+    }
+
+    function _upgradeSlitCompRewards() public {
+        require(msg.sender == comptrollerImplementation, "only brains can become itself");
+
+        // compSpeeds -> compBorrowSpeeds & compSupplySpeeds
         for (uint i = 0; i < allMarkets.length; i ++) {
             compBorrowSpeeds[address(allMarkets[i])] = compSupplySpeeds[address(allMarkets[i])] = compSpeeds[address(allMarkets[i])];
             delete compSpeeds[address(allMarkets[i])];
