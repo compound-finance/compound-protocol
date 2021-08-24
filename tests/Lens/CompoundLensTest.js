@@ -204,7 +204,7 @@ describe('CompoundLens', () => {
       ).toEqual(
         {
           cToken: cEth._address,
-          underlyingPrice: "1000000000000000000",
+          underlyingPrice: "0",
         }
       );
     });
@@ -223,7 +223,7 @@ describe('CompoundLens', () => {
         },
         {
           cToken: cEth._address,
-          underlyingPrice: "1000000000000000000",
+          underlyingPrice: "0",
         }
       ]);
     });
