@@ -86,6 +86,11 @@ async function increaseTime(seconds) {
   return rpc({ method: 'evm_mine' });
 }
 
+async function getTime() {
+  const { result } = await rpc({ method: 'eth_getBlockByNumber', params: ['latest', false]});
+  return parseInt(result.timestamp);
+}
+
 async function setTime(seconds) {
   await rpc({ method: 'evm_setTime', params: [new Date(seconds * 1000)] });
 }
@@ -151,6 +156,7 @@ module.exports = {
   minerStart,
   minerStop,
   rpc,
+  getTime,
   setTime,
 
   both,

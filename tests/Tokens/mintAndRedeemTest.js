@@ -12,6 +12,7 @@ const {
   getBalances,
   adjustBalances,
   preApprove,
+  preMint,
   quickMint,
   preSupply,
   quickRedeem,
@@ -23,20 +24,6 @@ const mintAmount = etherUnsigned(10e4);
 const mintTokens = mintAmount.dividedBy(exchangeRate);
 const redeemTokens = etherUnsigned(10e3);
 const redeemAmount = redeemTokens.multipliedBy(exchangeRate);
-
-async function preMint(cToken, minter, mintAmount, mintTokens, exchangeRate) {
-  await preApprove(cToken, minter, mintAmount);
-  await send(cToken.comptroller, 'setMintAllowed', [true]);
-  await send(cToken.comptroller, 'setMintVerify', [true]);
-  await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
-  await send(cToken.underlying, 'harnessSetFailTransferFromAddress', [minter, false]);
-  await send(cToken, 'harnessSetBalance', [minter, 0]);
-  await send(cToken, 'harnessSetExchangeRate', [etherMantissa(exchangeRate)]);
-}
-
-async function mintFresh(cToken, minter, mintAmount) {
-  return send(cToken, 'harnessMintFresh', [minter, mintAmount]);
-}
 
 async function preRedeem(cToken, redeemer, redeemTokens, redeemAmount, exchangeRate) {
   await preSupply(cToken, redeemer, redeemTokens);

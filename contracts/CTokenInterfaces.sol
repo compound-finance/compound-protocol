@@ -308,3 +308,37 @@ contract CDelegateInterface is CDelegationStorage {
      */
     function _resignImplementation() public;
 }
+
+contract CPoRStorage {
+    /**
+     * @notice Max allowed age of the feed's answer
+     */
+    uint public constant MAX_AGE = 7 days;
+
+    /**
+     * @notice Address of the feed for reserves
+     */
+    address public feed;
+
+    /**
+     * @notice Configured acceptable age of the feed's answer
+     */
+    uint public heartbeat;
+}
+
+contract CPoRInterface is CPoRStorage {
+    /**
+     * @notice Event emitted when the feed is updated
+     */
+    event NewFeed(address oldFeed, address newFeed);
+
+    /**
+     * @notice Event emitted when the heartbeat of a feed is updated
+     */
+    event NewHeartbeat(uint oldHeartbeat, uint newHeartbeat);
+
+    /*** Admin Functions ***/
+
+    function _setFeed(address newFeed) external returns (uint);
+    function _setHeartbeat(uint newHeartbeat) external returns (uint);
+}

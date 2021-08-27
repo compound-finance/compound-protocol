@@ -170,7 +170,27 @@ async function makeCToken(opts = {}) {
       );
       cToken = await saddle.getContractAt('CDaiDelegateHarness', cDelegator._address);
       break;
-    
+
+    case 'cpor':
+      underlying = opts.underlying || await makeToken(opts.underlyingOpts);
+      cDelegatee = await deploy('CPoRDelegateHarness');
+      cDelegator = await deploy('CErc20Delegator',
+        [
+          underlying._address,
+          comptroller._address,
+          interestRateModel._address,
+          exchangeRate,
+          name,
+          symbol,
+          decimals,
+          admin,
+          cDelegatee._address,
+          "0x0"
+        ]
+      );
+      cToken = await saddle.getContractAt('CErc20DelegateHarness', cDelegator._address);
+      break;
+
     case 'ccomp':
       underlying = await deploy('Comp', [opts.compHolder || root]);
       cDelegatee = await deploy('CErc20DelegateHarness');
@@ -378,6 +398,20 @@ async function preApprove(cToken, from, amount, opts = {}) {
   return send(cToken.underlying, 'approve', [cToken._address, amount], { from });
 }
 
+async function mintFresh(cToken, minter, mintAmount) {
+  return send(cToken, 'harnessMintFresh', [minter, mintAmount]);
+}
+
+async function preMint(cToken, minter, mintAmount, mintTokens, exchangeRate) {
+  await preApprove(cToken, minter, mintAmount);
+  await send(cToken.comptroller, 'setMintAllowed', [true]);
+  await send(cToken.comptroller, 'setMintVerify', [true]);
+  await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
+  await send(cToken.underlying, 'harnessSetFailTransferFromAddress', [minter, false]);
+  await send(cToken, 'harnessSetBalance', [minter, 0]);
+  await send(cToken, 'harnessSetExchangeRate', [etherMantissa(exchangeRate)]);
+}
+
 async function quickMint(cToken, minter, mintAmount, opts = {}) {
   // make sure to accrue interest
   await fastForward(cToken, 1);
@@ -463,7 +497,9 @@ module.exports = {
   getBalances,
   adjustBalances,
 
+  mintFresh,
   preApprove,
+  preMint,
   quickMint,
 
   preSupply,

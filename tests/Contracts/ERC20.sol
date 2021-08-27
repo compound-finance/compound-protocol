@@ -44,6 +44,12 @@ contract StandardToken is ERC20 {
         decimals = _decimalUnits;
     }
 
+    function mint(uint256 amount) external {
+        balanceOf[msg.sender] = balanceOf[msg.sender].add(amount, "Balance overflow");
+        totalSupply = totalSupply.add(amount, "Supply overflow");
+        emit Transfer(address(0), msg.sender, amount);
+    }
+
     function transfer(address dst, uint256 amount) external returns (bool) {
         balanceOf[msg.sender] = balanceOf[msg.sender].sub(amount, "Insufficient balance");
         balanceOf[dst] = balanceOf[dst].add(amount, "Balance overflow");
