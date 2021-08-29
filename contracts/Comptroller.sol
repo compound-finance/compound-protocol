@@ -1085,6 +1085,8 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
     function _upgradeSplitCompRewards() public {
         require(msg.sender == comptrollerImplementation, "only brains can become itself");
 
+        uint32 blockNumber = safe32(getBlockNumber(), "block number exceeds 32 bits");
+
         // compSpeeds -> compBorrowSpeeds & compSupplySpeeds
         for (uint i = 0; i < allMarkets.length; i ++) {
             compBorrowSpeeds[address(allMarkets[i])] = compSupplySpeeds[address(allMarkets[i])] = compSpeeds[address(allMarkets[i])];
@@ -1099,11 +1101,13 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
             if (supplyState.index == 0) {
                 // Initialize supply state index with default value
                 supplyState.index = compInitialIndex;
+                supplyState.block = blockNumber;
             }
 
             if (borrowState.index == 0) {
                 // Initialize borrow state index with default value
                 borrowState.index = compInitialIndex;
+                borrowState.block = blockNumber;
             }
         }
     }
