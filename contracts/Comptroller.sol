@@ -1079,10 +1079,10 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         require(unitroller._acceptImplementation() == 0, "change not authorized");
 
         // TODO: Remove this post upgrade
-        Comptroller(address(unitroller))._upgradeSlitCompRewards();
+        Comptroller(address(unitroller))._upgradeSplitCompRewards();
     }
 
-    function _upgradeSlitCompRewards() public {
+    function _upgradeSplitCompRewards() public {
         require(msg.sender == comptrollerImplementation, "only brains can become itself");
 
         // compSpeeds -> compBorrowSpeeds & compSupplySpeeds
@@ -1366,8 +1366,9 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         uint numTokens = cTokens.length;
         require(numTokens == supplySpeeds.length && numTokens == borrowSpeeds.length, "Comptroller::_setCompSpeeds invalid input");
 
-        for (uint i = 0; i < numTokens; ++i)
+        for (uint i = 0; i < numTokens; ++i) {
             setCompSpeedInternal(cTokens[i], supplySpeeds[i], borrowSpeeds[i]);
+        }
     }
 
     /**
