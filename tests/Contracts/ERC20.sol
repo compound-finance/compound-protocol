@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.6;
 
 import "../../contracts/SafeMath.sol";
@@ -36,7 +37,7 @@ contract StandardToken is ERC20 {
     mapping (address => mapping (address => uint256)) override public allowance;
     mapping(address => uint256) override public balanceOf;
 
-    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol) public {
+    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol) {
         totalSupply = _initialAmount;
         balanceOf[msg.sender] = _initialAmount;
         name = _tokenName;
@@ -81,7 +82,7 @@ contract NonStandardToken is ERC20NS {
     mapping (address => mapping (address => uint256)) override public allowance;
     mapping(address => uint256) override public balanceOf;
 
-    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol) public {
+    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol) {
         totalSupply = _initialAmount;
         balanceOf[msg.sender] = _initialAmount;
         name = _tokenName;
@@ -117,7 +118,7 @@ contract ERC20Harness is StandardToken {
     // To support testing, we allow the contract to always fail `transfer`.
     mapping (address => bool) public failTransferToAddresses;
 
-    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol) public
+    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol)
         StandardToken(_initialAmount, _tokenName, _decimalUnits, _tokenSymbol) {}
 
     function harnessSetFailTransferFromAddress(address src, bool _fail) public {

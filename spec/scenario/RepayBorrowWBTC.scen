@@ -68,7 +68,7 @@ Test "Borrow, hold a few blocks, and repay too much"
     Expect Changes (Erc20 WBTC TokenBalance Geoff) Zero
     Expect Changes (Erc20 WBTC TokenBalance cWBTC) Zero
     RepayBorrow Geoff 10e8 cWBTC
-    Assert Revert "revert REPAY_BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED"
+    Assert Revert
     -- Let's check the overall numbers
     Assert Equal (CToken cWBTC BorrowBalance Geoff) 2.5e8
     Assert Equal (CToken cWBTC TotalBorrowsCurrent) 2.5e8
@@ -131,7 +131,7 @@ Test "Prohibit repay by comptroller rejection due to mock unlist"
     Expect Changes (Erc20 WBTC TokenBalance cWBTC) Zero
     Comptroller UnList cZRX -- Mock unlist ZRX
     RepayBorrow Geoff 2.5e8 cZRX
-    Assert Failure COMPTROLLER_REJECTION REPAY_BORROW_COMPTROLLER_REJECTION MARKET_NOT_LISTED
+    Assert RevertCustomError RepayBorrowComptrollerRejection 9
     -- Let's check the overall numbers
     Assert Equal (CToken cWBTC BorrowBalance Geoff) 2.5e8
     Assert Equal (CToken cWBTC TotalBorrowsCurrent) 2.5e8

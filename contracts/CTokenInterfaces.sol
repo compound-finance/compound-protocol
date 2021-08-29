@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.6;
 
 import "./ComptrollerInterface.sol";
@@ -110,7 +111,7 @@ contract CTokenStorage {
     uint public constant protocolSeizeShareMantissa = 2.8e16; //2.8%
 }
 
-abstract contract CTokenInterface is TokenErrorReporter, CTokenStorage {
+abstract contract CTokenInterface is CTokenStorage {
     /**
      * @notice Indicator that this is a CToken contract (for inspection)
      */

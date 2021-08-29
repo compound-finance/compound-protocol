@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.6;
 
 import "./CErc20.sol";
@@ -11,7 +12,7 @@ contract CErc20Delegate is CErc20, CDelegateInterface {
     /**
      * @notice Construct an empty delegate
      */
-    constructor() public {}
+    constructor() {}
 
     /**
      * @notice Called by the delegator on a delegate to initialize it for duty

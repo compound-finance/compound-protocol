@@ -68,7 +68,7 @@ Test "Borrow, hold a few blocks, and repay too much"
     Expect Changes (Erc20 BAT TokenBalance Geoff) Zero
     Expect Changes (Erc20 BAT TokenBalance cBAT) Zero
     RepayBorrow Geoff 10e18 cBAT
-    Assert Revert "revert REPAY_BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED"
+    Assert Revert
     -- Let's check the overall numbers
     Assert Equal (CToken cBAT BorrowBalance Geoff) 2.5e18
     Assert Equal (CToken cBAT TotalBorrowsCurrent) 2.5e18
@@ -131,7 +131,7 @@ Test "Prohibit repay by comptroller rejection due to mock unlist"
     Expect Changes (Erc20 BAT TokenBalance cBAT) Zero
     Comptroller UnList cZRX -- Mock unlist ZRX
     RepayBorrow Geoff 2.5e18 cZRX
-    Assert Failure COMPTROLLER_REJECTION REPAY_BORROW_COMPTROLLER_REJECTION MARKET_NOT_LISTED
+    Assert RevertCustomError RepayBorrowComptrollerRejection 9
     -- Let's check the overall numbers
     Assert Equal (CToken cBAT BorrowBalance Geoff) 2.5e18
     Assert Equal (CToken cBAT TotalBorrowsCurrent) 2.5e18

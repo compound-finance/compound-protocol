@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.6;
 
 import "./FaucetToken.sol";
@@ -12,7 +13,7 @@ contract EvilToken is FaucetToken {
 
     bool public fail;
 
-    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol) public
+    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol)
         FaucetToken(_initialAmount, _tokenName, _decimalUnits, _tokenSymbol) {
         fail = true;
     }

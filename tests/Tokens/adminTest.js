@@ -23,11 +23,10 @@ describe('admin / _setPendingAdmin / _acceptAdmin', () => {
 
   describe('_setPendingAdmin()', () => {
     it('should only be callable by admin', async () => {
-      expect(
-        await send(cToken, '_setPendingAdmin', [accounts[0]], {from: accounts[0]})
-      ).toHaveTokenFailure(
-        'UNAUTHORIZED',
-        'SET_PENDING_ADMIN_OWNER_CHECK'
+      await expect(
+        send(cToken, '_setPendingAdmin', [accounts[0]], {from: accounts[0]})
+      ).rejects.toRevertWithCustomError(
+        'SetPendingAdminOwnerCheck'
       );
 
       // Check admin stays the same
@@ -63,11 +62,10 @@ describe('admin / _setPendingAdmin / _acceptAdmin', () => {
 
   describe('_acceptAdmin()', () => {
     it('should fail when pending admin is zero', async () => {
-      expect(
-        await send(cToken, '_acceptAdmin')
-      ).toHaveTokenFailure(
-        'UNAUTHORIZED',
-        'ACCEPT_ADMIN_PENDING_ADMIN_CHECK'
+      await expect(
+        send(cToken, '_acceptAdmin')
+      ).rejects.toRevertWithCustomError(
+        'AcceptAdminPendingAdminCheck'
       );
 
       // Check admin stays the same
@@ -77,11 +75,10 @@ describe('admin / _setPendingAdmin / _acceptAdmin', () => {
 
     it('should fail when called by another account (e.g. root)', async () => {
       expect(await send(cToken, '_setPendingAdmin', [accounts[0]])).toSucceed();
-      expect(
-        await send(cToken, '_acceptAdmin')
-      ).toHaveTokenFailure(
-        'UNAUTHORIZED',
-        'ACCEPT_ADMIN_PENDING_ADMIN_CHECK'
+      await expect(
+        send(cToken, '_acceptAdmin')
+      ).rejects.toRevertWithCustomError(
+        'AcceptAdminPendingAdminCheck'
       );
 
       // Check admin stays the same

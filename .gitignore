@@ -42,3 +42,4 @@ junit.xml
 .last_confs
 .saddle_history
 node_modules_tmp
+.idea

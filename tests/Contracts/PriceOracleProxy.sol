@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.6;
 
 import "../../contracts/CErc20.sol";
@@ -54,7 +55,7 @@ contract PriceOracleProxy is PriceOracle {
                 address cUsdcAddress_,
                 address cSaiAddress_,
                 address cDaiAddress_,
-                address cUsdtAddress_) public {
+                address cUsdtAddress_) {
         guardian = guardian_;
         v1PriceOracle = V1PriceOracleInterface(v1PriceOracle_);
 

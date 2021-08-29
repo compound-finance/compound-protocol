@@ -72,7 +72,9 @@ describe('CToken', function () {
 
     it("fails if comptroller tells it to", async () => {
       await send(cToken.comptroller, 'setMintAllowed', [false]);
-      expect(await mintFresh(cToken, minter, mintAmount)).toHaveTrollReject('MINT_COMPTROLLER_REJECTION', 'MATH_ERROR');
+      await expect(mintFresh(cToken, minter, mintAmount)).rejects.toRevertWithCustomError(
+        'MintComptrollerRejection', [11]
+      );
     });
 
     it("proceeds if comptroller tells it to", async () => {
@@ -81,7 +83,7 @@ describe('CToken', function () {
 
     it("fails if not fresh", async () => {
       await fastForward(cToken);
-      expect(await mintFresh(cToken, minter, mintAmount)).toHaveTokenFailure('MARKET_NOT_FRESH', 'MINT_FRESHNESS_CHECK');
+      await expect(mintFresh(cToken, minter, mintAmount)).rejects.toRevertWithCustomError('MintFreshnessCheck');
     });
 
     it("continues if fresh", async () => {
@@ -107,7 +109,7 @@ describe('CToken', function () {
 
     it("fails if exchange calculation fails", async () => {
       expect(await send(cToken, 'harnessSetExchangeRate', [0])).toSucceed();
-      await expect(mintFresh(cToken, minter, mintAmount)).rejects.toRevert('revert MINT_EXCHANGE_CALCULATION_FAILED');
+      await expect(mintFresh(cToken, minter, mintAmount)).rejects.toRevert();
     });
 
     it("fails if transferring in fails", async () => {
@@ -178,12 +180,15 @@ describe('CToken', function () {
 
       it("fails if comptroller tells it to", async () =>{
         await send(cToken.comptroller, 'setRedeemAllowed', [false]);
-        expect(await redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).toHaveTrollReject('REDEEM_COMPTROLLER_REJECTION');
+        await expect(redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).rejects.toRevertWithCustomError(
+          'RedeemComptrollerRejection', [11]
+        );
       });
 
       it("fails if not fresh", async () => {
         await fastForward(cToken);
-        expect(await redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).toHaveTokenFailure('MARKET_NOT_FRESH', 'REDEEM_FRESHNESS_CHECK');
+        await expect(redeemFresh(cToken, redeemer, redeemTokens, redeemAmount))
+          .rejects.toRevertWithCustomError('RedeemFreshnessCheck')
       });
 
       it("continues if fresh", async () => {
@@ -193,16 +198,17 @@ describe('CToken', function () {
 
       it("fails if insufficient protocol cash to transfer out", async() => {
         await send(cToken.underlying, 'harnessSetBalance', [cToken._address, 1]);
-        expect(await redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).toHaveTokenFailure('TOKEN_INSUFFICIENT_CASH', 'REDEEM_TRANSFER_OUT_NOT_POSSIBLE');
+        await expect(redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).rejects
+          .toRevertWithCustomError('RedeemTransferOutNotPossible');
       });
 
       it("fails if exchange calculation fails", async () => {
         if (redeemFresh == redeemFreshTokens) {
           expect(await send(cToken, 'harnessSetExchangeRate', [UInt256Max()])).toSucceed();
-          expect(await redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).toHaveTokenFailure('MATH_ERROR', 'REDEEM_EXCHANGE_TOKENS_CALCULATION_FAILED');
+          await expect(redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).rejects.toRevert();
         } else {
           expect(await send(cToken, 'harnessSetExchangeRate', [0])).toSucceed();
-          expect(await redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).toHaveTokenFailure('MATH_ERROR', 'REDEEM_EXCHANGE_AMOUNT_CALCULATION_FAILED');
+          await expect(redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).rejects.toRevert();
         }
       });
 
@@ -213,12 +219,12 @@ describe('CToken', function () {
 
       it("fails if total supply < redemption amount", async () => {
         await send(cToken, 'harnessExchangeRateDetails', [0, 0, 0]);
-        expect(await redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).toHaveTokenFailure('MATH_ERROR', 'REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED');
+        await expect(redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).rejects.toRevert();
       });
 
       it("reverts if new account balance underflows", async () => {
         await send(cToken, 'harnessSetBalance', [redeemer, 0]);
-        expect(await redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).toHaveTokenFailure('MATH_ERROR', 'REDEEM_NEW_ACCOUNT_BALANCE_CALCULATION_FAILED');
+        await expect(redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).rejects.toRevert();
       });
 
       it("transfers the underlying cash, tokens, and emits Redeem, Transfer events", async () => {
@@ -258,7 +264,7 @@ describe('CToken', function () {
 
     it("returns error from redeemFresh without emitting any extra logs", async () => {
       await setBalance(cToken.underlying, cToken._address, 0);
-      expect(await quickRedeem(cToken, redeemer, redeemTokens, {exchangeRate})).toHaveTokenFailure('TOKEN_INSUFFICIENT_CASH', 'REDEEM_TRANSFER_OUT_NOT_POSSIBLE');
+      await expect(quickRedeem(cToken, redeemer, redeemTokens, {exchangeRate})).rejects.toRevert();
     });
 
     it("returns success from redeemFresh and redeems the right amount", async () => {

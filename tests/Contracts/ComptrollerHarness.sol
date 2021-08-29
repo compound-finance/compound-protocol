@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.6;
 
 import "../../contracts/Comptroller.sol";
@@ -19,7 +20,7 @@ contract ComptrollerHarness is Comptroller {
     address compAddress;
     uint public blockNumber;
 
-    constructor() Comptroller() public {}
+    constructor() Comptroller() {}
 
     function setPauseGuardian(address harnessedPauseGuardian) public {
         pauseGuardian = harnessedPauseGuardian;

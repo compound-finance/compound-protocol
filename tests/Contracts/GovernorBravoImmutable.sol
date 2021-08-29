@@ -1,5 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.6;
-pragma experimental ABIEncoderV2;
 
 import "../../contracts/Governance/GovernorBravoDelegate.sol";
 
@@ -11,7 +11,7 @@ contract GovernorBravoImmutable is GovernorBravoDelegate {
             address admin_,
             uint votingPeriod_,
             uint votingDelay_,
-            uint proposalThreshold_) public {
+            uint proposalThreshold_) {
         admin = msg.sender;
         initialize(timelock_, comp_, votingPeriod_, votingDelay_, proposalThreshold_);
 

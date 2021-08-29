@@ -10,7 +10,7 @@ cache_file="$root_dir/.scencache"
 shasumVersion="$(shasum -v)"
 inflectionVersion="6.01"
 
-if [ "$(printf '%s\n' "$inflectionVersion" "$shasumVersion" | sort -V | head -n1)" = "$inflectionVersion" ]; then 
+if [ "$(printf '%s\n' "$inflectionVersion" "$shasumVersion" | sort -V | head -n1)" = "$inflectionVersion" ]; then
   checksum="$(echo $root_dir/spec/scenario{,/**}/*.scen | xargs shasum -U | shasum -U | cut -d' ' -f 1)"
 else
   checksum="$(echo $root_dir/spec/scenario{,/**}/*.scen | xargs shasum -p | shasum -p | cut -d' ' -f 1)"

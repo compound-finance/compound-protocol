@@ -52,7 +52,7 @@ Test "Simple cToken Transfer Not Allowed by Comptroller"
     -- Just transfer
     AllowFailures
     Transfer Geoff Torrey 60e18 cZRX
-    Assert Failure COMPTROLLER_REJECTION TRANSFER_COMPTROLLER_REJECTION INSUFFICIENT_LIQUIDITY
+    Assert RevertCustomError TransferComptrollerRejection 4
 
 Test "Simple cToken Transfer From"
     NewComptroller
@@ -82,7 +82,7 @@ Test "cToken Transfer From Not Allowed"
     Invariant Remains (Erc20 cZRX TokenBalance Torrey) (Exactly 0e9)
     AllowFailures
     Erc20 cZRX TransferFrom Geoff Torrey 10e9
-    Assert Failure MATH_ERROR TRANSFER_NOT_ALLOWED
+    Assert Revert
 
 Test "cToken Transfer paused"
     NewComptroller

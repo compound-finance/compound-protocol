@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.6;
 
 import "./CToken.sol";
@@ -46,8 +47,8 @@ contract CErc20 is CToken, CErc20Interface {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function mint(uint mintAmount) override external returns (uint) {
-        (uint err,) = mintInternal(mintAmount);
-        return err;
+        mintInternal(mintAmount);
+        return NO_ERROR;
     }
 
     /**
@@ -57,7 +58,8 @@ contract CErc20 is CToken, CErc20Interface {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(uint redeemTokens) override external returns (uint) {
-        return redeemInternal(redeemTokens);
+        redeemInternal(redeemTokens);
+        return NO_ERROR;
     }
 
     /**
@@ -67,7 +69,8 @@ contract CErc20 is CToken, CErc20Interface {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemUnderlying(uint redeemAmount) override external returns (uint) {
-        return redeemUnderlyingInternal(redeemAmount);
+        redeemUnderlyingInternal(redeemAmount);
+        return NO_ERROR;
     }
 
     /**
@@ -76,7 +79,8 @@ contract CErc20 is CToken, CErc20Interface {
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
     function borrow(uint borrowAmount) override external returns (uint) {
-        return borrowInternal(borrowAmount);
+        borrowInternal(borrowAmount);
+        return NO_ERROR;
     }
 
     /**
@@ -85,8 +89,8 @@ contract CErc20 is CToken, CErc20Interface {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function repayBorrow(uint repayAmount) override external returns (uint) {
-        (uint err,) = repayBorrowInternal(repayAmount);
-        return err;
+        repayBorrowInternal(repayAmount);
+        return NO_ERROR;
     }
 
     /**
@@ -96,8 +100,8 @@ contract CErc20 is CToken, CErc20Interface {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function repayBorrowBehalf(address borrower, uint repayAmount) override external returns (uint) {
-        (uint err,) = repayBorrowBehalfInternal(borrower, repayAmount);
-        return err;
+        repayBorrowBehalfInternal(borrower, repayAmount);
+        return NO_ERROR;
     }
 
     /**
@@ -109,8 +113,8 @@ contract CErc20 is CToken, CErc20Interface {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) override external returns (uint) {
-        (uint err,) = liquidateBorrowInternal(borrower, repayAmount, cTokenCollateral);
-        return err;
+        liquidateBorrowInternal(borrower, repayAmount, cTokenCollateral);
+        return NO_ERROR;
     }
 
     /**

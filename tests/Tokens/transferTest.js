@@ -10,7 +10,7 @@ describe('CToken', function () {
     it("cannot transfer from a zero balance", async () => {
       const cToken = await makeCToken({supportMarket: true});
       expect(await call(cToken, 'balanceOf', [root])).toEqualNumber(0);
-      expect(await send(cToken, 'transfer', [accounts[0], 100])).toHaveTokenFailure('MATH_ERROR', 'TRANSFER_NOT_ENOUGH');
+      await expect(send(cToken, 'transfer', [accounts[0], 100])).rejects.toRevert();
     });
 
     it("transfers 50 tokens", async () => {
@@ -26,7 +26,7 @@ describe('CToken', function () {
       const cToken = await makeCToken({supportMarket: true});
       await send(cToken, 'harnessSetBalance', [root, 100]);
       expect(await call(cToken, 'balanceOf', [root])).toEqualNumber(100);
-      expect(await send(cToken, 'transfer', [root, 50])).toHaveTokenFailure('BAD_INPUT', 'TRANSFER_NOT_ALLOWED');
+      await expect(send(cToken, 'transfer', [root, 50])).rejects.toRevertWithCustomError('TransferNotAllowed');
     });
 
     it("rejects transfer when not allowed and reverts if not verified", async () => {
@@ -35,7 +35,7 @@ describe('CToken', function () {
       expect(await call(cToken, 'balanceOf', [root])).toEqualNumber(100);
 
       await send(cToken.comptroller, 'setTransferAllowed', [false])
-      expect(await send(cToken, 'transfer', [root, 50])).toHaveTrollReject('TRANSFER_COMPTROLLER_REJECTION');
+      await expect(send(cToken, 'transfer', [root, 50])).rejects.toRevertWithCustomError('TransferComptrollerRejection', [11]);
 
       await send(cToken.comptroller, 'setTransferAllowed', [true])
       await send(cToken.comptroller, 'setTransferVerify', [false])

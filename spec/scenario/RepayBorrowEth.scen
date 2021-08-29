@@ -133,7 +133,7 @@ Test "Borrow, hold a few blocks, and repay too much"
     -- TODO: This currently drains the sent-eth
     AllowFailures
     RepayBorrowEth Geoff 1.0e18 cETH
-    Assert Revert "revert REPAY_BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED"
+    Assert Revert
     -- Let's check the overall numbers
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.0025e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.0025e18
@@ -200,7 +200,7 @@ Test "Prohibit repay by comptroller hook"
     Comptroller UnList cETH -- Mock unlist cETH
     AllowFailures
     RepayBorrowEth Geoff 0.001e18 cETH
-    Assert RevertFailure COMPTROLLER_REJECTION "revert repayBorrow failed"
+    Assert RevertCustomError RepayBorrowComptrollerRejection 9
     ---- Let's check the overall numbers
     Assert Equal (CToken cETH BorrowBalance Geoff) 0.0025e18
     Assert Equal (CToken cETH TotalBorrowsCurrent) 0.0025e18

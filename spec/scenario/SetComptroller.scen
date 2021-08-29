@@ -23,4 +23,4 @@ Test "Fail to set comptroller as not admin"
     NewCToken ZRX cZRX
     AllowFailures
     From Geoff (CToken cZRX SetComptroller (PriceOracle Address))
-    Assert Failure UNAUTHORIZED SET_COMPTROLLER_OWNER_CHECK
+    Assert RevertCustomError SetComptrollerOwnerCheck

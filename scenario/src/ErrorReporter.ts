@@ -1,9 +1,12 @@
+
+import { utils } from 'ethers';
 import {ComptrollerErr, TokenErr} from './ErrorReporterConstants';
 
 export interface ErrorReporter {
   getError(error: any): string | null
   getInfo(info: any): string | null
   getDetail(error: any, detail: number): string
+  getEncodedCustomError(errorName: string, args: unknown[]): string | null
 }
 
 class NoErrorReporterType implements ErrorReporter {
@@ -17,6 +20,10 @@ class NoErrorReporterType implements ErrorReporter {
 
   getDetail(error: any, detail: number): string {
     return detail.toString();
+  }
+
+  getEncodedCustomError(errorName: string, args: unknown[]): string | null {
+    return null
   }
 }
 
@@ -49,6 +56,14 @@ class CTokenErrorReporterType implements ErrorReporter {
 
     return detail.toString();
   }
+
+  getEncodedCustomError(errorName: string, args: unknown[]): string | null {
+    try {
+      return TokenErr.CustomErrors.encodeErrorResult(errorName, args)
+    } catch (err) {
+      return null
+    }
+  }
 }
 
 class ComptrollerErrorReporterType implements ErrorReporter {
@@ -80,6 +95,14 @@ class ComptrollerErrorReporterType implements ErrorReporter {
     }
 
     return detail.toString();
+  }
+
+  getEncodedCustomError(errorName: string, args: unknown[]): string | null {
+    try {
+      return ComptrollerErr.CustomErrors.encodeErrorResult(errorName, args)
+    } catch (err) {
+      return null
+    }
   }
 }
 

@@ -2,6 +2,7 @@
  *Submitted for verification at Etherscan.io on 2018-11-24
 */
 
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.6;
 
 // File: openzeppelin-solidity/contracts/token/ERC20/ERC20Basic.sol
@@ -306,7 +307,7 @@ contract Ownable {
    * @dev The Ownable constructor sets the original `owner` of the contract to the sender
    * account.
    */
-  constructor() public {
+  constructor() {
     owner = msg.sender;
   }
 

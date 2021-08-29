@@ -1,7 +1,8 @@
-
+import * as ethers from 'ethers'
 interface ErrorReporterEnum {
   Error: string[]
   FailureInfo: string[]
+  CustomErrors?: string[]
 }
 
 interface ErrorTypes {
@@ -9,6 +10,7 @@ interface ErrorTypes {
   FailureInfo: {[name: string]: number}
   ErrorInv: {[code: number]: string}
   FailureInfoInv: {[code: number]: string}
+  CustomErrors: ethers.utils.Interface
 }
 
 const ComptrollerErrorReporter = {
@@ -160,6 +162,69 @@ const TokenErrorReporter = {
     'ADD_RESERVES_ACCRUE_INTEREST_FAILED',
     'ADD_RESERVES_FRESH_CHECK',
     'ADD_RESERVES_TRANSFER_IN_NOT_POSSIBLE'
+  ],
+
+  CustomErrors: [
+    "error TransferComptrollerRejection(uint256 errorCode)",
+    "error TransferNotAllowed()",
+    "error TransferNotEnough()",
+    "error TransferTooMuch()",
+
+    "error MintComptrollerRejection(uint256 errorCode)",
+    "error MintFreshnessCheck()",
+    "error MintAccrueInterestFailed(uint256 errorCode)",
+
+    "error RedeemComptrollerRejection(uint256 errorCode)",
+    "error RedeemFreshnessCheck()",
+    "error RedeemAccrueInterestFailed(uint256 errorCode)",
+    "error RedeemTransferOutNotPossible()",
+
+    "error BorrowComptrollerRejection(uint256 errorCode)",
+    "error BorrowFreshnessCheck()",
+    "error BorrowAccrueInterestFailed(uint256 errorCode)",
+    "error BorrowCashNotAvailable()",
+
+    "error RepayBorrowComptrollerRejection(uint256 errorCode)",
+    "error RepayBorrowFreshnessCheck()",
+    "error RepayBorrowAccrueInterestFailed(uint256 errorCode)",
+
+    "error RepayBehalfAccrueInterestFailed(uint256 errorCode)",
+
+    "error LiquidateComptrollerRejection(uint256 errorCode)",
+    "error LiquidateFreshnessCheck()",
+    "error LiquidateCollateralFreshnessCheck()",
+    "error LiquidateAccrueBorrowInterestFailed(uint256 errorCode)",
+    "error LiquidateAccrueCollateralInterestFailed(uint256 errorCode)",
+    "error LiquidateLiquidatorIsBorrower()",
+    "error LiquidateCloseAmountIsZero()",
+    "error LiquidateCloseAmountIsUintMax()",
+    "error LiquidateRepayBorrowFreshFailed(uint256 errorCode)",
+
+    "error LiquidateSeizeComptrollerRejection(uint256 errorCode)",
+    "error LiquidateSeizeLiquidatorIsBorrower()",
+
+    "error AcceptAdminPendingAdminCheck()",
+
+    "error SetComptrollerOwnerCheck()",
+    "error SetPendingAdminOwnerCheck()",
+
+    "error SetReserveFactorAccrueInterestFailed(uint256 errorCode)",
+    "error SetReserveFactorAdminCheck()",
+    "error SetReserveFactorFreshCheck()",
+    "error SetReserveFactorBoundsCheck()",
+
+    "error AddReservesAccrueInterestFailed(uint256 errorCode)",
+    "error AddReservesFactorFreshCheck(uint256 actualAddAmount)",
+
+    "error ReduceReservesAccrueInterestFailed(uint256 errorCode)",
+    "error ReduceReservesAdminCheck()",
+    "error ReduceReservesFreshCheck()",
+    "error ReduceReservesCashNotAvailable()",
+    "error ReduceReservesCashValidation()",
+
+    "error SetInterestRateModelAccrueInterestFailed(uint256 errorCode)",
+    "error SetInterestRateModelOwnerCheck()",
+    "error SetInterestRateModelFreshCheck();",
   ]
 };
 
@@ -179,7 +244,9 @@ function parseEnum(reporterEnum: ErrorReporterEnum): ErrorTypes {
     FailureInfoInv[i] = entry;
   });
 
-  return {Error, ErrorInv, FailureInfo, FailureInfoInv};
+  const CustomErrors = new ethers.utils.Interface(reporterEnum.CustomErrors || [])
+
+  return {Error, ErrorInv, FailureInfo, FailureInfoInv, CustomErrors};
 }
 
 export const ComptrollerErr = parseEnum(ComptrollerErrorReporter);

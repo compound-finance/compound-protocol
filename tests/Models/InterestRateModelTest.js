@@ -109,21 +109,21 @@ describe('InterestRateModel', () => {
         // Only need to do these for the WhitePaper
 
         it('handles overflowed cash + borrows', async () => {
-          await expect(getBorrowRate(model, UInt256Max(), UInt256Max(), 0)).rejects.toRevert("revert SafeMath: addition overflow");
+          await expect(getBorrowRate(model, UInt256Max(), UInt256Max(), 0)).rejects.toRevert();
         });
 
         it('handles failing to get exp of borrows / cash + borrows', async () => {
-          await expect(getBorrowRate(model, 0, UInt256Max(), 0)).rejects.toRevert("revert SafeMath: multiplication overflow");
+          await expect(getBorrowRate(model, 0, UInt256Max(), 0)).rejects.toRevert();
         });
 
         it('handles overflow utilization rate times slope', async () => {
           const badModel = await makeInterestRateModel({ kind, baseRate: 0, multiplier: -1, jump: -1 });
-          await expect(getBorrowRate(badModel, 1, 1, 0)).rejects.toRevert("revert SafeMath: multiplication overflow");
+          await expect(getBorrowRate(badModel, 1, 1, 0)).rejects.toRevert();
         });
 
         it('handles overflow utilization rate times slope + base', async () => {
           const badModel = await makeInterestRateModel({ kind, baseRate: -1, multiplier: 1e48, jump: 1e48 });
-          await expect(getBorrowRate(badModel, 0, 1, 0)).rejects.toRevert("revert SafeMath: multiplication overflow");
+          await expect(getBorrowRate(badModel, 0, 1, 0)).rejects.toRevert();
         });
       }
     });

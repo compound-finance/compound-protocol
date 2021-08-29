@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.6;
 
 import "../../contracts/CErc20Immutable.sol";
@@ -29,16 +30,16 @@ contract CErc20Harness is CErc20Immutable {
     name_,
     symbol_,
     decimals_,
-    admin_) public {}
+    admin_) {}
 
     function doTransferOut(address payable to, uint amount) override internal {
         require(failTransferToAddresses[to] == false, "TOKEN_TRANSFER_OUT_FAILED");
         return super.doTransferOut(to, amount);
     }
 
-    function exchangeRateStoredInternal() override internal view returns (MathError, uint) {
+    function exchangeRateStoredInternal() override internal view returns (uint) {
         if (harnessExchangeRateStored) {
-            return (MathError.NO_ERROR, harnessExchangeRate);
+            return harnessExchangeRate;
         }
         return super.exchangeRateStoredInternal();
     }
@@ -95,12 +96,13 @@ contract CErc20Harness is CErc20Immutable {
     }
 
     function harnessMintFresh(address account, uint mintAmount) public returns (uint) {
-        (uint err,) = super.mintFresh(account, mintAmount);
-        return err;
+        super.mintFresh(account, mintAmount);
+        return NO_ERROR;
     }
 
     function harnessRedeemFresh(address payable account, uint cTokenAmount, uint underlyingAmount) public returns (uint) {
-        return super.redeemFresh(account, cTokenAmount, underlyingAmount);
+        super.redeemFresh(account, cTokenAmount, underlyingAmount);
+        return NO_ERROR;
     }
 
     function harnessAccountBorrows(address account) public view returns (uint principal, uint interestIndex) {
@@ -117,17 +119,18 @@ contract CErc20Harness is CErc20Immutable {
     }
 
     function harnessBorrowFresh(address payable account, uint borrowAmount) public returns (uint) {
-        return borrowFresh(account, borrowAmount);
+        borrowFresh(account, borrowAmount);
+        return NO_ERROR;
     }
 
     function harnessRepayBorrowFresh(address payer, address account, uint repayAmount) public returns (uint) {
-        (uint err,) = repayBorrowFresh(payer, account, repayAmount);
-        return err;
+        repayBorrowFresh(payer, account, repayAmount);
+        return NO_ERROR;
     }
 
     function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CToken cTokenCollateral) public returns (uint) {
-        (uint err,) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
-        return err;
+        liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
+        return NO_ERROR;
     }
 
     function harnessReduceReservesFresh(uint amount) public returns (uint) {
@@ -168,7 +171,7 @@ contract CErc20Scenario is CErc20Immutable {
     name_,
     symbol_,
     decimals_,
-    admin_) public {}
+    admin_) {}
 
     function setTotalBorrows(uint totalBorrows_) public {
         totalBorrows = totalBorrows_;
@@ -201,7 +204,7 @@ contract CEvil is CErc20Scenario {
     name_,
     symbol_,
     decimals_,
-    admin_) public {}
+    admin_) {}
 
     function evilSeize(CToken treasure, address liquidator, address borrower, uint seizeTokens) public returns (uint) {
         return treasure.seize(liquidator, borrower, seizeTokens);
@@ -229,7 +232,7 @@ contract CErc20DelegatorScenario is CErc20Delegator {
     decimals_,
     admin_,
     implementation_,
-    becomeImplementationData) public {}
+    becomeImplementationData) {}
 
     function setTotalBorrows(uint totalBorrows_) public {
         totalBorrows = totalBorrows_;
@@ -250,9 +253,9 @@ contract CErc20DelegateHarness is CErc20Delegate {
 
     mapping (address => bool) public failTransferToAddresses;
 
-    function exchangeRateStoredInternal() override internal view returns (MathError, uint) {
+    function exchangeRateStoredInternal() override internal view returns (uint) {
         if (harnessExchangeRateStored) {
-            return (MathError.NO_ERROR, harnessExchangeRate);
+            return harnessExchangeRate;
         }
         return super.exchangeRateStoredInternal();
     }
@@ -318,12 +321,13 @@ contract CErc20DelegateHarness is CErc20Delegate {
     }
 
     function harnessMintFresh(address account, uint mintAmount) public returns (uint) {
-        (uint err,) = super.mintFresh(account, mintAmount);
-        return err;
+        super.mintFresh(account, mintAmount);
+        return NO_ERROR;
     }
 
     function harnessRedeemFresh(address payable account, uint cTokenAmount, uint underlyingAmount) public returns (uint) {
-        return super.redeemFresh(account, cTokenAmount, underlyingAmount);
+        super.redeemFresh(account, cTokenAmount, underlyingAmount);
+        return NO_ERROR;
     }
 
     function harnessAccountBorrows(address account) public view returns (uint principal, uint interestIndex) {
@@ -340,17 +344,18 @@ contract CErc20DelegateHarness is CErc20Delegate {
     }
 
     function harnessBorrowFresh(address payable account, uint borrowAmount) public returns (uint) {
-        return borrowFresh(account, borrowAmount);
+        borrowFresh(account, borrowAmount);
+        return NO_ERROR;
     }
 
     function harnessRepayBorrowFresh(address payer, address account, uint repayAmount) public returns (uint) {
-        (uint err,) = repayBorrowFresh(payer, account, repayAmount);
-        return err;
+        repayBorrowFresh(payer, account, repayAmount);
+        return NO_ERROR;
     }
 
     function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CToken cTokenCollateral) public returns (uint) {
-        (uint err,) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
-        return err;
+        liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
+        return NO_ERROR;
     }
 
     function harnessReduceReservesFresh(uint amount) public returns (uint) {
@@ -375,7 +380,7 @@ contract CErc20DelegateHarness is CErc20Delegate {
 }
 
 contract CErc20DelegateScenario is CErc20Delegate {
-    constructor() public {}
+    constructor() {}
 
     function setTotalBorrows(uint totalBorrows_) public {
         totalBorrows = totalBorrows_;

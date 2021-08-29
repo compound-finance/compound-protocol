@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.6;
 
 import "../../contracts/Comptroller.sol";
@@ -6,7 +7,7 @@ contract ComptrollerScenario is Comptroller {
     uint public blockNumber;
     address public compAddress;
 
-    constructor() Comptroller() public {}
+    constructor() Comptroller() {}
 
     function fastForward(uint blocks) public returns (uint) {
         blockNumber += blocks;

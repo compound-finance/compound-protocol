@@ -2,6 +2,7 @@ const { last } = require('./Utils/JS');
 const { address, etherUnsigned } = require('./Utils/Ethereum');
 const { default: diff } = require('jest-diff');
 const { ComptrollerErr, TokenErr, IRErr, MathErr } = require('./Errors');
+const ethers = require('ethers')
 
 function opts(comment) {
   return {
@@ -269,6 +270,29 @@ function revert(actual, msg) {
   }
 }
 
+function revertWithCustomError(actual, errorName, errorArgs, reporter) {
+  const correctMessage = !!actual['message'] && actual.message === `VM Exception while processing transaction: revert`
+  const err = reporter.CustomErrors[errorName]
+  let matchingError = false
+  if (correctMessage && !!err) {
+    const c = new ethers.utils.Interface([err])
+    const expectedReturn = c.functions[errorName].encode(errorArgs)
+    matchingError = Object.values(actual.results).findIndex(v => v.error === 'revert' && v.return === expectedReturn) >= 0
+  }
+  return {
+    pass: correctMessage && matchingError,
+    message: () => {
+      if (correctMessage && !!err) {
+        return `did not find Custom Error: ${errorName}(${errorArgs.join(',')})`
+      } else if (!err) {
+        return `Custom Error not found`
+      } else {
+        return `expected revert, but transaction succeeded: ${JSON.stringify(actual)}`
+      }
+    }
+  }
+}
+
 function toBeWithinDelta(received, expected, delta) {
   const pass = Math.abs(Number(received) - Number(expected)) < delta;
   if (pass) {
@@ -352,6 +376,10 @@ expect.extend({
 
   toRevert(actual, msg='revert') {
     return revert.call(this, actual, msg);
+  },
+
+  toRevertWithCustomError(actual, errorName, errorArgs=[], reporter=TokenErr) {
+    return revertWithCustomError.call(this, actual, errorName, errorArgs, reporter)
   },
 
   toRevertWithError(trx, expectedErrorName, reason='revert', reporter=TokenErr) {

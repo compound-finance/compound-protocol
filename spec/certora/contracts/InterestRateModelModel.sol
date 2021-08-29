@@ -1,6 +1,5 @@
 pragma solidity ^0.8.6;
 
-import "../../../contracts/Exponential.sol";
 import "../../../contracts/InterestRateModel.sol";
 
 contract InterestRateModelModel is InterestRateModel {

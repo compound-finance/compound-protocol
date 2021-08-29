@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.6;
 
 import "./CTokenInterfaces.sol";
@@ -30,7 +31,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
                 uint8 decimals_,
                 address payable admin_,
                 address implementation_,
-                bytes memory becomeImplementationData) public {
+                bytes memory becomeImplementationData) {
         // Creator of the contract is admin during initialization
         admin = payable(msg.sender);
 

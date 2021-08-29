@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.6;
 
 import "../../contracts/PriceOracle.sol";
@@ -5,7 +6,7 @@ import "../../contracts/PriceOracle.sol";
 contract FixedPriceOracle is PriceOracle {
     uint public price;
 
-    constructor(uint _price) public {
+    constructor(uint _price) {
         price = _price;
     }
 

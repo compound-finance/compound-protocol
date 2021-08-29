@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.6;
 
 import "./FaucetToken.sol";
@@ -20,7 +21,7 @@ contract FeeToken is FaucetToken {
         string memory _tokenSymbol,
         uint _basisPointFee,
         address _owner
-    ) FaucetToken(_initialAmount, _tokenName, _decimalUnits, _tokenSymbol) public {
+    ) FaucetToken(_initialAmount, _tokenName, _decimalUnits, _tokenSymbol) {
         basisPointFee = _basisPointFee;
         owner = _owner;
     }
