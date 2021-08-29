@@ -107,7 +107,7 @@ Test "Realistic Market Scenario"
 	HoldInvariants
 	Borrow Geoff 1000e18 cBAT -- 1000e18 * 0.0015 = 1.5e18 required liquidity
 							  -- But since we're only in ZRX, we only have 1.0e18 liquidity
-	Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION INSUFFICIENT_LIQUIDITY
+	Assert RevertCustomError BorrowComptrollerRejection 4
 	-- Enter cETH and check liquidity
 	EnterMarkets Geoff cETH
 	Assert Equal (Comptroller Liquidity Geoff) 3.0e18 -- Sum of cETH and cZRX liquidity from above
@@ -118,7 +118,7 @@ Test "Realistic Market Scenario"
 	HoldInvariants
 	ExitMarket Geoff cETH
 	Assert Failure REJECTION EXIT_MARKET_REJECTION INSUFFICIENT_LIQUIDITY -- Liquidity check fails
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address cZRX) (Address cBAT) (Address cETH)]
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address cZRX) (Address cETH) (Address cBAT)]
 	-- Repay some borrow and exit market OMG
 	Allow Geoff cBAT
 	RepayBorrow Geoff 500e18 cBAT
