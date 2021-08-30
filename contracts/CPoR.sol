@@ -26,18 +26,16 @@ contract CPoR is CErc20Delegate, CPoRInterface {
         // Get the latest details from the feed
         (,int answer,,uint updatedAt,) = AggregatorV3Interface(feed).latestRoundData();
 
-        // Skip heartbeat check if unset
-        if (heartbeat > 0) {
-            uint oldestAllowed;
-            (mathErr, oldestAllowed) = subUInt(block.timestamp, heartbeat);
-            if (mathErr != MathError.NO_ERROR) {
-                return (fail(Error.MATH_ERROR, FailureInfo.MINT_FEED_INVALID_TIMESTAMP), 0);
-            }
+        uint oldestAllowed;
+        // Use MAX_AGE if heartbeat is not explicitly set
+        (mathErr, oldestAllowed) = subUInt(block.timestamp, heartbeat == 0 ? MAX_AGE : heartbeat);
+        if (mathErr != MathError.NO_ERROR) {
+            return (fail(Error.MATH_ERROR, FailureInfo.MINT_FEED_INVALID_TIMESTAMP), 0);
+        }
 
-            // Check that the feed's answer is updated with the heartbeat
-            if (oldestAllowed > updatedAt) {
-                return (fail(Error.TOKEN_MINT_ERROR, FailureInfo.MINT_FEED_HEARTBEAT_CHECK), 0);
-            }
+        // Check that the feed's answer is updated with the heartbeat
+        if (oldestAllowed > updatedAt) {
+            return (fail(Error.TOKEN_MINT_ERROR, FailureInfo.MINT_FEED_HEARTBEAT_CHECK), 0);
         }
 
         // Get required info
