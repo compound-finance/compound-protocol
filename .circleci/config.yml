@@ -43,7 +43,7 @@ jobs:
       - run:
           shell: /bin/bash -eox pipefail -O globstar
           name: yarn test
-          command: JEST_JUNIT_OUTPUT_DIR=~/junit JEST_JUNIT_OUTPUT_NAME=test-results.xml yarn test $(circleci tests glob 'tests/**/**Test.js' | circleci tests split --split-by=timings)
+          command: NODE_OPTIONS="--max-old-space-size=12228" JEST_JUNIT_OUTPUT_DIR=~/junit JEST_JUNIT_OUTPUT_NAME=test-results.xml yarn test $(circleci tests glob 'tests/**/**Test.js' | circleci tests split --split-by=timings)
       - save_cache:
           paths:
             - .build
@@ -112,7 +112,7 @@ jobs:
           shell: /bin/bash -eox pipefail -O globstar
           name: yarn test
           no_output_timeout: 30m
-          command: JEST_JUNIT_OUTPUT_DIR=~/junit JEST_JUNIT_OUTPUT_NAME=test-results.xml script/coverage $(circleci tests glob 'tests/**/**Test.js' | circleci tests split --split-by=timings) -- --maxWorkers=4
+          command: NODE_OPTIONS="--max-old-space-size=12228" JEST_JUNIT_OUTPUT_DIR=~/junit JEST_JUNIT_OUTPUT_NAME=test-results.xml script/coverage $(circleci tests glob 'tests/**/**Test.js' | circleci tests split --split-by=timings) -- --maxWorkers=4
       - save_cache:
           paths:
             - .build
