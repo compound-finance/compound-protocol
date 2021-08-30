@@ -1087,7 +1087,7 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
 
         uint32 blockNumber = safe32(getBlockNumber(), "block number exceeds 32 bits");
 
-        // compSpeeds -> compBorrowSpeeds & compSupplySpeeds
+        // compSpeeds -> compBorrowSpeeds & compSupplySpeeds t
         for (uint i = 0; i < allMarkets.length; i ++) {
             compBorrowSpeeds[address(allMarkets[i])] = compSupplySpeeds[address(allMarkets[i])] = compSpeeds[address(allMarkets[i])];
             delete compSpeeds[address(allMarkets[i])];
