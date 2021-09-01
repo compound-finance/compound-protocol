@@ -12,6 +12,11 @@ interface CErc20DelegateScenarioMethods extends CTokenScenarioMethods {
   _resignImplementation(): Sendable<void>;
 }
 
+interface CPoRScenarioMethods extends CErc20DelegateScenarioMethods {
+  _setFeed(newFeed: string): Sendable<void>;
+  _setHeartbeat(newHeartbeat: string): Sendable<void>;
+}
+
 export interface CErc20Delegate extends Contract {
   methods: CErc20DelegateMethods;
   name: string;

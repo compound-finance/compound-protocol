@@ -2,6 +2,7 @@ import { Event } from '../Event';
 import { addAction, describeUser, World } from '../World';
 import { decodeCall, getPastEvents } from '../Contract';
 import { CToken, CTokenScenario } from '../Contract/CToken';
+import { CPoR } from '../Contract/CPoR';
 import { CErc20Delegate } from '../Contract/CErc20Delegate'
 import { CErc20Delegator } from '../Contract/CErc20Delegator'
 import { invoke, Sendable } from '../Invokation';
@@ -483,6 +484,30 @@ async function printLiquidity(world: World, cToken: CToken): Promise<World> {
   liquidityMap.forEach(([address, liquidity]) => {
     world.printer.printLine(`\t${world.settings.lookupAlias(address)}: ${liquidity / 1e18}e18`)
   });
+
+  return world;
+}
+
+async function setFeed(world: World, from: string, cToken: CPoR, newFeed: string): Promise<World> {
+  let invokation = await invoke(world, cToken.methods._setFeed(newFeed), from, CTokenErrorReporter);
+
+  world = addAction(
+    world,
+    `Set feed for ${cToken.name} to ${newFeed} as ${describeUser(world, from)}`,
+    invokation
+  );
+
+  return world;
+}
+
+async function setHeartbeat(world: World, from: string, cToken: CPoR, newHeartbeat: number): Promise<World> {
+  let invokation = await invoke(world, cToken.methods._setHeartbeat(newHeartbeat), from, CTokenErrorReporter);
+
+  world = addAction(
+    world,
+    `Set heartbeat for ${cToken.name} to ${newHeartbeat} as ${describeUser(world, from)}`,
+    invokation
+  );
 
   return world;
 }

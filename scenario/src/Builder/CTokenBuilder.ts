@@ -2,6 +2,7 @@ import { Event } from '../Event';
 import { World } from '../World';
 import { CErc20Delegator, CErc20DelegatorScenario } from '../Contract/CErc20Delegator';
 import { CToken } from '../Contract/CToken';
+import { CPoR } from '../Contract/CPoR';
 import { Invokation, invoke } from '../Invokation';
 import { getAddressV, getExpNumberV, getNumberV, getStringV } from '../CoreValue';
 import { AddressV, NumberV, StringV } from '../Value';
@@ -16,6 +17,7 @@ const CEtherContract = getContract('CEther');
 const CErc20ScenarioContract = getTestContract('CErc20Scenario');
 const CEtherScenarioContract = getTestContract('CEtherScenario');
 const CEvilContract = getTestContract('CEvil');
+const CPoRContract = getContract('CPoR');
 
 export interface TokenData {
   invokation: Invokation<CToken>;
@@ -266,6 +268,38 @@ export async function buildCToken(
           decimals: decimals.toNumber(),
           underlying: "",
           contract: 'CEther',
+          initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
+          admin: admin.val
+        };
+      }
+    ),
+
+    new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV, admin: AddressV, underlying: AddressV, comptroller: AddressV, interestRateModel: AddressV, initialExchangeRate: NumberV}, TokenData>(`
+        #### CPoR
+
+        * "CPoR symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A CPoR contract
+          * E.g. "CToken Deploy CPoR cPAXG \"Compound PAXG\" (Erc20 PAXG Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
+      `,
+      "CPoR",
+      [
+        new Arg("symbol", getStringV),
+        new Arg("name", getStringV),
+        new Arg("underlying", getAddressV),
+        new Arg("comptroller", getAddressV),
+        new Arg("interestRateModel", getAddressV),
+        new Arg("initialExchangeRate", getExpNumberV),
+        new Arg("decimals", getNumberV),
+        new Arg("admin", getAddressV)
+      ],
+      async (world, {symbol, name, underlying, comptroller, interestRateModel, initialExchangeRate, decimals, admin}) => {
+
+        return {
+          invokation: await CPoRContract.deploy<CPoR>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
+          name: name.val,
+          symbol: symbol.val,
+          decimals: decimals.toNumber(),
+          underlying: underlying.val,
+          contract: 'CPoR',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
