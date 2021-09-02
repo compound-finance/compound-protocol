@@ -1151,7 +1151,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Sanity check to make sure its really a CToken
-        cToken.isCToken();
+        require(cToken.isCToken(), "marker method returned false");
 
         // Check cToken.comptroller == this
         require(address(cToken.comptroller()) == address(this), "Cannot support a market with a different Comptroller.");
