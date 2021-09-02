@@ -146,7 +146,7 @@ contract CEther is CToken, CEtherInterface {
             return;
         }
 
-        bytes memory fullMessage = new bytes(bytes(message).length + 5);
+        bytes memory fullMessage = new bytes(bytes(message).length + 7);
         uint i;
 
         for (i = 0; i < bytes(message).length; i++) {
