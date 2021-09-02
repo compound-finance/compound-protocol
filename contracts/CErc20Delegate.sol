@@ -81,7 +81,7 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
         require(hasAdminRights(), "only admin may call _setImplementationSafe");
 
         // Set implementation
-        _setImplementationInternal(implementation_, becomeImplementationData);
+        _setImplementationInternal(implementation_, allowResign, becomeImplementationData);
     }
 
     /**
