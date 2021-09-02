@@ -260,7 +260,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @return The borrow interest rate per block, scaled by 1e18
      */
     function borrowRatePerBlock() external view returns (uint) {
-        return interestRateModel.getBorrowRate(getCashPrior(), totalBorrows, totalReserves + totalFuseFees + totalAdminFees);
+        return interestRateModel.getBorrowRate(getCashPrior(), totalBorrows, add_(totalReserves, add_(totalAdminFees, totalFuseFees)));
     }
 
     /**
@@ -268,7 +268,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @return The supply interest rate per block, scaled by 1e18
      */
     function supplyRatePerBlock() external view returns (uint) {
-        return interestRateModel.getSupplyRate(getCashPrior(), totalBorrows, totalReserves + totalFuseFees + totalAdminFees, reserveFactorMantissa + fuseFeeMantissa + adminFeeMantissa);
+        return interestRateModel.getSupplyRate(getCashPrior(), totalBorrows, add_(totalReserves, add_(totalAdminFees, totalFuseFees)), reserveFactorMantissa + fuseFeeMantissa + adminFeeMantissa);
     }
 
     /**
@@ -381,7 +381,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
             Exp memory exchangeRate;
             MathError mathErr;
 
-            (mathErr, cashPlusBorrowsMinusReserves) = addThenSubUInt(totalCash, totalBorrows, totalReserves + totalFuseFees + totalAdminFees);
+            (mathErr, cashPlusBorrowsMinusReserves) = addThenSubUInt(totalCash, totalBorrows, add_(totalReserves, add_(totalAdminFees, totalFuseFees)));
             if (mathErr != MathError.NO_ERROR) {
                 return (mathErr, 0);
             }
@@ -421,7 +421,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         uint cashPrior = getCashPrior();
 
         /* Calculate the current borrow interest rate */
-        uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, totalBorrows, totalReserves + totalFuseFees + totalAdminFees);
+        uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, totalBorrows, add_(totalReserves, add_(totalAdminFees, totalFuseFees)));
         require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
 
         /* Calculate the number of blocks elapsed since the last accrual */
@@ -1197,7 +1197,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         uint newFuseFeeMantissa = getPendingFuseFeeFromAdmin();
 
         // Check reserveFactorMantissa + newAdminFeeMantissa + newFuseFeeMantissa ≤ reserveFactorPlusFeesMaxMantissa
-        if (reserveFactorMantissa + newAdminFeeMantissa + newFuseFeeMantissa > reserveFactorPlusFeesMaxMantissa) {
+        if (add_(add_(reserveFactorMantissa, newAdminFeeMantissa), newFuseFeeMantissa) > reserveFactorPlusFeesMaxMantissa) {
             return fail(Error.BAD_INPUT, FailureInfo.SET_ADMIN_FEE_BOUNDS_CHECK);
         }
 
@@ -1261,7 +1261,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         }
 
         // Check newReserveFactor ≤ maxReserveFactor
-        if (newReserveFactorMantissa + adminFeeMantissa + fuseFeeMantissa > reserveFactorPlusFeesMaxMantissa) {
+        if (add_(add_(newReserveFactorMantissa, adminFeeMantissa), fuseFeeMantissa) > reserveFactorPlusFeesMaxMantissa) {
             return fail(Error.BAD_INPUT, FailureInfo.SET_RESERVE_FACTOR_BOUNDS_CHECK);
         }
 
