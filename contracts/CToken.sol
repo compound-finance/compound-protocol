@@ -159,7 +159,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param amount The number of tokens to transfer
      * @return Whether or not the transfer succeeded
      */
-    function transfer(address dst, uint256 amount) external nonReentrant returns (bool) {
+    function transfer(address dst, uint256 amount) external nonReentrant(false) returns (bool) {
         return transferTokens(msg.sender, msg.sender, dst, amount) == uint(Error.NO_ERROR);
     }
 
@@ -170,7 +170,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param amount The number of tokens to transfer
      * @return Whether or not the transfer succeeded
      */
-    function transferFrom(address src, address dst, uint256 amount) external nonReentrant returns (bool) {
+    function transferFrom(address src, address dst, uint256 amount) external nonReentrant(false) returns (bool) {
         return transferTokens(msg.sender, src, dst, amount) == uint(Error.NO_ERROR);
     }
 
@@ -275,7 +275,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @notice Returns the current total borrows plus accrued interest
      * @return The total borrows with interest
      */
-    function totalBorrowsCurrent() external nonReentrant returns (uint) {
+    function totalBorrowsCurrent() external nonReentrant(false) returns (uint) {
         require(accrueInterest() == uint(Error.NO_ERROR), "accrue interest failed");
         return totalBorrows;
     }
@@ -285,7 +285,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param account The address whose balance should be calculated after updating borrowIndex
      * @return The calculated balance
      */
-    function borrowBalanceCurrent(address account) external nonReentrant returns (uint) {
+    function borrowBalanceCurrent(address account) external nonReentrant(false) returns (uint) {
         require(accrueInterest() == uint(Error.NO_ERROR), "accrue interest failed");
         return borrowBalanceStored(account);
     }
@@ -342,7 +342,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @notice Accrue interest then return the up-to-date exchange rate
      * @return Calculated exchange rate scaled by 1e18
      */
-    function exchangeRateCurrent() public nonReentrant returns (uint) {
+    function exchangeRateCurrent() public nonReentrant(false) returns (uint) {
         require(accrueInterest() == uint(Error.NO_ERROR), "accrue interest failed");
         return exchangeRateStored();
     }
@@ -475,7 +475,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param mintAmount The amount of the underlying asset to supply
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual mint amount.
      */
-    function mintInternal(uint mintAmount) internal nonReentrant returns (uint, uint) {
+    function mintInternal(uint mintAmount) internal nonReentrant(false) returns (uint, uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
@@ -579,7 +579,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param redeemTokens The number of cTokens to redeem into underlying
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function redeemInternal(uint redeemTokens) internal nonReentrant returns (uint) {
+    function redeemInternal(uint redeemTokens) internal nonReentrant(false) returns (uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted redeem failed
@@ -595,7 +595,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param redeemAmount The amount of underlying to receive from redeeming cTokens
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function redeemUnderlyingInternal(uint redeemAmount) internal nonReentrant returns (uint) {
+    function redeemUnderlyingInternal(uint redeemAmount) internal nonReentrant(false) returns (uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted redeem failed
@@ -724,7 +724,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
       * @param borrowAmount The amount of the underlying asset to borrow
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function borrowInternal(uint borrowAmount) internal nonReentrant returns (uint) {
+    function borrowInternal(uint borrowAmount) internal nonReentrant(false) returns (uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
@@ -825,7 +825,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param repayAmount The amount to repay
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
      */
-    function repayBorrowInternal(uint repayAmount) internal nonReentrant returns (uint, uint) {
+    function repayBorrowInternal(uint repayAmount) internal nonReentrant(false) returns (uint, uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
@@ -841,7 +841,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param repayAmount The amount to repay
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
      */
-    function repayBorrowBehalfInternal(address borrower, uint repayAmount) internal nonReentrant returns (uint, uint) {
+    function repayBorrowBehalfInternal(address borrower, uint repayAmount) internal nonReentrant(false) returns (uint, uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
@@ -946,7 +946,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param repayAmount The amount of the underlying borrowed asset to repay
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
      */
-    function liquidateBorrowInternal(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) internal nonReentrant returns (uint, uint) {
+    function liquidateBorrowInternal(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) internal nonReentrant(false) returns (uint, uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted liquidation failed
@@ -1052,7 +1052,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param seizeTokens The number of cTokens to seize
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function seize(address liquidator, address borrower, uint seizeTokens) external nonReentrant returns (uint) {
+    function seize(address liquidator, address borrower, uint seizeTokens) external nonReentrant(true) returns (uint) {
         return seizeInternal(msg.sender, liquidator, borrower, seizeTokens);
     }
 
@@ -1167,7 +1167,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
       * @dev Admin function to accrue interest and set a new admin fee
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _setAdminFee(uint newAdminFeeMantissa) external nonReentrant returns (uint) {
+    function _setAdminFee(uint newAdminFeeMantissa) external nonReentrant(false) returns (uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but on top of that we want to log the fact that an attempted admin fee change failed.
@@ -1232,7 +1232,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
       * @dev Admin function to accrue interest and set a new reserve factor
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _setReserveFactor(uint newReserveFactorMantissa) external nonReentrant returns (uint) {
+    function _setReserveFactor(uint newReserveFactorMantissa) external nonReentrant(false) returns (uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but on top of that we want to log the fact that an attempted reserve factor change failed.
@@ -1276,7 +1276,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param reduceAmount Amount of reduction to reserves
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _reduceReserves(uint reduceAmount) external nonReentrant returns (uint) {
+    function _reduceReserves(uint reduceAmount) external nonReentrant(false) returns (uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but on top of that we want to log the fact that an attempted reduce reserves failed.
@@ -1339,7 +1339,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param withdrawAmount Amount of fees to withdraw
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _withdrawFuseFees(uint withdrawAmount) external nonReentrant returns (uint) {
+    function _withdrawFuseFees(uint withdrawAmount) external nonReentrant(false) returns (uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but on top of that we want to log the fact that an attempted Fuse fee withdrawal failed.
@@ -1395,7 +1395,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @param withdrawAmount Amount of fees to withdraw
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _withdrawAdminFees(uint withdrawAmount) external nonReentrant returns (uint) {
+    function _withdrawAdminFees(uint withdrawAmount) external nonReentrant(false) returns (uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but on top of that we want to log the fact that an attempted admin fee withdrawal failed.
@@ -1541,10 +1541,10 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
     /**
      * @dev Prevents a contract from calling itself, directly or indirectly.
      */
-    modifier nonReentrant() {
-        _beforeNonReentrant();
+    modifier nonReentrant(bool localOnly) {
+        _beforeNonReentrant(localOnly);
         _;
-        _afterNonReentrant();
+        _afterNonReentrant(localOnly);
     }
 
     /**
@@ -1552,8 +1552,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * Saves space because function modifier code is "inlined" into every function with the modifier).
      * In this specific case, the optimization saves around 1500 bytes of that valuable 24 KB limit.
      */
-    function _beforeNonReentrant() private {
+    function _beforeNonReentrant(bool localOnly) private {
         require(_notEntered, "re-entered");
+        if (!localOnly) comptroller._beforeNonReentrant();
         _notEntered = false;
     }
 
@@ -1562,8 +1563,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * Saves space because function modifier code is "inlined" into every function with the modifier).
      * In this specific case, the optimization saves around 150 bytes of that valuable 24 KB limit.
      */
-    function _afterNonReentrant() private {
+    function _afterNonReentrant(bool localOnly) private {
         _notEntered = true; // get a gas-refund post-Istanbul
+        if (!localOnly) comptroller._afterNonReentrant();
     }
 
     /**

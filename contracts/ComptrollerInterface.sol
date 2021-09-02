@@ -70,4 +70,9 @@ contract ComptrollerInterface {
         address cTokenBorrowed,
         address cTokenCollateral,
         uint repayAmount) external view returns (uint, uint);
+    
+    /*** Pool-Wide/Cross-Asset Reentrancy Prevention ***/
+
+    function _beforeNonReentrant() external;
+    function _afterNonReentrant() external;
 }

@@ -167,4 +167,7 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
 
     /// @notice RewardsDistributor contracts to notify of flywheel changes.
     address[] public rewardsDistributors;
+
+    /// @dev Guard variable for pool-wide/cross-asset re-entrancy checks
+    bool internal _notEntered;
 }

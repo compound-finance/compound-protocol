@@ -1434,4 +1434,23 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             cToken.reserveFactorMantissa() == 1e18
         ;
     }
+
+    /**
+     * @dev Called by cTokens before a non-reentrant function for pool-wide reentrancy prevention.
+     * Prevents pool-wide/cross-asset reentrancy exploits like AMP on Cream.
+     */
+    function _beforeNonReentrant() external {
+        require(markets[msg.sender].isListed, "Comptroller:_beforeNonReentrant: caller not listed as market");
+        require(_notEntered, "re-entered across assets");
+        _notEntered = false;
+    }
+
+    /**
+     * @dev Called by cTokens after a non-reentrant function for pool-wide reentrancy prevention.
+     * Prevents pool-wide/cross-asset reentrancy exploits like AMP on Cream.
+     */
+    function _afterNonReentrant() external {
+        require(markets[msg.sender].isListed, "Comptroller:_afterNonReentrant: caller not listed as market");
+        _notEntered = true; // get a gas-refund post-Istanbul
+    }
 }
