@@ -27,9 +27,10 @@ contract CDaiDelegate is CErc20Delegate {
      * @notice Delegate interface to become the implementation
      * @param data The encoded arguments for becoming
      */
-    function _becomeImplementation(bytes memory data) public {
-        require(hasAdminRights(), "only the admin may initialize the implementation");
+    function _becomeImplementation(bytes calldata data) external {
+        require(msg.sender == address(this) || hasAdminRights(), "only self or admin may call _becomeImplementation");
 
+        // Decode data
         (address daiJoinAddress_, address potAddress_) = abi.decode(data, (address, address));
         return _becomeImplementation(daiJoinAddress_, potAddress_);
     }
@@ -69,9 +70,7 @@ contract CDaiDelegate is CErc20Delegate {
     /**
      * @notice Delegate interface to resign the implementation
      */
-    function _resignImplementation() public {
-        require(hasAdminRights(), "only the admin may abandon the implementation");
-
+    function _resignImplementation() internal {
         // Transfer all cash out of the DSR - note that this relies on self-transfer
         DaiJoinLike daiJoin = DaiJoinLike(daiJoinAddress);
         PotLike pot = PotLike(potAddress);

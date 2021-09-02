@@ -17,7 +17,7 @@ contract CEtherDelegate is CDelegateInterface, CEther {
      * @notice Called by the delegator on a delegate to initialize it for duty
      * @param data The encoded bytes data for any initialization
      */
-    function _becomeImplementation(bytes memory data) public {
+    function _becomeImplementation(bytes calldata data) external {
         // Shh -- currently unused
         data;
 
@@ -35,13 +35,11 @@ contract CEtherDelegate is CDelegateInterface, CEther {
     /**
      * @notice Called by the delegator on a delegate to forfeit its responsibility
      */
-    function _resignImplementation() public {
+    function _resignImplementation() internal {
         // Shh -- we don't ever want this hook to be marked pure
         if (false) {
             implementation = address(0);
         }
-
-        require(msg.sender == address(this) || hasAdminRights(), "only self or admin may call _resignImplementation");
     }
 
     /**

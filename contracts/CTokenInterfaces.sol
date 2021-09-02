@@ -338,10 +338,11 @@ contract CDelegateInterface is CDelegationStorage {
      * @dev Should revert if any issues arise which make it unfit for delegation
      * @param data The encoded bytes data for any initialization
      */
-    function _becomeImplementation(bytes memory data) public;
+    function _becomeImplementation(bytes calldata data) external;
 
     /**
-     * @notice Called by the delegator on a delegate to forfeit its responsibility
+     * @notice Function called before all delegator functions
+     * @dev Checks comptroller.autoImplementation and upgrades the implementation if necessary
      */
-    function _resignImplementation() public;
+    function _prepare() external;
 }
