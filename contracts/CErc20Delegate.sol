@@ -29,7 +29,9 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
         require(msg.sender == address(this) || hasAdminRights(), "only self or admin may call _becomeImplementation");
 
         // Make sure admin storage is set up correctly
-        _updateLegacyOwnership();
+        __admin = address(0);
+        __adminHasRights = false;
+        __fuseAdminHasRights = false;
     }
 
     /**
@@ -43,24 +45,14 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
     }
 
     /**
-     * @notice updates the legacy ownership data (admin, adminHasRights, fuseAdminHasRights)
-     */
-    function _updateLegacyOwnership() public {
-        ComptrollerV3Storage comptrollerStorage = ComptrollerV3Storage(address(comptroller));
-        __admin = address(uint160(comptrollerStorage.admin()));
-        __adminHasRights = comptrollerStorage.adminHasRights();
-        __fuseAdminHasRights = comptrollerStorage.fuseAdminHasRights();
-    }
-
-    /**
      * @dev Internal function to update the implementation of the delegator
      * @param implementation_ The address of the new implementation for delegation
      * @param allowResign Flag to indicate whether to call _resignImplementation on the old implementation
      * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
      */
-    function __setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) internal {
+    function _setImplementationInternal(address implementation_, bool allowResign, bytes memory becomeImplementationData) internal {
         // Check whitelist
-        require(fuseAdmin.cErc20DelegateWhitelist(implementation, implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
+        require(fuseAdmin.cErc20DelegateWhitelist(implementation, implementation_, allowResign), "new implementation not whitelisted or allowResign must be inverted");
 
         // Call _resignImplementation internally (this delegate's code)
         if (allowResign) _resignImplementation();
@@ -84,12 +76,12 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
      * @param allowResign Flag to indicate whether to call _resignImplementation on the old implementation
      * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
      */
-    function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public {
+    function _setImplementationSafe(address implementation_, bool allowResign, bytes calldata becomeImplementationData) external {
         // Check admin rights
-        require(hasAdminRights(), "only admin may call _setImplementation");
+        require(hasAdminRights(), "only admin may call _setImplementationSafe");
 
         // Set implementation
-        __setImplementation(implementation_, allowResign, becomeImplementationData);
+        _setImplementationInternal(implementation_, becomeImplementationData);
     }
 
     /**
@@ -99,7 +91,7 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
     function _prepare() external {
         if (msg.sender != address(this) && ComptrollerV3Storage(address(comptroller)).autoImplementation()) {
             (address latestCErc20Delegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCErc20Delegate(implementation);
-            if (implementation != latestCErc20Delegate) __setImplementation(latestCErc20Delegate, allowResign, becomeImplementationData);
+            if (implementation != latestCErc20Delegate) _setImplementationInternal(latestCErc20Delegate, allowResign, becomeImplementationData);
         }
     }
 }

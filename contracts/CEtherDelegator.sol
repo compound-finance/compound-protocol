@@ -36,7 +36,7 @@ contract CEtherDelegator is CDelegationStorage {
                                                             adminFeeMantissa_));
 
         // New implementations always get set via the settor (post-initialize)
-        delegateTo(implementation_, abi.encodeWithSignature("_setImplementation(address,bool,bytes)", implementation_, false, becomeImplementationData));
+        delegateTo(implementation_, abi.encodeWithSignature("_setImplementationSafe(address,bool,bytes)", implementation_, false, becomeImplementationData));
     }
 
     /**
