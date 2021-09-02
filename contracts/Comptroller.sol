@@ -13,6 +13,7 @@ import "./RewardsDistributor.sol";
 /**
  * @title Compound's Comptroller Contract
  * @author Compound
+ * @dev This contract should not to be deployed alone; instead, deploy `Unitroller` (proxy contract) on top of this `Comptroller` (logic/implementation contract).
  */
 contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerErrorReporter, Exponential {
     /// @notice Emitted when an admin supports a market
