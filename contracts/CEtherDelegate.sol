@@ -62,8 +62,8 @@ contract CEtherDelegate is CDelegateInterface, CEther {
         // Check whitelist
         require(fuseAdmin.cEtherDelegateWhitelist(implementation, implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
 
-        // Delegate _resignImplementation
-        if (allowResign) this._resignImplementation();
+        // Call _resignImplementation internally (this delegate's code)
+        if (allowResign) _resignImplementation();
 
         // Get old implementation
         address oldImplementation = implementation;

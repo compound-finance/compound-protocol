@@ -62,8 +62,8 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
         // Check whitelist
         require(fuseAdmin.cErc20DelegateWhitelist(implementation, implementation_, allowResign), "New implementation contract address not whitelisted or allowResign must be inverted.");
 
-        // Delegate _resignImplementation
-        if (allowResign) this._resignImplementation();
+        // Call _resignImplementation internally (this delegate's code)
+        if (allowResign) _resignImplementation();
 
         // Get old implementation
         address oldImplementation = implementation;
