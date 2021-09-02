@@ -81,10 +81,6 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     // liquidationIncentiveMantissa must be no greater than this value
     uint internal constant liquidationIncentiveMaxMantissa = 1.5e18; // 1.5
 
-    constructor() public {
-        admin = msg.sender;
-    }
-
     /*** Assets You Are In ***/
 
     /**
