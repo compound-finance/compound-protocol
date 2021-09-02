@@ -166,24 +166,8 @@ contract CErc20 is CToken, CErc20Interface {
      * @param data The call data (encoded using abi.encode or one of its variants).
      * @param errorMessage The revert string to return on failure.
      */
-    function _callOptionalReturn(bytes memory data, string memory errorMessage) private {
-        (bool success, bytes memory returndata) = underlying.call(data);
-
-        if (!success) {
-            // Look for revert reason and bubble it up if present
-            if (returndata.length > 0) {
-                // The easiest way to bubble the revert reason is using memory via assembly
-
-                // solhint-disable-next-line no-inline-assembly
-                assembly {
-                    let returndata_size := mload(returndata)
-                    revert(add(32, returndata), returndata_size)
-                }
-            } else {
-                revert(errorMessage);
-            }
-        }
-
+    function _callOptionalReturn(bytes memory data, string memory errorMessage) internal {
+        bytes memory returndata = _functionCall(underlying, data, errorMessage);
         if (returndata.length > 0) require(abi.decode(returndata, (bool)), errorMessage);
     }
 
