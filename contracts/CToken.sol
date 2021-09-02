@@ -431,6 +431,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         return finishInterestAccrual(currentBlockNumber, cashPrior, borrowRateMantissa, blockDelta);
     }
 
+    /**
+     * @dev Split off from `accrueInterest` to avoid "stack too deep" error".
+     */
     function finishInterestAccrual(uint currentBlockNumber, uint cashPrior, uint borrowRateMantissa, uint blockDelta) private returns (uint) {
         /*
          * Calculate the interest accumulated into borrows and reserves and the new index:
@@ -465,6 +468,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
 
         /* We emit an AccrueInterest event */
         emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
+
+        // Attempt to add interest checkpoint
+        address(interestRateModel).call(abi.encodeWithSignature("checkpointInterest(uint256)", borrowRateMantissa));
 
         return uint(Error.NO_ERROR);
     }
@@ -1493,6 +1499,12 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
 
         // Emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel)
         emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel);
+
+        // Attempt to reset interest checkpoints on old IRM
+        if (address(oldInterestRateModel) != address(0)) address(oldInterestRateModel).call(abi.encodeWithSignature("resetInterestCheckpoints()"));
+
+        // Attempt to add first interest checkpoint on new IRM
+        address(newInterestRateModel).call(abi.encodeWithSignature("checkpointInterest()"));
 
         return uint(Error.NO_ERROR);
     }
