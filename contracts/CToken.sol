@@ -555,11 +555,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
          *  totalSupplyNew = totalSupply + mintTokens
          *  accountTokensNew = accountTokens[minter] + mintTokens
          */
-        (vars.mathErr, vars.totalSupplyNew) = addUInt(totalSupply, vars.mintTokens);
-        require(vars.mathErr == MathError.NO_ERROR, "MINT_NEW_TOTAL_SUPPLY_CALCULATION_FAILED");
+        vars.totalSupplyNew = add_(totalSupply, vars.mintTokens);
 
-        (vars.mathErr, vars.accountTokensNew) = addUInt(accountTokens[minter], vars.mintTokens);
-        require(vars.mathErr == MathError.NO_ERROR, "MINT_NEW_ACCOUNT_BALANCE_CALCULATION_FAILED");
+        vars.accountTokensNew = add_(accountTokens[minter], vars.mintTokens);
 
         /* We write previously calculated values into storage */
         totalSupply = vars.totalSupplyNew;
@@ -1322,9 +1320,8 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         // EFFECTS & INTERACTIONS
         // (No safe failures beyond this point)
 
-        totalReservesNew = totalReserves - reduceAmount;
         // We checked reduceAmount <= totalReserves above, so this should never revert.
-        require(totalReservesNew <= totalReserves, "reduce reserves unexpected underflow");
+        totalReservesNew = sub_(totalReserves, reduceAmount);
 
         // Store reserves[n+1] = reserves[n] - reduceAmount
         totalReserves = totalReservesNew;
@@ -1381,9 +1378,8 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         // EFFECTS & INTERACTIONS
         // (No safe failures beyond this point)
 
-        totalFuseFeesNew = totalFuseFees - withdrawAmount;
         // We checked withdrawAmount <= totalFuseFees above, so this should never revert.
-        require(totalFuseFeesNew <= totalFuseFees, "withdraw Fuse fees unexpected underflow");
+        totalFuseFeesNew = sub_(totalFuseFees, withdrawAmount);
 
         // Store fuseFees[n+1] = fuseFees[n] - withdrawAmount
         totalFuseFees = totalFuseFeesNew;
@@ -1438,9 +1434,8 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         // EFFECTS & INTERACTIONS
         // (No safe failures beyond this point)
 
-        totalAdminFeesNew = totalAdminFees - withdrawAmount;
         // We checked withdrawAmount <= totalAdminFees above, so this should never revert.
-        require(totalAdminFeesNew <= totalAdminFees, "withdraw admin fees unexpected underflow");
+        totalAdminFeesNew = sub_(totalAdminFees, withdrawAmount);
 
         // Store adminFees[n+1] = adminFees[n] - withdrawAmount
         totalAdminFees = totalAdminFeesNew;
