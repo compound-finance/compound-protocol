@@ -1,0 +1,58 @@
+-- NewComptroller, but with markets listed so that we can make them comp markets in constructor
+Macro FlywheelComptroller price=1.0 borrowRate=0.000005 compInitAmount=5000000e18
+    Unitroller Deploy
+    PriceOracle Deploy Fixed price
+    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero)
+    ComptrollerImpl Deploy Scenario ComptrollerScen
+    Unitroller SetPendingImpl ComptrollerScen
+    ComptrollerImpl ComptrollerScen Become
+    --list some tokens
+    Comptroller SetPriceOracle (PriceOracleProxy Address)
+    Comptroller SetCloseFactor 0.5
+    Comptroller LiquidationIncentive 1.1
+    NewCToken ZRX cZRX
+    NewCToken BAT cBAT
+    Support cZRX collateralFactor:0.5
+    Support cBAT collateralFactor:0.5
+    Erc20 Deploy Standard COMP "COMP Token" 18
+    Give (Address Comptroller) compInitAmount COMP
+    Comptroller Send "setCompAddress(address)" (Address COMP)
+
+Macro InitUsage
+    Prep Geoff 100e18 ZRX cZRX
+    Mint Geoff 50e18 cZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
+    Prep Coburn Some BAT cBAT
+    Mint Coburn 6e18 cBAT--tokenbalance = 6e18 / 2e9 = 3e9
+    EnterMarkets Coburn cBAT
+    Borrow Coburn 1e18 cZRX
+
+Test "Accrue supplier COMP during a mint"
+    FlywheelComptroller
+    InitUsage
+    Comptroller SetCompSpeeds (cZRX) (0.01e18) (0)
+    Assert Equal (Comptroller CompSupplyState cZRX "index") 1000000000000000000000000000000000000
+    FastForward 300000 Blocks
+    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Mint Geoff 1e18 cZRX
+    Assert Equal (Comptroller CompAccrued Geoff) 3000e18 -- 0.01e18 * 300,000
+    Assert Equal (Comptroller CompSupplyState cZRX "index") 120000000001000000000000000000000000000000000000
+    Assert Equal (Comptroller CompSupplyState cZRX "block") 300000
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 0
+    Comptroller ClaimComp Geoff
+    Assert Equal (Erc20 COMP TokenBalance Geoff) (3000e18)
+
+Test "Accrue borrower COMP during a borrow"
+    FlywheelComptroller
+    InitUsage
+    Comptroller SetCompSpeeds (cZRX) (0.01e18) (0.01e18)
+    Assert Equal (Comptroller CompBorrowState cZRX "index") 1000000000000000000000000000000000000
+    FastForward 300000 Blocks
+    Assert Equal (Comptroller CompAccrued Coburn) 0
+    Assert Equal (Comptroller CompBorrowerIndex cZRX Coburn) 1000000000000000000000000000000000000
+    Borrow Coburn 0.1e18 cZRX
+    Assert Equal (Comptroller CompAccrued Coburn) (3000e18)
+    Comptroller ClaimComp Coburn
+    Assert Equal (Comptroller CompBorrowState cZRX "index") 3.001e39
+    Assert Equal (Comptroller CompBorrowState cZRX "block") 300000
+    Assert Equal (Erc20 COMP TokenBalance Coburn) (3000e18)
+    Assert Equal (Comptroller CompBorrowerIndex cZRX Coburn) (3.001e39)
