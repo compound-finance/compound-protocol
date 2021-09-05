@@ -162,10 +162,10 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         if(msg.sender != proposal.proposer) {
             // Whitelisted proposers can't be canceled for falling below proposal threshold
             if(isWhitelisted(proposal.proposer)) {
-                require(comp.getPriorVotes(proposal.proposer, sub256(block.number, 1) < proposalThreshold) && msg.sender == whitelistGuardian, "GovernorBravo::cancel: whitelisted proposer");
+                require((comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold) && msg.sender == whitelistGuardian, "GovernorBravo::cancel: whitelisted proposer");
             }
             else {
-                require(comp.getPriorVotes(proposal.proposer, sub256(block.number, 1) < proposalThreshold), "GovernorBravo::cancel: proposer above threshold");
+                require((comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold), "GovernorBravo::cancel: proposer above threshold");
             }
         }
         
