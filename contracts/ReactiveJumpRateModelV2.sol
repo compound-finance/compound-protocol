@@ -91,35 +91,39 @@ contract ReactiveJumpRateModelV2 is InterestRateModel, BaseJumpRateModelV2 {
             if (interestCheckpoints[interestCheckpointCount > INTEREST_CHECKPOINT_BUFFER ? interestCheckpointCount % INTEREST_CHECKPOINT_BUFFER : 0].blockNumber > blockNumberSixDaysAgo) return;
 
             // Check interest checkpoints (assuming earliest checkpoint is at least 6 days old)
-            InterestCheckpoint memory checkpointRoughlyOneWeekAgo;
+            InterestCheckpoint memory interestCheckpoint;
+            bool checkpointNotOld = false;
+            uint256 i;
 
             // Start looping from the oldest checkpoint
-            for (uint256 i = interestCheckpointCount > INTEREST_CHECKPOINT_BUFFER ? interestCheckpointCount - INTEREST_CHECKPOINT_BUFFER : 0; i < interestCheckpointCount; i++) {
-                InterestCheckpoint memory checkpointCandidate = interestCheckpoints[i % INTEREST_CHECKPOINT_BUFFER];
+            for (i = interestCheckpointCount > INTEREST_CHECKPOINT_BUFFER ? interestCheckpointCount - INTEREST_CHECKPOINT_BUFFER : 0; i < interestCheckpointCount; i++) {
+                interestCheckpoint = interestCheckpoints[i % INTEREST_CHECKPOINT_BUFFER];
 
                 // If we can find a checkpoint within 1 day of a week ago (i.e., 6 to 8 days ago), use it
-                if (checkpointCandidate.blockNumber >= accrualBlockNumber.sub(6500 * 8) && checkpointCandidate.blockNumber <= blockNumberSixDaysAgo) {
-                    checkpointRoughlyOneWeekAgo = checkpointCandidate;
+                if (interestCheckpoint.blockNumber >= accrualBlockNumber.sub(6500 * 8) && interestCheckpoint.blockNumber <= blockNumberSixDaysAgo) {
+                    checkpointNotOld = true;
                     break;
                 }
 
-                // If we have looped too far (newer than 6 days ago), find the interest rate at 7 days (using the previous checkpoint, which must be at least 8 days old given the above conditions)
-                if (checkpointCandidate.blockNumber > blockNumberSixDaysAgo) {
-                    checkpointCandidate = interestCheckpoints[(i - 1) % INTEREST_CHECKPOINT_BUFFER];
-                    uint blockNumberOneWeekAgo = accrualBlockNumber.sub(6500 * 7);
-                    uint blockDelta = blockNumberOneWeekAgo.sub(checkpointCandidate.blockNumber);
-                    uint simpleInterestFactor = checkpointCandidate.borrowRateMantissa.mul(blockDelta);
-                    checkpointRoughlyOneWeekAgo = InterestCheckpoint(blockNumberOneWeekAgo, borrowIndex.add(borrowIndex.mul(simpleInterestFactor).div(1e18)), checkpointCandidate.borrowRateMantissa);
-                    break;
-                }
+                // If we have looped too far (newer than 6 days ago), break so we use the previous (old) checkpoint
+                if (interestCheckpoint.blockNumber > blockNumberSixDaysAgo) break;
+            }
+
+            // If previous checkpoint is old (because either the loop ended or we broke the loop), find the interest rate at 7 days (using the previous checkpoint, which must be at least 8 days old given the above conditions)
+            if (!checkpointNotOld) {
+                interestCheckpoint = interestCheckpoints[(i - 1) % INTEREST_CHECKPOINT_BUFFER];
+                uint blockNumberOneWeekAgo = accrualBlockNumber.sub(6500 * 7);
+                uint blockDelta = blockNumberOneWeekAgo.sub(interestCheckpoint.blockNumber);
+                uint simpleInterestFactor = interestCheckpoint.borrowRateMantissa.mul(blockDelta);
+                interestCheckpoint = InterestCheckpoint(blockNumberOneWeekAgo, borrowIndex.add(borrowIndex.mul(simpleInterestFactor).div(1e18)), interestCheckpoint.borrowRateMantissa);
             }
 
             // Get average borrow rate per block over the last (roughly) one week
-            uint avgBorrowRateLastWeek = borrowIndex.mul(1e18).div(checkpointRoughlyOneWeekAgo.borrowIndex).div(1e18);
+            uint avgBorrowRateLastWeek = borrowIndex.mul(1e18).div(interestCheckpoint.borrowIndex).sub(1e18);
             uint avgBorrowRatePerBlock = avgBorrowRateLastWeek.div(6500 * 7);
 
             // Get ideal JumpRateModel multiplierPerBlock param
-            uint idealMultiplierPerBlock = avgBorrowRatePerBlock.sub(baseRatePerBlock).mul(1e18).div(kink.sub(0.05e18));
+            uint idealMultiplierPerBlock = avgBorrowRatePerBlock < baseRatePerBlock ? 0 : avgBorrowRatePerBlock.sub(baseRatePerBlock).mul(1e18).div(kink.sub(0.05e18));
 
             // Only reset params if idealMultiplierPerBlock differs from currentMultiplierPerBlock by >= 5%
             uint256 ratio = idealMultiplierPerBlock.mul(1e18).div(multiplierPerBlock);
