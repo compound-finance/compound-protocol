@@ -1,0 +1,68 @@
+
+Macro InitSpeedsOld
+    Prep Geoff 100e18 ZRX cZRX
+    Mint Geoff 50e18 cZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
+    Prep Coburn 100e18 BAT cBAT
+    Mint Coburn 50e18 cBAT--tokenbalance = 6e18 / 2e9 = 3e9
+    EnterMarkets Coburn cBAT
+
+Macro PreSplitComptroller
+    Unitroller Deploy
+    PriceOracle Deploy Fixed 1.0
+    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero)
+    -- Deploy Comptroller
+    ComptrollerImpl Deploy ScenarioG8 ScenComptrollerG8
+    Unitroller SetPendingImpl ScenComptrollerG8
+    ComptrollerImpl ScenComptrollerG8 BecomeG6--simply "become" with no arguments
+    -- Configure Comptroller
+    Comptroller SetPriceOracle (PriceOracleProxy Address)
+    Comptroller SetCloseFactor 0.5
+    Comptroller LiquidationIncentive 1.1
+    -- Add markets
+    NewCToken ZRX cZRX
+    NewCToken BAT cBAT
+    Support cZRX collateralFactor:0.5
+    Support cBAT collateralFactor:0.5
+    -- Setup COMP token
+    Erc20 Deploy Standard COMP "COMP Token" 18
+    Give (Address Comptroller) 5000000e18 COMP
+    Comptroller Send "setCompAddress(address)" (Address COMP)
+
+  -- borrow before upgrade set
+  -- another one borrows after speed set
+  -- set speed
+  -- wait 
+  -- both claim
+Only "Claim COMP works across upgrade"
+    PreSplitComptroller
+    InitSpeedsOld
+    -- new token with no speed
+    NewCToken YFI cYFI
+    Support cYFI collateralFactor:0.5
+    Prep Torrey 100e18 YFI cYFI -- will mint right before
+    Mint Torrey 10e18 cYFI
+    Prep Jared 100e18 YFI cYFI -- will mint right after
+    Borrow Coburn 10e18 cYFI -- will borrow right before
+    EnterMarkets Geoff cZRX -- will borrow right after
+    --upgrade
+    ComptrollerImpl Deploy Scenario Latest
+    Unitroller SetPendingImpl Latest
+    ComptrollerImpl Latest Become
+    Comptroller SetCompSpeeds (cYFI) (2) (2)
+    Mint Jared 10e18 cYFI
+    Borrow Geoff 10e18 cYFI
+    Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) 0 
+    Asset Equal (Comptroller CompBorrowerIndex cYFI Geoff) 1e36
+    FastForward 1000 blocks
+    Comptroller ClaimComp Jared
+    Comptroller ClaimComp Torrey
+    Comptroller ClaimComp Geoff
+    Comptroller ClaimComp Coburn -- note coburn borrowed before geoff
+    Assert Equal (Erc20 COMP TokenBalance Coburn) 0
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 1000
+    Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) (Comptroller CompBorrowerIndex cYFI Geoff)  -- Coburn fully missed distrubution until an action
+    Assert (Erc20 COMP TokenBalance Geoff) GreaterThan (Erc20 COMP TokenBalance Coburn)
+    Assert Equal (Erc20 COMP TokenBalance Jared) (Erc20 COMP TokenBalance Torrey) -- suppliers are correctly initialized
+    Comptroller ClaimComp Coburn
+    Assert Equal (Erc20 COMP TokenBalance Geoff) (Erc20 COMP TokenBalance Coburn)
+ 
