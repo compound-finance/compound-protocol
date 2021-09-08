@@ -1,0 +1,201 @@
+
+Macro InitSpeedsOld
+    Comptroller SetCompSpeed cZRX (1)
+    Comptroller SetCompSpeed cBAT (1)
+    Prep Geoff 100e18 ZRX cZRX
+    Mint Geoff 50e18 cZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
+    Prep Coburn 100e18 BAT cBAT
+    Mint Coburn 50e18 cBAT--tokenbalance = 6e18 / 2e9 = 3e9
+    EnterMarkets Coburn cBAT
+    Prep Tyler 100e18 BAT cBAT
+    Mint Tyler 50e18 cBAT--tokenbalance = 6e18 / 2e9 = 3e9
+    EnterMarkets Tyler cBAT
+    Prep Gaston 100e18 BAT cBAT
+    Mint Gaston 50e18 cBAT--tokenbalance = 6e18 / 2e9 = 3e9
+    EnterMarkets Gaston cBAT
+    Prep Felix 100e18 BAT cBAT
+    Mint Felix 50e18 cBAT--tokenbalance = 6e18 / 2e9 = 3e9
+    EnterMarkets Felix cBAT
+
+Macro PreSplitComptroller
+    Unitroller Deploy
+    PriceOracle Deploy Fixed 1.0
+    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero)
+    -- Deploy Comptroller
+    ComptrollerImpl Deploy ScenarioG8 ScenComptrollerG8
+    Unitroller SetPendingImpl ScenComptrollerG8
+    ComptrollerImpl ScenComptrollerG8 BecomeG6--simply "become" with no arguments
+    -- Configure Comptroller
+    Comptroller SetPriceOracle (PriceOracleProxy Address)
+    Comptroller SetCloseFactor 0.5
+    Comptroller LiquidationIncentive 1.1
+    -- Add markets
+    NewCToken ZRX cZRX
+    NewCToken BAT cBAT
+    Support cZRX collateralFactor:0.5
+    Support cBAT collateralFactor:0.5
+    -- Setup COMP token
+    Erc20 Deploy Standard COMP "COMP Token" 18
+    Give (Address Comptroller) 5000000e18 COMP
+    Comptroller Send "setCompAddress(address)" (Address COMP)
+
+Macro SwitchToG9_TheBug
+    ComptrollerImpl Deploy ScenarioG9 ScenComptrollerG9
+    Unitroller SetPendingImpl ScenComptrollerG9
+    ComptrollerImpl ScenComptrollerG9 Become
+
+Macro SwitchToG10_Reverty
+    ComptrollerImpl Deploy ScenarioG10 ScenComptrollerG10
+    Unitroller SetPendingImpl ScenComptrollerG10
+    ComptrollerImpl ScenComptrollerG10 Become
+
+Macro SwitchToLatestComptroller
+    ComptrollerImpl Deploy Scenario Latest
+    Unitroller SetPendingImpl Latest
+    ComptrollerImpl Latest Become
+
+Macro AddYFI_PeopleBorrow
+    -- new token with no speed
+    NewCToken YFI cYFI
+    Support cYFI collateralFactor:0.5
+    Prep Torrey 100e18 YFI cYFI -- will mint right before
+    Mint Torrey 100e18 cYFI
+    Prep Jared 100e18 YFI cYFI -- will mint right after
+    Borrow Coburn 10e18 cYFI -- will borrow right before
+    Borrow Tyler 10e18 cYFI -- will borrow right before
+    Prep Gaston 10000e18 YFI cYFI -- for layer repay
+    Borrow Gaston 10e18 cYFI -- will borrow right before
+    Borrow Felix 10e18 cYFI -- will borrow right before
+    Prep Felix 10000e18 YFI cYFI -- for layer repay
+    EnterMarkets Geoff cZRX -- will borrow right after
+
+Test "Claim COMP Prior to Upgrade"
+    PreSplitComptroller
+    InitSpeedsOld
+    --upgrade
+    Comptroller SetCompSpeed cYFI (2)
+    Mint Jared 10e18 cYFI
+    Borrow Geoff 10e18 cYFI
+    Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) 0
+    Assert Equal (Comptroller CompBorrowerIndex cYFI Geoff) 1e36
+    FastForward 1000 blocks
+    Comptroller ClaimComp Jared
+    Comptroller ClaimComp Torrey
+    Comptroller ClaimComp Geoff
+    Comptroller ClaimComp Coburn -- note coburn borrowed before geoff
+    Assert Equal (Erc20 COMP TokenBalance Coburn) 0
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 1000
+    Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) (Comptroller CompBorrowerIndex cYFI Geoff)  -- Coburn fully missed distrubution until an action
+    Assert (Erc20 COMP TokenBalance Geoff) GreaterThan (Erc20 COMP TokenBalance Coburn)
+    Assert Equal (Erc20 COMP TokenBalance Jared) (Erc20 COMP TokenBalance Torrey) -- suppliers are correctly initialized
+    FastForward 1000 blocks -- see where they stand now
+    Comptroller ClaimComp Coburn
+    Comptroller ClaimComp Geoff
+    Assert Equal (Erc20 COMP TokenBalance Coburn) 1000 -- 1000 comp missing forever
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 2000
+ 
+-- Start with G8, upgrade to G9 (bug), then upgrade to G10 (reverty), then upgrade to latest
+Only "Claim COMP across upgrade"
+    PreSplitComptroller
+    InitSpeedsOld
+    AddYFI_PeopleBorrow
+    SwitchToG9_TheBug
+    Mint Jared 10e18 cYFI
+    Borrow Geoff 11e18 cYFI
+    Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) 0
+    Assert Equal (Comptroller CompBorrowerIndex cYFI Geoff) 1e36
+    FastForward 1000 blocks
+    Comptroller ClaimComp Coburn
+    Comptroller ClaimComp Geoff
+    Comptroller ClaimComp Jared
+    Comptroller ClaimComp Torrey
+    Assert Equal (Erc20 COMP TokenBalance Coburn) 10000000000000000250 -- buggy balance
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 1000
+    Assert Equal (Erc20 COMP TokenBalance Jared) 0
+    Assert Equal (Erc20 COMP TokenBalance Torrey) 5e10 --buggy balance (double check)
+    Assert Equal (Erc20 COMP TokenBalance Tyler) 0
+    Assert Equal (Erc20 COMP TokenBalance Gaston) 0
+    Assert Equal (Erc20 COMP TokenBalance Felix) 0
+    Assert Equal (Comptroller CompAccrued Coburn) 0 -- Check accruals
+    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Assert Equal (Comptroller CompAccrued Jared) 0
+    Assert Equal (Comptroller CompAccrued Torrey) 0
+    Assert Equal (Comptroller CompAccrued Tyler) 0
+    Assert Equal (Comptroller CompAccrued Gaston) 0
+    Assert Equal (Comptroller CompAccrued Felix) 0
+    Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) (Comptroller CompBorrowerIndex cYFI Geoff)  -- Coburn fully missed distrubution until an action
+    FastForward 1000 blocks -- see where they stand now
+    Comptroller ClaimComp Coburn
+    Comptroller ClaimComp Geoff
+    Assert Equal (Erc20 COMP TokenBalance Coburn) 10000000000000000500 -- buggy balance
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 2000
+    Assert Equal (Erc20 COMP TokenBalance Jared) 0
+    Assert Equal (Erc20 COMP TokenBalance Torrey) 5e10 --buggy balance (double check)
+    SwitchToG10_Reverty -- Let's go to the reverty fix
+    FastForward 1000 blocks
+    AllowFailures
+    Comptroller ClaimComp Coburn
+    Assert Revert "revert COMP rewards paused"
+    Comptroller ClaimComp Geoff
+    Assert Revert "revert COMP rewards paused"
+    Comptroller ClaimComp Jared
+    Assert Revert "revert COMP rewards paused"
+    Comptroller ClaimComp Torrey
+    Assert Revert "revert COMP rewards paused"
+    Comptroller ClaimComp Tyler
+    Assert Revert "revert COMP rewards paused"
+    Comptroller ClaimComp Gaston
+    Assert Revert "revert COMP rewards paused"
+    Comptroller ClaimComp Felix
+    Assert Revert "revert COMP rewards paused"
+    Assert Equal (Erc20 COMP TokenBalance Coburn) 10000000000000000500 -- buggy balance
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 2000
+    Assert Equal (Erc20 COMP TokenBalance Jared) 0
+    Assert Equal (Erc20 COMP TokenBalance Torrey) 5e10 --buggy balance (double check)
+    Assert Equal (Erc20 COMP TokenBalance Tyler) 0
+    Assert Equal (Erc20 COMP TokenBalance Gaston) 0
+    Assert Equal (Erc20 COMP TokenBalance Felix) 0
+    Assert Equal (Comptroller CompAccrued Coburn) 0 -- Check accruals
+    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Assert Equal (Comptroller CompAccrued Jared) 0
+    Assert Equal (Comptroller CompAccrued Torrey) 0
+    Assert Equal (Comptroller CompAccrued Tyler) 0
+    Assert Equal (Comptroller CompAccrued Gaston) 0
+    Assert Equal (Comptroller CompAccrued Felix) 0
+    RepayBorrow Gaston UInt256Max cYFI -- but can borrow or repay to trigger accrual
+    Assert Success
+    Assert Equal (Comptroller CompAccrued Gaston) 10000000000000000000
+    Redeem Gaston 0 cBAT -- borrow or repay can still trigger accrual and should be 750
+    Assert Success
+    Assert Equal (Comptroller CompAccrued Gaston) 10000000000000000750
+    SwitchToLatestComptroller
+    Comptroller ClaimComp Coburn  -- TODO: This should be blocked
+    Assert Success
+    Comptroller ClaimComp Geoff -- Okay
+    Assert Success
+    Comptroller ClaimComp Jared -- Okay
+    Assert Success
+    Comptroller ClaimComp Torrey -- TODO: This should be blocked
+    Assert Success
+    Comptroller ClaimComp Tyler -- Okay
+    Assert Success
+    Comptroller ClaimComp Gaston -- TODO: This should be blocked
+    Assert Success
+    RepayBorrow Felix UInt256Max cYFI -- borrow or repay can still trigger accrual but should be 0
+    Assert Success
+    Redeem Felix 0 cBAT -- borrow or repay can still trigger accrual and should be 750
+    Assert Success
+    Assert Equal (Erc20 COMP TokenBalance Coburn) 10000000000000000750 -- buggy balance
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 2000
+    Assert Equal (Erc20 COMP TokenBalance Jared) 0
+    Assert Equal (Erc20 COMP TokenBalance Torrey) 5e10 --buggy balance (double check)
+    Assert Equal (Erc20 COMP TokenBalance Tyler) 750 -- not buggy balance!
+    Assert Equal (Erc20 COMP TokenBalance Gaston) 10000000000000000750 -- buggy balance
+    Assert Equal (Erc20 COMP TokenBalance Felix) 0 -- buggy balance
+    Assert Equal (Comptroller CompAccrued Coburn) 0 -- Check accruals
+    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Assert Equal (Comptroller CompAccrued Jared) 0
+    Assert Equal (Comptroller CompAccrued Torrey) 0
+    Assert Equal (Comptroller CompAccrued Tyler) 0
+    Assert Equal (Comptroller CompAccrued Gaston) 0
+    Assert Equal (Comptroller CompAccrued Felix) 750 -- Non-buggy accrual

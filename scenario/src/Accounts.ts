@@ -24,7 +24,16 @@ export const accountMap = {
   "sixth": 5,
 
   "jared": 6,
-  "seventh": 6
+  "seventh": 6,
+
+  "tyler": 7,
+  "eighth": 7,
+
+  "gaston": 8,
+  "ninth": 8,
+
+  "felix": 9,
+  "tenth": 9
 };
 
 export interface Account {
