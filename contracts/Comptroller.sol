@@ -268,7 +268,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             uint totalAdminFees = CToken(cToken).totalAdminFees();
 
             // totalUnderlyingSupply = totalCash + totalBorrows - (totalReserves + totalFuseFees + totalAdminFees)
-            (MathError mathErr, uint totalUnderlyingSupply) = addThenSubUInt(totalCash, totalBorrows, totalReserves + totalFuseFees + totalAdminFees);
+            (MathError mathErr, uint totalUnderlyingSupply) = addThenSubUInt(totalCash, totalBorrows, add_(add_(totalReserves, totalFuseFees), totalAdminFees));
             if (mathErr != MathError.NO_ERROR) return uint(Error.MATH_ERROR);
 
             uint nextTotalUnderlyingSupply;
@@ -1431,7 +1431,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         return
             markets[address(cToken)].collateralFactorMantissa == 0 && 
             borrowGuardianPaused[address(cToken)] == true && 
-            cToken.reserveFactorMantissa() == 1e18
+            add_(add_(cToken.reserveFactorMantissa(), cToken.adminFeeMantissa()), cToken.fuseFeeMantissa()) == 1e18
         ;
     }
 
