@@ -1203,6 +1203,10 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
      * @param supplier The address of the supplier to distribute COMP to
      */
     function distributeSupplierComp(address cToken, address supplier) internal {
+        // TODO: Don't distribute supplier COMP if the user is not in the supplier market.
+        // This check should be as gas efficient as possible as distributeSupplierComp is called in many places.
+        // - We really don't want to call an external contract as that's quite expensive.
+
         CompMarketState storage supplyState = compSupplyState[cToken];
         uint supplyIndex = supplyState.index;
         uint supplierIndex = compSupplierIndex[cToken][supplier];
@@ -1238,6 +1242,13 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
      * @param borrower The address of the borrower to distribute COMP to
      */
     function distributeBorrowerComp(address cToken, address borrower, Exp memory marketBorrowIndex) internal {
+        // Don't distribute borrower COMP if the user is not in the borrower market.
+        // The user's borrow state doesn't have to be updated if they're not borrowing.
+        // A user's borrow state is updated before borrowing and also after repaying; this sufficiently keeps the
+        // user's borrow state up-to-date.
+        if (!markets[cToken].accountMembership[borrower])
+            return;
+
         CompMarketState storage borrowState = compBorrowState[cToken];
         uint borrowIndex = borrowState.index;
         uint borrowerIndex = compBorrowerIndex[cToken][borrower];
