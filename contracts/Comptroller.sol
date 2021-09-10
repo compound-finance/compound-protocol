@@ -1211,8 +1211,9 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         compSupplierIndex[cToken][supplier] = supplyIndex;
 
         if (supplierIndex == 0 && supplyIndex > 0) {
-            // Covers the case where users supplied tokens before liquidity rewards were a thing
-            // Rewards the user with COMP accrued from the very start of the market
+            // Covers the case where users supplied tokens before the market's supply state index was set.
+            // Rewards the user with COMP accrued from the start of when supplier rewards were first
+            // set for the market.
             supplierIndex = compInitialIndex;
         }
 
@@ -1243,6 +1244,13 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
 
         // Update borrowers's index to the current index since we are distributing accrued COMP
         compBorrowerIndex[cToken][borrower] = borrowIndex;
+
+        if (borrowerIndex == 0 && borrowIndex > 0) {
+            // Covers the case where users borrowed tokens before the market's borrow state index was set.
+            // Rewards the user with COMP accrued from the start of when borrower rewards were first
+            // set for the market.
+            borrowerIndex = compInitialIndex;
+        }
 
         if (borrowerIndex > 0) {
             // Calculate change in the cumulative sum of the COMP per borrowed unit accrued
