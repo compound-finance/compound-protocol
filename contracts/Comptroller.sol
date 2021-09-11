@@ -338,20 +338,6 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
             return uint(Error.MARKET_NOT_LISTED);
         }
 
-        if (!markets[cToken].accountMembership[borrower]) {
-            // only cTokens may call borrowAllowed if borrower not in market
-            require(msg.sender == cToken, "sender must be cToken");
-
-            // attempt to add borrower to the market
-            Error err = addToMarketInternal(CToken(msg.sender), borrower);
-            if (err != Error.NO_ERROR) {
-                return uint(err);
-            }
-
-            // it should be impossible to break the important invariant
-            assert(markets[cToken].accountMembership[borrower]);
-        }
-
         if (oracle.getUnderlyingPrice(CToken(cToken)) == 0) {
             return uint(Error.PRICE_ERROR);
         }
@@ -371,6 +357,20 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         }
         if (shortfall > 0) {
             return uint(Error.INSUFFICIENT_LIQUIDITY);
+        }
+
+        if (!markets[cToken].accountMembership[borrower]) {
+            // only cTokens may call borrowAllowed if borrower not in market
+            require(msg.sender == cToken, "sender must be cToken");
+
+            // attempt to add borrower to the market
+            Error err = addToMarketInternal(CToken(msg.sender), borrower);
+            if (err != Error.NO_ERROR) {
+                return uint(err);
+            }
+
+            // it should be impossible to break the important invariant
+            assert(markets[cToken].accountMembership[borrower]);
         }
 
         // Keep the flywheel moving
