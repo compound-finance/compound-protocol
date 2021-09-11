@@ -1263,20 +1263,18 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
             borrowerIndex = compInitialIndex;
         }
 
-        if (borrowerIndex > 0) {
-            // Calculate change in the cumulative sum of the COMP per borrowed unit accrued
-            Double memory deltaIndex = Double({mantissa: sub_(borrowIndex, borrowerIndex)});
+        // Calculate change in the cumulative sum of the COMP per borrowed unit accrued
+        Double memory deltaIndex = Double({mantissa: sub_(borrowIndex, borrowerIndex)});
 
-            uint borrowerAmount = div_(CToken(cToken).borrowBalanceStored(borrower), marketBorrowIndex);
-            
-            // Calculate COMP accrued: cTokenAmount * accruedPerBorrowedUnit
-            uint borrowerDelta = mul_(borrowerAmount, deltaIndex);
+        uint borrowerAmount = div_(CToken(cToken).borrowBalanceStored(borrower), marketBorrowIndex);
+        
+        // Calculate COMP accrued: cTokenAmount * accruedPerBorrowedUnit
+        uint borrowerDelta = mul_(borrowerAmount, deltaIndex);
 
-            uint borrowerAccrued = add_(compAccrued[borrower], borrowerDelta);
-            compAccrued[borrower] = borrowerAccrued;
+        uint borrowerAccrued = add_(compAccrued[borrower], borrowerDelta);
+        compAccrued[borrower] = borrowerAccrued;
 
-            emit DistributedBorrowerComp(CToken(cToken), borrower, borrowerDelta, borrowIndex);
-        }
+        emit DistributedBorrowerComp(CToken(cToken), borrower, borrowerDelta, borrowIndex);
     }
 
     /**
