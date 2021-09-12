@@ -1,22 +1,30 @@
--- NewComptroller, but with markets listed so that we can make them comp markets in constructor
-Macro FlywheelComptroller price=1.0 borrowRate=0.000005 compInitAmount=5000000e18
+Macro DeployComptroller price=1.0
     Unitroller Deploy
     PriceOracle Deploy Fixed price
     PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero)
     ComptrollerImpl Deploy Scenario ComptrollerScen
     Unitroller SetPendingImpl ComptrollerScen
     ComptrollerImpl ComptrollerScen Become
-    --list some tokens
     Comptroller SetPriceOracle (PriceOracleProxy Address)
     Comptroller SetCloseFactor 0.5
     Comptroller LiquidationIncentive 1.1
+
+Macro SetupMarkets
     NewCToken ZRX cZRX
     NewCToken BAT cBAT
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
+
+Macro SetupCompToken compInitAmount=5000000e18
     Erc20 Deploy Standard COMP "COMP Token" 18
     Give (Address Comptroller) compInitAmount COMP
     Comptroller Send "setCompAddress(address)" (Address COMP)
+
+-- NewComptroller, but with markets listed so that we can make them comp markets in constructor
+Macro FlywheelComptroller price=1.0 borrowRate=0.000005 compInitAmount=5000000e18
+    DeployComptroller price
+    SetupMarkets
+    SetupCompToken compInitAmount
 
 Macro InitUsage
     Prep Geoff 100e18 ZRX cZRX
@@ -25,6 +33,19 @@ Macro InitUsage
     Mint Coburn 6e18 cBAT--tokenbalance = 6e18 / 2e9 = 3e9
     EnterMarkets Coburn cBAT
     Borrow Coburn 1e18 cZRX
+
+Test "Market supply and borrow states properly initialized"
+    DeployComptroller
+    FastForward 100 Blocks
+    SetupMarkets
+    Assert Equal (Comptroller CompSupplyState cZRX "index") 1e36
+    Assert Equal (Comptroller CompSupplyState cZRX "block") 100
+    Assert Equal (Comptroller CompBorrowState cZRX "index") 1e36
+    Assert Equal (Comptroller CompBorrowState cZRX "block") 100
+    Assert Equal (Comptroller CompSupplyState cBAT "index") 1e36
+    Assert Equal (Comptroller CompSupplyState cBAT "block") 100
+    Assert Equal (Comptroller CompBorrowState cBAT "index") 1e36
+    Assert Equal (Comptroller CompBorrowState cBAT "block") 100
 
 Test "Accrue supplier COMP during a mint"
     FlywheelComptroller
@@ -138,9 +159,41 @@ Test "Accrue supplier COMP during a transfer"
     Comptroller ClaimComp Geoff
     Assert Equal (Erc20 COMP TokenBalance Geoff) (3000e18)
 
--- Test "Accrues correctly when market is added, deactivated, and activated again"
-
--- Test "Accrues correctly when market is added after market activation"
+Test "Accrues correctly when COMP rewards are added (after market activation), removed, then added again"
+    FlywheelComptroller
+    Prep Coburn 100000e18 BAT cBAT
+    -- Mint test
+    From Coburn (CToken cBAT Mint 1000e18)
+    FastForward 1 Blocks
+    -- Ensure no COMP rewards distributed
+    Comptroller ClaimComp Coburn
+    Assert Equal (Erc20 COMP TokenBalance Coburn) (0)
+    -- Fast forward to make us accrue a ton of interest (that is, if COMP speed has been non-zero)
+    FastForward 2354251 Blocks
+    -- Set COMP speeds to non-zero
+    Comptroller SetCompSpeeds (cBAT) (1) (1)
+    FastForward 2 Blocks
+    -- Ensure minting still works
+    From Coburn (CToken cBAT Mint 1000e18)
+    -- Ensure we only accrued interest while the COMP speed has been non-zero
+    Comptroller ClaimComp Coburn
+    Assert Equal (Erc20 COMP TokenBalance Coburn) (2)
+    -- Set COMP speeds to zero
+    Comptroller SetCompSpeeds (cBAT) (0) (0)
+    FastForward 1 Blocks
+    -- Ensure we only accrued interest while the COMP speed has been non-zero
+    Comptroller ClaimComp Coburn
+    Assert Equal (Erc20 COMP TokenBalance Coburn) (2)
+    -- Fast forward to make us accrue a ton of interest - we shouldn't as the rate is 0
+    FastForward 2354251 Blocks
+    -- Set COMP speeds to non-zero
+    Comptroller SetCompSpeeds (cBAT) (1) (1)
+    FastForward 1 Blocks
+    -- Ensure minting still works
+    From Coburn (CToken cBAT Mint 1000e18)
+    -- Ensure we only accrued interest while the COMP speed has been non-zero
+    Comptroller ClaimComp Coburn
+    Assert Equal (Erc20 COMP TokenBalance Coburn) (3)
 
 Test "TransferComp handles running out of COMP in comptroller correctly"
     FlywheelComptroller price:1.0 borrowRate:0.000005 compInitAmount:1e18
