@@ -401,6 +401,17 @@ const fetchers = [
     async (world, { addr }) => addr
   ),
 
+  new Fetcher<{ num: NumberV }, NumberV>(
+    `
+      #### Number
+
+      * "Number arg:<Number>" - Returns a number
+    `,
+    'Number',
+    [new Arg('num', getNumberV)],
+    async (world, { num }) => num
+  ),
+
   new Fetcher<
     { addr: AddressV; slot: NumberV; start: NumberV; valType: StringV },
     BoolV | AddressV | ExpNumberV | NothingV
