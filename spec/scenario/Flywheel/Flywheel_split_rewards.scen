@@ -154,3 +154,15 @@ Test "TransferComp handles running out of COMP in comptroller correctly"
     Comptroller ClaimComp Geoff
     Assert Equal (Comptroller CompAccrued Geoff) 0
     Assert Equal (Erc20 COMP TokenBalance Geoff) 2e18
+
+Test "Comp is not claimed automatically"
+    FlywheelComptroller
+    InitUsage
+    Comptroller SetCompSpeeds (cZRX) (2) (2)
+    FastForward 100000 Blocks
+    -- Check comp is not claimed automatically
+    Mint Geoff 50e18 cZRX
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 0
+    -- Confirm there was comp to claim
+    Comptroller ClaimComp Geoff
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 200000
