@@ -338,6 +338,20 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
             return uint(Error.MARKET_NOT_LISTED);
         }
 
+        if (!markets[cToken].accountMembership[borrower]) {
+            // only cTokens may call borrowAllowed if borrower not in market
+            require(msg.sender == cToken, "sender must be cToken");
+
+            // attempt to add borrower to the market
+            Error err = addToMarketInternal(CToken(msg.sender), borrower);
+            if (err != Error.NO_ERROR) {
+                return uint(err);
+            }
+
+            // it should be impossible to break the important invariant
+            assert(markets[cToken].accountMembership[borrower]);
+        }
+
         if (oracle.getUnderlyingPrice(CToken(cToken)) == 0) {
             return uint(Error.PRICE_ERROR);
         }
@@ -357,20 +371,6 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         }
         if (shortfall > 0) {
             return uint(Error.INSUFFICIENT_LIQUIDITY);
-        }
-
-        if (!markets[cToken].accountMembership[borrower]) {
-            // only cTokens may call borrowAllowed if borrower not in market
-            require(msg.sender == cToken, "sender must be cToken");
-
-            // attempt to add borrower to the market
-            Error err = addToMarketInternal(CToken(msg.sender), borrower);
-            if (err != Error.NO_ERROR) {
-                return uint(err);
-            }
-
-            // it should be impossible to break the important invariant
-            assert(markets[cToken].accountMembership[borrower]);
         }
 
         // Keep the flywheel moving
@@ -1242,12 +1242,9 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
      * @param borrower The address of the borrower to distribute COMP to
      */
     function distributeBorrowerComp(address cToken, address borrower, Exp memory marketBorrowIndex) internal {
-        // Don't distribute borrower COMP if the user is not in the borrower market.
-        // The user's borrow state doesn't have to be updated if they're not borrowing.
-        // A user's borrow state is updated before borrowing and also after repaying; this sufficiently keeps the
-        // user's borrow state up-to-date.
-        if (!markets[cToken].accountMembership[borrower])
-            return;
+        // TODO: Don't distribute supplier COMP if the user is not in the borrower market.
+        // This check should be as gas efficient as possible as distributeBorrowerComp is called in many places.
+        // - We really don't want to call an external contract as that's quite expensive.
 
         CompMarketState storage borrowState = compBorrowState[cToken];
         uint borrowIndex = borrowState.index;
