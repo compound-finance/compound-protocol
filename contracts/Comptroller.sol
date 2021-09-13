@@ -1400,6 +1400,8 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         }
     }
 
+    /*** Helper Functions ***/
+
     /**
      * @notice Return all of the markets
      * @dev The automatic getter may be used to access an individual market.
@@ -1428,6 +1430,13 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
+     * @notice Returns an array of all RewardsDistributors
+     */
+    function getRewardsDistributors() external view returns (address[] memory) {
+        return rewardsDistributors;
+    }
+
+    /**
      * @notice Returns true if the given cToken market has been deprecated
      * @dev All borrows in a deprecated cToken market can be immediately liquidated
      * @param cToken The market to check if deprecated
@@ -1439,6 +1448,8 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             add_(add_(cToken.reserveFactorMantissa(), cToken.adminFeeMantissa()), cToken.fuseFeeMantissa()) == 1e18
         ;
     }
+
+    /*** Pool-Wide/Cross-Asset Reentrancy Prevention ***/
 
     /**
      * @dev Called by cTokens before a non-reentrant function for pool-wide reentrancy prevention.
@@ -1457,12 +1468,5 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     function _afterNonReentrant() external {
         require(markets[msg.sender].isListed, "Comptroller:_afterNonReentrant: caller not listed as market");
         _notEntered = true; // get a gas-refund post-Istanbul
-    }
-
-    /**
-     * @notice Returns an array of all RewardsDistributors
-     */
-    function getRewardsDistributors() external view returns (address[] memory) {
-        return rewardsDistributors;
     }
 }
