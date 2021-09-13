@@ -1,0 +1,27 @@
+#!/usr/bin/env yarn repl -s
+
+Alias CompHolder "0x7587cAefc8096f5F40ACB83A09Df031a018C66ec"
+Alias TUSDHolder "0x4454af7c8bb9463203b66c816220d41ed7837f44"
+Web3Fork "https://mainnet-eth.compound.finance/@12466889" (CompHolder UniHolder Liquidator)
+UseConfigs mainnet
+
+From CompHolder (Comp Delegate CompHolder)
+
+-- upgrade to mainnet cTUSD deployment
+From CompHolder (Governor GovernorBravo Propose "Update cTUSD Implementation" [(Address cTUSD)] [0] ["_setImplementation(address,bool,bytes)"] [[(address cPOR) false "0x"]])
+
+AdvanceBlocks 13140
+From CompHolder (GovernorBravo GovernorBravo Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+Governor GovernorBravo Proposal LastProposal Queue
+IncreaseTime 604910
+Governor GovernorBravo Proposal LastProposal Execute
+
+-- Test basic actions
+
+-- Mint Test
+From TUSDHolder (Erc20 TUSD Approve (Address cTUSD) 10000000)
+From TUSDHolder (CToken cTUSD Mint 10000000)
+Assert Equal (Erc20 TUSD TokenBalance cTUSD) (284058478303890709059107567)
+
+Print "Migration to cTUSD ok"
