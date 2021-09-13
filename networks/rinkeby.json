@@ -29,7 +29,8 @@
         "REP": "0x6e894660985207feb7cf89Faf048998c71E8EE89",
         "cZRX": "0x52201ff1720134bBbBB2f6BC97Bf3715490EC19B",
         "cWBTC": "0x0014F450B8Ae7708593F4A46F8fa6E5D50620F96",
-        "USDC": "0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b"
+        "USDC": "0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b",
+        "CPoR": "0xb94761df03bBd24CA5C4697f15dbF7776DCB9bE3"
     },
     "Blocks": {
         "cUSDC": 4319847,
@@ -54,7 +55,8 @@
         "ComptrollerG2": 5245967,
         "WBTC": 4717533,
         "cZRX": 4319842,
-        "cWBTC": 4717535
+        "cWBTC": 4717535,
+        "CPoR": 9285114
     },
     "PriceOracleProxy": {
         "description": "Price Oracle Proxy",

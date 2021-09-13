@@ -8,7 +8,7 @@ UseConfigs mainnet
 From CompHolder (Comp Delegate CompHolder)
 
 -- upgrade to mainnet cTUSD deployment
-From CompHolder (Governor GovernorBravo Propose "Update cTUSD Implementation" [(Address cTUSD)] [0] ["_setImplementation(address,bool,bytes)"] [[(address cPOR) false "0x"]])
+From CompHolder (Governor GovernorBravo Propose "Update cTUSD Implementation" [(Address cTUSD)] [0] ["_setImplementation(address,bool,bytes)"] [[(address CPoR) false "0x"]])
 
 AdvanceBlocks 13140
 From CompHolder (GovernorBravo GovernorBravo Proposal LastProposal Vote For)
