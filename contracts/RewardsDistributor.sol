@@ -29,9 +29,6 @@ contract RewardsDistributor is ExponentialNoError {
     /// @notice A list of all markets
     CToken[] public allMarkets;
 
-    /// @notice The rate at which the flywheel distributes COMP, per block
-    uint public compRate;
-
     /// @notice The portion of compRate that each market currently receives
     mapping(address => uint) public compSupplySpeeds;
 
