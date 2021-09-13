@@ -1253,7 +1253,7 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         // Update borrowers's index to the current index since we are distributing accrued COMP
         compBorrowerIndex[cToken][borrower] = borrowIndex;
 
-        if (borrowerIndex == 0 && borrowIndex > 0) {
+        if (borrowerIndex == 0 && borrowIndex > compInitialIndex) {
             // Covers the case where users borrowed tokens before the market's borrow state index was set.
             // Rewards the user with COMP accrued from the start of when borrower rewards were first
             // set for the market.
