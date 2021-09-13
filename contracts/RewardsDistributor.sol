@@ -246,20 +246,11 @@ contract RewardsDistributor is ExponentialNoError {
     }
 
     /**
-     * @notice Accrue COMP to the market by updating the borrow index
-     * @param cToken The market whose borrow index to update
-     */
-    function updateCompBorrowIndex(address cToken) external {
-        Exp memory borrowIndex = Exp({mantissa: CToken(cToken).borrowIndex()});
-        return updateCompBorrowIndex(cToken, borrowIndex);
-    }
-
-    /**
      * @notice Calculate COMP accrued by a supplier and possibly transfer it to them
      * @param cToken The market in which the supplier is interacting
      * @param supplier The address of the supplier to distribute COMP to
      */
-    function distributeSupplierComp(address cToken, address supplier) public {
+    function distributeSupplierComp(address cToken, address supplier) internal {
         CompMarketState storage supplyState = compSupplyState[cToken];
         Double memory supplyIndex = Double({mantissa: supplyState.index});
         Double memory supplierIndex = Double({mantissa: compSupplierIndex[cToken][supplier]});
@@ -300,14 +291,42 @@ contract RewardsDistributor is ExponentialNoError {
     }
 
     /**
-     * @notice Calculate COMP accrued by a borrower and possibly transfer it to them
-     * @dev Borrowers will not begin to accrue until after the first interaction with the protocol.
-     * @param cToken The market in which the borrower is interacting
-     * @param borrower The address of the borrower to distribute COMP to
+     * @notice Keeps the flywheel moving pre-mint and pre-redeem
+     * @param cToken The relevant market
+     * @param supplier The minter/redeemer
      */
-    function distributeBorrowerComp(address cToken, address borrower) external {
-        Exp memory marketBorrowIndex = Exp({mantissa: CToken(cToken).borrowIndex()});
-        distributeBorrowerComp(cToken, borrower, marketBorrowIndex);
+    function flywheelPreSupplierAction(address cToken, address supplier) external {
+        if (compSupplyState[cToken].index > 0) {
+            updateCompSupplyIndex(cToken);
+            distributeSupplierComp(cToken, supplier);
+        }
+    }
+
+    /**
+     * @notice Keeps the flywheel moving pre-borrow and pre-repay
+     * @param cToken The relevant market
+     * @param borrower The borrower
+     */
+    function flywheelPreBorrowerAction(address cToken, address borrower) external {
+        if (compBorrowState[cToken].index > 0) {
+            Exp memory borrowIndex = Exp({mantissa: CToken(cToken).borrowIndex()});
+            updateCompBorrowIndex(cToken, borrowIndex);
+            distributeBorrowerComp(cToken, borrower, borrowIndex);
+        }
+    }
+
+    /**
+     * @notice Keeps the flywheel moving pre-transfer and pre-seize
+     * @param cToken The relevant market
+     * @param src The account which sources the tokens
+     * @param dst The account which receives the tokens
+     */
+    function flywheelPreTransferAction(address cToken, address src, address dst) external {
+        if (compSupplyState[cToken].index > 0) {
+            updateCompSupplyIndex(cToken);
+            distributeSupplierComp(cToken, src);
+            distributeSupplierComp(cToken, dst);
+        }
     }
 
     /**

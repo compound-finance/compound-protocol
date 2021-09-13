@@ -279,10 +279,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        for (uint256 i = 0; i < rewardsDistributors.length; i++) {
-            RewardsDistributor(rewardsDistributors[i]).updateCompSupplyIndex(cToken);
-            RewardsDistributor(rewardsDistributors[i]).distributeSupplierComp(cToken, minter);
-        }
+        flywheelPreSupplierAction(cToken, minter);
 
         return uint(Error.NO_ERROR);
     }
@@ -324,10 +321,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        for (uint256 i = 0; i < rewardsDistributors.length; i++) {
-            RewardsDistributor(rewardsDistributors[i]).updateCompSupplyIndex(cToken);
-            RewardsDistributor(rewardsDistributors[i]).distributeSupplierComp(cToken, redeemer);
-        }
+        flywheelPreSupplierAction(cToken, redeemer);
 
         return uint(Error.NO_ERROR);
     }
@@ -418,10 +412,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        for (uint256 i = 0; i < rewardsDistributors.length; i++) {
-            RewardsDistributor(rewardsDistributors[i]).updateCompBorrowIndex(cToken);
-            RewardsDistributor(rewardsDistributors[i]).distributeBorrowerComp(cToken, borrower);
-        }
+        flywheelPreBorrowerAction(cToken, borrower);
 
         // Perform a hypothetical liquidity check to guard against shortfall
         (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(borrower, CToken(cToken), 0, borrowAmount);
@@ -513,10 +504,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        for (uint256 i = 0; i < rewardsDistributors.length; i++) {
-            RewardsDistributor(rewardsDistributors[i]).updateCompBorrowIndex(cToken);
-            RewardsDistributor(rewardsDistributors[i]).distributeBorrowerComp(cToken, borrower);
-        }
+        flywheelPreBorrowerAction(cToken, borrower);
 
         return uint(Error.NO_ERROR);
     }
@@ -658,11 +646,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        for (uint256 i = 0; i < rewardsDistributors.length; i++) {
-            RewardsDistributor(rewardsDistributors[i]).updateCompSupplyIndex(cTokenCollateral);
-            RewardsDistributor(rewardsDistributors[i]).distributeSupplierComp(cTokenCollateral, borrower);
-            RewardsDistributor(rewardsDistributors[i]).distributeSupplierComp(cTokenCollateral, liquidator);
-        }
+        flywheelPreTransferAction(cTokenCollateral, borrower, liquidator);
 
         return uint(Error.NO_ERROR);
     }
@@ -714,11 +698,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        for (uint256 i = 0; i < rewardsDistributors.length; i++) {
-            RewardsDistributor(rewardsDistributors[i]).updateCompSupplyIndex(cToken);
-            RewardsDistributor(rewardsDistributors[i]).distributeSupplierComp(cToken, src);
-            RewardsDistributor(rewardsDistributors[i]).distributeSupplierComp(cToken, dst);
-        }
+        flywheelPreTransferAction(cToken, src, dst);
 
         return uint(Error.NO_ERROR);
     }
@@ -741,6 +721,36 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         if (false) {
             maxAssets = maxAssets;
         }
+    }
+
+    /*** Flywheel Hooks ***/
+
+    /**
+     * @notice Keeps the flywheel moving pre-mint and pre-redeem
+     * @param cToken The relevant market
+     * @param supplier The minter/redeemer
+     */
+    function flywheelPreSupplierAction(address cToken, address supplier) internal {
+        for (uint256 i = 0; i < rewardsDistributors.length; i++) RewardsDistributor(rewardsDistributors[i]).flywheelPreSupplierAction(cToken, supplier);
+    }
+
+    /**
+     * @notice Keeps the flywheel moving pre-borrow and pre-repay
+     * @param cToken The relevant market
+     * @param borrower The borrower
+     */
+    function flywheelPreBorrowerAction(address cToken, address borrower) internal {
+        for (uint256 i = 0; i < rewardsDistributors.length; i++) RewardsDistributor(rewardsDistributors[i]).flywheelPreBorrowerAction(cToken, borrower);
+    }
+
+    /**
+     * @notice Keeps the flywheel moving pre-transfer and pre-seize
+     * @param cToken The relevant market
+     * @param src The account which sources the tokens
+     * @param dst The account which receives the tokens
+     */
+    function flywheelPreTransferAction(address cToken, address src, address dst) internal {
+        for (uint256 i = 0; i < rewardsDistributors.length; i++) RewardsDistributor(rewardsDistributors[i]).flywheelPreTransferAction(cToken, src, dst);
     }
 
     /*** Liquidity/Liquidation Calculations ***/
