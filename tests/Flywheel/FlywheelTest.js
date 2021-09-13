@@ -580,7 +580,7 @@ describe('Flywheel', () => {
       const tx = await send(comptroller, 'claimComp', [a2]);
       const a2AccruedPost = await compAccrued(comptroller, a2);
       const compBalancePost = await compBalance(comptroller, a2);
-      expect(tx.gasUsed).toBeLessThan(400000);
+      expect(tx.gasUsed).toBeLessThan(500000);
       expect(supplySpeed).toEqualNumber(compRate);
       expect(borrowSpeed).toEqualNumber(compRate);
       expect(a2AccruedPre).toEqualNumber(0);
