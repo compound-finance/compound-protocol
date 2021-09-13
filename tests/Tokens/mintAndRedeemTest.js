@@ -13,6 +13,7 @@ const {
   adjustBalances,
   preApprove,
   preMint,
+  mintFresh,
   quickMint,
   preSupply,
   quickRedeem,
