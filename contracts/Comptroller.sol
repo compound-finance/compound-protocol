@@ -1389,10 +1389,15 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     }
 
     function _become(Unitroller unitroller) public {
-        require(msg.sender == unitroller.admin(), "only unitroller admin can change brains");
+        require((msg.sender == address(fuseAdmin) && unitroller.fuseAdminHasRights()) || (msg.sender == unitroller.admin() && unitroller.adminHasRights()), "only unitroller admin can change brains");
 
         uint changeStatus = unitroller._acceptImplementation();
         require(changeStatus == 0, "change not authorized");
+
+        if (!_notEnteredInitialized) {
+            _notEntered = true;
+            _notEnteredInitialized = true;
+        }
     }
 
     /**
@@ -1452,5 +1457,12 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     function _afterNonReentrant() external {
         require(markets[msg.sender].isListed, "Comptroller:_afterNonReentrant: caller not listed as market");
         _notEntered = true; // get a gas-refund post-Istanbul
+    }
+
+    /**
+     * @notice Returns an array of all RewardsDistributors
+     */
+    function getRewardsDistributors() external returns (address[] memory) {
+        return rewardsDistributors;
     }
 }

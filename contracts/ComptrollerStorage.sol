@@ -170,4 +170,7 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
 
     /// @dev Guard variable for pool-wide/cross-asset re-entrancy checks
     bool internal _notEntered;
+
+    /// @dev Whether or not _notEntered has been initialized
+    bool internal _notEnteredInitialized;
 }
