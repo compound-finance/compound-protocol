@@ -34,6 +34,13 @@ Macro InitUsage
     EnterMarkets Coburn cBAT
     Borrow Coburn 1e18 cZRX
 
+Macro InitUsage2
+    Prep Geoff 100e18 ZRX cZRX
+    Mint Geoff 50e18 cZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
+    Prep Coburn 100e18 BAT cBAT
+    Mint Coburn 50e18 cBAT--tokenbalance = 6e18 / 2e9 = 3e9
+    EnterMarkets Coburn cBAT
+
 Test "Market supply and borrow states properly initialized"
     DeployComptroller
     FastForward 100 Blocks
@@ -219,3 +226,38 @@ Test "Comp is not claimed automatically"
     -- Confirm there was comp to claim
     Comptroller ClaimComp Geoff
     Assert Equal (Erc20 COMP TokenBalance Geoff) 200000
+
+Test "New COMP speeds apply to both prior borrowers+suppliers and later borrowers+suppliers correctly"
+    -- Supplying
+    --   Torrey mints 100e18 before COMP speeds set
+    --   Jared mints 100e18 after COMP speeds set
+    -- Borrowing
+    --   Coburn borrows 10e18 before COMP speeds set
+    --   Geoff borrows 10e18 after COMP speeds set
+    FlywheelComptroller
+    InitUsage2
+    -- New token with no rewards
+    NewCToken YFI cYFI
+    Support cYFI collateralFactor:0.5
+    Prep Torrey 100e18 YFI cYFI
+    Mint Torrey 100e18 cYFI
+    Prep Jared 100e18 YFI cYFI
+    Borrow Coburn 10e18 cYFI
+    EnterMarkets Geoff cZRX
+    -- Add COMP rewards for the new token
+    Comptroller SetCompSpeeds (cYFI) (2) (2)
+    Mint Jared 100e18 cYFI
+    Borrow Geoff 10e18 cYFI
+    Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) 1e36
+    Assert Equal (Comptroller CompBorrowerIndex cYFI Geoff) 1e36
+    FastForward 1000 blocks
+    Comptroller ClaimComp Jared
+    Comptroller ClaimComp Torrey
+    Comptroller ClaimComp Geoff
+    Comptroller ClaimComp Coburn
+    Assert Equal (Erc20 COMP TokenBalance Coburn) 1000
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 1000
+    Assert Equal (Erc20 COMP TokenBalance Jared) 1000
+    Assert Equal (Erc20 COMP TokenBalance Torrey) 1000
+    Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) (Comptroller CompBorrowerIndex cYFI Geoff)
+    Assert Equal (Comptroller CompSupplierIndex cYFI Jared) (Comptroller CompSupplierIndex cYFI Torrey)
