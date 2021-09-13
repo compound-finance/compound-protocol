@@ -1462,7 +1462,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
     /**
      * @notice Returns an array of all RewardsDistributors
      */
-    function getRewardsDistributors() external returns (address[] memory) {
+    function getRewardsDistributors() external view returns (address[] memory) {
         return rewardsDistributors;
     }
 }
