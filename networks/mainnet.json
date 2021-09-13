@@ -78,6 +78,7 @@
         "cWBTC": "0xC11b1268C1A384e55C48c2391d8d480264A3A7F4",
         "USDC": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         "DSR_Updateable": "0xfeD941d39905B23D6FAf02C8301d40bD4834E27F",
+        "TUSD": "0x0000000000085d4780B73119b644AE5ecd22b376",
         "cTUSD": "0x12392F67bdf24faE0AF363c24aC620a2f67DAd86",
         "CPoR": "0x575a16cd2305AD7171F5c1036C3506070DF28c51"
     },
@@ -374,6 +375,12 @@
             "decimals": 6,
             "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
             "oracle_key": "0x0000000000000000000000000000000000000001"
+        },
+        "TUSD": {
+            "name": "TrueUSD",
+            "symbol": "TUSD",
+            "decimals": 18,
+            "address": "0x0000000000085d4780B73119b644AE5ecd22b376"
         }
     },
     "CTokenDelegate": {
@@ -518,6 +525,15 @@
             "contract": "CErc20",
             "initial_exchange_rate_mantissa": "20000000000000000",
             "address": "0xC11b1268C1A384e55C48c2391d8d480264A3A7F4"
+        },
+        "cTUSD": {
+            "name": "Compound TrueUSD",
+            "symbol": "cTUSD",
+            "decimals": 8,
+            "underlying": "0x0000000000085d4780B73119b644AE5ecd22b376",
+            "contract": "CErc20",
+            "initial_exchange_rate_mantissa": "20000000000000000",
+            "address": "0x12392F67bdf24faE0AF363c24aC620a2f67DAd86"
         }
     },
     "InterestRateModel": {
