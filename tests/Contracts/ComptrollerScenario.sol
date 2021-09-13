@@ -37,6 +37,14 @@ contract ComptrollerScenario is Comptroller {
         markets[address(cToken)].isListed = false;
     }
 
+    function setCompBorrowerIndex(address cToken, address borrower, uint index) public {
+        compBorrowerIndex[cToken][borrower] = index;
+    }
+
+    function setCompSupplierIndex(address cToken, address supplier, uint index) public {
+        compSupplierIndex[cToken][supplier] = index;
+    }
+
     /**
      * @notice Recalculate and update COMP speeds for all COMP markets
      */
