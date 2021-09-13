@@ -459,6 +459,24 @@ contract RewardsDistributor is ExponentialNoError {
     }
 
     /**
+     * @notice Set COMP borrow and supply speeds for the specified markets.
+     * @param cTokens The markets whose COMP speed to update.
+     * @param supplySpeeds New supply-side COMP speed for the corresponding market.
+     * @param borrowSpeeds New borrow-side COMP speed for the corresponding market.
+     */
+    function _setCompSpeeds(CToken[] memory cTokens, uint[] memory supplySpeeds, uint[] memory borrowSpeeds) public {
+        require(msg.sender == admin, "only admin can set comp speed");
+
+        uint numTokens = cTokens.length;
+        require(numTokens == supplySpeeds.length && numTokens == borrowSpeeds.length, "RewardsDistributor::_setCompSpeeds invalid input");
+
+        for (uint i = 0; i < numTokens; ++i) {
+            setCompSupplySpeedInternal(cTokens[i], supplySpeeds[i]);
+            setCompBorrowSpeedInternal(cTokens[i], borrowSpeeds[i]);
+        }
+    }
+
+    /**
      * @notice Set COMP speed for a single contributor
      * @param contributor The contributor whose COMP speed to update
      * @param compSpeed New COMP speed for contributor
