@@ -502,4 +502,11 @@ contract RewardsDistributor is ExponentialNoError {
     function getBlockNumber() public view returns (uint) {
         return block.number;
     }
+
+    /**
+     * @notice Returns an array of all markets.
+     */
+    function getAllMarkets() external view returns (CToken[] memory) {
+        return allMarkets;
+    }
 }
