@@ -2,7 +2,7 @@ pragma solidity ^0.5.16;
 
 import "./CToken.sol";
 import "./ExponentialNoError.sol";
-import "./ComptrollerStorage.sol";
+import "./Comptroller.sol";
 
 /**
  * @title RewardsDistributor (COMP distribution logic extracted from `Comptroller`)
@@ -138,6 +138,23 @@ contract RewardsDistributor is ExponentialNoError {
     /*** Comp Distribution ***/
 
     /**
+     * @notice Check the cToken before adding
+     * @param cToken The market to add
+     */
+    function checkCToken(CToken cToken) internal {
+        // Make sure cToken is listed
+        Comptroller comptroller = Comptroller(address(cToken.comptroller()));
+        (bool isListed, ) = comptroller.markets(address(cToken));
+        require(isListed == true, "comp market is not listed");
+
+        // Make sure distributor is added
+        bool distributorAdded = false;
+        address[] memory distributors = comptroller.getRewardsDistributors();
+        for (uint256 i = 0; i < distributors.length; i++) if (distributors[i] == address(this)) distributorAdded = true; 
+        require(distributorAdded == true, "distributor not added");
+    }
+
+    /**
      * @notice Set COMP speed for a single market
      * @param cToken The market whose COMP speed to update
      * @param compSpeed New COMP speed for market
@@ -148,10 +165,10 @@ contract RewardsDistributor is ExponentialNoError {
             // note that COMP speed could be set to 0 to halt liquidity rewards for a market
             updateCompSupplyIndex(address(cToken));
         } else if (compSpeed != 0) {
-            // Add the COMP market
-            (bool isListed, ) = ComptrollerV2Storage(address(cToken.comptroller())).markets(address(cToken));
-            require(isListed == true, "comp market is not listed");
+            // Make sure cToken is listed and distributor is added
+            checkCToken(cToken);
 
+            // Add the COMP market
             if (compSupplyState[address(cToken)].index == 0 && compSupplyState[address(cToken)].block == 0) {
                 compSupplyState[address(cToken)] = CompMarketState({
                     index: compInitialIndex,
@@ -183,10 +200,10 @@ contract RewardsDistributor is ExponentialNoError {
             Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
             updateCompBorrowIndex(address(cToken), borrowIndex);
         } else if (compSpeed != 0) {
-            // Add the COMP market
-            (bool isListed, ) = ComptrollerV2Storage(address(cToken.comptroller())).markets(address(cToken));
-            require(isListed == true, "comp market is not listed");
+            // Make sure cToken is listed and distributor is added
+            checkCToken(cToken);
 
+            // Add the COMP market
             if (compBorrowState[address(cToken)].index == 0 && compBorrowState[address(cToken)].block == 0) {
                 compBorrowState[address(cToken)] = CompMarketState({
                     index: compInitialIndex,
@@ -299,6 +316,7 @@ contract RewardsDistributor is ExponentialNoError {
 
     /**
      * @notice Keeps the flywheel moving pre-mint and pre-redeem
+     * @dev Called by the Comptroller
      * @param cToken The relevant market
      * @param supplier The minter/redeemer
      */
@@ -311,6 +329,7 @@ contract RewardsDistributor is ExponentialNoError {
 
     /**
      * @notice Keeps the flywheel moving pre-borrow and pre-repay
+     * @dev Called by the Comptroller
      * @param cToken The relevant market
      * @param borrower The borrower
      */
@@ -324,6 +343,7 @@ contract RewardsDistributor is ExponentialNoError {
 
     /**
      * @notice Keeps the flywheel moving pre-transfer and pre-seize
+     * @dev Called by the Comptroller
      * @param cToken The relevant market
      * @param src The account which sources the tokens
      * @param dst The account which receives the tokens
