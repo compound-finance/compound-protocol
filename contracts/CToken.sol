@@ -540,11 +540,10 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // EFFECTS & INTERACTIONS
         // (No safe failures beyond this point)
 
+
         /*
-         * We calculate the new total supply and redeemer balance, checking for underflow:
-         *  totalSupplyNew = totalSupply - redeemTokens
-         *  accountTokensNew = accountTokens[redeemer] - redeemTokens
-         * And write calculated values into storage
+         * We write the previously calculated values into storage.
+         *  Note: Avoid token reentrancy attacks by writing reduced supply before external transfer.
          */
         totalSupply = totalSupply - redeemTokens;
         accountTokens[redeemer] = accountTokens[redeemer] - redeemTokens;
@@ -613,7 +612,10 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // EFFECTS & INTERACTIONS
         // (No safe failures beyond this point)
 
-        /* We write the previously calculated values into storage */
+        /*
+         * We write the previously calculated values into storage.
+         *  Note: Avoid token reentrancy attacks by writing increased borrow before external transfer.
+        `*/
         accountBorrows[borrower].principal = accountBorrowsNew;
         accountBorrows[borrower].interestIndex = borrowIndex;
         totalBorrows = totalBorrowsNew;
