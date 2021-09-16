@@ -141,7 +141,7 @@ contract RewardsDistributor is ExponentialNoError {
      * @notice Check the cToken before adding
      * @param cToken The market to add
      */
-    function checkCToken(CToken cToken) internal {
+    function checkCToken(CToken cToken) internal view {
         // Make sure cToken is listed
         Comptroller comptroller = Comptroller(address(cToken.comptroller()));
         (bool isListed, ) = comptroller.markets(address(cToken));

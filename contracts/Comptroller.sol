@@ -1404,6 +1404,12 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         uint changeStatus = unitroller._acceptImplementation();
         require(changeStatus == 0, "change not authorized");
 
+        Comptroller(address(unitroller))._becomeImplementation();
+    }
+
+    function _becomeImplementation() external {
+        require(msg.sender == comptrollerImplementation, "only implementation may call _becomeImplementation");
+
         if (!_notEnteredInitialized) {
             _notEntered = true;
             _notEnteredInitialized = true;
