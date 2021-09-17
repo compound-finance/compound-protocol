@@ -1214,7 +1214,7 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         // Update supplier's index to the current index since we are distributing accrued COMP
         compSupplierIndex[cToken][supplier] = supplyIndex;
 
-        if (supplierIndex == 0 && supplyIndex > 0) {
+        if (supplierIndex == 0 && supplyIndex > compInitialIndex) {
             // Covers the case where users supplied tokens before the market's supply state index was set.
             // Rewards the user with COMP accrued from the start of when supplier rewards were first
             // set for the market.
