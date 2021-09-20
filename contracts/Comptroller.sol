@@ -400,6 +400,11 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         if (oracle.getUnderlyingPrice(CToken(cToken)) == 0) {
             return uint(Error.PRICE_ERROR);
         }
+        
+        // Make sure borrower is whitelisted
+        if (enforceWhitelist && !whitelist[borrower]) {
+            return uint(Error.SUPPLIER_NOT_WHITELISTED);
+        }
 
         // Check borrow cap
         uint borrowCap = borrowCaps[cToken];
