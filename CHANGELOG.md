@@ -2,15 +2,37 @@
 
 ## `v1.1.0` (contracts not yet deployed; all code not yet pushed)
 
+* Move `_setImplementation` from `CErc20Delegator` and `CEtherDelegator` to `_setImplementationSafe` on `CErc20Delegate`, `CEtherDelegate`.
+* Merge `CErc20._delegateCompLikeTo` from `master` branch of `compound-finance/compound-protocol`.
+* Remove `initialExchangeRateMantissa` and `decimals` parameters from `CErc20` and `CEther` initializers.
+* Remove `CErc20._addReserves` to save deployment size.
+* Remove `CErc20Immutable` and `CEtherImmutable` (only their proxy contract equivalents will be deployed).
 * Support larger error codes in `CEther` (up to 9999 instead of just 99).
-* Complete supplier whitelist feature in `Comptroller`.
+* Complete supplier/borrower whitelist feature in `Comptroller`.
 * Non-redundant admin storage on Comptroller (i.e., remove from cTokens in favor of references to Comptroller).
 * Deploy markets via `Comptroller` in a single transaction.
 * Whitelisted `Comptroller` implementations, `CErc20Delegate`s, `CEtherDelegate`s, `CErc20Delegator`s, and `CEtherDelegator`s.
 * Disable changing Comptroller after cToken initialization.
-* Automatic implementation upgrading.
+* Automatic implementation upgrades on `Unitroller`, `CErc20Delegator`, and `CEtherDelegator`.
 * Add `_setNameAndSymbol` admin function to `CToken`.
 * Replace function for renouncing admin/Fuse admin rights with a toggle function.
+* Converge `_setFuseFee` into `_setAdminFee` to save deployment size.
+* Comment out unused defense hooks in `CToken` (as was done in `master` branch of `compound-finance/compound-protocol`).
+* Pool-wide/cross-asset reentrancy protection (to prevent exploits like AMP on Cream).
+* Replace `Exponential` math with `ExponentialNoError` (merged from `master` branch of `compound-finance/compound-protocol`) to save `CToken` annd `Comptroller` deployment size.
+* Merge protocol seize share from `master` branch of `compound-finance/compound-protocol`.
+* Use safe math when adding reserve factor and fee rates.
+* Use safe math when adding reserves and fees (QSP-2).
+* Use safe math library instead of manually checking for overflow in `_withdrawFuseFees` and `_withdrawAdminFees`.
+* Move code inside `nonReentrant` modifier to internal functions to save `CToken` deployment size.
+* Added per-asset borrow cap and supply cap guardian to pool `Comptroller`.
+* Remove constructor setting `Comptroller` admin to deployer since `Comptroller` will not be deployed without a proxy.
+* Liquidity mining via `RewardsDistributor`.
+* Remove global per-user supply cap.
+* Add `isDeprecated` to `Comptroller` to enable liquidating all borrows on deprecated markets.
+* Move `getMaxRedeem` and `getMaxBorrow` view functions from `Comptroller` to external lens (see `FusePoolLens` in `Rari-Capital/fuse-contracts`).
+* Remove `maxAssets` and `_setMaxAssets` to save `Comptroller` deployment size.
+* Double-check `isCToken` marker method in `_supportMarket` (QSP-4).
 
 ## `v1.0.2` (contracts deployed 2021-05-18; all code pushed 2021-06-24)
 
