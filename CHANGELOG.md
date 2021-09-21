@@ -33,6 +33,7 @@
 * Move `getMaxRedeem` and `getMaxBorrow` view functions from `Comptroller` to external lens (see `FusePoolLens` in `Rari-Capital/fuse-contracts`).
 * Remove `maxAssets` and `_setMaxAssets` to save `Comptroller` deployment size.
 * Double-check `isCToken` marker method in `_supportMarket` (QSP-4).
+* Merge `Reservoir` from `master` branch of `compound-finance/compound-protocol`.
 
 ## `v1.0.2` (contracts deployed 2021-05-18; all code pushed 2021-06-24)
 
