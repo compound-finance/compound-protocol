@@ -1,5 +1,10 @@
 # Changelog
 
+## `v1.1.1` (contracts not yet deployed; all code not yet pushed)
+
+* Merge `JumpRateModelV2` from `master` branch of `compound-finance/compound-protocol`.
+* Create `ReactiveJumpRateModelV2` and add hooks to `CToken`.
+
 ## `v1.1.0` (contracts not yet deployed; all code not yet pushed)
 
 * Move `_setImplementation` from `CErc20Delegator` and `CEtherDelegator` to `_setImplementationSafe` on `CErc20Delegate`, `CEtherDelegate`.
