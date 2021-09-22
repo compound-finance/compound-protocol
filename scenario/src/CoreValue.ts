@@ -47,6 +47,7 @@ import {
   toDecimal,
   toHex
 } from 'web3-utils';
+import { chainlinkAggregatorFetchers, getChainlinkAggregatorValue } from './Value/ChainlinkAggregatorValue';
 
 const expMantissa = new BigNumber('1000000000000000000');
 
@@ -988,6 +989,17 @@ const fetchers = [
     [new Arg('res', getGovernorBravoValue, { variadic: true })],
     async (world, { res }) => res,
     { subExpressions: governorBravoFetchers() }
+  ),
+  new Fetcher<{ res: Value }, Value>(
+    `
+      #### ChainlinkAggregator
+
+      * "ChainlinkAggregator ...chainlinkAggregatorArgs" - Returns ChainlinkAggregator value
+    `,
+    'ChainlinkAggregator',
+    [new Arg('res', getChainlinkAggregatorValue, { variadic: true })],
+    async (world, { res }) => res,
+    { subExpressions: chainlinkAggregatorFetchers() }
   ),
 ];
 

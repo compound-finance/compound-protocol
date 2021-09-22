@@ -17,6 +17,7 @@ import {
   StringV
 } from '../Value';
 import { getWorldContractByAddress, getCTokenAddress } from '../ContractLookup';
+import { CPoR } from '../Contract/CPoR';
 
 export async function getCTokenV(world: World, event: Event): Promise<CToken> {
   const address = await mapValue<AddressV>(
@@ -108,6 +109,10 @@ async function getInterestRate(world: World, cToken: CToken): Promise<NumberV> {
 
 async function getImplementation(world: World, cToken: CToken): Promise<AddressV> {
   return new AddressV(await (cToken as CErc20Delegator).methods.implementation().call());
+}
+
+async function getFeed(world: World, cToken: CToken): Promise<AddressV> {
+  return new AddressV(await (cToken as CPoR).methods.feed().call());
 }
 
 export function cTokenFetchers() {
@@ -385,6 +390,19 @@ export function cTokenFetchers() {
         new Arg("cToken", getCTokenV)
       ],
       (world, { cToken }) => getImplementation(world, cToken),
+      { namePos: 1 }
+    ),
+    new Fetcher<{ cToken: CToken }, AddressV>(`
+        #### Feed
+
+        * "CToken <CToken> Feed" - Returns the cToken's current feed
+          * E.g. "CToken cDAI Feed"
+      `,
+      "Feed",
+      [
+        new Arg("cToken", getCTokenV)
+      ],
+      (world, { cToken }) => getFeed(world, cToken),
       { namePos: 1 }
     )
   ];

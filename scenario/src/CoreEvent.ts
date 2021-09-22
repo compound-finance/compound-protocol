@@ -43,6 +43,7 @@ import { Counter } from './Contract/Counter';
 import { CompoundLens } from './Contract/CompoundLens';
 import { Reservoir } from './Contract/Reservoir';
 import Web3 from 'web3';
+import { chainlinkAggregatorCommands, processChainlinkAggregatorEvent } from './Event/ChainlinkAggregatorEvent';
 
 export class EventProcessingError extends Error {
   error: Error;
@@ -845,6 +846,19 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
 
       return world;
     }
+  ),
+
+  new Command<{ event: EventV }>(
+    `
+      #### ChainlinkAggregator
+
+      * "ChainlinkAggregator ...event" - Runs given ChainlinkAggregator event
+        * E.g. "ChainlinkAggregator Deploy MockV3Aggregator WBTCPoRFeed 8 20632482989523"
+    `,
+    'ChainlinkAggregator',
+    [new Arg('event', getEventV, { variadic: true })],
+    (world, from, { event }) => processChainlinkAggregatorEvent(world, event.val, from),
+    { subExpressions: chainlinkAggregatorCommands() }
   )
 ];
 

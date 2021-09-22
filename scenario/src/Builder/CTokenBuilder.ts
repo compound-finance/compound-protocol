@@ -294,7 +294,7 @@ export async function buildCToken(
       async (world, {symbol, name, underlying, comptroller, interestRateModel, initialExchangeRate, decimals, admin}) => {
 
         return {
-          invokation: await CPoRContract.deploy<CToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
+          invokation: await CPoRContract.deploy<CPoR>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
           name: name.val,
           symbol: symbol.val,
           decimals: decimals.toNumber(),
