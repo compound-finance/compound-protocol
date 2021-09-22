@@ -512,18 +512,6 @@ async function setHeartbeat(world: World, from: string, cToken: CPoR, newHeartbe
   return world;
 }
 
-async function cporSetFeed(world: World, from: string, cToken: CPoR, address: string): Promise<World> {
-  let invokation = await invoke(world, cToken.methods._setFeed(address), from, CTokenErrorReporter);
-
-  world = addAction(
-    world,
-    `Set feed for CPoR ${cToken.name} to ${address} as ${describeUser(world, from)}`,
-    invokation
-  );
-
-  return world;
-}
-
 export function cTokenCommands() {
   return [
     new Command<{ cTokenParams: EventV }>(`
@@ -964,18 +952,33 @@ export function cTokenCommands() {
       { namePos: 1 }
     ),
     new Command<{ cToken: CPoR, address: AddressV }>(`
-        #### CPoRSetFeed
+        #### SetFeed
 
-        * "CToken <cToken> CPoRSetFeed address:<AddressV>" - Sets the feed for the given CPoR cToken
+        * "CToken <CPoR> SetFeed address:<AddressV>" - Sets the feed for the given CPoR cToken
           Only works for CPoR cTokens!
-          * E.g. "CToken cPAXG CPoRSetFeed 0x123..."
+          * E.g. "CToken cPAXG SetFeed 0x123..."
       `,
-      "CPoRSetFeed",
+      "SetFeed",
       [
         new Arg("cToken", getCTokenV),
         new Arg("address", getAddressV)
       ],
-      (world, from, { cToken, address }) => cporSetFeed(world, from, cToken, address.val),
+      (world, from, { cToken, address }) => setFeed(world, from, cToken, address.val),
+      { namePos: 1 }
+    ),
+    new Command<{ cToken: CPoR, heartbeat: NumberV }>(`
+        #### SetHeartbeat
+
+        * "CToken <CPoR> SetHeartbeat number:<NumberV>" - Sets the heartbeat for the given CPoR cToken
+          Only works for CPoR cTokens!
+          * E.g. "CToken cPAXG SetHeartbeat 86400..."
+      `,
+      "SetHeartbeat",
+      [
+        new Arg("cToken", getCTokenV),
+        new Arg("heartbeat", getNumberV)
+      ],
+      (world, from, { cToken, heartbeat }) => setHeartbeat(world, from, cToken, heartbeat.toNumber()),
       { namePos: 1 }
     ),
   ];

@@ -29,7 +29,7 @@ Assert Equal (Erc20 PAXG TokenBalance cPAXG) (0)
 Assert Equal (Erc20 PAXG TotalSupply) (173271405000000000000000)
 
 -- Set cPAXG feed to mock PoR feed, make sure we have a fresh, valid answer
-CToken cPAXG CPoRSetFeed MockPAXGPoRFeed
+CToken cPAXG SetFeed MockPAXGPoRFeed
 ChainlinkAggregator MockPAXGPoRFeed UpdateAnswer 17327140500000
 Read (ChainlinkAggregator MockPAXGPoRFeed LatestAnswer)
 
