@@ -1,0 +1,48 @@
+#!/usr/bin/env yarn repl -s
+
+Alias CompHolder "0x7587cAefc8096f5F40ACB83A09Df031a018C66ec"
+Alias PAXGHolder "0x5b2f8818c7c3ed4c702d2a356ce3e3988be1381d"
+Web3Fork "https://mainnet-eth.compound.finance/@13243343" (CompHolder PAXGHolder)
+UseConfigs mainnet
+
+-- Deploy cPAXG using the CPoR contract
+Erc20 Deploy Existing PAXG (address 0x45804880De22913dAFE09f4980848ECE6EcbAf78) "Paxos Gold"
+CToken Deploy CPoR cPAXG "Test cPAXG 📈" (Erc20 PAXG Address) (Comptroller Address) (InterestRateModel wbtc2_irm Address) 1 18 (User Admin Address)
+
+-- Deploy mock aggregator
+ChainlinkAggregator Deploy MockV3Aggregator MockPAXGPoRFeed 8 17327140500000
+
+-- Support new market
+From CompHolder (Comp Delegate CompHolder)
+From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Add cPAXG Market" [(Address Comptroller) (Address Comptroller) (Address cPAXG)] [0 0 0] ["_supportMarket(address)" "_setCollateralFactor(address,uint256)" "_setReserveFactor(uint256)"] [[(address cPAXG)] [(address cPAXG) 0] [250000000000000000]])
+
+-- MineBlock
+AdvanceBlocks 14000
+From CompHolder (GovernorBravo GovernorBravo Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+Governor GovernorBravo Proposal LastProposal Queue
+IncreaseTime 604910
+Governor GovernorBravo Proposal LastProposal Execute
+
+-- Sanity checks
+Assert Equal (Erc20 PAXG TokenBalance cPAXG) (0)
+-- PAXG totalSupply == 173271405000000000000000 at block 13243343
+Assert Equal (Erc20 PAXG TotalSupply) (173271405000000000000000)
+
+-- Set cPAXG feed to mock PoR feed
+CToken cPAXG CPoRSetFeed MockPAXGPoRFeed
+Read (ChainlinkAggregator MockPAXGPoRFeed LatestAnswer)
+
+-- Mint Test
+From PAXGHolder (Erc20 PAXG Approve (Address cPAXG) 1000000000000000000000)
+From PAXGHolder (CToken cPAXG Mint 1000000000000000000)
+-- PAXG balance of cPAXG after mint (should be +1000000000000000000)
+Assert Equal (Erc20 PAXG TokenBalance cPAXG) (9998e14)
+
+-- Mint when PoR check fails
+ChainlinkAggregator MockPAXGPoRFeed UpdateAnswer 10327140500000
+Read (ChainlinkAggregator MockPAXGPoRFeed LatestAnswer)
+From PAXGHolder (CToken cPAXG Mint 1000000000000000000)
+Assert Log Failure ("err" (Exactly 17)) ("info" (Exactly 87)) ("detail" (Exactly 0))
+
+Print "Deployment of cPAXG implementing Proof-of-Reserves succcesful"

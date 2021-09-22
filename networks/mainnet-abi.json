@@ -212,6 +212,259 @@
             "type": "event"
         }
     ],
+    "PAXG": [
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "Approval",
+            "type": "event",
+            "signature": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "from",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "to",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "Transfer",
+            "type": "event",
+            "signature": "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                }
+            ],
+            "name": "allowance",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "remaining",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0xdd62ed3e"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "approve",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "success",
+                    "type": "bool"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function",
+            "signature": "0x095ea7b3"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                }
+            ],
+            "name": "balanceOf",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "balance",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x70a08231"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "decimals",
+            "outputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x313ce567"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "name",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x06fdde03"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "symbol",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x95d89b41"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "totalSupply",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x18160ddd"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "dst",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "transfer",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "success",
+                    "type": "bool"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function",
+            "signature": "0xa9059cbb"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "src",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "dst",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "transferFrom",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "success",
+                    "type": "bool"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function",
+            "signature": "0x23b872dd"
+        }
+    ],
     "ComptrollerG8": [
         {
             "inputs": [],
@@ -6087,6 +6340,343 @@
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function"
+        }
+    ],
+    "MockPAXGPoRFeed": [
+        {
+            "inputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "_decimals",
+                    "type": "uint8"
+                },
+                {
+                    "internalType": "int256",
+                    "name": "_initialAnswer",
+                    "type": "int256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "constructor",
+            "signature": "constructor"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "int256",
+                    "name": "current",
+                    "type": "int256"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "roundId",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "timestamp",
+                    "type": "uint256"
+                }
+            ],
+            "name": "AnswerUpdated",
+            "type": "event",
+            "signature": "0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "roundId",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "startedBy",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "startedAt",
+                    "type": "uint256"
+                }
+            ],
+            "name": "NewRound",
+            "type": "event",
+            "signature": "0x0109fc6f55cf40689f02fbaad7af7fe7bbac8a3d2186600afc7d3e10cac60271"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "decimals",
+            "outputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x313ce567"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "description",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x7284e416"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getAnswer",
+            "outputs": [
+                {
+                    "internalType": "int256",
+                    "name": "",
+                    "type": "int256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0xb5ab58dc"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "internalType": "uint80",
+                    "name": "_roundId",
+                    "type": "uint80"
+                }
+            ],
+            "name": "getRoundData",
+            "outputs": [
+                {
+                    "internalType": "uint80",
+                    "name": "roundId",
+                    "type": "uint80"
+                },
+                {
+                    "internalType": "int256",
+                    "name": "answer",
+                    "type": "int256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "startedAt",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "updatedAt",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint80",
+                    "name": "answeredInRound",
+                    "type": "uint80"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x9a6fc8f5"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getTimestamp",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0xb633620c"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "latestAnswer",
+            "outputs": [
+                {
+                    "internalType": "int256",
+                    "name": "",
+                    "type": "int256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x50d25bcd"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "latestRound",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x668a0f02"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "latestRoundData",
+            "outputs": [
+                {
+                    "internalType": "uint80",
+                    "name": "roundId",
+                    "type": "uint80"
+                },
+                {
+                    "internalType": "int256",
+                    "name": "answer",
+                    "type": "int256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "startedAt",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "updatedAt",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint80",
+                    "name": "answeredInRound",
+                    "type": "uint80"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0xfeaf968c"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "latestTimestamp",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x8205bf6a"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "internalType": "int256",
+                    "name": "_answer",
+                    "type": "int256"
+                }
+            ],
+            "name": "updateAnswer",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function",
+            "signature": "0xa87a20ce"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "internalType": "uint80",
+                    "name": "_roundId",
+                    "type": "uint80"
+                },
+                {
+                    "internalType": "int256",
+                    "name": "_answer",
+                    "type": "int256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_timestamp",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_startedAt",
+                    "type": "uint256"
+                }
+            ],
+            "name": "updateRoundData",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function",
+            "signature": "0x4aa2011f"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "version",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function",
+            "signature": "0x54fd4d50"
         }
     ],
     "PriceFeed": [

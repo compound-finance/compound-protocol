@@ -126,6 +126,10 @@ export async function getPriceOracle(world: World): Promise<PriceOracle> {
   return getWorldContract(world, [['Contracts', 'PriceOracle']]);
 }
 
+export function getChainlinkAggregatorAddress(world: World, chainlinkAggregatorArg: string): string {
+  return getContractDataString(world, [['ChainlinkAggregators', chainlinkAggregatorArg, 'address']]);
+}
+
 export async function getComp(
   world: World,
   compArg: Event
