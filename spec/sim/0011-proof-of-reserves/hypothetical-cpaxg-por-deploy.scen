@@ -33,17 +33,25 @@ CToken cPAXG SetFeed MockPAXGPoRFeed
 ChainlinkAggregator MockPAXGPoRFeed UpdateAnswer 17327140500000
 Read (ChainlinkAggregator MockPAXGPoRFeed LatestAnswer)
 
--- Mint Test
+-- Test mint success
 From PAXGHolder (Erc20 PAXG Approve (Address cPAXG) 1000000000000000000000)
 From PAXGHolder (CToken cPAXG Mint 1000000000000000000)
 -- PAXG balance of cPAXG after mint (should be +1000000000000000000)
 Assert Equal (Erc20 PAXG TokenBalance cPAXG) (9998e14)
 
--- Mint when PoR check fails
+-- Test mint unsuccessful when PoR check fails
 ChainlinkAggregator MockPAXGPoRFeed UpdateAnswer 10327140500000
 Read (ChainlinkAggregator MockPAXGPoRFeed LatestAnswer)
 AllowFailures
 From PAXGHolder (CToken cPAXG Mint 1000000000000000000)
-Assert Failure "unknown error=17" "unknown info=87" "0"
+Assert Failure TOKEN_MINT_ERROR MINT_FEED_SUPPLY_CHECK "0"
+
+-- Test mint unsuccessful when PoR heartbeat check fails
+ChainlinkAggregator MockPAXGPoRFeed UpdateAnswer 17327140500000
+CToken cPAXG SetHeartbeat 86400
+IncreaseTime 172800
+AllowFailures
+From PAXGHolder (CToken cPAXG Mint 1000000000000000000)
+Assert Failure TOKEN_MINT_ERROR MINT_FEED_HEARTBEAT_CHECK "0"
 
 Print "Deployment of cPAXG implementing Proof-of-Reserves succcesful"
