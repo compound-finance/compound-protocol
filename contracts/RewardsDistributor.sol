@@ -179,6 +179,9 @@ contract RewardsDistributor is ExponentialNoError {
                 if (compBorrowState[address(cToken)].index == 0) {
                     allMarkets.push(cToken);
                 }
+            } else {
+                // Update block number to ensure extra interest is not accrued during the prior period
+                compSupplyState[address(cToken)].block = safe32(getBlockNumber(), "block number exceeds 32 bits");
             }
         }
 
@@ -214,6 +217,9 @@ contract RewardsDistributor is ExponentialNoError {
                 if (compSupplyState[address(cToken)].index == 0) {
                     allMarkets.push(cToken);
                 }
+            } else {
+                // Update block number to ensure extra interest is not accrued during the prior period
+                compBorrowState[address(cToken)].block = safe32(getBlockNumber(), "block number exceeds 32 bits");
             }
         }
 
