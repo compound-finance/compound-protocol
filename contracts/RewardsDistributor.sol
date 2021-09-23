@@ -169,14 +169,14 @@ contract RewardsDistributor is ExponentialNoError {
             checkCToken(cToken);
 
             // Add the COMP market
-            if (compSupplyState[address(cToken)].index == 0 && compSupplyState[address(cToken)].block == 0) {
+            if (compSupplyState[address(cToken)].index == 0) {
                 compSupplyState[address(cToken)] = CompMarketState({
                     index: compInitialIndex,
                     block: safe32(getBlockNumber(), "block number exceeds 32 bits")
                 });
 
                 // Add to allMarkets array if not already there
-                if (compBorrowState[address(cToken)].index == 0 && compBorrowState[address(cToken)].block == 0) {
+                if (compBorrowState[address(cToken)].index == 0) {
                     allMarkets.push(cToken);
                 }
             }
@@ -204,14 +204,14 @@ contract RewardsDistributor is ExponentialNoError {
             checkCToken(cToken);
 
             // Add the COMP market
-            if (compBorrowState[address(cToken)].index == 0 && compBorrowState[address(cToken)].block == 0) {
+            if (compBorrowState[address(cToken)].index == 0) {
                 compBorrowState[address(cToken)] = CompMarketState({
                     index: compInitialIndex,
                     block: safe32(getBlockNumber(), "block number exceeds 32 bits")
                 });
 
                 // Add to allMarkets array if not already there
-                if (compSupplyState[address(cToken)].index == 0 && compSupplyState[address(cToken)].block == 0) {
+                if (compSupplyState[address(cToken)].index == 0) {
                     allMarkets.push(cToken);
                 }
             }
@@ -227,7 +227,7 @@ contract RewardsDistributor is ExponentialNoError {
      * @notice Accrue COMP to the market by updating the supply index
      * @param cToken The market whose supply index to update
      */
-    function updateCompSupplyIndex(address cToken) public {
+    function updateCompSupplyIndex(address cToken) internal {
         CompMarketState storage supplyState = compSupplyState[cToken];
         uint supplySpeed = compSupplySpeeds[cToken];
         uint blockNumber = getBlockNumber();
@@ -241,7 +241,7 @@ contract RewardsDistributor is ExponentialNoError {
                 index: safe224(index.mantissa, "new index exceeds 224 bits"),
                 block: safe32(blockNumber, "block number exceeds 32 bits")
             });
-        } else if (deltaBlocks > 0) {
+        } else if (deltaBlocks > 0 && supplyState.index > 0) {
             supplyState.block = safe32(blockNumber, "block number exceeds 32 bits");
         }
     }
@@ -264,7 +264,7 @@ contract RewardsDistributor is ExponentialNoError {
                 index: safe224(index.mantissa, "new index exceeds 224 bits"),
                 block: safe32(blockNumber, "block number exceeds 32 bits")
             });
-        } else if (deltaBlocks > 0) {
+        } else if (deltaBlocks > 0 && borrowState.index > 0) {
             borrowState.block = safe32(blockNumber, "block number exceeds 32 bits");
         }
     }
@@ -402,16 +402,14 @@ contract RewardsDistributor is ExponentialNoError {
     function claimRewards(address[] memory holders, CToken[] memory cTokens, bool borrowers, bool suppliers) public {
         for (uint i = 0; i < cTokens.length; i++) {
             CToken cToken = cTokens[i];
-            (bool isListed, ) = ComptrollerV2Storage(address(cToken.comptroller())).markets(address(cToken));
-            require(isListed, "market must be listed");
-            if (borrowers == true) {
+            if (borrowers == true && compBorrowState[address(cToken)].index > 0) {
                 Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
                 updateCompBorrowIndex(address(cToken), borrowIndex);
                 for (uint j = 0; j < holders.length; j++) {
                     distributeBorrowerComp(address(cToken), holders[j], borrowIndex);
                 }
             }
-            if (suppliers == true) {
+            if (suppliers == true && compSupplyState[address(cToken)].index > 0) {
                 updateCompSupplyIndex(address(cToken));
                 for (uint j = 0; j < holders.length; j++) {
                     distributeSupplierComp(address(cToken), holders[j]);
