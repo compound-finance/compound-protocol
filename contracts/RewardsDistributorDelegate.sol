@@ -3,59 +3,13 @@ pragma solidity ^0.5.16;
 import "./CToken.sol";
 import "./ExponentialNoError.sol";
 import "./Comptroller.sol";
+import "./RewardsDistributorStorage.sol";
 
 /**
- * @title RewardsDistributor (COMP distribution logic extracted from `Comptroller`)
+ * @title RewardsDistributorDelegate (COMP distribution logic extracted from `Comptroller`)
  * @author Compound
  */
-contract RewardsDistributor is ExponentialNoError {
-    /// @notice Administrator for this contract
-    address public admin;
-
-    /// @notice Pending administrator for this contract
-    address public pendingAdmin;
-
-    /// @dev The token to reward (i.e., COMP)
-    address public rewardToken;
-
-    struct CompMarketState {
-        /// @notice The market's last updated compBorrowIndex or compSupplyIndex
-        uint224 index;
-
-        /// @notice The block number the index was last updated at
-        uint32 block;
-    }
-
-    /// @notice A list of all markets
-    CToken[] public allMarkets;
-
-    /// @notice The portion of compRate that each market currently receives
-    mapping(address => uint) public compSupplySpeeds;
-
-    /// @notice The portion of compRate that each market currently receives
-    mapping(address => uint) public compBorrowSpeeds;
-
-    /// @notice The COMP market supply state for each market
-    mapping(address => CompMarketState) public compSupplyState;
-
-    /// @notice The COMP market borrow state for each market
-    mapping(address => CompMarketState) public compBorrowState;
-
-    /// @notice The COMP borrow index for each market for each supplier as of the last time they accrued COMP
-    mapping(address => mapping(address => uint)) public compSupplierIndex;
-
-    /// @notice The COMP borrow index for each market for each borrower as of the last time they accrued COMP
-    mapping(address => mapping(address => uint)) public compBorrowerIndex;
-
-    /// @notice The COMP accrued but not yet transferred to each user
-    mapping(address => uint) public compAccrued;
-
-    /// @notice The portion of COMP that each contributor receives per block
-    mapping(address => uint) public compContributorSpeeds;
-
-    /// @notice Last block at which a contributor's COMP rewards have been allocated
-    mapping(address => uint) public lastContributorBlock;
-
+contract RewardsDistributorDelegate is RewardsDistributorDelegateStorageV1, ExponentialNoError {
     /// @dev Notice that this contract is a RewardsDistributor
     bool public constant isRewardsDistributor = true;
 
@@ -86,9 +40,11 @@ contract RewardsDistributor is ExponentialNoError {
     /// @notice The initial COMP index for a market
     uint224 public constant compInitialIndex = 1e36;
 
-    /// @dev Constructor to set admin to caller and set reward token
-    constructor(address _rewardToken) public {
-        admin = msg.sender;
+    /// @dev Intitializer to set admin to caller and set reward token
+    function initialize(address _rewardToken) external {
+        require(msg.sender == admin, "Only admin can initialize.");
+        require(rewardToken == address(0), "Already initialized.");
+        require(_rewardToken != address(0), "Cannot initialize reward token to the zero address.");
         rewardToken = _rewardToken;
     }
 
