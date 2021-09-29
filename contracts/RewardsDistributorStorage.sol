@@ -1,6 +1,8 @@
 pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
+import "./CToken.sol";
+
 contract RewardsDistributorDelegatorStorage {
     /// @notice Administrator for this contract
     address public admin;

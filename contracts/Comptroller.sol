@@ -8,7 +8,7 @@ import "./PriceOracle.sol";
 import "./ComptrollerInterface.sol";
 import "./ComptrollerStorage.sol";
 import "./Unitroller.sol";
-import "./RewardsDistributor.sol";
+import "./RewardsDistributorDelegate.sol";
 
 /**
  * @title Compound's Comptroller Contract
@@ -736,7 +736,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      * @param supplier The minter/redeemer
      */
     function flywheelPreSupplierAction(address cToken, address supplier) internal {
-        for (uint256 i = 0; i < rewardsDistributors.length; i++) RewardsDistributor(rewardsDistributors[i]).flywheelPreSupplierAction(cToken, supplier);
+        for (uint256 i = 0; i < rewardsDistributors.length; i++) RewardsDistributorDelegate(rewardsDistributors[i]).flywheelPreSupplierAction(cToken, supplier);
     }
 
     /**
@@ -745,7 +745,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      * @param borrower The borrower
      */
     function flywheelPreBorrowerAction(address cToken, address borrower) internal {
-        for (uint256 i = 0; i < rewardsDistributors.length; i++) RewardsDistributor(rewardsDistributors[i]).flywheelPreBorrowerAction(cToken, borrower);
+        for (uint256 i = 0; i < rewardsDistributors.length; i++) RewardsDistributorDelegate(rewardsDistributors[i]).flywheelPreBorrowerAction(cToken, borrower);
     }
 
     /**
@@ -755,7 +755,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
      * @param dst The account which receives the tokens
      */
     function flywheelPreTransferAction(address cToken, address src, address dst) internal {
-        for (uint256 i = 0; i < rewardsDistributors.length; i++) RewardsDistributor(rewardsDistributors[i]).flywheelPreTransferAction(cToken, src, dst);
+        for (uint256 i = 0; i < rewardsDistributors.length; i++) RewardsDistributorDelegate(rewardsDistributors[i]).flywheelPreTransferAction(cToken, src, dst);
     }
 
     /*** Liquidity/Liquidation Calculations ***/
@@ -940,7 +940,7 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Check marker method
-        require(RewardsDistributor(distributor).isRewardsDistributor(), "marker method returned false");
+        require(RewardsDistributorDelegate(distributor).isRewardsDistributor(), "marker method returned false");
 
         // Check for existing RewardsDistributor
         for (uint i = 0; i < rewardsDistributors.length; i++) require(distributor != rewardsDistributors[i], "RewardsDistributor contract already added");
