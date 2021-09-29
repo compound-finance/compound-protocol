@@ -16,6 +16,8 @@ interface ComptrollerLensInterface {
     function claimComp(address) external;
     function compAccrued(address) external view returns (uint);
     function compSpeeds(address) external view returns (uint);
+    function compSupplySpeeds(address) external view returns (uint);
+    function compBorrowSpeeds(address) external view returns (uint);
     function borrowCaps(address) external view returns (uint);
 }
 
@@ -62,6 +64,49 @@ contract CompoundLens {
         uint borrowCap;
     }
 
+    function getCompSpeeds(ComptrollerLensInterface comptroller, CToken cToken) internal returns (uint, uint) {
+        // Getting comp speeds is gnarly due to not every network having the
+        // split comp speeds from Proposal 62 and other networks don't even
+        // have comp speeds.
+        uint compSupplySpeed = 0;
+        (bool compSupplySpeedSuccess, bytes memory compSupplySpeedReturnData) =
+            address(comptroller).call(
+                abi.encodePacked(
+                    comptroller.compSupplySpeeds.selector,
+                    abi.encode(address(cToken))
+                )
+            );
+        if (compSupplySpeedSuccess) {
+            compSupplySpeed = abi.decode(compSupplySpeedReturnData, (uint));
+        }
+
+        uint compBorrowSpeed = 0;
+        (bool compBorrowSpeedSuccess, bytes memory compBorrowSpeedReturnData) =
+            address(comptroller).call(
+                abi.encodePacked(
+                    comptroller.compBorrowSpeeds.selector,
+                    abi.encode(address(cToken))
+                )
+            );
+        if (compBorrowSpeedSuccess) {
+            compBorrowSpeed = abi.decode(compBorrowSpeedReturnData, (uint));
+        }
+
+        if (!compSupplySpeedSuccess || compBorrowSpeedSuccess) {
+            (bool compSpeedSuccess, bytes memory compSpeedReturnData) =
+            address(comptroller).call(
+                abi.encodePacked(
+                    comptroller.compSpeeds.selector,
+                    abi.encode(address(cToken))
+                )
+            );
+            if (compSpeedSuccess) {
+                compSupplySpeed = compBorrowSpeed = abi.decode(compSpeedReturnData, (uint));
+            }
+        }
+        return (compSupplySpeed, compBorrowSpeed);
+    }
+
     function cTokenMetadata(CToken cToken) public returns (CTokenMetadata memory) {
         uint exchangeRateCurrent = cToken.exchangeRateCurrent();
         ComptrollerLensInterface comptroller = ComptrollerLensInterface(address(cToken.comptroller()));
@@ -78,17 +123,9 @@ contract CompoundLens {
             underlyingDecimals = EIP20Interface(cErc20.underlying()).decimals();
         }
 
-        uint compSpeed = 0;
-        (bool compSpeedSuccess, bytes memory compSpeedReturnData) =
-            address(comptroller).call(
-                abi.encodePacked(
-                    comptroller.compSpeeds.selector,
-                    abi.encode(address(cToken))
-                )
-            );
-        if (compSpeedSuccess) {
-            compSpeed = abi.decode(compSpeedReturnData, (uint));
-        }
+        (uint compSupplySpeed, uint compBorrowSpeed) = getCompSpeeds(comptroller, cToken);
+        //TODO: This needs to be fixed the correct way. For now we'll continue to return a single field.
+        uint compSpeed = compSupplySpeed;
 
         uint borrowCap = 0;
         (bool borrowCapSuccess, bytes memory borrowCapReturnData) =
