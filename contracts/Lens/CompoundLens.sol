@@ -92,7 +92,7 @@ contract CompoundLens {
             compBorrowSpeed = abi.decode(compBorrowSpeedReturnData, (uint));
         }
 
-        if (!compSupplySpeedSuccess || compBorrowSpeedSuccess) {
+        if (!compSupplySpeedSuccess || !compBorrowSpeedSuccess) {
             (bool compSpeedSuccess, bytes memory compSpeedReturnData) =
             address(comptroller).call(
                 abi.encodePacked(
