@@ -88,7 +88,7 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
      * @notice Function called before all delegator functions
      * @dev Checks comptroller.autoImplementation and upgrades the implementation if necessary
      */
-    function _prepare() external {
+    function _prepare() external payable {
         if (msg.sender != address(this) && ComptrollerV3Storage(address(comptroller)).autoImplementation()) {
             (address latestCErc20Delegate, bool allowResign, bytes memory becomeImplementationData) = fuseAdmin.latestCErc20Delegate(implementation);
             if (implementation != latestCErc20Delegate) _setImplementationInternal(latestCErc20Delegate, allowResign, becomeImplementationData);

@@ -344,5 +344,5 @@ contract CDelegateInterface is CDelegationStorage {
      * @notice Function called before all delegator functions
      * @dev Checks comptroller.autoImplementation and upgrades the implementation if necessary
      */
-    function _prepare() external;
+    function _prepare() external payable;
 }
