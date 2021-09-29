@@ -256,7 +256,6 @@ contract RewardsDistributorDelegate is RewardsDistributorDelegateStorageV1, Expo
 
     /**
      * @notice Calculate COMP accrued by a borrower and possibly transfer it to them
-     * @dev Borrowers will not begin to accrue until after the first interaction with the protocol.
      * @param cToken The market in which the borrower is interacting
      * @param borrower The address of the borrower to distribute COMP to
      */
@@ -266,14 +265,16 @@ contract RewardsDistributorDelegate is RewardsDistributorDelegateStorageV1, Expo
         Double memory borrowerIndex = Double({mantissa: compBorrowerIndex[cToken][borrower]});
         compBorrowerIndex[cToken][borrower] = borrowIndex.mantissa;
 
-        if (borrowerIndex.mantissa > 0) {
-            Double memory deltaIndex = sub_(borrowIndex, borrowerIndex);
-            uint borrowerAmount = div_(CToken(cToken).borrowBalanceStored(borrower), marketBorrowIndex);
-            uint borrowerDelta = mul_(borrowerAmount, deltaIndex);
-            uint borrowerAccrued = add_(compAccrued[borrower], borrowerDelta);
-            compAccrued[borrower] = borrowerAccrued;
-            emit DistributedBorrowerComp(CToken(cToken), borrower, borrowerDelta, borrowIndex.mantissa);
+        if (borrowerIndex.mantissa == 0 && borrowIndex.mantissa > 0) {
+            borrowerIndex.mantissa = compInitialIndex;
         }
+
+        Double memory deltaIndex = sub_(borrowIndex, borrowerIndex);
+        uint borrowerAmount = div_(CToken(cToken).borrowBalanceStored(borrower), marketBorrowIndex);
+        uint borrowerDelta = mul_(borrowerAmount, deltaIndex);
+        uint borrowerAccrued = add_(compAccrued[borrower], borrowerDelta);
+        compAccrued[borrower] = borrowerAccrued;
+        emit DistributedBorrowerComp(CToken(cToken), borrower, borrowerDelta, borrowIndex.mantissa);
     }
 
     /**
