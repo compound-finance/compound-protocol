@@ -207,11 +207,11 @@
   "opcodes": {}
  },
  "unitroller second mint with comp accrued": {
-  "fee": 119362,
+  "fee": 118632,
   "opcodes": {}
  },
  "unitroller claim comp": {
-  "fee": 144374,
+  "fee": 157456,
   "opcodes": {}
  }
 }

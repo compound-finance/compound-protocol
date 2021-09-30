@@ -184,7 +184,7 @@ describe('Gas report', () => {
       let interestRateModelOpts = {borrowRate: 0.000001};
       cToken = await makeCToken({comptroller, supportMarket: true, underlyingPrice: 2, interestRateModelOpts});
       if (patch == 'unitroller') {
-        await send(comptroller, '_setCompSpeed', [cToken._address, etherExp(0.05)]);
+        await send(comptroller, '_setCompSpeeds', [[cToken._address], [etherExp(0.05)], [etherExp(0.05)]]);
       } else {
         await send(comptroller, '_addCompMarkets', [[cToken].map(c => c._address)]);
         await send(comptroller, 'setCompSpeed', [cToken._address, etherExp(0.05)]);

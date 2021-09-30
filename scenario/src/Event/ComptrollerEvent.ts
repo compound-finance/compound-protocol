@@ -296,6 +296,18 @@ async function setCompSpeed(world: World, from: string, comptroller: Comptroller
   return world;
 }
 
+async function setCompSpeeds(world: World, from: string, comptroller: Comptroller, cTokens: CToken[], supplySpeeds: NumberV[], borrowSpeeds: NumberV[]): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setCompSpeeds(cTokens.map(c => c._address), supplySpeeds.map(speed => speed.encode()), borrowSpeeds.map(speed => speed.encode())), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Comp speed for markets [${cTokens.map(c => c._address)}] set to supplySpeeds=[${supplySpeeds.map(speed => speed.show())}, borrowSpeeds=[${borrowSpeeds.map(speed => speed.show())}]`,
+    invokation
+  );
+
+  return world;
+}
+
 async function setContributorCompSpeed(world: World, from: string, comptroller: Comptroller, contributor: string, speed: NumberV): Promise<World> {
   let invokation = await invoke(world, comptroller.methods._setContributorCompSpeed(contributor, speed.encode()), from, ComptrollerErrorReporter);
 
@@ -789,7 +801,7 @@ export function comptrollerCommands() {
       (world, from, {comptroller, rate}) => setCompRate(world, from, comptroller, rate)
     ),
     new Command<{comptroller: Comptroller, cToken: CToken, speed: NumberV}>(`
-      #### SetCompSpeed
+      #### SetCompSpeed (deprecated)
       * "Comptroller SetCompSpeed <cToken> <rate>" - Sets COMP speed for market
       * E.g. "Comptroller SetCompSpeed cToken 1000
       `,
@@ -800,6 +812,20 @@ export function comptrollerCommands() {
         new Arg("speed", getNumberV)
       ],
       (world, from, {comptroller, cToken, speed}) => setCompSpeed(world, from, comptroller, cToken, speed)
+    ),
+    new Command<{comptroller: Comptroller, cTokens: CToken[], supplySpeeds: NumberV[], borrowSpeeds: NumberV[]}>(`
+      #### SetCompSpeeds
+      * "Comptroller SetCompSpeeds (<cToken> ...) (<supplySpeed> ...) (<borrowSpeed> ...)" - Sets COMP speeds for markets
+      * E.g. "Comptroller SetCompSpeeds (cZRX cBAT) (1000 0) (1000 2000)
+      `,
+      "SetCompSpeeds",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("cTokens", getCTokenV, {mapped: true}),
+        new Arg("supplySpeeds", getNumberV, {mapped: true}),
+        new Arg("borrowSpeeds", getNumberV, {mapped: true})
+      ],
+      (world, from, {comptroller, cTokens, supplySpeeds, borrowSpeeds}) => setCompSpeeds(world, from, comptroller, cTokens, supplySpeeds, borrowSpeeds)
     ),
     new Command<{comptroller: Comptroller, contributor: AddressV, speed: NumberV}>(`
       #### SetContributorCompSpeed

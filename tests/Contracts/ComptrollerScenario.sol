@@ -37,6 +37,14 @@ contract ComptrollerScenario is Comptroller {
         markets[address(cToken)].isListed = false;
     }
 
+    function setCompBorrowerIndex(address cToken, address borrower, uint index) public {
+        compBorrowerIndex[cToken][borrower] = index;
+    }
+
+    function setCompSupplierIndex(address cToken, address supplier, uint index) public {
+        compSupplierIndex[cToken][supplier] = index;
+    }
+
     /**
      * @notice Recalculate and update COMP speeds for all COMP markets
      */
@@ -54,7 +62,7 @@ contract ComptrollerScenario is Comptroller {
         Exp[] memory utilities = new Exp[](allMarkets_.length);
         for (uint i = 0; i < allMarkets_.length; i++) {
             CToken cToken = allMarkets_[i];
-            if (compSpeeds[address(cToken)] > 0) {
+            if (compSupplySpeeds[address(cToken)] > 0 || compBorrowSpeeds[address(cToken)] > 0) {
                 Exp memory assetPrice = Exp({mantissa: oracle.getUnderlyingPrice(cToken)});
                 Exp memory utility = mul_(assetPrice, cToken.totalBorrows());
                 utilities[i] = utility;
@@ -65,7 +73,7 @@ contract ComptrollerScenario is Comptroller {
         for (uint i = 0; i < allMarkets_.length; i++) {
             CToken cToken = allMarkets[i];
             uint newSpeed = totalUtility.mantissa > 0 ? mul_(compRate, div_(utilities[i], totalUtility)) : 0;
-            setCompSpeedInternal(cToken, newSpeed);
+            setCompSpeedInternal(cToken, newSpeed, newSpeed);
         }
     }
 }
