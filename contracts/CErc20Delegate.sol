@@ -26,7 +26,7 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
             implementation = address(0);
         }
 
-        require(msg.sender == address(this) || hasAdminRights(), "only self or admin may call _becomeImplementation");
+        require(msg.sender == address(this) || hasAdminRights(), "!self");
 
         // Make sure admin storage is set up correctly
         __admin = address(0);
@@ -52,7 +52,7 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
      */
     function _setImplementationInternal(address implementation_, bool allowResign, bytes memory becomeImplementationData) internal {
         // Check whitelist
-        require(fuseAdmin.cErc20DelegateWhitelist(implementation, implementation_, allowResign), "new implementation not whitelisted or allowResign must be inverted");
+        require(fuseAdmin.cErc20DelegateWhitelist(implementation, implementation_, allowResign), "!impl");
 
         // Call _resignImplementation internally (this delegate's code)
         if (allowResign) _resignImplementation();
@@ -64,7 +64,7 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
         implementation = implementation_;
 
         // Call _becomeImplementation externally (delegating to new delegate's code)
-        _functionCall(address(this), abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData), "reverted on _becomeImplementation");
+        _functionCall(address(this), abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData), "!become");
 
         // Emit event
         emit NewImplementation(oldImplementation, implementation);
@@ -78,7 +78,7 @@ contract CErc20Delegate is CDelegateInterface, CErc20 {
      */
     function _setImplementationSafe(address implementation_, bool allowResign, bytes calldata becomeImplementationData) external {
         // Check admin rights
-        require(hasAdminRights(), "only admin may call _setImplementationSafe");
+        require(hasAdminRights(), "!admin");
 
         // Set implementation
         _setImplementationInternal(implementation_, allowResign, becomeImplementationData);
