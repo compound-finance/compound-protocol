@@ -132,9 +132,15 @@ Test "Accrue borrower COMP during a repayBorrowBehalf of 0"
     Assert Equal (Comptroller CompBorrowState cZRX "block") 300000
     Assert Equal (Erc20 COMP TokenBalance Coburn) (3000e18)
     Assert Equal (Comptroller CompBorrowerIndex cZRX Coburn) (3.001e39)
+<<<<<<< HEAD
 
 -- TODO: Test "Accrue COMP during a liquidation"
 
+=======
+
+-- TODO: Test "Accrue COMP during a liquidation"
+
+>>>>>>> 4aa526d8158c6326e4fdeed939480e340af4c00c
 Test "Don't accrue borrower COMP during a transfer"
     FlywheelComptroller
     InitUsage
