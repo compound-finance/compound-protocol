@@ -261,6 +261,10 @@ Test "New COMP speeds apply to both prior borrowers+suppliers and later borrower
     Assert Equal (Erc20 COMP TokenBalance Geoff) 1000
     Assert Equal (Erc20 COMP TokenBalance Jared) 1000
     Assert Equal (Erc20 COMP TokenBalance Torrey) 1000
+    Assert Equal (Comptroller CompAccrued Coburn) 0
+    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Assert Equal (Comptroller CompAccrued Jared) 0
+    Assert Equal (Comptroller CompAccrued Torrey) 0
     Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) (Comptroller CompBorrowerIndex cYFI Geoff)
     Assert Equal (Comptroller CompSupplierIndex cYFI Jared) (Comptroller CompSupplierIndex cYFI Torrey)
 
@@ -301,6 +305,10 @@ Test "New COMP speeds apply to both prior borrowers+suppliers and later borrower
     Assert Equal (Erc20 COMP TokenBalance Geoff) 1000
     Assert Equal (Erc20 COMP TokenBalance Jared) 1000
     Assert Equal (Erc20 COMP TokenBalance Torrey) 1000
+    Assert Equal (Comptroller CompAccrued Coburn) 0
+    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Assert Equal (Comptroller CompAccrued Jared) 0
+    Assert Equal (Comptroller CompAccrued Torrey) 0
     Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) (Comptroller CompBorrowerIndex cYFI Geoff)
     Assert Equal (Comptroller CompSupplierIndex cYFI Jared) (Comptroller CompSupplierIndex cYFI Torrey)
 
@@ -339,5 +347,9 @@ Test "Zero COMP speed markets don't accrue rewards w/ uninitialized borrower/sup
     Assert Equal (Erc20 COMP TokenBalance Geoff) 0
     Assert Equal (Erc20 COMP TokenBalance Jared) 0
     Assert Equal (Erc20 COMP TokenBalance Torrey) 0
+    Assert Equal (Comptroller CompAccrued Coburn) 0
+    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Assert Equal (Comptroller CompAccrued Jared) 0
+    Assert Equal (Comptroller CompAccrued Torrey) 0
     Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) (Comptroller CompBorrowerIndex cYFI Geoff)
     Assert Equal (Comptroller CompSupplierIndex cYFI Jared) (Comptroller CompSupplierIndex cYFI Torrey)
