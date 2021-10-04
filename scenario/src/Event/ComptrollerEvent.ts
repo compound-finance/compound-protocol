@@ -248,6 +248,18 @@ async function claimComp(world: World, from: string, comptroller: Comptroller, h
   return world;
 }
 
+async function claimCompInMarkets(world: World, from: string, comptroller: Comptroller, holder: string, cTokens: CToken[]): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods.claimComp(holder, cTokens.map(c => c._address)), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Comp claimed by ${holder} in markets ${cTokens.map(c => c.name)}`,
+    invokation
+  );
+
+  return world;
+}
+
 async function updateContributorRewards(world: World, from: string, comptroller: Comptroller, contributor: string): Promise<World> {
   let invokation = await invoke(world, comptroller.methods.updateContributorRewards(contributor), from, ComptrollerErrorReporter);
 
@@ -759,6 +771,20 @@ export function comptrollerCommands() {
         new Arg("holder", getAddressV)
       ],
       (world, from, {comptroller, holder}) => claimComp(world, from, comptroller, holder.val)
+    ),
+    new Command<{comptroller: Comptroller, holder: AddressV, cTokens: CToken[]}>(`
+      #### ClaimCompInMarkets
+
+      * "Comptroller ClaimComp <holder> (<CToken> ...)" - Claims comp
+      * E.g. "Comptroller ClaimCompInMarkets Geoff (cDAI cBAT)
+      `,
+      "ClaimCompInMarkets",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("holder", getAddressV),
+        new Arg("cTokens", getCTokenV, {mapped: true})
+      ],
+      (world, from, {comptroller, holder, cTokens}) => claimCompInMarkets(world, from, comptroller, holder.val, cTokens)
     ),
     new Command<{comptroller: Comptroller, contributor: AddressV}>(`
       #### UpdateContributorRewards
