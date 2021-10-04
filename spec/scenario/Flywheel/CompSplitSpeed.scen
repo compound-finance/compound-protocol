@@ -44,11 +44,6 @@ Macro SwitchToG9_TheBug
     Unitroller SetPendingImpl ScenComptrollerG9
     ComptrollerImpl ScenComptrollerG9 Become
 
-Macro SwitchToG10_Reverty
-    ComptrollerImpl Deploy ScenarioG10 ScenComptrollerG10
-    Unitroller SetPendingImpl ScenComptrollerG10
-    ComptrollerImpl ScenComptrollerG10 Become
-
 Macro SwitchToLatestComptroller
     ComptrollerImpl Deploy Scenario Latest
     Unitroller SetPendingImpl Latest
@@ -94,7 +89,7 @@ Test "Claim COMP Prior to Upgrade"
     Assert Equal (Erc20 COMP TokenBalance Coburn) 1000 -- 1000 comp missing forever
     Assert Equal (Erc20 COMP TokenBalance Geoff) 2000
  
--- Start with G8, upgrade to G9 (bug), then upgrade to G10 (reverty), then upgrade to latest
+-- Start with G8, upgrade to G9 (bug), then upgrade to latest
 Only "Claim COMP across upgrade"
     PreSplitComptroller
     InitSpeedsOld
@@ -131,51 +126,15 @@ Only "Claim COMP across upgrade"
     Assert Equal (Erc20 COMP TokenBalance Geoff) 2000
     Assert Equal (Erc20 COMP TokenBalance Jared) 0
     Assert Equal (Erc20 COMP TokenBalance Torrey) 5e10 --buggy balance (double check)
-    SwitchToG10_Reverty -- Let's go to the reverty fix
     FastForward 1000 blocks
-    AllowFailures
-    Comptroller ClaimComp Coburn
-    Assert Revert "revert COMP rewards paused"
-    Comptroller ClaimComp Geoff
-    Assert Revert "revert COMP rewards paused"
-    Comptroller ClaimComp Jared
-    Assert Revert "revert COMP rewards paused"
-    Comptroller ClaimComp Torrey
-    Assert Revert "revert COMP rewards paused"
-    Comptroller ClaimComp Tyler
-    Assert Revert "revert COMP rewards paused"
-    Comptroller ClaimComp Gaston
-    Assert Revert "revert COMP rewards paused"
-    Comptroller ClaimComp Felix
-    Assert Revert "revert COMP rewards paused"
-    Assert Equal (Erc20 COMP TokenBalance Coburn) 10000000000000000500 -- buggy balance
-    Assert Equal (Erc20 COMP TokenBalance Geoff) 2000
-    Assert Equal (Erc20 COMP TokenBalance Jared) 0
-    Assert Equal (Erc20 COMP TokenBalance Torrey) 5e10 --buggy balance (double check)
-    Assert Equal (Erc20 COMP TokenBalance Tyler) 0
-    Assert Equal (Erc20 COMP TokenBalance Gaston) 0
-    Assert Equal (Erc20 COMP TokenBalance Felix) 0
-    Assert Equal (Comptroller CompAccrued Coburn) 0 -- Check accruals
-    Assert Equal (Comptroller CompAccrued Geoff) 0
-    Assert Equal (Comptroller CompAccrued Jared) 0
-    Assert Equal (Comptroller CompAccrued Torrey) 0
-    Assert Equal (Comptroller CompAccrued Tyler) 0
-    Assert Equal (Comptroller CompAccrued Gaston) 0
-    Assert Equal (Comptroller CompAccrued Felix) 0
-    RepayBorrow Gaston UInt256Max cYFI -- but can borrow or repay to trigger accrual
-    Assert Success
-    Assert Equal (Comptroller CompAccrued Gaston) 10000000000000000000
-    Redeem Gaston 0 cBAT -- borrow or repay can still trigger accrual and should be 750
-    Assert Success
-    Assert Equal (Comptroller CompAccrued Gaston) 10000000000000000750
     SwitchToLatestComptroller
-    Comptroller ClaimComp Coburn  -- TODO: This should be blocked
+    Comptroller ClaimComp Coburn -- No accrual via detection
     Assert Success
     Comptroller ClaimComp Geoff -- Okay
     Assert Success
     Comptroller ClaimComp Jared -- Okay
     Assert Success
-    Comptroller ClaimComp Torrey -- TODO: This should be blocked
+    Comptroller ClaimComp Torrey -- No accrual via detection
     Assert Success
     Comptroller ClaimComp Tyler -- Okay
     Assert Success
@@ -185,17 +144,17 @@ Only "Claim COMP across upgrade"
     Assert Success
     Redeem Felix 0 cBAT -- borrow or repay can still trigger accrual and should be 750
     Assert Success
-    Assert Equal (Erc20 COMP TokenBalance Coburn) 10000000000000000750 -- buggy balance
+    Assert Equal (Erc20 COMP TokenBalance Coburn) 10000000000000000500 -- No accrual via detection
     Assert Equal (Erc20 COMP TokenBalance Geoff) 2000
     Assert Equal (Erc20 COMP TokenBalance Jared) 0
-    Assert Equal (Erc20 COMP TokenBalance Torrey) 5e10 --buggy balance (double check)
-    Assert Equal (Erc20 COMP TokenBalance Tyler) 750 -- not buggy balance!
-    Assert Equal (Erc20 COMP TokenBalance Gaston) 10000000000000000750 -- buggy balance
-    Assert Equal (Erc20 COMP TokenBalance Felix) 0 -- buggy balance
-    Assert Equal (Comptroller CompAccrued Coburn) 0 -- Check accruals
-    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Assert Equal (Erc20 COMP TokenBalance Torrey) 5e10 -- No grant via detection
+    Assert Equal (Erc20 COMP TokenBalance Tyler) 0 -- No grant via detection
+    Assert Equal (Erc20 COMP TokenBalance Gaston) 0 -- No grant via detection
+    Assert Equal (Erc20 COMP TokenBalance Felix) 0 -- No grant via detection
+    Assert Equal (Comptroller CompAccrued Coburn) 250 -- Accrued but not granted :(
+    Assert Equal (Comptroller CompAccrued Geoff) 1000 -- Accrued but not granted :(
     Assert Equal (Comptroller CompAccrued Jared) 0
     Assert Equal (Comptroller CompAccrued Torrey) 0
-    Assert Equal (Comptroller CompAccrued Tyler) 0
-    Assert Equal (Comptroller CompAccrued Gaston) 0
+    Assert Equal (Comptroller CompAccrued Tyler) 750
+    Assert Equal (Comptroller CompAccrued Gaston) 750
     Assert Equal (Comptroller CompAccrued Felix) 750 -- Non-buggy accrual
