@@ -151,3 +151,7 @@ contract ComptrollerV6Storage is ComptrollerV5Storage {
     /// @notice The rate at which comp is distributed to the corresponding supply market (per block)
     mapping(address => uint) public compSupplySpeeds;
 }
+
+contract ComptrollerV7Storage is ComptrollerV6Storage {
+    bool public proposal65FixExecuted;
+}
