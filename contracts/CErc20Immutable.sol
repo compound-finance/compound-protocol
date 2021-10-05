@@ -13,7 +13,7 @@ contract CErc20Immutable is CErc20 {
      * @param underlying_ The address of the underlying asset
      * @param comptroller_ The address of the Comptroller
      * @param interestRateModel_ The address of the interest rate model
-     * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
+     * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e(18-8+Underlying Token Decimal)
      * @param name_ ERC-20 name of this token
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
