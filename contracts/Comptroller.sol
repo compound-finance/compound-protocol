@@ -1096,9 +1096,18 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
             currentAccrual = compAccrued[user];
 
             amountToSubtract = amounts[i];
-            // Prevent subtraction underflow in the case where the user has claimed and received an incorrect amount of COMP.
-            if (amountToSubtract > currentAccrual)
+
+            // The case where the user has claimed and received an incorrect amount of COMP.
+            // The user has less currently accrued than the amount they incorrectly received.
+            if (amountToSubtract > currentAccrual) {
+                // Amount of COMP the user owes the protocol
+                uint accountReceivable = amountToSubtract - currentAccrual; // Underflow safe since amountToSubtract > currentAccrual
+
+                // Accounting: record the COMP debt for the user
+                compReceivable[user] = add_(compReceivable[user], accountReceivable);
+
                 amountToSubtract = currentAccrual;
+            }
             
             // Subtract the bad accrual amount from what they have accrued.
             // Users will keep whatever they have correctly accrued.

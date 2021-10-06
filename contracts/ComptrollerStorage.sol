@@ -153,5 +153,9 @@ contract ComptrollerV6Storage is ComptrollerV5Storage {
 }
 
 contract ComptrollerV7Storage is ComptrollerV6Storage {
+    /// @notice Flag indicating whether the function to fix COMP accruals has been executed (RE: proposal 62 bug)
     bool public proposal65FixExecuted;
+
+    /// @notice Accounting storage mapping account addresses to how much COMP they owe the protocol.
+    mapping(address => uint) compReceivable;
 }
