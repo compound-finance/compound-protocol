@@ -67,6 +67,12 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
     /// @notice Emitted when COMP is granted by admin
     event CompGranted(address recipient, uint amount);
 
+    /// @notice Emitted when COMP accrued for a user has been manually adjusted.
+    event CompAccruedAdjusted(address indexed user, uint oldCompAccrued, uint newCompAccrued);
+
+    /// @notice Emitted when COMP receivable for a user has been updated.
+    event CompReceivableUpdated(address indexed user, uint oldCompReceivable, uint newCompReceivable);
+
     /// @notice The initial COMP index for a market
     uint224 public constant compInitialIndex = 1e36;
 
@@ -1089,6 +1095,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         address user;
         uint currentAccrual;
         uint amountToSubtract;
+        uint newAccrual;
 
         // Iterate through all affected users
         for (uint i = 0; i < affectedUsers.length; ++i) {
@@ -1103,15 +1110,22 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
                 // Amount of COMP the user owes the protocol
                 uint accountReceivable = amountToSubtract - currentAccrual; // Underflow safe since amountToSubtract > currentAccrual
 
+                uint oldReceivable = compReceivable[user];
+                uint newReceivable = add_(oldReceivable, accountReceivable);
+
                 // Accounting: record the COMP debt for the user
-                compReceivable[user] = add_(compReceivable[user], accountReceivable);
+                compReceivable[user] = newReceivable;
+
+                emit CompReceivableUpdated(user, oldReceivable, newReceivable);
 
                 amountToSubtract = currentAccrual;
             }
             
             // Subtract the bad accrual amount from what they have accrued.
             // Users will keep whatever they have correctly accrued.
-            compAccrued[user] = sub_(currentAccrual, amountToSubtract);
+            compAccrued[user] = newAccrual = sub_(currentAccrual, amountToSubtract);
+
+            emit CompAccruedAdjusted(user, currentAccrual, newAccrual);
         }
 
         proposal65FixExecuted = true; // Makes it so that this function cannot be called again
