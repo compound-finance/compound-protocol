@@ -1369,18 +1369,6 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
      * @return The amount of COMP which was NOT transferred to the user
      */
     function grantCompInternal(address user, uint amount) internal returns (uint) {
-        for (uint i = 0; i < allMarkets.length; ++i) {
-            address market = address(allMarkets[i]);
-
-            bool noOriginalSpeed = compBorrowSpeeds[market] == 0;
-            bool invalidSupply = noOriginalSpeed && compSupplierIndex[market][user] > 0;
-            bool invalidBorrow = noOriginalSpeed && compBorrowerIndex[market][user] > 0;
-
-            if (invalidSupply || invalidBorrow) {
-                return amount;
-            }
-        }
-
         Comp comp = Comp(getCompAddress());
         uint compRemaining = comp.balanceOf(address(this));
         if (amount > 0 && amount <= compRemaining) {
