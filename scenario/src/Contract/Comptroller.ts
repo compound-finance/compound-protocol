@@ -53,6 +53,7 @@ interface ComptrollerMethods {
   compSupplyState(string): Callable<string>
   compBorrowState(string): Callable<string>
   compAccrued(string): Callable<string>
+  compReceivable(string): Callable<string>
   compSupplierIndex(market: string, account: string): Callable<string>
   compBorrowerIndex(market: string, account: string): Callable<string>
   compSpeeds(string): Callable<string>
