@@ -1121,11 +1121,13 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
                 amountToSubtract = currentAccrual;
             }
             
-            // Subtract the bad accrual amount from what they have accrued.
-            // Users will keep whatever they have correctly accrued.
-            compAccrued[user] = newAccrual = sub_(currentAccrual, amountToSubtract);
+            if (amountToSubtract > 0) {
+                // Subtract the bad accrual amount from what they have accrued.
+                // Users will keep whatever they have correctly accrued.
+                compAccrued[user] = newAccrual = sub_(currentAccrual, amountToSubtract);
 
-            emit CompAccruedAdjusted(user, currentAccrual, newAccrual);
+                emit CompAccruedAdjusted(user, currentAccrual, newAccrual);
+            }
         }
 
         proposal65FixExecuted = true; // Makes it so that this function cannot be called again
