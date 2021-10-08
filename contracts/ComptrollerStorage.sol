@@ -157,5 +157,5 @@ contract ComptrollerV7Storage is ComptrollerV6Storage {
     bool public proposal65FixExecuted;
 
     /// @notice Accounting storage mapping account addresses to how much COMP they owe the protocol.
-    mapping(address => uint) compReceivable;
+    mapping(address => uint) public compReceivable;
 }
