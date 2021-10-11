@@ -63,7 +63,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param src The address of the source account
      * @param dst The address of the destination account
      * @param tokens The number of tokens to transfer
-     * @return Whether or not the transfer succeeded
+     * @return 0 if the transfer succeeded, else revert
      */
     function transferTokens(address spender, address src, address dst, uint tokens) internal returns (uint) {
         /* Fail if transfer not allowed */
@@ -382,16 +382,15 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @notice Sender supplies assets into the market and receives cTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param mintAmount The amount of the underlying asset to supply
-     * @return (uint) the actual mint amount.
      */
-    function mintInternal(uint mintAmount) internal nonReentrant returns (uint) {
+    function mintInternal(uint mintAmount) internal nonReentrant {
         uint error = accrueInterest();
         if (error != NO_ERROR) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
             revert MintAccrueInterestFailed(error);
         }
         // mintFresh emits the actual Mint event if successful and logs on errors, so we don't need to
-        return mintFresh(msg.sender, mintAmount);
+        mintFresh(msg.sender, mintAmount);
     }
 
     /**
@@ -399,7 +398,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @dev Assumes interest has already been accrued up to the current block
      * @param minter The address of the account which is supplying the assets
      * @param mintAmount The amount of the underlying asset to supply
-     * @return (uint) the actual mint amount.
+     * @return (uint) the amount of underlying transferred to the cToken contract.
      */
     function mintFresh(address minter, uint mintAmount) internal returns (uint) {
         /* Fail if mint not allowed */
@@ -634,23 +633,22 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
 
     /**
      * @notice Sender repays their own borrow
-     * @param repayAmount The amount to repay
-     * @return (uint) the actual repayment amount.
+     * @param repayAmount The amount to repay, or -1 for the full outstanding amount
      */
-    function repayBorrowInternal(uint repayAmount) internal nonReentrant returns (uint) {
+    function repayBorrowInternal(uint repayAmount) internal nonReentrant {
         uint error = accrueInterest();
         if (error != NO_ERROR) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
             revert RepayBorrowAccrueInterestFailed(error);
         }
         // repayBorrowFresh emits repay-borrow-specific logs on errors, so we don't need to
-        return repayBorrowFresh(msg.sender, msg.sender, repayAmount);
+        repayBorrowFresh(msg.sender, msg.sender, repayAmount);
     }
 
     /**
      * @notice Sender repays a borrow belonging to borrower
      * @param borrower the account with the debt being payed off
-     * @param repayAmount The amount to repay
+     * @param repayAmount The amount to repay, or -1 for the full outstanding amount
      * @return (uint) the actual repayment amount.
      */
     function repayBorrowBehalfInternal(address borrower, uint repayAmount) internal nonReentrant returns (uint) {
@@ -1048,9 +1046,6 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
 
         totalReservesNew = totalReserves + actualAddAmount;
 
-        /* Revert on overflow */
-        require(totalReservesNew >= totalReserves, "add reserves unexpected overflow");
-
         // Store reserves[n+1] = reserves[n] + actualAddAmount
         totalReserves = totalReservesNew;
 
@@ -1112,8 +1107,6 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // (No safe failures beyond this point)
 
         totalReservesNew = totalReserves - reduceAmount;
-        // We checked reduceAmount <= totalReserves above, so this should never revert.
-        require(totalReservesNew <= totalReserves, "reduce reserves unexpected underflow");
 
         // Store reserves[n+1] = reserves[n] - reduceAmount
         totalReserves = totalReservesNew;

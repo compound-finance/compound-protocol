@@ -85,7 +85,7 @@ contract CErc20 is CToken, CErc20Interface {
 
     /**
      * @notice Sender repays their own borrow
-     * @param repayAmount The amount to repay
+     * @param repayAmount The amount to repay, or -1 for the full outstanding amount
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function repayBorrow(uint repayAmount) override external returns (uint) {
@@ -96,7 +96,7 @@ contract CErc20 is CToken, CErc20Interface {
     /**
      * @notice Sender repays a borrow belonging to borrower
      * @param borrower the account with the debt being payed off
-     * @param repayAmount The amount to repay
+     * @param repayAmount The amount to repay, or -1 for the full outstanding amount
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function repayBorrowBehalf(address borrower, uint repayAmount) override external returns (uint) {
@@ -122,9 +122,10 @@ contract CErc20 is CToken, CErc20Interface {
      * @param token The address of the ERC-20 token to sweep
      */
     function sweepToken(EIP20NonStandardInterface token) override external {
-    	require(address(token) != underlying, "CErc20::sweepToken: can not sweep underlying token");
-    	uint256 balance = token.balanceOf(address(this));
-    	token.transfer(admin, balance);
+        require(msg.sender == admin, "CErc20::sweepToken: only admin can sweep tokens");
+        require(address(token) != underlying, "CErc20::sweepToken: can not sweep underlying token");
+        uint256 balance = token.balanceOf(address(this));
+        token.transfer(admin, balance);
     }
 
     /**
@@ -180,7 +181,6 @@ contract CErc20 is CToken, CErc20Interface {
 
         // Calculate the amount that was *actually* transferred
         uint balanceAfter = EIP20Interface(underlying).balanceOf(address(this));
-        require(balanceAfter >= balanceBefore, "TOKEN_TRANSFER_IN_OVERFLOW");
         return balanceAfter - balanceBefore;   // underflow already checked above, just subtract
     }
 
