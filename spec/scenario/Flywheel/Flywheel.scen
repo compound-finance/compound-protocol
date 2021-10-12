@@ -261,6 +261,10 @@ Test "New COMP speeds apply to both prior borrowers+suppliers and later borrower
     Assert Equal (Erc20 COMP TokenBalance Geoff) 1000
     Assert Equal (Erc20 COMP TokenBalance Jared) 1000
     Assert Equal (Erc20 COMP TokenBalance Torrey) 1000
+    Assert Equal (Comptroller CompAccrued Coburn) 0
+    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Assert Equal (Comptroller CompAccrued Jared) 0
+    Assert Equal (Comptroller CompAccrued Torrey) 0
     Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) (Comptroller CompBorrowerIndex cYFI Geoff)
     Assert Equal (Comptroller CompSupplierIndex cYFI Jared) (Comptroller CompSupplierIndex cYFI Torrey)
 
@@ -301,5 +305,51 @@ Test "New COMP speeds apply to both prior borrowers+suppliers and later borrower
     Assert Equal (Erc20 COMP TokenBalance Geoff) 1000
     Assert Equal (Erc20 COMP TokenBalance Jared) 1000
     Assert Equal (Erc20 COMP TokenBalance Torrey) 1000
+    Assert Equal (Comptroller CompAccrued Coburn) 0
+    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Assert Equal (Comptroller CompAccrued Jared) 0
+    Assert Equal (Comptroller CompAccrued Torrey) 0
+    Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) (Comptroller CompBorrowerIndex cYFI Geoff)
+    Assert Equal (Comptroller CompSupplierIndex cYFI Jared) (Comptroller CompSupplierIndex cYFI Torrey)
+
+Test "Zero COMP speed markets don't accrue rewards w/ uninitialized borrower/supplier state indices"
+    -- Supplying
+    --   Torrey mints 100e18 before COMP speeds set
+    --   Jared mints 100e18 after COMP speeds set
+    -- Borrowing
+    --   Coburn borrows 10e18 before COMP speeds set
+    --   Geoff borrows 10e18 after COMP speeds set
+    FlywheelComptroller
+    InitUsage2
+    -- New token with no rewards
+    NewCToken YFI cYFI
+    Support cYFI collateralFactor:0.5
+    Prep Torrey 100e18 YFI cYFI
+    Mint Torrey 100e18 cYFI
+    Prep Jared 100e18 YFI cYFI
+    Borrow Coburn 10e18 cYFI
+    EnterMarkets Geoff cZRX
+    -- Set borrower and supplier state indices to 0 (uninitialized - before all market state indices were initialized properly)
+    Comptroller Send "setCompBorrowerIndex(address,address,uint256)" (Address cYFI) (Address Coburn) 0
+    Comptroller Send "setCompSupplierIndex(address,address,uint256)" (Address cYFI) (Address Torrey) 0
+    Mint Jared 100e18 cYFI
+    Borrow Geoff 10e18 cYFI
+    Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) 0
+    Assert Equal (Comptroller CompBorrowerIndex cYFI Geoff) 1e36
+    Assert Equal (Comptroller CompSupplierIndex cYFI Torrey) 0
+    Assert Equal (Comptroller CompSupplierIndex cYFI Jared) 1e36
+    FastForward 1000 blocks
+    Comptroller ClaimComp Jared
+    Comptroller ClaimComp Torrey
+    Comptroller ClaimComp Geoff
+    Comptroller ClaimComp Coburn
+    Assert Equal (Erc20 COMP TokenBalance Coburn) 0
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 0
+    Assert Equal (Erc20 COMP TokenBalance Jared) 0
+    Assert Equal (Erc20 COMP TokenBalance Torrey) 0
+    Assert Equal (Comptroller CompAccrued Coburn) 0
+    Assert Equal (Comptroller CompAccrued Geoff) 0
+    Assert Equal (Comptroller CompAccrued Jared) 0
+    Assert Equal (Comptroller CompAccrued Torrey) 0
     Assert Equal (Comptroller CompBorrowerIndex cYFI Coburn) (Comptroller CompBorrowerIndex cYFI Geoff)
     Assert Equal (Comptroller CompSupplierIndex cYFI Jared) (Comptroller CompSupplierIndex cYFI Torrey)
