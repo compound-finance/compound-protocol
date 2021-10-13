@@ -26,6 +26,12 @@ const ComptrollerScenarioG5Contract = getContract('ComptrollerScenarioG5');
 const ComptrollerG6Contract = getContract('ComptrollerG6');
 const ComptrollerScenarioG6Contract = getContract('ComptrollerScenarioG6');
 
+const ComptrollerG8Contract = getContract('ComptrollerG8');
+const ComptrollerScenarioG8Contract = getContract('ComptrollerScenarioG8');
+
+const ComptrollerG9Contract = getContract('ComptrollerG9');
+const ComptrollerScenarioG9Contract = getContract('ComptrollerScenarioG9');
+
 const ComptrollerScenarioContract = getTestContract('ComptrollerScenario');
 const ComptrollerContract = getContract('Comptroller');
 
@@ -140,6 +146,39 @@ export async function buildComptrollerImpl(
         name: name.val,
         contract: 'ComptrollerScenarioG6Contract',
         description: 'ScenarioG6 Comptroller Impl'
+      })
+    ),
+
+
+    new Fetcher<{ name: StringV }, ComptrollerImplData>(
+      `
+        #### ScenarioG8
+        * "ScenarioG8 name:<String>" - The Comptroller Scenario for local testing (last good)
+          * E.g. "ComptrollerImpl Deploy ScenarioG8 MyScen"
+      `,
+      'ScenarioG8',
+      [new Arg('name', getStringV)],
+      async (world, { name }) => ({
+        invokation: await ComptrollerScenarioG8Contract.deploy<ComptrollerImpl>(world, from, []),
+        name: name.val,
+        contract: 'ComptrollerScenarioG8Contract',
+        description: 'ScenarioG8 Comptroller Impl'
+      })
+    ),
+
+    new Fetcher<{ name: StringV }, ComptrollerImplData>(
+      `
+        #### ScenarioG9
+        * "ScenarioG9 name:<String>" - The Comptroller Scenario for local testing (the bug)
+          * E.g. "ComptrollerImpl Deploy ScenarioG9 MyScen"
+      `,
+      'ScenarioG9',
+      [new Arg('name', getStringV)],
+      async (world, { name }) => ({
+        invokation: await ComptrollerScenarioG9Contract.deploy<ComptrollerImpl>(world, from, []),
+        name: name.val,
+        contract: 'ComptrollerScenarioG9Contract',
+        description: 'ScenarioG9 Comptroller Impl'
       })
     ),
 
