@@ -60,7 +60,8 @@ contract CompoundLens {
         address underlyingAssetAddress;
         uint cTokenDecimals;
         uint underlyingDecimals;
-        uint compSpeed;
+        uint compSupplySpeed;
+        uint compBorrowSpeed;
         uint borrowCap;
     }
 
@@ -92,6 +93,7 @@ contract CompoundLens {
             compBorrowSpeed = abi.decode(compBorrowSpeedReturnData, (uint));
         }
 
+        // If the split comp speeds call doesn't work, try the  oldest non-spit version.
         if (!compSupplySpeedSuccess || !compBorrowSpeedSuccess) {
             (bool compSpeedSuccess, bytes memory compSpeedReturnData) =
             address(comptroller).call(
@@ -124,8 +126,6 @@ contract CompoundLens {
         }
 
         (uint compSupplySpeed, uint compBorrowSpeed) = getCompSpeeds(comptroller, cToken);
-        //TODO: This needs to be fixed the correct way. For now we'll continue to return a single field.
-        uint compSpeed = compSupplySpeed;
 
         uint borrowCap = 0;
         (bool borrowCapSuccess, bytes memory borrowCapReturnData) =
@@ -154,7 +154,8 @@ contract CompoundLens {
             underlyingAssetAddress: underlyingAssetAddress,
             cTokenDecimals: cToken.decimals(),
             underlyingDecimals: underlyingDecimals,
-            compSpeed: compSpeed,
+            compSupplySpeed: compSupplySpeed,
+            compBorrowSpeed: compBorrowSpeed,
             borrowCap: borrowCap
         });
     }

@@ -1,6 +1,7 @@
 const {
   address,
   encodeParameters,
+  etherExp,
 } = require('../Utils/Ethereum');
 const {
   makeComptroller,
@@ -50,7 +51,8 @@ describe('CompoundLens', () => {
           underlyingAssetAddress: await call(cErc20, 'underlying', []),
           cTokenDecimals: "8",
           underlyingDecimals: "18",
-          compSpeed: "0",
+          compSupplySpeed: "0",
+          compBorrowSpeed: "0",
           borrowCap: "0",
         }
       );
@@ -75,9 +77,38 @@ describe('CompoundLens', () => {
         totalSupply: "0",
         underlyingAssetAddress: "0x0000000000000000000000000000000000000000",
         underlyingDecimals: "18",
-        compSpeed: "0",
+        compSupplySpeed: "0",
+        compBorrowSpeed: "0",
         borrowCap: "0",
       });
+    });
+    it('is correct for cErc20 with set comp speeds', async () => {
+      let comptroller = await makeComptroller();
+      let cErc20 = await makeCToken({comptroller, supportMarket: true});
+      await send(comptroller, '_setCompSpeeds', [[cErc20._address], [etherExp(0.25)], [etherExp(0.75)]]);
+      expect(
+        cullTuple(await call(compoundLens, 'cTokenMetadata', [cErc20._address]))
+      ).toEqual(
+        {
+          cToken: cErc20._address,
+          exchangeRateCurrent: "1000000000000000000",
+          supplyRatePerBlock: "0",
+          borrowRatePerBlock: "0",
+          reserveFactorMantissa: "0",
+          totalBorrows: "0",
+          totalReserves: "0",
+          totalSupply: "0",
+          totalCash: "0",
+          isListed: true,
+          collateralFactorMantissa: "0",
+          underlyingAssetAddress: await call(cErc20, 'underlying', []),
+          cTokenDecimals: "8",
+          underlyingDecimals: "18",
+          compSupplySpeed: "250000000000000000",
+          compBorrowSpeed: "750000000000000000",
+          borrowCap: "0",
+        }
+      );
     });
   });
 
@@ -103,7 +134,8 @@ describe('CompoundLens', () => {
           underlyingAssetAddress: await call(cErc20, 'underlying', []),
           cTokenDecimals: "8",
           underlyingDecimals: "18",
-          compSpeed: "0",
+          compSupplySpeed: "0",
+          compBorrowSpeed: "0",
           borrowCap: "0",
         },
         {
@@ -121,7 +153,8 @@ describe('CompoundLens', () => {
           totalSupply: "0",
           underlyingAssetAddress: "0x0000000000000000000000000000000000000000",
           underlyingDecimals: "18",
-          compSpeed: "0",
+          compSupplySpeed: "0",
+          compBorrowSpeed: "0",
           borrowCap: "0",
         }
       ]);
