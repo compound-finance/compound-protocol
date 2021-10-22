@@ -23715,16 +23715,8 @@
       "outputs": [
         {
           "components": [
-            {
-              "internalType": "address",
-              "name": "cToken",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "balanceOf",
-              "type": "uint256"
-            },
+            { "internalType": "address", "name": "cToken", "type": "address" },
+            { "internalType": "uint256", "name": "balanceOf", "type": "uint256" },
             {
               "internalType": "uint256",
               "name": "borrowBalanceCurrent",
@@ -23773,16 +23765,8 @@
       "outputs": [
         {
           "components": [
-            {
-              "internalType": "address",
-              "name": "cToken",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "balanceOf",
-              "type": "uint256"
-            },
+            { "internalType": "address", "name": "cToken", "type": "address" },
+            { "internalType": "uint256", "name": "balanceOf", "type": "uint256" },
             {
               "internalType": "uint256",
               "name": "borrowBalanceCurrent",
@@ -23816,21 +23800,13 @@
     {
       "constant": false,
       "inputs": [
-        {
-          "internalType": "contract CToken",
-          "name": "cToken",
-          "type": "address"
-        }
+        { "internalType": "contract CToken", "name": "cToken", "type": "address" }
       ],
       "name": "cTokenMetadata",
       "outputs": [
         {
           "components": [
-            {
-              "internalType": "address",
-              "name": "cToken",
-              "type": "address"
-            },
+            { "internalType": "address", "name": "cToken", "type": "address" },
             {
               "internalType": "uint256",
               "name": "exchangeRateCurrent",
@@ -23866,16 +23842,8 @@
               "name": "totalSupply",
               "type": "uint256"
             },
-            {
-              "internalType": "uint256",
-              "name": "totalCash",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bool",
-              "name": "isListed",
-              "type": "bool"
-            },
+            { "internalType": "uint256", "name": "totalCash", "type": "uint256" },
+            { "internalType": "bool", "name": "isListed", "type": "bool" },
             {
               "internalType": "uint256",
               "name": "collateralFactorMantissa",
@@ -23898,14 +23866,15 @@
             },
             {
               "internalType": "uint256",
-              "name": "compSpeed",
+              "name": "compSupplySpeed",
               "type": "uint256"
             },
             {
               "internalType": "uint256",
-              "name": "borrowCap",
+              "name": "compBorrowSpeed",
               "type": "uint256"
-            }
+            },
+            { "internalType": "uint256", "name": "borrowCap", "type": "uint256" }
           ],
           "internalType": "struct CompoundLens.CTokenMetadata",
           "name": "",
@@ -23929,11 +23898,7 @@
       "outputs": [
         {
           "components": [
-            {
-              "internalType": "address",
-              "name": "cToken",
-              "type": "address"
-            },
+            { "internalType": "address", "name": "cToken", "type": "address" },
             {
               "internalType": "uint256",
               "name": "exchangeRateCurrent",
@@ -23969,16 +23934,8 @@
               "name": "totalSupply",
               "type": "uint256"
             },
-            {
-              "internalType": "uint256",
-              "name": "totalCash",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bool",
-              "name": "isListed",
-              "type": "bool"
-            },
+            { "internalType": "uint256", "name": "totalCash", "type": "uint256" },
+            { "internalType": "bool", "name": "isListed", "type": "bool" },
             {
               "internalType": "uint256",
               "name": "collateralFactorMantissa",
@@ -24001,14 +23958,15 @@
             },
             {
               "internalType": "uint256",
-              "name": "compSpeed",
+              "name": "compSupplySpeed",
               "type": "uint256"
             },
             {
               "internalType": "uint256",
-              "name": "borrowCap",
+              "name": "compBorrowSpeed",
               "type": "uint256"
-            }
+            },
+            { "internalType": "uint256", "name": "borrowCap", "type": "uint256" }
           ],
           "internalType": "struct CompoundLens.CTokenMetadata[]",
           "name": "",
@@ -24022,21 +23980,13 @@
     {
       "constant": false,
       "inputs": [
-        {
-          "internalType": "contract CToken",
-          "name": "cToken",
-          "type": "address"
-        }
+        { "internalType": "contract CToken", "name": "cToken", "type": "address" }
       ],
       "name": "cTokenUnderlyingPrice",
       "outputs": [
         {
           "components": [
-            {
-              "internalType": "address",
-              "name": "cToken",
-              "type": "address"
-            },
+            { "internalType": "address", "name": "cToken", "type": "address" },
             {
               "internalType": "uint256",
               "name": "underlyingPrice",
@@ -24065,11 +24015,7 @@
       "outputs": [
         {
           "components": [
-            {
-              "internalType": "address",
-              "name": "cToken",
-              "type": "address"
-            },
+            { "internalType": "address", "name": "cToken", "type": "address" },
             {
               "internalType": "uint256",
               "name": "underlyingPrice",
@@ -24093,11 +24039,7 @@
           "name": "comptroller",
           "type": "address"
         },
-        {
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
+        { "internalType": "address", "name": "account", "type": "address" }
       ],
       "name": "getAccountLimits",
       "outputs": [
@@ -24108,16 +24050,8 @@
               "name": "markets",
               "type": "address[]"
             },
-            {
-              "internalType": "uint256",
-              "name": "liquidity",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "shortfall",
-              "type": "uint256"
-            }
+            { "internalType": "uint256", "name": "liquidity", "type": "uint256" },
+            { "internalType": "uint256", "name": "shortfall", "type": "uint256" }
           ],
           "internalType": "struct CompoundLens.AccountLimits",
           "name": "",
@@ -24131,36 +24065,16 @@
     {
       "constant": true,
       "inputs": [
-        {
-          "internalType": "contract Comp",
-          "name": "comp",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
+        { "internalType": "contract Comp", "name": "comp", "type": "address" },
+        { "internalType": "address", "name": "account", "type": "address" }
       ],
       "name": "getCompBalanceMetadata",
       "outputs": [
         {
           "components": [
-            {
-              "internalType": "uint256",
-              "name": "balance",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "votes",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "delegate",
-              "type": "address"
-            }
+            { "internalType": "uint256", "name": "balance", "type": "uint256" },
+            { "internalType": "uint256", "name": "votes", "type": "uint256" },
+            { "internalType": "address", "name": "delegate", "type": "address" }
           ],
           "internalType": "struct CompoundLens.CompBalanceMetadata",
           "name": "",
@@ -24174,46 +24088,22 @@
     {
       "constant": false,
       "inputs": [
-        {
-          "internalType": "contract Comp",
-          "name": "comp",
-          "type": "address"
-        },
+        { "internalType": "contract Comp", "name": "comp", "type": "address" },
         {
           "internalType": "contract ComptrollerLensInterface",
           "name": "comptroller",
           "type": "address"
         },
-        {
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
+        { "internalType": "address", "name": "account", "type": "address" }
       ],
       "name": "getCompBalanceMetadataExt",
       "outputs": [
         {
           "components": [
-            {
-              "internalType": "uint256",
-              "name": "balance",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "votes",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "delegate",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "allocated",
-              "type": "uint256"
-            }
+            { "internalType": "uint256", "name": "balance", "type": "uint256" },
+            { "internalType": "uint256", "name": "votes", "type": "uint256" },
+            { "internalType": "address", "name": "delegate", "type": "address" },
+            { "internalType": "uint256", "name": "allocated", "type": "uint256" }
           ],
           "internalType": "struct CompoundLens.CompBalanceMetadataExt",
           "name": "",
@@ -24227,21 +24117,9 @@
     {
       "constant": true,
       "inputs": [
-        {
-          "internalType": "contract Comp",
-          "name": "comp",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        },
-        {
-          "internalType": "uint32[]",
-          "name": "blockNumbers",
-          "type": "uint32[]"
-        }
+        { "internalType": "contract Comp", "name": "comp", "type": "address" },
+        { "internalType": "address", "name": "account", "type": "address" },
+        { "internalType": "uint32[]", "name": "blockNumbers", "type": "uint32[]" }
       ],
       "name": "getCompVotes",
       "outputs": [
@@ -24252,11 +24130,7 @@
               "name": "blockNumber",
               "type": "uint256"
             },
-            {
-              "internalType": "uint256",
-              "name": "votes",
-              "type": "uint256"
-            }
+            { "internalType": "uint256", "name": "votes", "type": "uint256" }
           ],
           "internalType": "struct CompoundLens.CompVotes[]",
           "name": "",
@@ -24290,16 +24164,8 @@
               "name": "proposalId",
               "type": "uint256"
             },
-            {
-              "internalType": "address",
-              "name": "proposer",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "eta",
-              "type": "uint256"
-            },
+            { "internalType": "address", "name": "proposer", "type": "address" },
+            { "internalType": "uint256", "name": "eta", "type": "uint256" },
             {
               "internalType": "address[]",
               "name": "targets",
@@ -24315,26 +24181,14 @@
               "name": "signatures",
               "type": "string[]"
             },
-            {
-              "internalType": "bytes[]",
-              "name": "calldatas",
-              "type": "bytes[]"
-            },
+            { "internalType": "bytes[]", "name": "calldatas", "type": "bytes[]" },
             {
               "internalType": "uint256",
               "name": "startBlock",
               "type": "uint256"
             },
-            {
-              "internalType": "uint256",
-              "name": "endBlock",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "forVotes",
-              "type": "uint256"
-            },
+            { "internalType": "uint256", "name": "endBlock", "type": "uint256" },
+            { "internalType": "uint256", "name": "forVotes", "type": "uint256" },
             {
               "internalType": "uint256",
               "name": "againstVotes",
@@ -24345,16 +24199,8 @@
               "name": "abstainVotes",
               "type": "uint256"
             },
-            {
-              "internalType": "bool",
-              "name": "canceled",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "executed",
-              "type": "bool"
-            }
+            { "internalType": "bool", "name": "canceled", "type": "bool" },
+            { "internalType": "bool", "name": "executed", "type": "bool" }
           ],
           "internalType": "struct CompoundLens.GovBravoProposal[]",
           "name": "",
@@ -24373,11 +24219,7 @@
           "name": "governor",
           "type": "address"
         },
-        {
-          "internalType": "address",
-          "name": "voter",
-          "type": "address"
-        },
+        { "internalType": "address", "name": "voter", "type": "address" },
         {
           "internalType": "uint256[]",
           "name": "proposalIds",
@@ -24393,21 +24235,9 @@
               "name": "proposalId",
               "type": "uint256"
             },
-            {
-              "internalType": "bool",
-              "name": "hasVoted",
-              "type": "bool"
-            },
-            {
-              "internalType": "uint8",
-              "name": "support",
-              "type": "uint8"
-            },
-            {
-              "internalType": "uint96",
-              "name": "votes",
-              "type": "uint96"
-            }
+            { "internalType": "bool", "name": "hasVoted", "type": "bool" },
+            { "internalType": "uint8", "name": "support", "type": "uint8" },
+            { "internalType": "uint96", "name": "votes", "type": "uint96" }
           ],
           "internalType": "struct CompoundLens.GovBravoReceipt[]",
           "name": "",
@@ -24441,16 +24271,8 @@
               "name": "proposalId",
               "type": "uint256"
             },
-            {
-              "internalType": "address",
-              "name": "proposer",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "eta",
-              "type": "uint256"
-            },
+            { "internalType": "address", "name": "proposer", "type": "address" },
+            { "internalType": "uint256", "name": "eta", "type": "uint256" },
             {
               "internalType": "address[]",
               "name": "targets",
@@ -24466,41 +24288,21 @@
               "name": "signatures",
               "type": "string[]"
             },
-            {
-              "internalType": "bytes[]",
-              "name": "calldatas",
-              "type": "bytes[]"
-            },
+            { "internalType": "bytes[]", "name": "calldatas", "type": "bytes[]" },
             {
               "internalType": "uint256",
               "name": "startBlock",
               "type": "uint256"
             },
-            {
-              "internalType": "uint256",
-              "name": "endBlock",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "forVotes",
-              "type": "uint256"
-            },
+            { "internalType": "uint256", "name": "endBlock", "type": "uint256" },
+            { "internalType": "uint256", "name": "forVotes", "type": "uint256" },
             {
               "internalType": "uint256",
               "name": "againstVotes",
               "type": "uint256"
             },
-            {
-              "internalType": "bool",
-              "name": "canceled",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "executed",
-              "type": "bool"
-            }
+            { "internalType": "bool", "name": "canceled", "type": "bool" },
+            { "internalType": "bool", "name": "executed", "type": "bool" }
           ],
           "internalType": "struct CompoundLens.GovProposal[]",
           "name": "",
@@ -24519,11 +24321,7 @@
           "name": "governor",
           "type": "address"
         },
-        {
-          "internalType": "address",
-          "name": "voter",
-          "type": "address"
-        },
+        { "internalType": "address", "name": "voter", "type": "address" },
         {
           "internalType": "uint256[]",
           "name": "proposalIds",
@@ -24539,21 +24337,9 @@
               "name": "proposalId",
               "type": "uint256"
             },
-            {
-              "internalType": "bool",
-              "name": "hasVoted",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "support",
-              "type": "bool"
-            },
-            {
-              "internalType": "uint96",
-              "name": "votes",
-              "type": "uint96"
-            }
+            { "internalType": "bool", "name": "hasVoted", "type": "bool" },
+            { "internalType": "bool", "name": "support", "type": "bool" },
+            { "internalType": "uint96", "name": "votes", "type": "uint96" }
           ],
           "internalType": "struct CompoundLens.GovReceipt[]",
           "name": "",
