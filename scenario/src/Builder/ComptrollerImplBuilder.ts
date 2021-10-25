@@ -29,6 +29,8 @@ const ComptrollerScenarioG6Contract = getContract('ComptrollerScenarioG6');
 const ComptrollerScenarioContract = getTestContract('ComptrollerScenario');
 const ComptrollerContract = getContract('Comptroller');
 
+const ComptrollerSweeperContract = getContract('ComptrollerSweeper');
+
 const ComptrollerBorkedContract = getTestContract('ComptrollerBorked');
 
 export interface ComptrollerImplData {
@@ -306,6 +308,24 @@ export async function buildComptrollerImpl(
         contract: 'ComptrollerBorked',
         description: 'Borked Comptroller Impl'
       })
+    ),
+    new Fetcher<{ name: StringV }, ComptrollerImplData>(
+      `
+        #### Sweeper
+
+        * "Sweeper name:<String>" - The sweeper Comptroller contract
+          * E.g. "Comptroller Deploy Sweeper MyStandard"
+      `,
+      'Sweeper',
+      [new Arg('name', getStringV)],
+      async (world, { name }) => {
+        return {
+          invokation: await ComptrollerSweeperContract.deploy<ComptrollerImpl>(world, from, []),
+          name: name.val,
+          contract: 'ComptrollerSweeper',
+          description: 'Sweeper Comptroller Impl'
+        };
+      }
     ),
     new Fetcher<{ name: StringV }, ComptrollerImplData>(
       `

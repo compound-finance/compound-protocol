@@ -1,0 +1,44 @@
+#!/usr/bin/env yarn repl -s
+
+PrintTransactionLogs
+Alias CompHolder "0x19bc62ff7cd9ffd6bdced9802ff718f09f7259f1"
+Alias USDCWhale "0x3dfd23a6c5e8bbcfc9581d2e864a68feb6a076d3"
+Alias Arr00 "0x2b384212edc04ae8bb41738d05ba20e33277bf33"
+Alias ComptrollerG7Impl "" -- Current Comptroller Implementation
+Web3Fork "https://mainnet-eth.compound.finance/@10706095" (CompHolder USDCWhale)
+UseConfigs mainnet
+
+-- Deploy the flywheel impl
+
+ComptrollerImpl Deploy Sweeper ComptrollerSweeperImpl
+
+-- Propose to apply the patch
+
+From CompHolder (Comp Delegate CompHolder)
+From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Sweep ERC20 in Comptroller" [(Address Unitroller) (Address ComptrollerSweeperImpl) (Address Unitroller) (Address Unitroller) (Address ComptrollerG7Impl)] [0 0 0 0 0] ["_setPendingImplementation(address)" "_become(address)" "_setBorrowCapGuardian(address)" "_reduceReserves(uint256)" "transfer(address,uint256)"] [[(Address ComptrollerG5)] [(Address Unitroller)] [(Address CompHolder)] [2360000000000000000000] [(Address Arr00) 2360000000000000000000]])
+
+-- Vote for, queue, and execute the proposal
+
+MineBlock
+From CompHolder (GovernorBravo GovernorBravoDelegator Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+GovernorBravo GovernorBravoDelegator Proposal LastProposal Queue
+IncreaseTime 604910
+GovernorBravo GovernorBravoDelegator Proposal LastProposal Execute
+
+
+Assert Equal (Address (Unitroller Implementation)) (Address ComptrollerG7Impl)
+Assert Equal (Erc20 UNI TokenBalance (Address Timelock)) (2360000000000000000000) -- Add more tests
+
+
+AllowFailures
+From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 1000000e6))
+Assert Revert
+
+Successfully
+From USDCWhale (Trx GasPrice 0 (CToken cUSDC RepayBorrow 1000000e6))
+From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 10e6))
+
+
+
+Print "Sweep ERC20 executed Successfully"
