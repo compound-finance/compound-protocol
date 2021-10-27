@@ -58,7 +58,8 @@ interface ComptrollerMethods {
   compSpeeds(string): Callable<string>
   compSupplySpeeds(string): Callable<string>
   compBorrowSpeeds(string): Callable<string>
-  claimComp(string): Sendable<void>
+  claimComp(holder: string): Sendable<void>
+  claimComp(holder: string, cTokens: string[]): Sendable<void>
   updateContributorRewards(account: string): Sendable<void>
   _grantComp(account: string, encodedNumber): Sendable<void>
   _setCompRate(encodedNumber): Sendable<void>

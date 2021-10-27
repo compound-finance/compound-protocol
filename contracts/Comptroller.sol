@@ -1077,39 +1077,6 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
     function _become(Unitroller unitroller) public {
         require(msg.sender == unitroller.admin(), "only unitroller admin can change brains");
         require(unitroller._acceptImplementation() == 0, "change not authorized");
-
-        // TODO: Remove this post upgrade
-        Comptroller(address(unitroller))._upgradeSplitCompRewards();
-    }
-
-    function _upgradeSplitCompRewards() public {
-        require(msg.sender == comptrollerImplementation, "only brains can become itself");
-
-        uint32 blockNumber = safe32(getBlockNumber(), "block number exceeds 32 bits");
-
-        // compSpeeds -> compBorrowSpeeds & compSupplySpeeds t
-        for (uint i = 0; i < allMarkets.length; i ++) {
-            compBorrowSpeeds[address(allMarkets[i])] = compSupplySpeeds[address(allMarkets[i])] = compSpeeds[address(allMarkets[i])];
-            delete compSpeeds[address(allMarkets[i])];
-
-            /*
-             * Ensure supply and borrow state indices are all set. If not set, update to default value
-             */
-            CompMarketState storage supplyState = compSupplyState[address(allMarkets[i])];
-            CompMarketState storage borrowState = compBorrowState[address(allMarkets[i])];
-
-            if (supplyState.index == 0) {
-                // Initialize supply state index with default value
-                supplyState.index = compInitialIndex;
-                supplyState.block = blockNumber;
-            }
-
-            if (borrowState.index == 0) {
-                // Initialize borrow state index with default value
-                borrowState.index = compInitialIndex;
-                borrowState.block = blockNumber;
-            }
-        }
     }
 
     /**
@@ -1214,7 +1181,7 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         // Update supplier's index to the current index since we are distributing accrued COMP
         compSupplierIndex[cToken][supplier] = supplyIndex;
 
-        if (supplierIndex == 0 && supplyIndex > compInitialIndex) {
+        if (supplierIndex == 0 && supplyIndex >= compInitialIndex) {
             // Covers the case where users supplied tokens before the market's supply state index was set.
             // Rewards the user with COMP accrued from the start of when supplier rewards were first
             // set for the market.
@@ -1253,7 +1220,7 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
         // Update borrowers's index to the current index since we are distributing accrued COMP
         compBorrowerIndex[cToken][borrower] = borrowIndex;
 
-        if (borrowerIndex == 0 && borrowIndex > compInitialIndex) {
+        if (borrowerIndex == 0 && borrowIndex >= compInitialIndex) {
             // Covers the case where users borrowed tokens before the market's borrow state index was set.
             // Rewards the user with COMP accrued from the start of when borrower rewards were first
             // set for the market.
@@ -1348,6 +1315,18 @@ contract Comptroller is ComptrollerV6Storage, ComptrollerInterface, ComptrollerE
      * @return The amount of COMP which was NOT transferred to the user
      */
     function grantCompInternal(address user, uint amount) internal returns (uint) {
+        for (uint i = 0; i < allMarkets.length; ++i) {
+            address market = address(allMarkets[i]);
+
+            bool noOriginalSpeed = compBorrowSpeeds[market] == 0;
+            bool invalidSupply = noOriginalSpeed && compSupplierIndex[market][user] > 0;
+            bool invalidBorrow = noOriginalSpeed && compBorrowerIndex[market][user] > 0;
+
+            if (invalidSupply || invalidBorrow) {
+                return amount;
+            }
+        }
+
         Comp comp = Comp(getCompAddress());
         uint compRemaining = comp.balanceOf(address(this));
         if (amount > 0 && amount <= compRemaining) {
