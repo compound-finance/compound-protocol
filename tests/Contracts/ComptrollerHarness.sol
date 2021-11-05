@@ -72,7 +72,7 @@ contract ComptrollerHarness is Comptroller {
         Exp[] memory utilities = new Exp[](allMarkets_.length);
         for (uint i = 0; i < allMarkets_.length; i++) {
             CToken cToken = allMarkets_[i];
-            if (compSpeeds[address(cToken)] > 0) {
+            if (compSupplySpeeds[address(cToken)] > 0 || compBorrowSpeeds[address(cToken)] > 0) {
                 Exp memory assetPrice = Exp({mantissa: oracle.getUnderlyingPrice(cToken)});
                 Exp memory utility = mul_(assetPrice, cToken.totalBorrows());
                 utilities[i] = utility;
@@ -83,7 +83,7 @@ contract ComptrollerHarness is Comptroller {
         for (uint i = 0; i < allMarkets_.length; i++) {
             CToken cToken = allMarkets[i];
             uint newSpeed = totalUtility.mantissa > 0 ? mul_(compRate, div_(utilities[i], totalUtility)) : 0;
-            setCompSpeedInternal(cToken, newSpeed);
+            setCompSpeedInternal(cToken, newSpeed, newSpeed);
         }
     }
 
@@ -131,7 +131,7 @@ contract ComptrollerHarness is Comptroller {
     function harnessAddCompMarkets(address[] memory cTokens) public {
         for (uint i = 0; i < cTokens.length; i++) {
             // temporarily set compSpeed to 1 (will be fixed by `harnessRefreshCompSpeeds`)
-            setCompSpeedInternal(CToken(cTokens[i]), 1);
+            setCompSpeedInternal(CToken(cTokens[i]), 1, 1);
         }
     }
 
@@ -152,7 +152,7 @@ contract ComptrollerHarness is Comptroller {
         uint m = allMarkets.length;
         uint n = 0;
         for (uint i = 0; i < m; i++) {
-            if (compSpeeds[address(allMarkets[i])] > 0) {
+            if (compSupplySpeeds[address(allMarkets[i])] > 0 || compBorrowSpeeds[address(allMarkets[i])] > 0) {
                 n++;
             }
         }
@@ -160,7 +160,7 @@ contract ComptrollerHarness is Comptroller {
         address[] memory compMarkets = new address[](n);
         uint k = 0;
         for (uint i = 0; i < m; i++) {
-            if (compSpeeds[address(allMarkets[i])] > 0) {
+            if (compSupplySpeeds[address(allMarkets[i])] > 0 || compBorrowSpeeds[address(allMarkets[i])] > 0) {
                 compMarkets[k++] = address(allMarkets[i]);
             }
         }
