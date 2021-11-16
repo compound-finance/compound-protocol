@@ -1,0 +1,40 @@
+#!/usr/bin/env yarn repl -s
+
+PrintTransactionLogs
+
+Alias Arr00 "0x2B384212EDc04Ae8bB41738D05BA20E33277bf33"
+Alias CompHolder "0x7587cAefc8096f5F40ACB83A09Df031a018C66ec"
+Alias CommunityMultisig "0xbbf3f1421D886E9b2c5D716B5192aC998af2012c"
+
+Web3Fork "https://mainnet-eth.compound.finance/@12835588" (CompHolder Arr00 CommunityMultisig)
+UseConfigs mainnet
+
+GovernorBravo Deploy BravoDelegate BravoDelegate2
+
+From CompHolder (Comp Delegate CompHolder)
+From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Whitelist Accounts" [(Address GovernorBravoDelegator) (Address GovernorBravoDelegator) (Address GovernorBravoDelegator)] [0 0 0] ["_setImplementation(address)" "_setWhitelistAccountExpiration(address,uint256)" "_setWhitelistGuardian(address)"] [[(Address BravoDelegate2)] [(Address Arr00) (FromNow 604911)] [(Address CommunityMultisig)]])
+
+-- Vote for, queue, and execute the proposal
+MineBlock
+AdvanceBlocks 13140
+From CompHolder (GovernorBravo GovernorBravoDelegator Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+GovernorBravo GovernorBravoDelegator Proposal LastProposal Queue
+IncreaseTime 604910
+GovernorBravo GovernorBravoDelegator Proposal LastProposal Execute
+GovernorBravo GovernorBravoDelegator MergeABI BravoDelegate2
+
+From Arr00 (GovernorBravo GovernorBravoDelegator Propose "Test Proposal" [(Address GovernorBravoDelegator)] [0] ["_setImplementation(address)"] [[(Address BravoDelegate2)]])
+
+Send CommunityMultisig 1e18
+
+-- Use community multisig
+From CommunityMultisig (GovernorBravo GovernorBravoDelegator Proposal LastProposal Cancel)
+From CommunityMultisig (GovernorBravo GovernorBravoDelegator SetWhitelistAccountExpiration (Address Arr00) 0)
+
+AllowFailures
+From Arr00 (GovernorBravo GovernorBravoDelegator Propose "Test Proposal" [(Address GovernorBravoDelegator)] [0] ["_setImplementation(address)"] [[(Address BravoDelegate2)]])
+Assert Revert "revert GovernorBravo::propose: proposer votes below proposal threshold"
+
+
+Print "Setup whitelisted accounts ok!"

@@ -48,9 +48,12 @@ export interface GovernorBravoMethods {
   proposalThreshold(): Callable<number>;
   votingPeriod(): Callable<number>;
   votingDelay(): Callable<number>;
+  isWhitelisted(account: string): Callable<boolean>;
   _setVotingDelay(newVotingDelay: encodedNumber): Sendable<void>;
   _setVotingPeriod(newVotingPeriod: encodedNumber): Sendable<void>;
   _setProposalThreshold(newProposalThreshold: encodedNumber): Sendable<void>;
+  _setWhitelistAccountExpiration(account: string, expiration: encodedNumber): Sendable<void>;
+  _setWhitelistGuardian(account: string): Sendable<void>;
   _initiate(governorAlpha: string): Sendable<void>;
   _initiate(): Sendable<void>;
   _setImplementation(address: string): Sendable<void>;

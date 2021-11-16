@@ -1,0 +1,48 @@
+#!/usr/bin/env yarn repl -s
+
+PrintTransactionLogs
+
+Alias Arr00 "0x2B384212EDc04Ae8bB41738D05BA20E33277bf33"
+Alias CompHolder "0x7587cAefc8096f5F40ACB83A09Df031a018C66ec"
+Alias CommunityMultisig "0xbbf3f1421D886E9b2c5D716B5192aC998af2012c"
+Alias NewBravoDelegate "0x563a63d650a5d259abae9248dddc6867813d3f87"
+
+Web3Fork "https://mainnet-eth.compound.finance/@13170219" (CompHolder Arr00 CommunityMultisig)
+UseConfigs mainnet
+
+GovernorBravo Deploy BravoDelegate BravoDelegate2 -- Just used to merge abi
+
+From CompHolder (Comp Delegate CompHolder)
+From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Whitelist Accounts" [(Address GovernorBravoDelegator) (Address GovernorBravoDelegator)] [0 0] ["_setImplementation(address)" "_setWhitelistGuardian(address)"] [[(Address NewBravoDelegate)] [(Address CommunityMultisig)]])
+
+-- Vote for, queue, and execute the proposal
+MineBlock
+AdvanceBlocks 13140
+From CompHolder (GovernorBravo GovernorBravoDelegator Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+GovernorBravo GovernorBravoDelegator Proposal LastProposal Queue
+IncreaseTime 604910
+GovernorBravo GovernorBravoDelegator Proposal LastProposal Execute
+
+GovernorBravo GovernorBravoDelegator MergeABI BravoDelegate2
+
+AllowFailures
+From Arr00 (GovernorBravo GovernorBravoDelegator Propose "Test Proposal" [(Address GovernorBravoDelegator)] [0] ["_setImplementation(address)"] [[(Address NewBravoDelegate)]])
+Assert Revert "revert GovernorBravo::propose: proposer votes below proposal threshold"
+
+Successfully
+
+Send CommunityMultisig 1e18
+-- Use community multisig
+Assert False (GovernorBravo GovernorBravoDelegator IsWhitelisted (Address Arr00))
+SetTime 1
+From CommunityMultisig (GovernorBravo GovernorBravoDelegator SetWhitelistAccountExpiration (Address Arr00) 1000)
+Assert True (GovernorBravo GovernorBravoDelegator IsWhitelisted (Address Arr00))
+
+From Arr00 (GovernorBravo GovernorBravoDelegator Propose "Test Proposal" [(Address GovernorBravoDelegator)] [0] ["_setImplementation(address)"] [[(Address NewBravoDelegate)]])
+
+From CommunityMultisig (GovernorBravo GovernorBravoDelegator Proposal LastProposal Cancel)
+Assert Equal ("Canceled") (GovernorBravo GovernorBravoDelegator Proposal LastProposal State)
+
+
+Print "Setup whitelisted accounts ok!"

@@ -1,4 +1,4 @@
-{
+{  
   "Contracts": {
     "AAVE": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
     "cAAVEDelegate": "0xa035b9e130f2b1aedc733eefb1c67ba4c503491f",
@@ -91,7 +91,10 @@
     "CrowdProposalFactory": "0x54a06047087927D9B0fb21c1cf0ebd792764dDB8",
     "IRM_USDT_Updateable": "0xFB564da37B41b2F6B6EDcc3e56FbF523bD9F2012",
     "IRM_USDC_Updateable": "0xD8EC56013EA119E7181d231E5048f90fBbe753c0",
-    "IRM_UNI_Updateable": "0xd88b94128ff2b8cf2d7886cd1c1e46757418ca2a"
+    "IRM_UNI_Updateable": "0xd88b94128ff2b8cf2d7886cd1c1e46757418ca2a",
+    "GovernorBravoDelegator": "0xc0da02939e1441f497fd74f78ce7decb17b66529",
+    "GovernorBravoDelegateG1": "0xAAAaaAAAaaaa8FdB04F544F4EEe52939CddCe378",
+    "GovernorBravoDelegate": "0x563a63d650a5d259abae9248dddc6867813d3f87"
   },
   "Blocks": {
     "cAAVEDelegate": 12654137,
@@ -155,7 +158,10 @@
     "CrowdProposalFactory": 12137801,
     "IRM_USDT_Updateable": 10609555,
     "IRM_USDC_Updateable": 10810554,
-    "IRM_UNI_Updateable": 11015612
+    "IRM_UNI_Updateable": 11015612,
+    "GovernorBravoDelegator": 12006099,
+    "GovernorBravoDelegateG1": 12005518,
+    "GovernorBravoDelegate": 13170179
   },
   "PriceData": {
     "description": "Open Oracle Price Data",
@@ -231,15 +237,27 @@
     "address": "0xc00e94Cb662C3520282E6f5717214004A7f26888"
   },
   "Governor": {
-    "GovernorBravo": {
-      "address": "0xc0da02939e1441f497fd74f78ce7decb17b66529",
-      "contract": "GovernorBravoDelegator",
-      "name": "GovernorBravo"
-    },
     "GovernorAlpha": {
       "name": "GovernorAlpha",
       "contract": "GovernorAlpha",
       "address": "0xc0dA01a04C3f3E0be433606045bB7017A7323E38"
+    }
+  },
+  "GovernorBravo": {
+    "GovernorBravoDelegateG1": {
+        "name": "GovernorBravoDelegate",
+        "contract": "GovernorBravoDelegate",
+        "address": "0xAAAaaAAAaaaa8FdB04F544F4EEe52939CddCe378"
+    },
+    "GovernorBravoDelegator": {
+        "name": "GovernorBravoDelegator",
+        "contract": "GovernorBravoDelegator",
+        "address": "0xc0da02939e1441f497fd74f78ce7decb17b66529"
+    },
+    "GovernorBravoDelegate": {
+        "name": "GovernorBravoDelegate",
+        "contract": "GovernorBravoDelegate",
+        "address": "0x563a63d650a5d259abae9248dddc6867813d3f87"
     }
   },
   "Timelock": {
@@ -305,7 +323,10 @@
     "CrowdProposalFactory": "0x000000000000000000000000c00e94cb662c3520282e6f5717214004a7f26888000000000000000000000000c0da02939e1441f497fd74f78ce7decb17b665290000000000000000000000000000000000000000000000056bc75e2d63100000",
     "IRM_USDT_Updateable": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008e1bc9bf0400000000000000000000000000000000000000000000000000000f207539952d00000000000000000000000000000000000000000000000000000b1a2bc2ec5000000000000000000000000000006d903f6003cca6255d85cca4d3b5e5146dc33925",
     "IRM_USDC_Updateable": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008e1bc9bf0400000000000000000000000000000000000000000000000000000f207539952d00000000000000000000000000000000000000000000000000000b1a2bc2ec5000000000000000000000000000006d903f6003cca6255d85cca4d3b5e5146dc33925",
-    "IRM_UNI_Updateable": "?"
+    "IRM_UNI_Updateable": "?",
+    "GovernorBravoDelegate": "0x",
+    "GovernorBravoDelegateG1": "0x",
+    "GovernorBravoDelegator": "0x0000000000000000000000006d903f6003cca6255d85cca4d3b5e5146dc33925000000000000000000000000c00e94cb662c3520282e6f5717214004a7f268880000000000000000000000006d903f6003cca6255d85cca4d3b5e5146dc33925000000000000000000000000aaaaaaaaaaaa8fdb04f544f4eee52939cddce3780000000000000000000000000000000000000000000000000000000000004380000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000152d02c7e14af6800000"
   },
   "Tokens": {
     "AAVE": {

@@ -1,8 +1,8 @@
 import { Event } from "../Event";
 import { World } from "../World";
 import { GovernorBravo } from "../Contract/GovernorBravo";
-import { getCoreValue, getEventV, mapValue } from "../CoreValue";
-import { AddressV, NumberV, EventV, Value } from "../Value";
+import { getCoreValue, getEventV, mapValue, getAddressV } from "../CoreValue";
+import { AddressV, NumberV, EventV, Value, BoolV } from "../Value";
 import { Arg, Fetcher, getFetcherValue } from "../Command";
 import { getProposalValue } from "./BravoProposalValue";
 import {
@@ -72,6 +72,14 @@ async function getVotingDelay(
   governor: GovernorBravo
 ): Promise<NumberV> {
   return new NumberV(await governor.methods.votingDelay().call());
+}
+
+async function getIsWhitelisted(
+  world: World,
+  governor: GovernorBravo,
+  account: string
+): Promise<BoolV> {
+  return new BoolV(await governor.methods.isWhitelisted(account).call());
 }
 
 export function governorBravoFetchers() {
@@ -181,6 +189,20 @@ export function governorBravoFetchers() {
       ],
       (world, { governor, params }) =>
         getProposalValue(world, governor, params.val),
+      { namePos: 1 }
+    ),
+
+    new Fetcher<{ governor: GovernorBravo; account: AddressV }, BoolV>(
+      `
+        #### IsWhitelisted
+
+        * "GovernorBravo <Governor> IsWhitelisted <Account>" - Returns the whitelist status for a given account
+        * E.g. "GovernorBravo GovernorBravoScenario IsWhitelisted Jared"
+      `,
+      "IsWhitelisted",
+      [new Arg("governor", getGovernorV), new Arg("account", getAddressV)],
+      (world, { governor, account }) =>
+        getIsWhitelisted(world, governor, account.val),
       { namePos: 1 }
     ),
   ];

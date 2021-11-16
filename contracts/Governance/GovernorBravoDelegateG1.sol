@@ -3,7 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "./GovernorBravoInterfaces.sol";
 
-contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoEvents {
+contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoEvents {
 
     /// @notice The name of this contract
     string public constant name = "Compound Governor Bravo";
@@ -74,8 +74,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
     function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint) {
         // Reject proposals before initiating as Governor
         require(initialProposalId != 0, "GovernorBravo::propose: Governor Bravo not active");
-        // Allow addresses above proposal threshold and whitelisted addresses to propose
-        require(comp.getPriorVotes(msg.sender, sub256(block.number, 1)) > proposalThreshold || isWhitelisted(msg.sender), "GovernorBravo::propose: proposer votes below proposal threshold");
+        require(comp.getPriorVotes(msg.sender, sub256(block.number, 1)) > proposalThreshold, "GovernorBravo::propose: proposer votes below proposal threshold");
         require(targets.length == values.length && targets.length == signatures.length && targets.length == calldatas.length, "GovernorBravo::propose: proposal function information arity mismatch");
         require(targets.length != 0, "GovernorBravo::propose: must provide actions");
         require(targets.length <= proposalMaxOperations, "GovernorBravo::propose: too many actions");
@@ -157,18 +156,8 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         require(state(proposalId) != ProposalState.Executed, "GovernorBravo::cancel: cannot cancel executed proposal");
 
         Proposal storage proposal = proposals[proposalId];
+        require(msg.sender == proposal.proposer || comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold, "GovernorBravo::cancel: proposer above threshold");
 
-        // Proposer can cancel
-        if(msg.sender != proposal.proposer) {
-            // Whitelisted proposers can't be canceled for falling below proposal threshold
-            if(isWhitelisted(proposal.proposer)) {
-                require((comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold) && msg.sender == whitelistGuardian, "GovernorBravo::cancel: whitelisted proposer");
-            }
-            else {
-                require((comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold), "GovernorBravo::cancel: proposer above threshold");
-            }
-        }
-        
         proposal.canceled = true;
         for (uint i = 0; i < proposal.targets.length; i++) {
             timelock.cancelTransaction(proposal.targets[i], proposal.values[i], proposal.signatures[i], proposal.calldatas[i], proposal.eta);
@@ -287,15 +276,6 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
     }
 
     /**
-     * @notice View function which returns if an account is whitelisted
-     * @param account Account to check white list status of
-     * @return If the account is whitelisted
-     */
-    function isWhitelisted(address account) public view returns (bool) {
-        return (whitelistAccountExpirations[account] > now);
-    }
-
-    /**
       * @notice Admin function for setting the voting delay
       * @param newVotingDelay new voting delay, in blocks
       */
@@ -334,30 +314,6 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
 
         emit ProposalThresholdSet(oldProposalThreshold, proposalThreshold);
     }
-
-    /**
-     * @notice Admin function for setting the whitelist expiration as a timestamp for an account. Whitelist status allows accounts to propose without meeting threshold
-     * @param account Account address to set whitelist expiration for
-     * @param expiration Expiration for account whitelist status as timestamp (if now < expiration, whitelisted)
-     */
-    function _setWhitelistAccountExpiration(address account, uint expiration) external {
-        require(msg.sender == admin || msg.sender == whitelistGuardian, "GovernorBravo::_setWhitelistAccountExpiration: admin only");
-        whitelistAccountExpirations[account] = expiration;
-
-        emit WhitelistAccountExpirationSet(account, expiration);
-    }
-
-    /**
-     * @notice Admin function for setting the whitelistGuardian. WhitelistGuardian can cancel proposals from whitelisted addresses
-     * @param account Account to set whitelistGuardian to (0x0 to remove whitelistGuardian)
-     */
-     function _setWhitelistGuardian(address account) external {
-        require(msg.sender == admin, "GovernorBravo::_setWhitelistGuardian: admin only");
-        address oldGuardian = whitelistGuardian;
-        whitelistGuardian = account;
-
-        emit WhitelistGuardianSet(oldGuardian, whitelistGuardian);
-     }
 
     /**
       * @notice Initiate the GovernorBravo contract
