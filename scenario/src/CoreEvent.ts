@@ -244,6 +244,17 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
     [new Arg('message', getStringV)],
     async (world, { message }) => print(world, message.val)
   ),
+  new View<{ num: NumberV }>(
+    `
+      #### PrintNumber
+
+      * "Print ..." - Prints given number
+        * E.g. "Print \"Hello there\""
+    `,
+    'PrintNumber',
+    [new Arg('num', getNumberV)],
+    async (world, { num }) => print(world, num.toString())
+  ),
   new View<{}>(
     `
       #### PrintTransactionLogs
@@ -485,6 +496,17 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
     'Debug',
     [new Arg('message', getStringV)],
     async (world, { message }) => inspect(world, message.val)
+  ),
+
+  new View<{ num: NumberV }>(
+    `
+      #### DebugNumber
+
+      * "Debug num:<Number>" - Same as inspect but prepends with a number
+    `,
+    'DebugNumber',
+    [new Arg('num', getNumberV)],
+    async (world, { num }) => inspect(world, num.toString())
   ),
 
   new View<{ account: AddressV; event: EventV }>(

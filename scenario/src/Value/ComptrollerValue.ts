@@ -504,6 +504,21 @@ export function comptrollerFetchers() {
         return new NumberV(result);
       }
     ),
+    new Fetcher<{comptroller: Comptroller, account: AddressV, key: StringV}, NumberV>(`
+        #### CompReceivable(address)
+
+        * "Comptroller CompReceivable Coburn
+      `,
+      "CompReceivable",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("account", getAddressV),
+      ],
+      async (world, {comptroller,account}) => {
+        const result = await comptroller.methods.compReceivable(account.val).call();
+        return new NumberV(result);
+      }
+    ),
     new Fetcher<{comptroller: Comptroller, CToken: CToken, account: AddressV}, NumberV>(`
         #### compSupplierIndex
 
