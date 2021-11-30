@@ -27,7 +27,7 @@ IncreaseTime 604910
 GovernorBravo GovernorBravoDelegator Proposal LastProposal Execute
 
 
-From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Send ETH from Timelock" [(Address Arr00)] [10000000] [""] [[""]])
+From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Send ETH from Timelock" [(Address GovernorBravoDelegator)] [0] ["_setImplementation(address)"] [[(Address GovernorBravoDelegate)]])
 
 -- Vote for, queue, and execute the proposal
 MineBlock
@@ -36,9 +36,10 @@ From CompHolder (GovernorBravo GovernorBravoDelegator Proposal LastProposal Vote
 AdvanceBlocks 20000
 GovernorBravo GovernorBravoDelegator Proposal LastProposal Queue
 IncreaseTime 604910
-
-
 GovernorBravo GovernorBravoDelegator Proposal LastProposal Execute
+
+Assert Equal (GovernorBravo GovernorBravoDelegator Implementation) (Address GovernorBravoDelegate)
+
 
 
 Print "ETH transfer from Timelock works"
