@@ -32,7 +32,7 @@ Macro GivenQueuedProposal
     GivenSucceededProposal
     GovernorBravo LegitGov Proposal LastProposal Queue
 
-Test "Execute a simple queued proposal with value"
+Test "Execute a simple queued proposal"
     GivenQueuedProposal
     Assert Equal ("Queued") (GovernorBravo LegitGov Proposal LastProposal State)
     IncreaseTime 605000
@@ -41,15 +41,15 @@ Test "Execute a simple queued proposal with value"
     Assert Log ProposalExecuted (id 2)
     Assert Equal (Counter CNT1 Count) 2
 
-Test "Execute a complex queued proposal with value"
+Test "Execute a complex queued proposal"
     DeployGov
-    GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [1 1] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]]
+    GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]]
     SucceedProposal
     GovernorBravo LegitGov Proposal LastProposal Queue
     IncreaseTime 604910
     Assert Equal (Counter CNT1 Count) 0
     Assert Equal (Counter CNT1 Count2) 0
-    Trx Value 2 (GovernorBravo LegitGov Proposal LastProposal Execute)
+    GovernorBravo LegitGov Proposal LastProposal Execute
     Assert Equal ("Executed") (GovernorBravo LegitGov Proposal LastProposal State)
     Assert Equal (Counter CNT1 Count) 5
     Assert Equal (Counter CNT1 Count2) 4
@@ -97,3 +97,15 @@ Test "Cannot execute cancelled proposal"
     AllowFailures
     GovernorBravo LegitGov Proposal LastProposal Execute
     Assert Revert "revert GovernorBravo::execute: proposal can only be executed if it is queued"
+
+Test "Send ETH from timelock to EOA"
+    DeployGov
+    Send (Address Timelock) 1e18 -- Fund Timelock
+    GovernorBravo LegitGov Propose "Send ETH" [(Address Geoff)] [1e18] [""] [[""]]
+    SucceedProposal
+    GovernorBravo LegitGov Proposal LastProposal Queue
+    IncreaseTime 604910
+    Assert Equal (EtherBalance Geoff) (100e18)
+    GovernorBravo LegitGov Proposal LastProposal Execute
+    Assert Equal ("Executed") (GovernorBravo LegitGov Proposal LastProposal State)
+    Assert Equal (EtherBalance Geoff) (101e18)
