@@ -169,7 +169,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
                 require((comp.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold), "GovernorBravo::cancel: proposer above threshold");
             }
         }
-        
+
         proposal.canceled = true;
         for (uint i = 0; i < proposal.targets.length; i++) {
             timelock.cancelTransaction(proposal.targets[i], proposal.values[i], proposal.signatures[i], proposal.calldatas[i], proposal.eta);
@@ -296,7 +296,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
      * @return If the account is whitelisted
      */
     function isWhitelisted(address account) public view returns (bool) {
-        return (whitelistAccountExpirations[account] > now);
+        return (whitelistAccountExpirations[account] > block.timestamp);
     }
 
     /**
