@@ -168,6 +168,49 @@ async function setProposalThreshold(
   return world;
 }
 
+async function setWhitelistAccountExpiration(
+  world: World,
+  from: string,
+  governor: GovernorBravo,
+  account: string,
+  expiration: NumberV
+): Promise<World> {
+  let invokation = await invoke(
+    world,
+    governor.methods._setWhitelistAccountExpiration(account,expiration.encode()),
+    from
+  );
+
+  world = addAction(
+    world,
+    `Set account whitelist expiration for ${account} to ${expiration.encode()}`,
+    invokation
+  );
+
+  return world;
+}
+
+async function setWhitelistGuardian(
+  world: World,
+  from: string,
+  governor: GovernorBravo,
+  account: string
+): Promise<World> {
+  let invokation = await invoke(
+    world,
+    governor.methods._setWhitelistGuardian(account),
+    from
+  );
+
+  world = addAction(
+    world,
+    `Set whitelist guardian to ${account}`,
+    invokation
+  );
+
+  return world;
+}
+
 async function setImplementation(
   world: World,
   from: string,
@@ -450,6 +493,39 @@ export function governorBravoCommands() {
       ],
       (world, from, { governor, newProposalThreshold }) =>
         setProposalThreshold(world, from, governor, newProposalThreshold),
+      { namePos: 1 }
+    ),
+     new Command<{ governor: GovernorBravo; address: AddressV, expiration: NumberV }>(
+      `
+        #### SetWhitelistAccountExpiration
+
+        * "GovernorBravo <Governor> SetWhitelistAccountExpiration <Account> <Expiration>" - Sets whitelist account expiration (account can propose without proposal threshold until expiration)
+        * E.g. "GovernorBravo GovernorBravoScenario SetWhitelistAccountExpiration Arr00 1626387743"
+    `,
+      "SetWhitelistAccountExpiration",
+      [
+        new Arg("governor", getGovernorV),
+        new Arg("address", getAddressV),
+        new Arg("expiration", getNumberV),
+      ],
+      (world, from, { governor, address, expiration }) =>
+        setWhitelistAccountExpiration(world, from, governor, address.val, expiration),
+      { namePos: 1 }
+    ),
+    new Command<{ governor: GovernorBravo; address: AddressV, expiration: NumberV }>(
+      `
+        #### SetWhitelistGuardian
+
+        * "GovernorBravo <Governor> SetWhitelistGuardian <Account>" - Sets whitelistGuardian account
+        * E.g. "GovernorBravo GovernorBravoScenario SetWhitelistGuardian Robert"
+    `,
+      "SetWhitelistGuardian",
+      [
+        new Arg("governor", getGovernorV),
+        new Arg("address", getAddressV),
+      ],
+      (world, from, { governor, address, expiration }) =>
+        setWhitelistGuardian(world, from, governor, address.val),
       { namePos: 1 }
     ),
     new Command<{ governor: GovernorBravo; governorAlpha: AddressV }>(

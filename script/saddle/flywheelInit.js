@@ -145,8 +145,9 @@ let filterInitialized = async (borrowersByCToken) => {
 	let batchSize = 75;
 	console.log(`Calling compBorrowerIndex for borrowers in batches of ${batchSize}...\n`);
 	for(let cTokenAddr of Object.keys(borrowersByCToken)) {
-		let speed = await call(Comptroller, 'compSpeeds', [cTokenAddr]);
-		if (Number(speed) != 0){
+		let supplySpeed = await call(Comptroller, 'compSupplySpeeds', [cTokenAddr]);
+		let borrowSpeed = await call(Comptroller, 'compBorrowSpeeds', [cTokenAddr]);
+		if (Number(supplySpeed) != 0 || Number(borrowSpeed) != 0){
 			for (let borrowerChunk of getChunks(borrowersByCToken[cTokenAddr], batchSize)) {
 				try {
 					let indices = await Promise.all(borrowerChunk.map(

@@ -53,14 +53,19 @@ interface ComptrollerMethods {
   compSupplyState(string): Callable<string>
   compBorrowState(string): Callable<string>
   compAccrued(string): Callable<string>
+  compReceivable(string): Callable<string>
   compSupplierIndex(market: string, account: string): Callable<string>
   compBorrowerIndex(market: string, account: string): Callable<string>
   compSpeeds(string): Callable<string>
-  claimComp(string): Sendable<void>
+  compSupplySpeeds(string): Callable<string>
+  compBorrowSpeeds(string): Callable<string>
+  claimComp(holder: string): Sendable<void>
+  claimComp(holder: string, cTokens: string[]): Sendable<void>
   updateContributorRewards(account: string): Sendable<void>
   _grantComp(account: string, encodedNumber): Sendable<void>
   _setCompRate(encodedNumber): Sendable<void>
-  _setCompSpeed(cToken: string, encodedNumber): Sendable<void>
+  _setCompSpeed(cTokens: string, encodedNumber): Sendable<void>
+  _setCompSpeeds(cTokens: string[], supplySpeeds: encodedNumber[], borrowSpeeds: encodedNumber[]): Sendable<void>
   _setContributorCompSpeed(account: string, encodedNumber): Sendable<void>
   _setMarketBorrowCaps(cTokens:string[], borrowCaps:encodedNumber[]): Sendable<void>
   _setBorrowCapGuardian(string): Sendable<void>

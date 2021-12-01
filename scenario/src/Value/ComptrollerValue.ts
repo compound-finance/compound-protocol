@@ -504,6 +504,21 @@ export function comptrollerFetchers() {
         return new NumberV(result);
       }
     ),
+    new Fetcher<{comptroller: Comptroller, account: AddressV, key: StringV}, NumberV>(`
+        #### CompReceivable(address)
+
+        * "Comptroller CompReceivable Coburn
+      `,
+      "CompReceivable",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("account", getAddressV),
+      ],
+      async (world, {comptroller,account}) => {
+        const result = await comptroller.methods.compReceivable(account.val).call();
+        return new NumberV(result);
+      }
+    ),
     new Fetcher<{comptroller: Comptroller, CToken: CToken, account: AddressV}, NumberV>(`
         #### compSupplierIndex
 
@@ -546,6 +561,34 @@ export function comptrollerFetchers() {
       ],
       async (world, {comptroller, CToken}) => {
         return new NumberV(await comptroller.methods.compSpeeds(CToken._address).call());
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken}, NumberV>(`
+        #### CompSupplySpeed
+
+        * "Comptroller CompSupplySpeed cZRX
+      `,
+      "CompSupplySpeed",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+      ],
+      async (world, {comptroller, CToken}) => {
+        return new NumberV(await comptroller.methods.compSupplySpeeds(CToken._address).call());
+      }
+    ),
+    new Fetcher<{comptroller: Comptroller, CToken: CToken}, NumberV>(`
+        #### CompBorrowSpeed
+
+        * "Comptroller CompBorrowSpeed cZRX
+      `,
+      "CompBorrowSpeed",
+      [
+        new Arg("comptroller", getComptroller, {implicit: true}),
+        new Arg("CToken", getCTokenV),
+      ],
+      async (world, {comptroller, CToken}) => {
+        return new NumberV(await comptroller.methods.compBorrowSpeeds(CToken._address).call());
       }
     ),
     new Fetcher<{comptroller: Comptroller}, AddressV>(`

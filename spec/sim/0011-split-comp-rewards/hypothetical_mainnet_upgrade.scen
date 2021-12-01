@@ -1,0 +1,269 @@
+#!/usr/bin/env -S yarn repl -s
+
+PrintTransactionLogs
+
+-- Token holder addresses for mocking
+Alias CompHolder "0x7587caefc8096f5f40acb83a09df031a018c66ec"
+Alias TokenHolder "0x05e793ce0c6027323ac150f6d45c2344d28b6019"
+Alias CUSDCHolder "0x5e34bc93a7506ecc8562ade4d5c8b090247a6349"
+
+Web3Fork "https://mainnet-eth.compound.finance/@13057957" (CompHolder TokenHolder CUSDCHolder)
+UseConfigs mainnet
+
+-- Verify current borrow state indices
+Assert Equal (Comptroller CompBorrowState cETH "index") (271900236502310314207275303654594550)
+Assert Equal (Comptroller CompBorrowState cUSDC "index") (374249356944686866589343968372424802182093834)
+Assert Equal (Comptroller CompBorrowState cDAI "index") (304681283805461047990696432440416)
+Assert Equal (Comptroller CompBorrowState cWBTC "index") (57091242808581665886978349924495532483402440045)
+Assert Equal (Comptroller CompBorrowState cWBTC2 "index") (4737883459778580214958447506665029825205802627436)
+Assert Equal (Comptroller CompBorrowState cUSDT "index") (423043052052409576153627131768953764641085770)
+Assert Equal (Comptroller CompBorrowState cCOMP "index") (1090703374692561421496444039421391844)
+Assert Equal (Comptroller CompBorrowState cUNI "index") (1003224738961829505932781071832714863)
+Assert Equal (Comptroller CompBorrowState cLINK "index") (1021334963447383149197229014847138287)
+Assert Equal (Comptroller CompBorrowState cZRX "index") (276469710290458744488056479123899)
+Assert Equal (Comptroller CompBorrowState cTUSD "index") (0)
+Assert Equal (Comptroller CompBorrowState cBAT "index") (233011432934823645559082204456702)
+Assert Equal (Comptroller CompBorrowState cAAVE "index") (0)
+Assert Equal (Comptroller CompBorrowState cSAI "index") (0)
+Assert Equal (Comptroller CompBorrowState cSUSHI "index") (0)
+Assert Equal (Comptroller CompBorrowState cMKR "index") (0)
+Assert Equal (Comptroller CompBorrowState cREP "index") (2887409755927065791842943220324690)
+Assert Equal (Comptroller CompBorrowState cYFI "index") (0)
+
+-- Verify current supply state indices
+Assert Equal (Comptroller CompSupplyState cETH "index") (3266868720475524419878033121250905466535312)
+Assert Equal (Comptroller CompSupplyState cUSDC "index") (32567188278514519540286631350261809001131)
+Assert Equal (Comptroller CompSupplyState cDAI "index") (48523828872606782857477338624275950203274)
+Assert Equal (Comptroller CompSupplyState cWBTC "index") (98873610159998754418561608689329824102859175)
+Assert Equal (Comptroller CompSupplyState cWBTC2 "index") (551089483977648654874859795061443575084844994561)
+Assert Equal (Comptroller CompSupplyState cUSDT "index") (50534796386054496931306603320108731513487)
+Assert Equal (Comptroller CompSupplyState cCOMP "index") (3836027216477076374142846684153643830549513)
+Assert Equal (Comptroller CompSupplyState cUNI "index") (57432610740828790697901777052414007754599)
+Assert Equal (Comptroller CompSupplyState cLINK "index") (852011526290128056285332840775220381888746)
+Assert Equal (Comptroller CompSupplyState cZRX "index") (11697528643270194078002497271204681811028)
+Assert Equal (Comptroller CompSupplyState cTUSD "index") (0)
+Assert Equal (Comptroller CompSupplyState cBAT "index") (9278159415477864616059533796790401482787)
+Assert Equal (Comptroller CompSupplyState cAAVE "index") (0)
+Assert Equal (Comptroller CompSupplyState cSAI "index") (0)
+Assert Equal (Comptroller CompSupplyState cSUSHI "index") (0)
+Assert Equal (Comptroller CompSupplyState cMKR "index") (0)
+Assert Equal (Comptroller CompSupplyState cREP "index") (10822464444875983176893501598723703991037)
+Assert Equal (Comptroller CompSupplyState cYFI "index") (0)
+
+-- Verify current supply speeds
+Assert Equal (Comptroller CompSpeed cETH) (10750000000000000)
+Assert Equal (Comptroller CompSpeed cUSDC) (67000000000000000)
+Assert Equal (Comptroller CompSpeed cDAI) (67000000000000000)
+Assert Equal (Comptroller CompSpeed cWBTC) (0)
+Assert Equal (Comptroller CompSpeed cWBTC2) (10750000000000000)
+Assert Equal (Comptroller CompSpeed cUSDT) (9650000000000000)
+Assert Equal (Comptroller CompSpeed cCOMP) (5000000000000000)
+Assert Equal (Comptroller CompSpeed cUNI) (1462500000000000)
+Assert Equal (Comptroller CompSpeed cLINK) (1462500000000000)
+Assert Equal (Comptroller CompSpeed cZRX) (1462500000000000)
+Assert Equal (Comptroller CompSpeed cTUSD) (0)
+Assert Equal (Comptroller CompSpeed cBAT) (1462500000000000)
+Assert Equal (Comptroller CompSpeed cAAVE) (0)
+Assert Equal (Comptroller CompSpeed cSAI) (0)
+Assert Equal (Comptroller CompSpeed cSUSHI) (0)
+Assert Equal (Comptroller CompSpeed cMKR) (0)
+Assert Equal (Comptroller CompSpeed cREP) (0)
+Assert Equal (Comptroller CompSpeed cYFI) (0)
+
+-- Deploy latest Comptroller
+ComptrollerImpl Deploy Standard ComptrollerSplitCompRewards
+
+-- Delegate and propose update
+From CompHolder (Comp Delegate CompHolder)
+From CompHolder (GovernorBravo GovernorBravo Propose "Upgrade Comptroller" [(Address Unitroller) (Address ComptrollerSplitCompRewards)] [0 0] ["_setPendingImplementation(address)" "_become(address)"] [[(Address ComptrollerSplitCompRewards)] [(Address Unitroller)]])
+
+-- Fast forward, vote, queue, execute
+MineBlock
+AdvanceBlocks 14000
+From CompHolder (GovernorBravo GovernorBravo Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+GovernorBravo GovernorBravo Proposal LastProposal Queue
+IncreaseTime 604910
+GovernorBravo GovernorBravo Proposal LastProposal Execute
+MineBlock
+
+-- Merge ABIs so that we can call the newly introduced functions without an error
+ComptrollerImpl ComptrollerSplitCompRewards MergeABI
+
+-- Verify new borrow state indices
+Assert Equal (Comptroller CompBorrowState cETH "index") (271900236502310314207275303654594550)
+Assert Equal (Comptroller CompBorrowState cUSDC "index") (374249356944686866589343968372424802182093834)
+Assert Equal (Comptroller CompBorrowState cDAI "index") (304681283805461047990696432440416)
+Assert Equal (Comptroller CompBorrowState cWBTC "index") (57091242808581665886978349924495532483402440045)
+Assert Equal (Comptroller CompBorrowState cWBTC2 "index") (4737883459778580214958447506665029825205802627436)
+Assert Equal (Comptroller CompBorrowState cUSDT "index") (423043052052409576153627131768953764641085770)
+Assert Equal (Comptroller CompBorrowState cCOMP "index") (1090703374692561421496444039421391844)
+Assert Equal (Comptroller CompBorrowState cUNI "index") (1003224738961829505932781071832714863)
+Assert Equal (Comptroller CompBorrowState cLINK "index") (1021334963447383149197229014847138287)
+Assert Equal (Comptroller CompBorrowState cZRX "index") (276469710290458744488056479123899)
+Assert Equal (Comptroller CompBorrowState cTUSD "index") (1e36)
+Assert Equal (Comptroller CompBorrowState cBAT "index") (233011432934823645559082204456702)
+Assert Equal (Comptroller CompBorrowState cAAVE "index") (1e36)
+Assert Equal (Comptroller CompBorrowState cSAI "index") (1e36)
+Assert Equal (Comptroller CompBorrowState cSUSHI "index") (1e36)
+Assert Equal (Comptroller CompBorrowState cMKR "index") (1e36)
+Assert Equal (Comptroller CompBorrowState cREP "index") (2887409755927065791842943220324690)
+Assert Equal (Comptroller CompBorrowState cYFI "index") (1e36)
+
+-- Verify new supply state indices
+Assert Equal (Comptroller CompSupplyState cETH "index") (3266868720475524419878033121250905466535312)
+Assert Equal (Comptroller CompSupplyState cUSDC "index") (32567188278514519540286631350261809001131)
+Assert Equal (Comptroller CompSupplyState cDAI "index") (48523828872606782857477338624275950203274)
+Assert Equal (Comptroller CompSupplyState cWBTC "index") (98873610159998754418561608689329824102859175)
+Assert Equal (Comptroller CompSupplyState cWBTC2 "index") (551089483977648654874859795061443575084844994561)
+Assert Equal (Comptroller CompSupplyState cUSDT "index") (50534796386054496931306603320108731513487)
+Assert Equal (Comptroller CompSupplyState cCOMP "index") (3836027216477076374142846684153643830549513)
+Assert Equal (Comptroller CompSupplyState cUNI "index") (57432610740828790697901777052414007754599)
+Assert Equal (Comptroller CompSupplyState cLINK "index") (852011526290128056285332840775220381888746)
+Assert Equal (Comptroller CompSupplyState cZRX "index") (11697528643270194078002497271204681811028)
+Assert Equal (Comptroller CompSupplyState cTUSD "index") (1e36)
+Assert Equal (Comptroller CompSupplyState cBAT "index") (9278159415477864616059533796790401482787)
+Assert Equal (Comptroller CompSupplyState cAAVE "index") (1e36)
+Assert Equal (Comptroller CompSupplyState cSAI "index") (1e36)
+Assert Equal (Comptroller CompSupplyState cSUSHI "index") (1e36)
+Assert Equal (Comptroller CompSupplyState cMKR "index") (1e36)
+Assert Equal (Comptroller CompSupplyState cREP "index") (10822464444875983176893501598723703991037)
+Assert Equal (Comptroller CompSupplyState cYFI "index") (1e36)
+
+-- Verify old COMP speed storage deleted
+Assert Equal (Comptroller CompSpeed cETH) (0)
+Assert Equal (Comptroller CompSpeed cUSDC) (0)
+Assert Equal (Comptroller CompSpeed cDAI) (0)
+Assert Equal (Comptroller CompSpeed cWBTC) (0)
+Assert Equal (Comptroller CompSpeed cWBTC2) (0)
+Assert Equal (Comptroller CompSpeed cUSDT) (0)
+Assert Equal (Comptroller CompSpeed cCOMP) (0)
+Assert Equal (Comptroller CompSpeed cUNI) (0)
+Assert Equal (Comptroller CompSpeed cLINK) (0)
+Assert Equal (Comptroller CompSpeed cZRX) (0)
+Assert Equal (Comptroller CompSpeed cTUSD) (0)
+Assert Equal (Comptroller CompSpeed cBAT) (0)
+Assert Equal (Comptroller CompSpeed cAAVE) (0)
+Assert Equal (Comptroller CompSpeed cSAI) (0)
+Assert Equal (Comptroller CompSpeed cSUSHI) (0)
+Assert Equal (Comptroller CompSpeed cMKR) (0)
+Assert Equal (Comptroller CompSpeed cREP) (0)
+Assert Equal (Comptroller CompSpeed cYFI) (0)
+
+-- Verify COMP supply speeds equal the previous speeds
+Assert Equal (Comptroller CompSupplySpeed cETH) (10750000000000000)
+Assert Equal (Comptroller CompSupplySpeed cUSDC) (67000000000000000)
+Assert Equal (Comptroller CompSupplySpeed cDAI) (67000000000000000)
+Assert Equal (Comptroller CompSupplySpeed cWBTC) (0)
+Assert Equal (Comptroller CompSupplySpeed cWBTC2) (10750000000000000)
+Assert Equal (Comptroller CompSupplySpeed cUSDT) (9650000000000000)
+Assert Equal (Comptroller CompSupplySpeed cCOMP) (5000000000000000)
+Assert Equal (Comptroller CompSupplySpeed cUNI) (1462500000000000)
+Assert Equal (Comptroller CompSupplySpeed cLINK) (1462500000000000)
+Assert Equal (Comptroller CompSupplySpeed cZRX) (1462500000000000)
+Assert Equal (Comptroller CompSupplySpeed cTUSD) (0)
+Assert Equal (Comptroller CompSupplySpeed cBAT) (1462500000000000)
+Assert Equal (Comptroller CompSupplySpeed cAAVE) (0)
+Assert Equal (Comptroller CompSupplySpeed cSAI) (0)
+Assert Equal (Comptroller CompSupplySpeed cSUSHI) (0)
+Assert Equal (Comptroller CompSupplySpeed cMKR) (0)
+Assert Equal (Comptroller CompSupplySpeed cREP) (0)
+Assert Equal (Comptroller CompSupplySpeed cYFI) (0)
+
+-- Verify COMP borrow speeds equal the previous speeds
+Assert Equal (Comptroller CompBorrowSpeed cETH) (10750000000000000)
+Assert Equal (Comptroller CompBorrowSpeed cUSDC) (67000000000000000)
+Assert Equal (Comptroller CompBorrowSpeed cDAI) (67000000000000000)
+Assert Equal (Comptroller CompBorrowSpeed cWBTC) (0)
+Assert Equal (Comptroller CompBorrowSpeed cWBTC2) (10750000000000000)
+Assert Equal (Comptroller CompBorrowSpeed cUSDT) (9650000000000000)
+Assert Equal (Comptroller CompBorrowSpeed cCOMP) (5000000000000000)
+Assert Equal (Comptroller CompBorrowSpeed cUNI) (1462500000000000)
+Assert Equal (Comptroller CompBorrowSpeed cLINK) (1462500000000000)
+Assert Equal (Comptroller CompBorrowSpeed cZRX) (1462500000000000)
+Assert Equal (Comptroller CompBorrowSpeed cTUSD) (0)
+Assert Equal (Comptroller CompBorrowSpeed cBAT) (1462500000000000)
+Assert Equal (Comptroller CompBorrowSpeed cAAVE) (0)
+Assert Equal (Comptroller CompBorrowSpeed cSAI) (0)
+Assert Equal (Comptroller CompBorrowSpeed cSUSHI) (0)
+Assert Equal (Comptroller CompBorrowSpeed cMKR) (0)
+Assert Equal (Comptroller CompBorrowSpeed cREP) (0)
+Assert Equal (Comptroller CompBorrowSpeed cYFI) (0)
+
+Print "Upgrade ok"
+Print "Verifying exploits/bugs are patched"
+
+-- Mint test
+From TokenHolder (Erc20 MKR Approve (Address cMKR) 1000e18)
+From TokenHolder (CToken cMKR Mint 1000e18)
+
+Comptroller ClaimComp TokenHolder
+Assert Equal (Erc20 COMP TokenBalance TokenHolder) (0)
+
+-- Fast forward to make us accrue a ton of interest (1 year)
+MineBlock
+AdvanceBlocks 2354250
+
+-- Propose COMP speed update
+From CompHolder (GovernorBravo GovernorBravo Propose "Exploit rewards bug 1" [(Address Comptroller)] [0] ["_setCompSpeeds(address[],uint256[],uint256[])"] [[[(address cMKR)] [1] [1]]])
+
+-- Fast forward, vote, queue, execute
+MineBlock
+AdvanceBlocks 14000
+From CompHolder (GovernorBravo GovernorBravo Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+GovernorBravo GovernorBravo Proposal LastProposal Queue
+IncreaseTime 604910
+GovernorBravo GovernorBravo Proposal LastProposal Execute
+
+-- Ensure accrue interest
+CToken cMKR AccrueInterest
+
+From TokenHolder (Erc20 MKR Approve (Address cMKR) 1000e18)
+From TokenHolder (CToken cMKR Mint 1000e18)
+
+Comptroller ClaimComp TokenHolder
+Assert Equal (Erc20 COMP TokenBalance TokenHolder) (2)
+
+-- Propose COMP speed update
+From CompHolder (GovernorBravo GovernorBravo Propose "Exploit rewards bug 2" [(Address Comptroller)] [0] ["_setCompSpeeds(address[],uint256[],uint256[])"] [[[(address cMKR)] [0] [0]]])
+
+-- Fast forward, vote, queue, execute
+MineBlock
+AdvanceBlocks 14000
+From CompHolder (GovernorBravo GovernorBravo Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+GovernorBravo GovernorBravo Proposal LastProposal Queue
+IncreaseTime 604910
+GovernorBravo GovernorBravo Proposal LastProposal Execute
+
+CToken cMKR AccrueInterest
+Comptroller ClaimComp TokenHolder
+Assert Equal (Erc20 COMP TokenBalance TokenHolder) (32056)
+
+-- Fast forward to make us accrue a ton of interest - we shouldn't as the rate is 0 (1 year)
+MineBlock
+AdvanceBlocks 2354250
+
+-- Propose COMP speed update
+From CompHolder (GovernorBravo GovernorBravo Propose "Exploit rewards bug 3" [(Address Comptroller)] [0] ["_setCompSpeeds(address[],uint256[],uint256[])"] [[[(address cMKR)] [1] [1]]])
+
+-- Fast forward, vote, queue, execute
+MineBlock
+AdvanceBlocks 14000
+From CompHolder (GovernorBravo GovernorBravo Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+GovernorBravo GovernorBravo Proposal LastProposal Queue
+IncreaseTime 604910
+GovernorBravo GovernorBravo Proposal LastProposal Execute
+
+-- Ensure accrue interest
+CToken cMKR AccrueInterest
+
+From TokenHolder (Erc20 MKR Approve (Address cMKR) 1000e18)
+From TokenHolder (CToken cMKR Mint 1000e18)
+
+Comptroller ClaimComp TokenHolder
+Assert Equal (Erc20 COMP TokenBalance TokenHolder) (32058)
+
+Print "COMP rewards bug fix passed"

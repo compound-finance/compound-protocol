@@ -1,75 +1,60 @@
 -- Tests for the grants and math patch
 
-Macro FlywheelComptroller price=1.0 borrowRate=0.000005 compInitAmount=5000000e18
+Macro DeployComptroller price=1.0
     Unitroller Deploy
     PriceOracle Deploy Fixed price
     PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero)
-    ----g2
-    ComptrollerImpl Deploy ScenarioG2 ComptrollerScenG2
-    Unitroller SetPendingImpl ComptrollerScenG2
-    ComptrollerImpl ComptrollerScenG2 BecomeG2
-    --list some tokens
+    ComptrollerImpl Deploy Scenario ComptrollerScen
+    Unitroller SetPendingImpl ComptrollerScen
+    ComptrollerImpl ComptrollerScen Become
     Comptroller SetPriceOracle (PriceOracleProxy Address)
-    Comptroller SetMaxAssets 20
     Comptroller SetCloseFactor 0.5
     Comptroller LiquidationIncentive 1.1
+
+Macro SetupMarkets
     NewCToken ZRX cZRX
     NewCToken BAT cBAT
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
-    -- final
-    ComptrollerImpl Deploy ScenarioG3 ComptrollerScen
-    Unitroller SetPendingImpl ComptrollerScen
-    ComptrollerImpl ComptrollerScen BecomeG3 1e18 [cZRX cBAT]
+
+Macro SetupCompToken compInitAmount=5000000e18
     Erc20 Deploy Standard COMP "COMP Token" 18
     Give (Address Comptroller) compInitAmount COMP
+    Comptroller Send "setCompAddress(address)" (Address COMP)
 
-Macro GrantsComptroller
-    FlywheelComptroller
-    -- g4
-    ComptrollerImpl Deploy ScenarioG4 ComptrollerScen
-    Unitroller SetPendingImpl ComptrollerScen
-    ComptrollerImpl ComptrollerScen BecomeG4
-    -- g5
-    ComptrollerImpl Deploy ScenarioG5 ComptrollerScen
-    Unitroller SetPendingImpl ComptrollerScen
-    ComptrollerImpl ComptrollerScen BecomeG5
-    -- g6
-    ComptrollerImpl Deploy ScenarioG6 ComptrollerScen
-    Unitroller SetPendingImpl ComptrollerScen
-    ComptrollerImpl ComptrollerScen BecomeG6
-    -- current
-    ComptrollerImpl Deploy Scenario ComptrollerScen
-    Unitroller SetPendingImpl ComptrollerScen
-    ComptrollerImpl ComptrollerScen Become
+-- NewComptroller, but with markets listed so that we can make them comp markets in constructor
+Macro FlywheelComptroller price=1.0 borrowRate=0.000005 compInitAmount=5000000e18
+    DeployComptroller price
+    SetupMarkets
+    SetupCompToken compInitAmount
 
-Macro InitSpeeds
+Macro InitUsage
     Prep Geoff 100e18 ZRX cZRX
     Mint Geoff 50e18 cZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
     Prep Coburn Some BAT cBAT
     Mint Coburn 6e18 cBAT--tokenbalance = 6e18 / 2e9 = 3e9
     EnterMarkets Coburn cBAT
     Borrow Coburn 1e18 cZRX
-    Comptroller SetCompSpeed cZRX 1
-    Comptroller SetCompSpeed cBAT 1
-    Comptroller RefreshCompSpeeds
-    Comptroller Send "setCompAddress(address)" (Address COMP)
+
+Macro InitUsageAndSpeeds
+    InitUsage
+    Comptroller SetCompSpeeds (cZRX cBAT) (1 1) (1 1)
 
 Test "COMP can be granted in combination with liquidity rewards"
-    GrantsComptroller
-    InitSpeeds
+    FlywheelComptroller
+    InitUsageAndSpeeds
     Assert Equal (Comptroller CompAccrued Geoff) 0
     Assert Equal (Erc20 COMP TokenBalance Geoff) 0
     FastForward 1000 Blocks
     Comptroller ClaimComp Geoff
     Comptroller Send "_grantComp(address,uint256)" (Address Geoff) 1000
     Assert Equal (Comptroller CompAccrued Geoff) 0
-    Assert Equal (Erc20 COMP TokenBalance Geoff) 1000000000000000001000
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 2000 -- 1000 (grant) + 1000 (COMP supply rewards)
 
 Test "COMP can be granted"
     -- Can be granted once
-    GrantsComptroller
-    InitSpeeds
+    FlywheelComptroller
+    InitUsageAndSpeeds
     Assert Equal (Comptroller CompAccrued Geoff) 0
     Assert Equal (Erc20 COMP TokenBalance Geoff) 0
     Comptroller Send "_grantComp(address,uint256)" (Address Geoff) 1000
@@ -82,8 +67,8 @@ Test "COMP can be granted"
     Assert Equal (Erc20 COMP TokenBalance Geoff) 3000
 
 Test "COMP can be streamed to contributors"
-    GrantsComptroller
-    InitSpeeds
+    FlywheelComptroller
+    InitUsageAndSpeeds
     Assert Equal (Comptroller CompAccrued Torrey) 0
     Assert Equal (Erc20 COMP TokenBalance Torrey) 0
     Comptroller Send "_setContributorCompSpeed(address,uint256)" (Address Torrey) 300
@@ -101,8 +86,8 @@ Test "COMP can be streamed to contributors"
     Assert Equal (Erc20 COMP TokenBalance Torrey) 300000
 
 Test "COMP can be streamed in combination with liquidity rewards"
-    GrantsComptroller
-    InitSpeeds
+    FlywheelComptroller
+    InitUsageAndSpeeds
     Comptroller Send "_setContributorCompSpeed(address,uint256)" (Address Geoff) 300
     FastForward 1000 Blocks
     -- Just claimComp does not receive COMP
@@ -110,11 +95,11 @@ Test "COMP can be streamed in combination with liquidity rewards"
     Assert Equal (Comptroller CompAccrued Geoff) 300000
     Comptroller ClaimComp Geoff
     Assert Equal (Comptroller CompAccrued Geoff) 0
-    Assert Equal (Erc20 COMP TokenBalance Geoff) 1000000000000000300000
+    Assert Equal (Erc20 COMP TokenBalance Geoff) 301000 -- 300000 (contributer grant) + 1000 (COMP supply rewards)
 
 Test "COMP streaming can be changed for contributors"
-    GrantsComptroller
-    InitSpeeds
+    FlywheelComptroller
+    InitUsageAndSpeeds
     Comptroller Send "_setContributorCompSpeed(address,uint256)" (Address Torrey) 300
     FastForward 1000 Blocks
     Comptroller Send "_setContributorCompSpeed(address,uint256)" (Address Torrey) 600

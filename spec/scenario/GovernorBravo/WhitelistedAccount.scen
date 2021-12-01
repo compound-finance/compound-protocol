@@ -1,0 +1,115 @@
+Macro DeployGov
+    SetBlockNumber 1
+    Counter Deploy CNT1
+    Timelock Deploy Scenario Jared 604800
+    Comp Deploy Bank
+    GovernorBravo Deploy BravoDelegateHarness BravoDelegateHarness
+    GovernorBravo Deploy BravoDelegator LegitGov (Address Timelock) (Address Comp) (Address Root) (Address BravoDelegateHarness) 17280 1 100000e18
+    GovernorBravo LegitGov MergeABI BravoDelegateHarness
+    GovernorBravo LegitGov HarnessInitiate
+    Timelock SetAdmin (Address LegitGov)
+    Enfranchise Root 200001e18
+    Enfranchise Jared 200000e18
+
+Macro Enfranchise user amount
+    From Bank (Comp Transfer user amount)
+    From user (Comp Delegate user)
+
+Macro GivenPendingProposal
+    DeployGov
+    MineBlock
+    MineBlock
+    GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]]
+    Assert Equal ("Pending") (GovernorBravo LegitGov Proposal LastProposal State)
+
+Macro GivenActiveProposal
+    GivenPendingProposal
+    MineBlock
+    MineBlock
+    Assert Equal ("Active") (GovernorBravo LegitGov Proposal LastProposal State)
+
+Macro GivenSucceededProposal
+    GivenActiveProposal
+    GovernorBravo LegitGov Proposal LastProposal Vote For
+    From Jared (GovernorBravo LegitGov Proposal LastProposal Vote For)
+    AdvanceBlocks 20000
+    Assert Equal ("Succeeded") (GovernorBravo LegitGov Proposal LastProposal State)
+
+Macro GivenQueuedProposal
+    GivenSucceededProposal
+    FreezeTime 100
+    GovernorBravo LegitGov Proposal LastProposal Queue
+    Assert Log ProposalQueued (id 2)
+    Assert Equal ("Queued") (GovernorBravo LegitGov Proposal LastProposal State)
+
+Macro GivenExecutedProposal
+    GivenQueuedProposal
+    FreezeTime 604901
+    GovernorBravo LegitGov Proposal LastProposal Execute
+    Assert Equal ("Executed") (GovernorBravo LegitGov Proposal LastProposal State)
+
+Macro GivenWhitelistedUser user
+    SetTime Now
+    DeployGov
+    MineBlock
+    from root (GovernorBravo LegitGov SetWhitelistAccountExpiration (Address user) (FromNow 100000))
+    Assert Equal (Comp GetCurrentVotes Robert) 0
+
+Test "Cancel Whitelisted Proposal fail"
+    GivenWhitelistedUser Robert
+    Assert Equal (GovernorBravo LegitGov IsWhitelisted Robert) (True)
+    From Robert (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])
+    AllowFailures
+    GovernorBravo LegitGov Proposal LastProposal Cancel
+    Assert Revert "revert GovernorBravo::cancel: whitelisted proposer"
+
+Test "Cancel Whitelisted Proposal passes after whitelist period"
+    GivenWhitelistedUser Robert
+    From Robert (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])
+    IncreaseTime 100001
+    GovernorBravo LegitGov Proposal LastProposal Cancel
+
+Test "Whitelisted Address can't propose after whitelist period"
+    GivenWhitelistedUser Robert
+    IncreaseTime 100001
+    AllowFailures
+    From Robert (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])
+    Assert Revert "revert GovernorBravo::propose: proposer votes below proposal threshold"
+
+Test "Proposer Can still cancel while whitelisted"
+    GivenWhitelistedUser Robert
+    From Robert (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])
+
+Test "Only Whitelisted User gets whitelisted"
+    GivenWhitelistedUser Robert
+    AllowFailures
+    From Geoff (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])
+    Assert Revert "revert GovernorBravo::propose: proposer votes below proposal threshold"
+
+Test "WhitelistGuardian can cancel proposal by whitelisted account"
+    GivenWhitelistedUser Robert
+    GovernorBravo LegitGov SetWhitelistGuardian Jared
+    From Robert (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])
+    From Jared (GovernorBravo LegitGov Proposal LastProposal Cancel)
+
+Test "WhitelistGuardian can't cancel other proposals"
+    DeployGov
+    GovernorBravo LegitGov SetWhitelistGuardian Robert
+    From Jared (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])
+    AllowFailures
+    From Robert (GovernorBravo LegitGov Proposal LastProposal Cancel)
+    Assert Revert "revert GovernorBravo::cancel: proposer above threshold"
+
+Test "WhitelistGuardian can't cancel from proposer above threshold"
+    GivenWhitelistedUser Jared
+    GovernorBravo LegitGov SetWhitelistGuardian Robert
+    From Jared (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])
+    AllowFailures
+    From Robert (GovernorBravo LegitGov Proposal LastProposal Cancel)
+    Assert Revert "revert GovernorBravo::cancel: whitelisted proposer"
+
+Test "Set whitelist expiration from whitelist guardian"
+    DeployGov
+    GovernorBravo LegitGov SetWhitelistGuardian Robert
+    From Robert (GovernorBravo LegitGov SetWhitelistAccountExpiration (Address Geoff) (FromNow 100000))
+    From Geoff (GovernorBravo LegitGov Propose "Add and sub" [(Address CNT1) (Address CNT1)] [0 0] ["increment(uint256,uint256)" "decrement(uint256)"] [["7" "4"] ["2"]])

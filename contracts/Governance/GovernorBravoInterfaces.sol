@@ -40,6 +40,12 @@ contract GovernorBravoEvents {
 
     /// @notice Emitted when pendingAdmin is accepted, which means admin is updated
     event NewAdmin(address oldAdmin, address newAdmin);
+
+    /// @notice Emitted when whitelist account expiration is set
+    event WhitelistAccountExpirationSet(address account, uint expiration);
+
+    /// @notice Emitted when the whitelistGuardian is set
+    event WhitelistGuardianSet(address oldGuardian, address newGuardian);
 }
 
 contract GovernorBravoDelegatorStorage {
@@ -160,6 +166,14 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
         Expired,
         Executed
     }
+}
+
+contract GovernorBravoDelegateStorageV2 is GovernorBravoDelegateStorageV1 {
+    /// @notice Stores the expiration of account whitelist status as a timestamp
+    mapping (address => uint) public whitelistAccountExpirations;
+
+    /// @notice Address which manages whitelisted proposals and whitelist accounts
+    address public whitelistGuardian;
 }
 
 interface TimelockInterface {
