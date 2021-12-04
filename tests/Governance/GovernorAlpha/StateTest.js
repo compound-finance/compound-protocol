@@ -30,7 +30,7 @@ describe('GovernorAlpha#state/1', () => {
   beforeAll(async () => {
     await freezeTime(100);
     [root, acct, ...accounts] = accounts;
-    comp = await deploy('Comp', [root]);
+    comp = await deploy('Comp', [root, 'COMP', 'Compound']);
     delay = etherUnsigned(2 * 24 * 60 * 60).multipliedBy(2)
     timelock = await deploy('TimelockHarness', [root, delay]);
     gov = await deploy('GovernorAlpha', [timelock._address, comp._address, root]);

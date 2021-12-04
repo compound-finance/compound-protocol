@@ -18,7 +18,7 @@ describe('Comp', () => {
   beforeEach(async () => {
     [root, a1, a2, ...accounts] = saddle.accounts;
     chainId = 1; // await web3.eth.net.getId(); See: https://github.com/trufflesuite/ganache-core/issues/515
-    comp = await deploy('Comp', [root]);
+    comp = await deploy('Comp', [root, symbol, name]);
   });
 
   describe('metadata', () => {

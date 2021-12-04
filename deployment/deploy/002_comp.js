@@ -1,6 +1,20 @@
 const deploy = require("../utils/deploy");
 
-const deployComp = async ({ getNamedAccounts, deployments }) => {
+const config = require('../config')
+
+const deployComp = async ({ getNamedAccounts }) => {
+    const {
+        deployer,
+    } = await getNamedAccounts();
+
+    await deploy('Comp', {
+        args: [
+            deployer,
+            config.comp.symbol,
+            config.comp.name,
+        ],
+        skipIfAlreadyDeployed: true,
+    })
 }
 
 

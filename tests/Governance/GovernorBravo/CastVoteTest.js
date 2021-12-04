@@ -21,7 +21,7 @@ describe("governorBravo#castVote/2", () => {
 
   beforeAll(async () => {
     [root, a1, ...accounts] = saddle.accounts;
-    comp = await deploy('Comp', [root]);
+    comp = await deploy('Comp', [root, 'COMP', 'Compound']);
     govDelegate = await deploy('GovernorBravoDelegateHarness');
     gov = await deploy('GovernorBravoDelegator', [address(0), comp._address, root, govDelegate._address, 17280, 1, "100000000000000000000000"]);
     mergeInterface(gov,govDelegate);

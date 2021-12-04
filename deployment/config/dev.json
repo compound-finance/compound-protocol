@@ -1,4 +1,8 @@
 {
+    "comp": {
+        "symbol": "CTRS",
+        "name": "Citrus"
+    },
     "tokens": [
         {
             "name": "Citrus xDai",

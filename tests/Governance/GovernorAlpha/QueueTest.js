@@ -21,7 +21,7 @@ describe('GovernorAlpha#queue/1', () => {
   describe("overlapping actions", () => {
     it("reverts on queueing overlapping actions in same proposal", async () => {
       const timelock = await deploy('TimelockHarness', [root, 86400 * 2]);
-      const comp = await deploy('Comp', [root]);
+      const comp = await deploy('Comp', [root, 'COMP', 'Compound']);
       const gov = await deploy('GovernorAlpha', [timelock._address, comp._address, root]);
       const txAdmin = await send(timelock, 'harnessSetAdmin', [gov._address]);
 
@@ -45,7 +45,7 @@ describe('GovernorAlpha#queue/1', () => {
 
     it("reverts on queueing overlapping actions in different proposals, works if waiting", async () => {
       const timelock = await deploy('TimelockHarness', [root, 86400 * 2]);
-      const comp = await deploy('Comp', [root]);
+      const comp = await deploy('Comp', [root, 'COMP', 'Compound']);
       const gov = await deploy('GovernorAlpha', [timelock._address, comp._address, root]);
       const txAdmin = await send(timelock, 'harnessSetAdmin', [gov._address]);
 

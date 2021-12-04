@@ -10,7 +10,7 @@ describe('GovernorAlpha#propose/5', () => {
 
   beforeAll(async () => {
     [root, acct, ...accounts] = accounts;
-    comp = await deploy('Comp', [root]);
+    comp = await deploy('Comp', [root, 'COMP', 'Compound']);
     gov = await deploy('GovernorAlpha', [address(0), comp._address, address(0)]);
   });
 

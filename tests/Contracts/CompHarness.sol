@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 import "../../contracts/Governance/Comp.sol";
 
 contract CompScenario is Comp {
-    constructor(address account) Comp(account) public {}
+    constructor(address account) Comp(account, "COMP", "Compound") public {}
 
     function transferScenario(address[] calldata destinations, uint256 amount) external returns (bool) {
         for (uint i = 0; i < destinations.length; i++) {

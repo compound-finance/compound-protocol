@@ -29,7 +29,7 @@ describe('GovernorBravo#state/1', () => {
   beforeAll(async () => {
     await freezeTime(100);
     [root, acct, ...accounts] = accounts;
-    comp = await deploy('Comp', [root]);
+    comp = await deploy('Comp', [root, 'COMP', 'Compound']);
     delay = etherUnsigned(2 * 24 * 60 * 60).multipliedBy(2)
     timelock = await deploy('TimelockHarness', [root, delay]);
     gov = await deploy('GovernorBravoImmutable', [timelock._address, comp._address, root, 17280, 1, "100000000000000000000000"]);

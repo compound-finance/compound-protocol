@@ -2,7 +2,7 @@ const deploy = require("../utils/deploy");
 const execute = require("../utils/execute");
 const view = require("../utils/view");
 
-const deployComptroller = async ({ getNamedAccounts }) => {
+const deployComptroller = async ({ getNamedAccounts, deployments }) => {
     const {
         deployer,
         multisig,
@@ -122,6 +122,23 @@ const deployComptroller = async ({ getNamedAccounts }) => {
                 args: [guardian]
             })
         }
+    }
+
+    const compDeployment = await deployments.get('Comp')
+
+    const compAddress = await view({
+        contractName: 'Comptroller',
+        deploymentName: 'Unitroller',
+        methodName: 'compAddress',
+    })
+
+    if (compAddress !== compDeployment.address) {
+        await execute({
+            contractName: 'Comptroller',
+            deploymentName: 'Unitroller',
+            methodName: '_setCompAddress',
+            args: [compDeployment.address]
+        })
     }
 
     // Set admin

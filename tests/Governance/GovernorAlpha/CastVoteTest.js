@@ -20,7 +20,7 @@ describe("governorAlpha#castVote/2", () => {
 
   beforeAll(async () => {
     [root, a1, ...accounts] = saddle.accounts;
-    comp = await deploy('Comp', [root]);
+    comp = await deploy('Comp', [root, 'COMP', 'Compound']);
     gov = await deploy('GovernorAlpha', [address(0), comp._address, root]);
 
     targets = [a1];

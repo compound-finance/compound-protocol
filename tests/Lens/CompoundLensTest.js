@@ -249,7 +249,7 @@ describe('CompoundLens', () => {
     let proposalBlock, proposalId;
 
     beforeEach(async () => {
-      comp = await deploy('Comp', [acct]);
+      comp = await deploy('Comp', [acct, 'COMP', 'Compound']);
       gov = await deploy('GovernorAlpha', [address(0), comp._address, address(0)]);
       targets = [acct];
       values = ["0"];
@@ -305,7 +305,7 @@ describe('CompoundLens', () => {
 
     beforeEach(async () => {
       currentBlock = +(await web3.eth.getBlockNumber());
-      comp = await deploy('Comp', [acct]);
+      comp = await deploy('Comp', [acct, 'COMP', 'Compound']);
     });
 
     describe('getCompBalanceMetadata', () => {
