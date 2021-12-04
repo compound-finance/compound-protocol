@@ -24,27 +24,7 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
         const multiplierPerYear = ((targetApr - baseApr) * ONE) / kink
         const jumpMultiplierPerYear = ((maxApr - targetApr) * ONE) / ((ONE - kink))
 
-        const isJumpRateModelDeployed = Boolean(await deployments.getOrNull(`JumpRateModelV2_${token.symbol}`))
-
-        if (isJumpRateModelDeployed) {
-            const JumpRateModel = await ethers.getContract(`JumpRateModelV2_${token.symbol}`, deployer)
-
-            const multiplierPerBlock = (multiplierPerYear * ONE) / (blocksPerYear * kink)
-            const baseRatePerBlock = baseApr / blocksPerYear
-            const jumpMultiplierPerBlock = jumpMultiplierPerYear / blocksPerYear
-
-            // No need to redeploy if all properties are the same
-            if (
-                (await JumpRateModel.multiplierPerBlock()).toBigInt() === multiplierPerBlock &&
-                (await JumpRateModel.baseRatePerBlock()).toBigInt() === baseRatePerBlock &&
-                (await JumpRateModel.jumpMultiplierPerBlock()).toBigInt() === jumpMultiplierPerBlock &&
-                (await JumpRateModel.kink()).toBigInt() === kink
-            ) {
-                continue
-            }
-        }
-        
-        await deploy(`JumpRateModelV2_${token.symbol}`, {
+        const interestRateModel = await deploy(`${token.symbol}RateModel`, {
             contract: 'JumpRateModelV2',
             args: [
                 baseApr.toString(),
@@ -56,12 +36,31 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
             skipIfSameBytecode: true,
             log: true,
         })
-    }
 
-    // Create markets
-    for (const token of config.tokens) {
+        const JumpRateModel = await ethers.getContract(`${token.symbol}RateModel`, deployer)
+
+        const multiplierPerBlock = (multiplierPerYear * ONE) / (blocksPerYear * kink)
+        const baseRatePerBlock = baseApr / blocksPerYear
+        const jumpMultiplierPerBlock = jumpMultiplierPerYear / blocksPerYear
+
+        if (
+            (await JumpRateModel.multiplierPerBlock()).toBigInt() !== multiplierPerBlock ||
+            (await JumpRateModel.multiplierPerBlock()).toBigInt() !== multiplierPerBlock ||
+            (await JumpRateModel.baseRatePerBlock()).toBigInt() !== baseRatePerBlock ||
+            (await JumpRateModel.jumpMultiplierPerBlock()).toBigInt() !== jumpMultiplierPerBlock ||
+            (await JumpRateModel.kink()).toBigInt() !== kink
+        ) {
+            await JumpRateModel.updateJumpRateModel(
+                baseApr.toString(),
+                multiplierPerYear.toString(),
+                jumpMultiplierPerYear.toString(),
+                kink.toString(),
+            )
+        }
+
+        // Create markets
+
         const comptrollerDeployment = await deployments.get('Unitroller')
-        const interestRateModelDeployment = await deployments.get(`JumpRateModelV2_${token.symbol}`)
 
         let tokenDeployment = await (async () => {
             switch(token.type) {
@@ -73,7 +72,7 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                         contract: 'CEther',
                         args: [
                             comptrollerDeployment.address,
-                            interestRateModelDeployment.address,
+                            JumpRateModel.address,
                             initialExchangeRateMantissa.toString(),
                             token.name,
                             token.symbol,
@@ -131,7 +130,7 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                         args: [
                             underlying,
                             comptrollerDeployment.address,
-                            interestRateModelDeployment.address,
+                            JumpRateModel.address,
                             initialExchangeRateMantissa.toString(),
                             token.name,
                             token.symbol,
@@ -150,6 +149,22 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                 }
             }
         })()
+
+
+        const interestRateModelAddress = await view({
+            contractName: 'CErc20',
+            deploymentName: token.symbol,
+            methodName: 'interestRateModel',
+        })
+
+        if (interestRateModel.address !== interestRateModelAddress) {
+            await execute({
+                contractName: 'CErc20',
+                deploymentName: token.symbol,
+                methodName: '_setInterestRateModel',
+                args: [interestRateModelAddress]
+            })
+        }
 
         // TODO: Set oracle pricing strategy for token
 
