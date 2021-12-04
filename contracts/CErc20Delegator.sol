@@ -410,6 +410,10 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
         return abi.decode(data, (uint));
     }
 
+    function _setFeeTaker(address payable newFeeTaker) public returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setFeeTaker(address)", newFeeTaker));
+        return abi.decode(data, (uint));
+    }
     /**
      * @notice Internal method to delegate execution to another contract
      * @dev It returns to the external caller whatever the implementation returns or forwards reverts

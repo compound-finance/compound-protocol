@@ -1243,14 +1243,14 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Accrues interest and reduces reserves by transferring from msg.sender
+     * @notice Accrues interest and increases reserves by transferring from msg.sender
      * @param addAmount Amount of addition to reserves
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _addReservesInternal(uint addAmount) internal nonReentrant returns (uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
-            // accrueInterest emits logs on errors, but on top of that we want to log the fact that an attempted reduce reserves failed.
+            // accrueInterest emits logs on errors, but on top of that we want to log the fact that an attempted reserves increase failed.
             return fail(Error(error), FailureInfo.ADD_RESERVES_ACCRUE_INTEREST_FAILED);
         }
 
@@ -1330,8 +1330,8 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         // totalReserves - reduceAmount
         uint totalReservesNew;
 
-        // Check caller is admin
-        if (msg.sender != admin) {
+        // Check caller is fee taker
+        if (msg.sender != feeTaker) {
             return fail(Error.UNAUTHORIZED, FailureInfo.REDUCE_RESERVES_ADMIN_CHECK);
         }
 
@@ -1362,9 +1362,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         totalReserves = totalReservesNew;
 
         // doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
-        doTransferOut(admin, reduceAmount);
+        doTransferOut(feeTaker, reduceAmount);
 
-        emit ReservesReduced(admin, reduceAmount, totalReservesNew);
+        emit ReservesReduced(feeTaker, reduceAmount, totalReservesNew);
 
         return uint(Error.NO_ERROR);
     }
@@ -1417,6 +1417,21 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
 
         // Emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel)
         emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel);
+
+        return uint(Error.NO_ERROR);
+    }
+
+    function _setFeeTaker(address payable newFeeTaker) public returns (uint) {
+        // Check caller is admin
+        if (msg.sender != admin) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_INTEREST_RATE_MODEL_OWNER_CHECK);
+        }
+
+        address oldFeeTaker = feeTaker;
+
+        feeTaker = newFeeTaker;
+
+        emit NewFeeTaker(oldFeeTaker, newFeeTaker);
 
         return uint(Error.NO_ERROR);
     }

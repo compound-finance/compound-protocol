@@ -6,7 +6,7 @@ Citrus finance is blockchain agnositic fork of [Compound Finance](https://compou
 Changes
 =======
 
-> TODO 
+- Added a fee taker on CToken for future profit sharing schema
 
 Contracts
 =========

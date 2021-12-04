@@ -121,6 +121,10 @@ contract CTokenStorage {
      */
     uint public constant protocolSeizeShareMantissa = 2.8e16; //2.8%
 
+    /*
+     * @notice Address that can claim the reserve
+     */
+    address payable public feeTaker;
 }
 
 contract CTokenInterface is CTokenStorage {
@@ -201,6 +205,11 @@ contract CTokenInterface is CTokenStorage {
     event ReservesReduced(address admin, uint reduceAmount, uint newTotalReserves);
 
     /**
+     * @notice Event emitted when the fee taker is changed
+     */
+    event NewFeeTaker(address oldFeeTaker, address newFeeTaker);
+
+    /**
      * @notice EIP20 Transfer event
      */
     event Transfer(address indexed from, address indexed to, uint amount);
@@ -245,6 +254,7 @@ contract CTokenInterface is CTokenStorage {
     function _setReserveFactor(uint newReserveFactorMantissa) external returns (uint);
     function _reduceReserves(uint reduceAmount) external returns (uint);
     function _setInterestRateModel(InterestRateModel newInterestRateModel) public returns (uint);
+    function _setFeeTaker(address payable newFeeTaker) public returns (uint);
 }
 
 contract CErc20Storage {

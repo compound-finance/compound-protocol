@@ -231,6 +231,22 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                 args: [targetReserveFactor],
             })
         }
+
+        const feeTaker = await view({
+            contractName: 'CErc20',
+            deploymentName: token.symbol,
+            methodName: 'feeTaker',
+            args: [],
+        })
+
+        if (feeTaker !== multisig) {
+            await execute({
+                contractName: 'CErc20',
+                deploymentName: token.symbol,
+                methodName: '_setFeeTaker',
+                args: [multisig],
+            })
+        }
     }
 }
 

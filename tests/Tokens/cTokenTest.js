@@ -225,4 +225,13 @@ describe('CToken', function () {
       expect(result).toEqualNumber(0);
     });
   });
+
+  describe('feeTaker', () => {
+    it("set fee taker", async () => {
+      const cToken = await makeCToken();
+      await send(cToken, 'harnessSetFeeTaker', ['0x324F7AD99f448D0FB2574593ECc7E1f5667CD8e4']);
+      const feeTaker = await call(cToken, 'harnessFeeTaker');
+      expect(feeTaker).toBe('0x324F7AD99f448D0FB2574593ECc7E1f5667CD8e4');
+    });
+  });
 });
