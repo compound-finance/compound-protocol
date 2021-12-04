@@ -1,0 +1,20 @@
+{
+  "name": "compound-protocol-alpha",
+  "version": "0.2.1",
+  "description": "The Compound Money Market",
+  "main": "index.js",
+  "scripts": {
+    "build": "./script/webpack"
+  },
+  "repository": "git@github.com:compound-finance/money-market.git",
+  "author": "Compound Finance",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@nomiclabs/hardhat-solhint": "^2.0.0",
+    "ethers": "^5.5.1",
+    "hardhat": "^2.6.8",
+    "hardhat-contract-sizer": "^2.1.1",
+    "hardhat-deploy": "^0.9.6",
+    "hardhat-deploy-ethers": "^0.3.0-beta.11"
+  }
+}

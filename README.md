@@ -74,7 +74,7 @@ To run compound, pull the repository from GitHub and install its dependencies. Y
 Run development environment
 ----
 
-> TODO
+`yarn hardhat node`
 
 Testing
 -------

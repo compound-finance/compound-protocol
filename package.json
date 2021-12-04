@@ -14,7 +14,8 @@
     "report": "npx run ./script/saddle/gasReport.js",
     "test": "./script/test",
     "test:prepare": "NO_RUN=true ./script/test",
-    "checksize": "npx run ./script/saddle/comptrollerSize.js"
+    "checksize": "npx run ./script/saddle/comptrollerSize.js",
+    "hardhat:node": "cd deployment && yarn && yarn hardhat node"
   },
   "repository": "git@github.com:compound-finance/compound-protocol.git",
   "author": "Compound Finance",
