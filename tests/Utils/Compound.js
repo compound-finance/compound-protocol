@@ -275,6 +275,12 @@ async function makePriceOracle(opts = {}) {
   if (kind == 'simple') {
     return await deploy('SimplePriceOracle');
   }
+
+  if (kind == 'chainlink') {
+    return await deploy('ChainlinkPriceOracle', [
+      root,
+    ])
+  }
 }
 
 async function makeToken(opts = {}) {
@@ -289,6 +295,19 @@ async function makeToken(opts = {}) {
     const symbol = opts.symbol || 'OMG';
     const name = opts.name || `Erc20 ${symbol}`;
     return await deploy('ERC20Harness', [quantity, name, decimals, symbol]);
+  }
+}
+
+async function makeChainlinkAggregator(opts = {}) {
+  const {
+    kind = 'harness'
+  } = opts || {};
+
+  if (kind == 'harness') {
+    return await deploy('ChainlinkPriceAggregatorMock', [
+      opts.decimals || 8,
+      opts.answer || '100000000',
+    ]);
   }
 }
 
@@ -450,6 +469,7 @@ module.exports = {
   makeInterestRateModel,
   makePriceOracle,
   makeToken,
+  makeChainlinkAggregator,
 
   balanceOf,
   totalSupply,

@@ -377,7 +377,7 @@ contract CErc20DelegateHarness is CErc20Delegate {
         return feeTaker;
     }
 
-    function harnessSetFeeTaker(address feeTaker_) public returns (uint) {
+    function harnessSetFeeTaker(address payable feeTaker_) public returns (uint) {
         return _setFeeTaker(feeTaker_);
     }
 }

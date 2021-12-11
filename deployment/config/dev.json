@@ -39,7 +39,11 @@
             },
             "reserve": 0.10,
             "initialTokensPerUnderlying": 50,
-            "collateralFactor": 0.75
+            "collateralFactor": 0.75,
+            "oracle": {
+                "type": "mock",
+                "price": "1"
+            }
         },
         {
             "name": "Citrus Wrapped Bitcoin",
@@ -60,7 +64,11 @@
             },
             "reserve": 0.15,
             "initialTokensPerUnderlying": 50,
-            "collateralFactor": 0.5
+            "collateralFactor": 0.5,
+            "oracle": {
+                "type": "mock",
+                "price": "40000"
+            }
         },
         {
             "name": "Citrus Stake",
@@ -81,7 +89,11 @@
             },
             "reserve": 0.15,
             "initialTokensPerUnderlying": 50,
-            "collateralFactor": 0.5
+            "collateralFactor": 0.5,
+            "oracle": {
+                "type": "mock",
+                "price": "10"
+            }
         }
     ]
 }

@@ -68,7 +68,7 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                     const underlyingDecimals = 18
                     const initialExchangeRateMantissa = (oneWithDecimals(underlyingDecimals) * ONE) / (BigInt(token.initialTokensPerUnderlying) * oneWithDecimals(token.decimals))
 
-                    return await deploy(token.symbol, {
+                    const cEther =  await deploy(token.symbol, {
                         contract: 'CEther',
                         args: [
                             comptrollerDeployment.address,
@@ -82,6 +82,22 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                         skipIfAlreadyDeployed: true,
                         log: true,
                     })
+
+                    const isCEther = await view({
+                        contractName: 'ChainlinkPriceOracle',
+                        methodName: 'cEthers',
+                        args: [cEther.address]
+                    })
+
+                    if (!isCEther) {
+                        await execute({
+                            contractName: 'ChainlinkPriceOracle',
+                            methodName: '_setCEther',
+                            args: [cEther.address]
+                        })
+                    }
+
+                    return cEther
                 }
     
                 case 'token': {
@@ -124,8 +140,8 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                         skipIfSameBytecode: true,
                         log: true,
                     })
-    
-                    return await deploy(token.symbol, {
+
+                    const cToken = await deploy(token.symbol, {
                         contract: 'CErc20Delegator',
                         args: [
                             underlying,
@@ -142,6 +158,39 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                         skipIfAlreadyDeployed: true,
                         log: true,
                     })
+
+                    const priceAggregator = await view({
+                        contractName: 'ChainlinkPriceOracle',
+                        methodName: 'aggregators',
+                        args: [underlying],
+                    })
+
+                    const targetPriceAggregator = await (async () => {
+                        switch(token.oracle.type) {
+                            case 'mock': {
+                                const d = await deploy(`${token.symbol}ChainlinkPriceAggregatorMock`, {
+                                    contract: 'ChainlinkPriceAggregatorMock',
+                                    args: [0, token.oracle.price],
+                                })
+
+                                return d.address
+                            }
+        
+                            case 'chainlink': {
+                                return token.oracle.aggregator
+                            }
+                        }
+                    })()
+
+                    if (priceAggregator !== targetPriceAggregator) {
+                        await execute({
+                            contractName: 'ChainlinkPriceOracle',
+                            methodName: '_setAggregator',
+                            args: [underlying, targetPriceAggregator],
+                        })
+                    }
+
+                    return cToken
                 }
     
                 default: {
@@ -166,8 +215,6 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
             })
         }
 
-        // TODO: Set oracle pricing strategy for token
-
         const market = await view({
             contractName: 'Comptroller',
             deploymentName: 'Unitroller',
@@ -187,13 +234,12 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
         const collateralFactor = numberToMantissa(token.collateralFactor)
 
         if (collateralFactor !== market.collateralFactorMantissa.toBigInt()) {
-            // TODO: uncomment after Oracle deploy
-            // await execute({
-            //     contractName: 'Comptroller',
-            //     deploymentName: 'Unitroller',
-            //     methodName: '_setCollateralFactor',
-            //     args: [tokenDeployment.address, collateralFactor],
-            // })
+            await execute({
+                contractName: 'Comptroller',
+                deploymentName: 'Unitroller',
+                methodName: '_setCollateralFactor',
+                args: [tokenDeployment.address, collateralFactor],
+            })
         }
 
         const targetCompSpeed = numberToMantissa(token.compPerSecond)

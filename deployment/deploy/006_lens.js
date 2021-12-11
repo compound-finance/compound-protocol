@@ -2,6 +2,6 @@ const deployComptrollerLens = async ({ getNamedAccounts, deployments }) => {
 }
 
 
-deployComptrollerLens.id = "004_lens";
+deployComptrollerLens.id = "006_lens";
 
 module.exports = deployComptrollerLens;
