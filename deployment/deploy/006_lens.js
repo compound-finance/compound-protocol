@@ -1,4 +1,10 @@
-const deployComptrollerLens = async ({ getNamedAccounts, deployments }) => {
+const deploy = require("../utils/deploy");
+
+const deployComptrollerLens = async ({}) => {
+    await deploy('CompoundLens', {
+        args: [],
+        skipIfSameBytecode: true,
+    })
 }
 
 
