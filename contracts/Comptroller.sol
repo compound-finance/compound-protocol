@@ -218,9 +218,17 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
 
         // If the user has exited all markets, remove them from the `allBorrowers` array
         if (storedList.length == 0) {
-            allBorrowers[borrowerIndexes[msg.sender]] = allBorrowers[allBorrowers.length - 1]; // Copy last item in list to location of item to be removed
+            uint256 borrowerIndex = borrowerIndexes[msg.sender];
+
+            // If borrower not at the end of the borrower array, replace it with the item at the end of the borrower array
+            if (borrowerIndex < allBorrowers.length - 1) {
+                address lastElement = allBorrowers[allBorrowers.length - 1];
+                allBorrowers[borrowerIndex] = lastElement; // Copy last item in list to location of item to be removed
+                borrowerIndexes[lastElement] = borrowerIndex; // Set borrower index of moved item to correct index
+            }
+
+            // Remove the last element of the borrower array
             allBorrowers.length--; // Reduce length by 1
-            borrowerIndexes[allBorrowers[borrowerIndexes[msg.sender]]] = borrowerIndexes[msg.sender]; // Set borrower index of moved item to correct index
             borrowerIndexes[msg.sender] = 0; // Reset sender borrower index to 0 for a gas refund
             borrowers[msg.sender] = false; // Tell the contract that the sender is no longer a borrower (so it knows to add the borrower back if they enter a market in the future)
         }
@@ -1002,9 +1010,17 @@ contract Comptroller is ComptrollerV3Storage, ComptrollerInterface, ComptrollerE
             } else {
                 // If whitelisted, remove from whitelist
                 if (whitelist[supplier]) {
-                    whitelistArray[whitelistIndexes[supplier]] = whitelistArray[whitelistArray.length - 1]; // Copy last item in list to location of item to be removed
+                    uint256 supplierIndex = whitelistIndexes[supplier];
+
+                    // If supplier not at the end of the whitelist array, replace it with the item at the end of the whitelist array
+                    if (supplierIndex < whitelistArray.length - 1) {
+                        address lastElement = whitelistArray[whitelistArray.length - 1];
+                        whitelistArray[supplierIndex] = lastElement; // Copy last item in list to location of item to be removed
+                        whitelistIndexes[lastElement] = supplierIndex; // Set whitelist index of moved item to correct index
+                    }
+
+                    // Remove the last element of the whitelist array
                     whitelistArray.length--; // Reduce length by 1
-                    whitelistIndexes[whitelistArray[whitelistIndexes[supplier]]] = whitelistIndexes[supplier]; // Set whitelist index of moved item to correct index
                     whitelistIndexes[supplier] = 0; // Reset supplier whitelist index to 0 for a gas refund
                     whitelist[supplier] = false; // Tell the contract that the supplier is no longer whitelisted
                 }
