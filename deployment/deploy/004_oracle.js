@@ -21,7 +21,7 @@ const deployOracle = async ({ getNamedAccounts, deployments }) => {
         methodName: 'oracle',
     })
 
-    if(currentoracle !== oracle) {
+    if(currentoracle !== oracle.address) {
         await execute({
             contractName: 'Comptroller',
             deploymentName: 'Unitroller',
