@@ -1,0 +1,99 @@
+{
+    "comp": {
+        "symbol": "CTRS",
+        "name": "Citrus"
+    },
+    "tokens": [
+        {
+            "name": "Citrus xDai",
+            "symbol": "ciXDAI",
+            "decimals": 8,
+            "type": "eth",
+            "compPerSecond": "0.006",
+            "interestRate": {
+                "baseApr": 0,
+                "targetUtil": 0.8,
+                "targetApr": 0.032,
+                "maxApr": 0.25
+            },
+            "reserve": 0.10,
+            "initialTokensPerUnderlying": 50,
+            "collateralFactor": 0.75
+        },
+        {
+            "name": "Citrus USDC",
+            "symbol": "ciUSDC",
+            "decimals": 8,
+            "type": "token",
+            "mock": {
+                "name": "Mock USDC",
+                "symbol": "USDC",
+                "decimals": 8
+            },
+            "compPerSecond": "0.006",
+            "interestRate": {
+                "baseApr": 0,
+                "targetUtil": 0.8,
+                "targetApr": 0.032,
+                "maxApr": 0.25
+            },
+            "reserve": 0.10,
+            "initialTokensPerUnderlying": 50,
+            "collateralFactor": 0.75,
+            "oracle": {
+                "type": "chainlink",
+                "aggregator": "0xa24de01df22b63d23Ebc1882a5E3d4ec0d907bFB"
+            }
+        },
+        {
+            "name": "Citrus Wrapped Bitcoin",
+            "symbol": "ciWBTC",
+            "decimals": 8,
+            "type": "token",
+            "mock": {
+                "name": "Mock WBTC",
+                "symbol": "WBTC",
+                "decimals": 8
+            },
+            "compPerSecond": "0.006",
+            "interestRate": {
+                "baseApr": 0,
+                "targetUtil": 0.5,
+                "targetApr": 0.07,
+                "maxApr": 0.75
+            },
+            "reserve": 0.15,
+            "initialTokensPerUnderlying": 50,
+            "collateralFactor": 0.5,
+            "oracle": {
+                "type": "chainlink",
+                "aggregator": "0xECe365B379E1dD183B20fc5f022230C044d51404"
+            }
+        },
+        {
+            "name": "Citrus LINK",
+            "symbol": "ciLINK",
+            "decimals": 8,
+            "type": "token",
+            "mock": {
+                "name": "Mock LINK",
+                "symbol": "LINK",
+                "decimals": 18
+            },
+            "compPerSecond": "0.006",
+            "interestRate": {
+                "baseApr": 0,
+                "targetUtil": 0.5,
+                "targetApr": 0.07,
+                "maxApr": 0.75
+            },
+            "reserve": 0.15,
+            "initialTokensPerUnderlying": 50,
+            "collateralFactor": 0.5,
+            "oracle": {
+                "type": "chainlink",
+                "aggregator": "0xd8bD0a1cB028a31AA859A21A3758685a95dE4623"
+            }
+        }
+    ]
+}

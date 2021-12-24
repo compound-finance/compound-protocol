@@ -52,9 +52,6 @@ const deployComptroller = async ({ getNamedAccounts, deployments }) => {
     }
 
     {
-        const ComptrollerFactory = await ethers.getContractFactory('Comptroller', deployer)
-        const Comptroller = ComptrollerFactory.attach(proxyDeployment.address)
-
         // Set liquidation incentive
 
         const liquidationIncentiveMantissa = await view({
@@ -67,7 +64,12 @@ const deployComptroller = async ({ getNamedAccounts, deployments }) => {
         const targetLiquidationIncentive = '1080000000000000000'
         
         if (liquidationIncentiveMantissa.toString() !== targetLiquidationIncentive) {
-            await Comptroller._setLiquidationIncentive(targetLiquidationIncentive)
+            await execute({
+                contractName: 'Comptroller',
+                deploymentName: 'Unitroller',
+                methodName: '_setLiquidationIncentive',
+                args: [targetLiquidationIncentive]
+            })
             console.log('Updated liquidation incentive to 8%')
         }
 

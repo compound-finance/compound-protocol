@@ -11,6 +11,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@nomiclabs/hardhat-solhint": "^2.0.0",
+    "dotenv": "^10.0.0",
     "ethers": "^5.5.1",
     "hardhat": "^2.6.8",
     "hardhat-contract-sizer": "^2.1.1",

@@ -20,7 +20,8 @@ module.exports = async function execute({
 
     if (!forceProposal && admin === deployer) {
         console.log(`running ${contractName}#${methodName}`)
-        await contract[methodName](...args)
+        const tx = await contract[methodName](...args)
+        await tx.wait(2)
         return
     }
 

@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 // const ethers = require("ethers");
 
 require("@nomiclabs/hardhat-solhint");
@@ -23,20 +25,31 @@ module.exports = {
       localhost: {
         timeout: 60000,
       },
+      rinkeby: {
+        url: process.env.RINKEBY_PROVIDER_URL,
+        accounts: [
+          process.env.RINKEBY_DEPLOYER_PK,
+        ],
+        gas: 'auto',
+        gasPrice: 2000000000,
+      },
     },
     throwOnTransactionFailures: true,
     namedAccounts: {
       deployer: {
         default: 0,
         localhost: 0,
+        rinkeby: process.env.RINKEBY_DEPLOYER,
       },
       multisig: {
         default: 0,
         localhost: 0,
+        rinkeby: process.env.RINKEBY_DEPLOYER,
       },
       guardian: {
         default: 0,
         localhost: 0,
+        rinkeby: process.env.RINKEBY_DEPLOYER,
       }
     },
     contractSizer: {
