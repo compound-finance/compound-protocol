@@ -1330,8 +1330,8 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         // totalReserves - reduceAmount
         uint totalReservesNew;
 
-        // Check caller is fee taker
-        if (msg.sender != feeTaker) {
+        // Check caller is fee taker or admin
+        if (msg.sender != feeTaker && msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.REDUCE_RESERVES_ADMIN_CHECK);
         }
 
@@ -1362,9 +1362,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         totalReserves = totalReservesNew;
 
         // doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
-        doTransferOut(feeTaker, reduceAmount);
+        doTransferOut(msg.sender, reduceAmount);
 
-        emit ReservesReduced(feeTaker, reduceAmount, totalReservesNew);
+        emit ReservesReduced(msg.sender, reduceAmount, totalReservesNew);
 
         return uint(Error.NO_ERROR);
     }

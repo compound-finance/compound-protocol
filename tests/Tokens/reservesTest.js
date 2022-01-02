@@ -14,9 +14,9 @@ const cash = etherUnsigned(reserves.multipliedBy(2));
 const reduction = etherUnsigned(2e12);
 
 describe('CToken', function () {
-  let root, accounts;
+  let root, feeTaker, accounts;
   beforeEach(async () => {
-    [root, ...accounts] = saddle.accounts;
+    [root, feeTaker, ...accounts] = saddle.accounts;
   });
 
   describe('_setReserveFactorFresh', () => {
@@ -105,6 +105,9 @@ describe('CToken', function () {
       cToken = await makeCToken();
       expect(await send(cToken, 'harnessSetTotalReserves', [reserves])).toSucceed();
       expect(
+        await send(cToken, '_setFeeTaker', [feeTaker])
+      ).toSucceed();
+      expect(
         await send(cToken.underlying, 'harnessSetBalance', [cToken._address, cash])
       ).toSucceed();
     });
@@ -138,6 +141,13 @@ describe('CToken', function () {
       const balance = etherUnsigned(await call(cToken.underlying, 'balanceOf', [root]));
       expect(await send(cToken, 'harnessReduceReservesFresh', [reserves])).toSucceed();
       expect(await call(cToken.underlying, 'balanceOf', [root])).toEqualNumber(balance.plus(reserves));
+      expect(await call(cToken, 'totalReserves')).toEqualNumber(0);
+    });
+
+    it("increases feeTaker balance and reduces reserves on success", async () => {
+      const balance = etherUnsigned(await call(cToken.underlying, 'balanceOf', [feeTaker]));
+      expect(await send(cToken, 'harnessReduceReservesFresh', [reserves], {from: feeTaker})).toSucceed();
+      expect(await call(cToken.underlying, 'balanceOf', [feeTaker])).toEqualNumber(balance.plus(reserves));
       expect(await call(cToken, 'totalReserves')).toEqualNumber(0);
     });
 

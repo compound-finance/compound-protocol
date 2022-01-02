@@ -278,21 +278,21 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
             })
         }
 
-        const feeTaker = await view({
-            contractName: 'CErc20',
-            deploymentName: token.symbol,
-            methodName: 'feeTaker',
-            args: [],
-        })
+        // const feeTaker = await view({
+        //     contractName: 'CErc20',
+        //     deploymentName: token.symbol,
+        //     methodName: 'feeTaker',
+        //     args: [],
+        // })
 
-        if (feeTaker !== multisig) {
-            await execute({
-                contractName: 'CErc20',
-                deploymentName: token.symbol,
-                methodName: '_setFeeTaker',
-                args: [multisig],
-            })
-        }
+        // if (feeTaker !== multisig) {
+        //     await execute({
+        //         contractName: 'CErc20',
+        //         deploymentName: token.symbol,
+        //         methodName: '_setFeeTaker',
+        //         args: [multisig],
+        //     })
+        // }
     }
 }
 
