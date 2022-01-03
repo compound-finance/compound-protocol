@@ -4,6 +4,7 @@ const { isTestnet } = require('../utils/env');
 const execute = require('../utils/execute');
 const view = require('../utils/view');
 
+const ZERO = 0n
 const ONE = 10n ** 18n
 
 const deployMarkets = async ({ getNamedAccounts, deployments }) => {
@@ -201,7 +202,7 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
             })
         }
 
-        const collateralFactor = numberToMantissa(token.collateralFactor)
+        const collateralFactor = token.deprecated ? ZERO : numberToMantissa(token.collateralFactor)
 
         if (collateralFactor !== market.collateralFactorMantissa.toBigInt()) {
             await execute({
@@ -230,7 +231,7 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
             })
         }
 
-        const targetReserveFactor = numberToMantissa(token.reserve)
+        const targetReserveFactor = token.deprecated ? ONE : numberToMantissa(token.reserve)
 
         const reserveFactor = await view({
             contractName: 'CErc20',
@@ -245,6 +246,22 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                 deploymentName: token.symbol,
                 methodName: '_setReserveFactor',
                 args: [targetReserveFactor],
+            })
+        }
+
+        const isPaused = await view({
+            contractName: 'Comptroller',
+            deploymentName: 'Unitroller',
+            methodName: 'borrowGuardianPaused',
+            args: [tokenDeployment.address],
+        })
+
+        if (token.deprecated && !isPaused) {
+            await execute({
+                contractName: 'Comptroller',
+                deploymentName: 'Unitroller',
+                methodName: '_setBorrowPaused',
+                args: [tokenDeployment.address, true],
             })
         }
 
