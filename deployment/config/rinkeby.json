@@ -3,12 +3,14 @@
         "symbol": "CTRS",
         "name": "Citrus"
     },
+    "weth": "0xc778417E063141139Fce010982780140Aa0cD5Ab",
     "tokens": [
         {
             "name": "Citrus xDai",
             "symbol": "ciXDAI",
             "decimals": 8,
             "type": "eth",
+            "underlying": "0xc778417E063141139Fce010982780140Aa0cD5Ab",
             "compPerSecond": "0.006",
             "interestRate": {
                 "baseApr": 0,
@@ -18,7 +20,11 @@
             },
             "reserve": 0.10,
             "initialTokensPerUnderlying": 50,
-            "collateralFactor": 0.75
+            "collateralFactor": 0.75,
+            "oracle": {
+                "type": "chainlink",
+                "aggregator": "0x2bA49Aaa16E6afD2a993473cfB70Fa8559B523cF"
+            }
         },
         {
             "name": "Citrus USDC",

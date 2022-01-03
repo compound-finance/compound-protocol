@@ -143,6 +143,9 @@ contract ComptrollerV5Storage is ComptrollerV4Storage {
     /// @notice Last block at which a contributor's COMP rewards have been allocated
     mapping(address => uint) public lastContributorBlock;
 
-    // Comp address for distribution
+    /// @notice Comp address for distribution
     address public compAddress = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+
+    /// @notice Address of WETH
+    address public weth;
 }

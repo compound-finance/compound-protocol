@@ -65,14 +65,4 @@ contract ChainlinkPriceOracle is PriceOracle, ExponentialNoError {
 
         aggregators[underlying] = aggregator;
     }
-
-    /**
-     * @notice Set Chainlink aggregator
-     * @param cEther A cToken which underlying is ether
-     */
-    function _setCEther(address cEther) external {
-        require(msg.sender == admin, "Only admin can set cEther");
-
-        cEthers[cEther] = true;
-    }
 }

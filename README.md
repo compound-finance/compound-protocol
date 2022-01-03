@@ -8,6 +8,7 @@ Changes
 
 - Added a fee taker on CToken for future profit sharing schema
 - ChainlinkPriceOracle is a fork of [Cream Oracle](https://github.com/CreamFi/compound-protocol/blob/90da68ceaff949d1c8dd155e8729fc7cb4fb9ddb/contracts/PriceOracle/PriceOracleProxy.sol)
+- Added `underlying` (WETH) to CEther to make few components blockchain agnositic (oracle, lens)
 
 Contracts
 =========

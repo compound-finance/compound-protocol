@@ -3,6 +3,7 @@ const {
     makePriceOracle,
     makeChainlinkAggregator,
     makeToken,
+    makeComptroller,
 } = require("../Utils/Compound");
 const { etherMantissa } = require("../Utils/Ethereum");
 
@@ -13,21 +14,23 @@ describe('PriceOracleChainlink', function () {
     });
 
     describe('getUnderlyingPrice', () => {
-        let underlying, cToken, cEther, priceOracle;
+        let priceOracle, comptroller, underlying, cToken, cEther;
 
         beforeEach(async () => {
-            underlying = await makeToken()
+            priceOracle = await makePriceOracle({
+                kind: 'chainlink',
+            })
+            comptroller = await makeComptroller({priceOracle})
+            underlying = await makeToken({comptroller})
             cToken = await makeCToken({
                 kind: 'cerc20',
                 underlying,
+                comptroller,
             });
             cEther = await makeCToken({
                 kind: 'cether',
+                comptroller,
             });
-            priceOracle = await makePriceOracle({
-                kind: 'chainlink',
-                cEther,
-            })
         });
 
         it('get token price', async () => {
@@ -41,7 +44,11 @@ describe('PriceOracleChainlink', function () {
         })
 
         it('get ether price', async () => {
-            await send(priceOracle, '_setCEther', [cEther._address]);
+            const aggregator = await makeChainlinkAggregator({
+                decimals: 8,
+                answer: '100000000',
+            });
+            await send(priceOracle, '_setAggregator', [comptroller.weth._address, aggregator._address]);
             const result = await call(priceOracle, 'getUnderlyingPrice', [cEther._address]);
             expect(result).toEqualNumber(etherMantissa(1));
         })

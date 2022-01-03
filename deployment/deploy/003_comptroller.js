@@ -1,10 +1,10 @@
+const config = require('../config')
 const deploy = require("../utils/deploy");
 const execute = require("../utils/execute");
 const view = require("../utils/view");
 
 const deployComptroller = async ({ getNamedAccounts, deployments }) => {
     const {
-        deployer,
         multisig,
         guardian,
     } = await getNamedAccounts();
@@ -140,6 +140,21 @@ const deployComptroller = async ({ getNamedAccounts, deployments }) => {
             deploymentName: 'Unitroller',
             methodName: '_setCompAddress',
             args: [compDeployment.address]
+        })
+    }
+
+    const ethAddress = await view({
+        contractName: 'Comptroller',
+        deploymentName: 'Unitroller',
+        methodName: 'weth',
+    })
+
+    if (ethAddress !== config.weth) {
+        await execute({
+            contractName: 'Comptroller',
+            deploymentName: 'Unitroller',
+            methodName: '_setWEthAddress',
+            args: [config.weth]
         })
     }
 

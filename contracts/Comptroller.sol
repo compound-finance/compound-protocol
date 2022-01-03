@@ -1359,4 +1359,13 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
 
         compAddress = compAddress_;
     }
+
+    /**
+     * @notice Set WETH address
+     */
+    function _setWEthAddress(address wethAddress_) public {
+        require(adminOrInitializing(), "only admin can set WETH address");
+
+        weth = wethAddress_;
+    }
 }

@@ -1,4 +1,3 @@
-const config = require('../config')
 const deploy = require("../utils/deploy");
 const execute = require('../utils/execute');
 const view = require('../utils/view');

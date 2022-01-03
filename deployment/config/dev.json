@@ -3,12 +3,18 @@
         "symbol": "CTRS",
         "name": "Citrus"
     },
+    "weth": "0x0000000000000000000000000000000000000000",
     "tokens": [
         {
             "name": "Citrus xDai",
             "symbol": "ciXDAI",
             "decimals": 8,
             "type": "eth",
+            "mock": {
+                "name": "Mock wxDai",
+                "symbol": "WXDAI",
+                "decimals": 18
+            },
             "compPerSecond": "0.006",
             "interestRate": {
                 "baseApr": 0,
@@ -18,7 +24,11 @@
             },
             "reserve": 0.10,
             "initialTokensPerUnderlying": 50,
-            "collateralFactor": 0.75
+            "collateralFactor": 0.75,
+            "oracle": {
+                "type": "mock",
+                "price": "1"
+            }
         },
         {
             "name": "Citrus USDC",

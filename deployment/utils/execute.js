@@ -1,4 +1,5 @@
 const { deployments } = require("hardhat");
+const { isLocalhost } = require("./env");
 
 module.exports = async function execute({
     contractName,
@@ -21,7 +22,9 @@ module.exports = async function execute({
     if (!forceProposal && admin === deployer) {
         console.log(`running ${contractName}#${methodName}`)
         const tx = await contract[methodName](...args)
-        await tx.wait(2)
+        if (!isLocalhost) {
+            await tx.wait(2)
+        }
         return
     }
 

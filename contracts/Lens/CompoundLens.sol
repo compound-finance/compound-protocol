@@ -15,6 +15,7 @@ interface ComptrollerLensInterface {
     function getAssetsIn(address) external view returns (CToken[] memory);
     function claimComp(address) external;
     function compAccrued(address) external view returns (uint);
+    function weth() external view returns (address);
 }
 
 interface GovernorBravoInterface {
@@ -62,17 +63,9 @@ contract CompoundLens {
         uint exchangeRateCurrent = cToken.exchangeRateCurrent();
         ComptrollerLensInterface comptroller = ComptrollerLensInterface(address(cToken.comptroller()));
         (bool isListed, uint collateralFactorMantissa) = comptroller.markets(address(cToken));
-        address underlyingAssetAddress;
-        uint underlyingDecimals;
-
-        if (compareStrings(cToken.symbol(), "ciXDAI")) {
-            underlyingAssetAddress = address(0);
-            underlyingDecimals = 18;
-        } else {
-            CErc20 cErc20 = CErc20(address(cToken));
-            underlyingAssetAddress = cErc20.underlying();
-            underlyingDecimals = EIP20Interface(cErc20.underlying()).decimals();
-        }
+        CErc20 cErc20 = CErc20(address(cToken));
+        address underlyingAssetAddress = cErc20.underlying();
+        uint underlyingDecimals = EIP20Interface(cErc20.underlying()).decimals();
 
         return CTokenMetadata({
             cToken: address(cToken),
@@ -111,18 +104,20 @@ contract CompoundLens {
     }
 
     function cTokenBalances(CToken cToken, address payable account) public returns (CTokenBalances memory) {
+        ComptrollerLensInterface comptroller = ComptrollerLensInterface(address(cToken.comptroller()));
+        CErc20 cErc20 = CErc20(address(cToken));
+        EIP20Interface underlying = EIP20Interface(cErc20.underlying());
+
         uint balanceOf = cToken.balanceOf(account);
         uint borrowBalanceCurrent = cToken.borrowBalanceCurrent(account);
         uint balanceOfUnderlying = cToken.balanceOfUnderlying(account);
         uint tokenBalance;
         uint tokenAllowance;
 
-        if (compareStrings(cToken.symbol(), "ciXDAI")) {
+        if (comptroller.weth() == address(underlying)) {
             tokenBalance = account.balance;
             tokenAllowance = account.balance;
         } else {
-            CErc20 cErc20 = CErc20(address(cToken));
-            EIP20Interface underlying = EIP20Interface(cErc20.underlying());
             tokenBalance = underlying.balanceOf(account);
             tokenAllowance = underlying.allowance(account, address(cToken));
         }

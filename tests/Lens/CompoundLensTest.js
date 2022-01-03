@@ -55,7 +55,9 @@ describe('CompoundLens', () => {
     });
 
     it('is correct for cEth', async () => {
-      let cEth = await makeCToken({kind: 'cether'});
+      const comptroller = await makeComptroller()
+      let cEth = await makeCToken({kind: 'cether', comptroller});
+
       expect(
         cullTuple(await call(compoundLens, 'cTokenMetadata', [cEth._address]))
       ).toEqual({
@@ -71,7 +73,7 @@ describe('CompoundLens', () => {
         totalCash: "0",
         totalReserves: "0",
         totalSupply: "0",
-        underlyingAssetAddress: "0x0000000000000000000000000000000000000000",
+        underlyingAssetAddress: comptroller.weth._address,
         underlyingDecimals: "18",
       });
     });
@@ -79,8 +81,9 @@ describe('CompoundLens', () => {
 
   describe('cTokenMetadataAll', () => {
     it('is correct for a cErc20 and cEther', async () => {
-      let cErc20 = await makeCToken();
-      let cEth = await makeCToken({kind: 'cether'});
+      const comptroller = await makeComptroller()
+      let cErc20 = await makeCToken({comptroller});
+      let cEth = await makeCToken({kind: 'cether', comptroller});
       expect(
         (await call(compoundLens, 'cTokenMetadataAll', [[cErc20._address, cEth._address]])).map(cullTuple)
       ).toEqual([
@@ -113,7 +116,7 @@ describe('CompoundLens', () => {
           totalCash: "0",
           totalReserves: "0",
           totalSupply: "0",
-          underlyingAssetAddress: "0x0000000000000000000000000000000000000000",
+          underlyingAssetAddress: comptroller.weth._address,
           underlyingDecimals: "18",
         }
       ]);

@@ -14,8 +14,10 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
 
     const blocksPerYear = 2102400n
 
-    // Create interest rates
+    /* Create markets */
     for (const token of config.tokens) {
+        /* Create interest rates */
+
         const baseApr = numberToMantissa(token.interestRate.baseApr)
         const kink = numberToMantissa(token.interestRate.targetUtil)
         const targetApr = numberToMantissa(token.interestRate.targetApr)
@@ -58,19 +60,27 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
             )
         }
 
-        // Create markets
+        /* Create cToken */
 
         const comptrollerDeployment = await deployments.get('Unitroller')
+
+        const underlying = await getTokenAddress(token)
+
+        const tokenAbi = [
+            "function decimals() view returns (uint8)",
+        ];
+        const underlyingContract = new ethers.Contract(underlying, tokenAbi, ethers.provider);
+
+        const underlyingDecimals = await underlyingContract.decimals()
+        const initialExchangeRateMantissa = (oneWithDecimals(underlyingDecimals) * ONE) / (BigInt(token.initialTokensPerUnderlying) * oneWithDecimals(token.decimals))
 
         let tokenDeployment = await (async () => {
             switch(token.type) {
                 case 'eth': {
-                    const underlyingDecimals = 18
-                    const initialExchangeRateMantissa = (oneWithDecimals(underlyingDecimals) * ONE) / (BigInt(token.initialTokensPerUnderlying) * oneWithDecimals(token.decimals))
-
                     const cEther =  await deploy(token.symbol, {
                         contract: 'CEther',
                         args: [
+                            underlying,
                             comptrollerDeployment.address,
                             JumpRateModel.address,
                             initialExchangeRateMantissa.toString(),
@@ -83,57 +93,10 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                         log: true,
                     })
 
-                    const isCEther = await view({
-                        contractName: 'ChainlinkPriceOracle',
-                        methodName: 'cEthers',
-                        args: [cEther.address]
-                    })
-
-                    if (!isCEther) {
-                        await execute({
-                            contractName: 'ChainlinkPriceOracle',
-                            methodName: '_setCEther',
-                            args: [cEther.address]
-                        })
-                    }
-
                     return cEther
                 }
     
                 case 'token': {
-                    const underlying = await (async () => {
-                        if (token.mock) {
-                            if (!isTestnet) {
-                                throw new Error('Cannot create mock token outside of testnet')
-                            }
-            
-                            const mockDeploy = await deploy(`ERC20Mock_${token.mock.symbol}`, {
-                                contract: 'ERC20Mock',
-                                args: [
-                                    token.mock.name,
-                                    token.mock.symbol,
-                                    token.mock.decimals,
-                                    deployer,
-                                    (1000n * oneWithDecimals(token.mock.decimals)).toString(),
-                                ],
-                                log: true,
-                                skipIfAlreadyDeployed: true,
-                            })
-            
-                            return mockDeploy.address
-                        }
-            
-                        return token.underlying
-                    })()
-
-                    const tokenAbi = [
-                        "function decimals() view returns (uint8)",
-                    ];
-                    const underlyingContract = new ethers.Contract(underlying, tokenAbi, ethers.provider);
-
-                    const underlyingDecimals = await underlyingContract.decimals()
-                    const initialExchangeRateMantissa = (oneWithDecimals(underlyingDecimals) * ONE) / (BigInt(token.initialTokensPerUnderlying) * oneWithDecimals(token.decimals))
-
                     const delegate = await deploy(`CErc20Delegate_${token.symbol}`, {
                         contract: 'CErc20Delegate',
                         args: [],
@@ -159,37 +122,6 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                         log: true,
                     })
 
-                    const priceAggregator = await view({
-                        contractName: 'ChainlinkPriceOracle',
-                        methodName: 'aggregators',
-                        args: [underlying],
-                    })
-
-                    const targetPriceAggregator = await (async () => {
-                        switch(token.oracle.type) {
-                            case 'mock': {
-                                const d = await deploy(`${token.symbol}ChainlinkPriceAggregatorMock`, {
-                                    contract: 'ChainlinkPriceAggregatorMock',
-                                    args: [0, token.oracle.price],
-                                })
-
-                                return d.address
-                            }
-        
-                            case 'chainlink': {
-                                return token.oracle.aggregator
-                            }
-                        }
-                    })()
-
-                    if (priceAggregator !== targetPriceAggregator) {
-                        await execute({
-                            contractName: 'ChainlinkPriceOracle',
-                            methodName: '_setAggregator',
-                            args: [underlying, targetPriceAggregator],
-                        })
-                    }
-
                     return cToken
                 }
     
@@ -199,6 +131,40 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
             }
         })()
 
+        /* Setup price oracle for underlying token */
+
+        const priceAggregator = await view({
+            contractName: 'ChainlinkPriceOracle',
+            methodName: 'aggregators',
+            args: [underlying],
+        })
+
+        const targetPriceAggregator = await (async () => {
+            switch(token.oracle.type) {
+                case 'mock': {
+                    const d = await deploy(`${token.symbol}ChainlinkPriceAggregatorMock`, {
+                        contract: 'ChainlinkPriceAggregatorMock',
+                        args: [0, token.oracle.price],
+                    })
+
+                    return d.address
+                }
+
+                case 'chainlink': {
+                    return token.oracle.aggregator
+                }
+            }
+        })()
+
+        if (priceAggregator !== targetPriceAggregator) {
+            await execute({
+                contractName: 'ChainlinkPriceOracle',
+                methodName: '_setAggregator',
+                args: [underlying, targetPriceAggregator],
+            })
+        }
+
+        /* Set interest rate model */
 
         const interestRateModelAddress = await view({
             contractName: 'CErc20',
@@ -313,4 +279,34 @@ function numberToMantissa(number) {
 
 function oneWithDecimals(decimals) {
     return 10n ** BigInt(decimals)
+}
+
+// Get token address, deploy a mock if required
+async function getTokenAddress(token) {
+    const {
+        deployer
+    } = await getNamedAccounts();
+
+    if (token.mock) {
+        if (!isTestnet) {
+            throw new Error('Cannot create mock token outside of testnet')
+        }
+
+        const mockDeploy = await deploy(`ERC20Mock_${token.mock.symbol}`, {
+            contract: 'ERC20Mock',
+            args: [
+                token.mock.name,
+                token.mock.symbol,
+                token.mock.decimals,
+                deployer,
+                (1000n * oneWithDecimals(token.mock.decimals)).toString(),
+            ],
+            log: true,
+            skipIfAlreadyDeployed: true,
+        })
+
+        return mockDeploy.address
+    }
+
+    return token.underlying
 }

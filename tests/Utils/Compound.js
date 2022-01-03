@@ -115,7 +115,15 @@ async function makeComptroller(opts = {}) {
     await send(unitroller, 'setCompAddress', [comp._address]); // harness only
     await send(unitroller, 'harnessSetCompRate', [compRate]);
 
-    return Object.assign(unitroller, { priceOracle, comp });
+    const weth = await makeToken({
+      name: 'Wrapped Ether',
+      symbol: 'WETH',
+      decimals: 18,
+      quantity: 0,
+    })
+    await send(unitroller, '_setWEthAddress', [weth._address]);
+
+    return Object.assign(unitroller, { priceOracle, comp, weth });
   }
 }
 
@@ -138,8 +146,11 @@ async function makeCToken(opts = {}) {
 
   switch (kind) {
     case 'cether':
+      const weth = comptroller.weth || await makeToken();
+
       cToken = await deploy('CEtherHarness',
         [
+          weth._address,
           comptroller._address,
           interestRateModel._address,
           exchangeRate,
