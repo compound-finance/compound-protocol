@@ -4,7 +4,7 @@ const { isTestnet } = require('../utils/env');
 const execute = require('../utils/execute');
 const view = require('../utils/view');
 
-const ONE = 10n ** 18n 
+const ONE = 10n ** 18n
 
 const deployMarkets = async ({ getNamedAccounts, deployments }) => {
     const {
@@ -13,6 +13,8 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
     } = await getNamedAccounts();
 
     const blocksPerYear = 2102400n
+
+    const marketAddresses = []
 
     /* Create markets */
     for (const token of config.tokens) {
@@ -130,6 +132,8 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                 }
             }
         })()
+
+        marketAddresses.push(tokenDeployment.address)
 
         /* Setup price oracle for underlying token */
 
@@ -259,6 +263,34 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
         //         args: [multisig],
         //     })
         // }
+    }
+
+
+    /* Check that deleted markets are deprecated */
+
+    const activeMarketAddresses = (await Promise.all((await view({
+        contractName: 'Comptroller',
+        deploymentName: 'Unitroller',
+        methodName: 'getAllMarkets',
+        args: [],
+    })).map(async marketAddresses => {
+        const isDeprecated = await view({
+            contractName: 'Comptroller',
+            deploymentName: 'Unitroller',
+            methodName: 'isDeprecated',
+            args: [marketAddresses],
+        })
+
+        return {
+            address: marketAddresses,
+            isDeprecated,
+        }
+    }))).filter(x => !x.isDeprecated).map(x => x.address)
+
+    const incorrectMarketAddresses = activeMarketAddresses.filter(x => !marketAddresses.includes(x))
+
+    if (incorrectMarketAddresses.length > 0) {
+        throw new Error(`Markets ${incorrectMarketAddresses.join(',')} are active but they are no longer tracked`)
     }
 }
 
