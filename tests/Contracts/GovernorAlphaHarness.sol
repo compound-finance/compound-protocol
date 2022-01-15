@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity 0.5.17;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Governance/GovernorAlpha.sol";
