@@ -120,7 +120,7 @@ contract ReactiveJumpRateModelV2 is InterestRateModel, BaseJumpRateModelV2 {
 
             // Get average borrow rate per block over the last (roughly) one week
             uint avgBorrowRateLastWeek = borrowIndex.mul(1e18).div(interestCheckpoint.borrowIndex).sub(1e18);
-            uint avgBorrowRatePerBlock = avgBorrowRateLastWeek.div(6500 * 7);
+            uint avgBorrowRatePerBlock = avgBorrowRateLastWeek.div(accrualBlockNumber.sub(interestCheckpoint.blockNumber));
 
             // Get ideal JumpRateModel multiplierPerBlock param
             uint idealMultiplierPerBlock = avgBorrowRatePerBlock < baseRatePerBlock ? 0 : avgBorrowRatePerBlock.sub(baseRatePerBlock).mul(1e18).div(kink.sub(0.05e18));
