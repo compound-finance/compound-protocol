@@ -7,7 +7,7 @@ const {
   getSupplyRate
 } = require('../Utils/Compound');
 
-const blocksPerYear = 2102400;
+const blocksPerYear = 2372500;
 const secondsPerYear = 60 * 60 * 24 * 365;
 
 function utilizationRate(cash, borrows, reserves) {

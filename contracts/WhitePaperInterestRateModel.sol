@@ -16,7 +16,7 @@ contract WhitePaperInterestRateModel is InterestRateModel {
     /**
      * @notice The approximate number of blocks per year that is assumed by the interest rate model
      */
-    uint public constant blocksPerYear = 2102400;
+    uint public constant blocksPerYear = 2372500; // 6500 blocks/day * 365 days/year
 
     /**
      * @notice The multiplier of utilization rate that gives the slope of the interest rate
