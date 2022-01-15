@@ -243,6 +243,8 @@ contract RewardsDistributorDelegate is RewardsDistributorDelegateStorageV1, Expo
         compSupplierIndex[cToken][supplier] = supplyIndex.mantissa;
 
         if (supplierIndex.mantissa == 0 && supplyIndex.mantissa > 0) {
+            // Set the supplier reward index to the initial reward index if it has never been set before.
+            // If it has never been set before, the supplier has not taken any action since the reward stream was set up, meaning they have been supplying the whole time, so their index should start at the beginning.
             supplierIndex.mantissa = compInitialIndex;
         }
 
@@ -266,6 +268,9 @@ contract RewardsDistributorDelegate is RewardsDistributorDelegateStorageV1, Expo
         compBorrowerIndex[cToken][borrower] = borrowIndex.mantissa;
 
         if (borrowerIndex.mantissa == 0 && borrowIndex.mantissa > 0) {
+            // Set the borrower reward index to the initial reward index if it has never been set before.
+            // If it has never been set before, the borrower has not taken any action since the reward stream was set up, meaning they have been borrowing the whole time, so their index should start at the beginning.
+            // (Originally, Compound set this up so that borrowers would not begin to accrue COMP until after the first interaction with the protocol.)
             borrowerIndex.mantissa = compInitialIndex;
         }
 
