@@ -30,6 +30,9 @@ contract Reservoir {
     * @param target_ The recipient of dripped tokens
     */
   constructor(uint dripRate_, EIP20Interface token_, address target_) public {
+    require(dripRate_ > 0, "Drip rate should be greater than 0.");
+    require(address(token_) != address(0), "Drip token not defined.");
+    require(target_ != address(0), "Drip target not defined.");
     dripStart = block.number;
     dripRate = dripRate_;
     token = token_;
