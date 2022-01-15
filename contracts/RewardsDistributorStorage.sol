@@ -35,10 +35,10 @@ contract RewardsDistributorDelegateStorageV1 is RewardsDistributorDelegatorStora
     /// @notice A list of all markets
     CToken[] public allMarkets;
 
-    /// @notice The portion of compRate that each market currently receives
+    /// @notice Rewards per block that each market currently receives
     mapping(address => uint) public compSupplySpeeds;
 
-    /// @notice The portion of compRate that each market currently receives
+    /// @notice Rewards per block that each market currently receives
     mapping(address => uint) public compBorrowSpeeds;
 
     /// @notice The COMP market supply state for each market
