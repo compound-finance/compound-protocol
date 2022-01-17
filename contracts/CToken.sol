@@ -225,7 +225,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      *  This exists mainly for inheriting test contracts to stub this result.
      */
     function getBlockNumber() internal view returns (uint) {
-        return block.number;
+        return block.timestamp;
     }
 
     /**

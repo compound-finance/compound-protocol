@@ -13,7 +13,8 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
         multisig,
     } = await getNamedAccounts();
 
-    const blocksPerYear = 2102400n
+    // NOTE: number of seconds per year, but named blocksPerYear everywhere else in the codebase
+    const blocksPerYear = 31536000n
 
     const marketAddresses = []
 

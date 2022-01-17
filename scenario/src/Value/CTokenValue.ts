@@ -103,7 +103,7 @@ async function getCash(world: World, cToken: CToken): Promise<NumberV> {
 }
 
 async function getInterestRate(world: World, cToken: CToken): Promise<NumberV> {
-  return new NumberV(await cToken.methods.borrowRatePerBlock().call(), 1.0e18 / 2102400);
+  return new NumberV(await cToken.methods.borrowRatePerBlock().call(), 1.0e18 / 31536000);
 }
 
 async function getImplementation(world: World, cToken: CToken): Promise<AddressV> {

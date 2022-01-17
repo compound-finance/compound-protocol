@@ -66,7 +66,7 @@ contract ComptrollerG3 is ComptrollerV3Storage, ComptrollerInterface, Comptrolle
     uint public constant compClaimThreshold = 0.001e18;
 
     /// @notice The initial COMP index for a market
-    uint224 public constant compInitialIndex = 1e36;
+    uint216 public constant compInitialIndex = 1e36;
 
     // closeFactorMantissa must be strictly greater than this value
     uint internal constant closeFactorMinMantissa = 0.05e18; // 0.05
@@ -1161,11 +1161,11 @@ contract ComptrollerG3 is ComptrollerV3Storage, ComptrollerInterface, Comptrolle
             Double memory ratio = supplyTokens > 0 ? fraction(compAccrued, supplyTokens) : Double({mantissa: 0});
             Double memory index = add_(Double({mantissa: supplyState.index}), ratio);
             compSupplyState[cToken] = CompMarketState({
-                index: safe224(index.mantissa, "new index exceeds 224 bits"),
-                block: safe32(blockNumber, "block number exceeds 32 bits")
+                index: safe216(index.mantissa, "new index exceeds 216 bits"),
+                block: safe40(blockNumber, "block number exceeds 40 bits")
             });
         } else if (deltaBlocks > 0) {
-            supplyState.block = safe32(blockNumber, "block number exceeds 32 bits");
+            supplyState.block = safe40(blockNumber, "block number exceeds 40 bits");
         }
     }
 
@@ -1184,11 +1184,11 @@ contract ComptrollerG3 is ComptrollerV3Storage, ComptrollerInterface, Comptrolle
             Double memory ratio = borrowAmount > 0 ? fraction(compAccrued, borrowAmount) : Double({mantissa: 0});
             Double memory index = add_(Double({mantissa: borrowState.index}), ratio);
             compBorrowState[cToken] = CompMarketState({
-                index: safe224(index.mantissa, "new index exceeds 224 bits"),
-                block: safe32(blockNumber, "block number exceeds 32 bits")
+                index: safe216(index.mantissa, "new index exceeds 216 bits"),
+                block: safe40(blockNumber, "block number exceeds 40 bits")
             });
         } else if (deltaBlocks > 0) {
-            borrowState.block = safe32(blockNumber, "block number exceeds 32 bits");
+            borrowState.block = safe40(blockNumber, "block number exceeds 40 bits");
         }
     }
 
@@ -1343,14 +1343,14 @@ contract ComptrollerG3 is ComptrollerV3Storage, ComptrollerInterface, Comptrolle
         if (compSupplyState[cToken].index == 0 && compSupplyState[cToken].block == 0) {
             compSupplyState[cToken] = CompMarketState({
                 index: compInitialIndex,
-                block: safe32(getBlockNumber(), "block number exceeds 32 bits")
+                block: safe40(getBlockNumber(), "block number exceeds 40 bits")
             });
         }
 
         if (compBorrowState[cToken].index == 0 && compBorrowState[cToken].block == 0) {
             compBorrowState[cToken] = CompMarketState({
                 index: compInitialIndex,
-                block: safe32(getBlockNumber(), "block number exceeds 32 bits")
+                block: safe40(getBlockNumber(), "block number exceeds 40 bits")
             });
         }
     }

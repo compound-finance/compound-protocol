@@ -97,10 +97,10 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
 contract ComptrollerV3Storage is ComptrollerV2Storage {
     struct CompMarketState {
         /// @notice The market's last updated compBorrowIndex or compSupplyIndex
-        uint224 index;
+        uint216 index;
 
         /// @notice The block number the index was last updated at
-        uint32 block;
+        uint40 block;
     }
 
     /// @notice A list of all markets

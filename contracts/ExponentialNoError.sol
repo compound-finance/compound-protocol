@@ -79,6 +79,16 @@ contract ExponentialNoError {
         return uint224(n);
     }
 
+    function safe216(uint n, string memory errorMessage) pure internal returns (uint216) {
+        require(n < 2**216, errorMessage);
+        return uint216(n);
+    }
+
+    function safe40(uint n, string memory errorMessage) pure internal returns (uint40) {
+        require(n < 2**40, errorMessage);
+        return uint40(n);
+    }
+
     function safe32(uint n, string memory errorMessage) pure internal returns (uint32) {
         require(n < 2**32, errorMessage);
         return uint32(n);

@@ -355,6 +355,36 @@ describe('Flywheel', () => {
       expect(txT2.gasUsed).toBeLessThan(150000);
       expect(txT2.gasUsed).toBeGreaterThan(100000);
     });
+
+    it('should not overflow compSupplyState#index when distributing all COMP supply', async () => {
+      const compRemaining = compRate.multipliedBy(10000000)
+      await send(comptroller, 'setBlockNumber', [0]);
+      await send(comptroller, 'harnessAddCompMarkets', [[cLOW._address]]);
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      await send(comptroller, 'harnessRefreshCompSpeeds');
+      await send(comptroller, '_setCompSpeed', [cLOW._address, compRemaining]);
+
+      await quickMint(cLOW, a1, etherUnsigned(1));
+
+      await fastForward(comptroller, 1);
+      await send(comptroller, 'harnessUpdateCompSupplyIndex', [cLOW._address]);
+
+      /*
+        compInitialIndex = 1e36
+        supplyTokens = 1
+        deltaBlocks = 1
+        supplySpeed = 10000000 * 1e18 = 1e25
+        compAccrued = deltaBlocks * supplySpeed = 1 * 1e25 = 1e25
+        ratio = compAccrued / supplyTokens = (1e25 * 1e36) / 1 = 1e61
+        newIndex = compInitialIndex + ratio = 1e36 + 1e61
+
+        newIndex can fit within 203 bits, far above the 216 bits limit
+      */
+
+      const {index, block} = await call(comptroller, 'compSupplyState', [cLOW._address]);
+
+      expect(index).toEqualNumber(etherUnsigned('1e36').plus(etherUnsigned('1e61')));
+    });
   });
 
   describe('distributeBorrowerComp()', () => {

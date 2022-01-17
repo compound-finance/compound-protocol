@@ -25,12 +25,12 @@ contract ComptrollerHarness is Comptroller {
         pauseGuardian = harnessedPauseGuardian;
     }
 
-    function setCompSupplyState(address cToken, uint224 index, uint32 blockNumber_) public {
+    function setCompSupplyState(address cToken, uint216 index, uint40 blockNumber_) public {
         compSupplyState[cToken].index = index;
         compSupplyState[cToken].block = blockNumber_;
     }
 
-    function setCompBorrowState(address cToken, uint224 index, uint32 blockNumber_) public {
+    function setCompBorrowState(address cToken, uint216 index, uint40 blockNumber_) public {
         compBorrowState[cToken].index = index;
         compBorrowState[cToken].block = blockNumber_;
     }
