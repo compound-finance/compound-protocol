@@ -23,7 +23,6 @@ describe('Comptroller', () => {
     it("allows a borrow up to collateralFactor, but not more", async () => {
       const collateralFactor = 0.5, underlyingPrice = 1, user = accounts[1], amount = 1e6;
       const cToken = await makeCToken({supportMarket: true, collateralFactor, underlyingPrice});
-
       let error, liquidity, shortfall;
 
       // not in market yet, hypothetical borrow should have no effect
@@ -44,8 +43,9 @@ describe('Comptroller', () => {
       expect(liquidity).toEqualNumber(0);
       expect(shortfall).toEqualNumber(amount * (1 - collateralFactor));
 
-      // hypothetically redeem `amount`, should be back to even
-      ({1: liquidity, 2: shortfall} = await call(cToken.comptroller, 'getHypotheticalAccountLiquidity', [user, cToken._address, amount, 0]));
+      // hypothetically redeem `amount`, should be back to even      
+      ({1: liquidity, 2: shortfall} = await call(cToken.comptroller, 'getHypotheticalAccountLiquidity', [user, cToken._address, amount * 5, 0]));
+
       expect(liquidity).toEqualNumber(0);
       expect(shortfall).toEqualNumber(0);
     }, 20000);
@@ -81,7 +81,8 @@ describe('Comptroller', () => {
       expect(liquidity).toEqualNumber(0);
       expect(shortfall).toEqualNumber(c1);
 
-      ({1: liquidity, 2: shortfall} = await call(cToken1.comptroller, 'getHypotheticalAccountLiquidity', [user, cToken1._address, amount1, 0]));
+      // amount * 5 to account for built-in initial exchange rate mantissa of 0.2e17
+      ({1: liquidity, 2: shortfall} = await call(cToken1.comptroller, 'getHypotheticalAccountLiquidity', [user, cToken1._address, amount1 * 5, 0]));
       expect(liquidity).toEqualNumber(Math.floor(c2));
       expect(shortfall).toEqualNumber(0);
     });

@@ -1,15 +1,16 @@
 const {
   etherUnsigned,
   etherMantissa,
-  both
+  both,
+  etherExp
 } = require('../Utils/Ethereum');
 
-const {fastForward, makeCToken} = require('../Utils/Compound');
+const {fastForward, makeCToken, getBalances, adjustBalances} = require('../Utils/Compound');
 
 const factor = etherMantissa(.02);
 
 const reserves = etherUnsigned(3e12);
-const cash = etherUnsigned(reserves.mul(2));
+const cash = etherUnsigned(reserves.multipliedBy(2));
 const reduction = etherUnsigned(2e12);
 
 describe('CToken', function () {
@@ -68,7 +69,7 @@ describe('CToken', function () {
   describe('_setReserveFactor', () => {
     let cToken;
     beforeEach(async () => {
-      cToken = await makeCToken();
+      cToken = await makeCToken({ supportMarket: true });
     });
 
     beforeEach(async () => {
@@ -122,12 +123,12 @@ describe('CToken', function () {
     });
 
     it("fails if amount exceeds reserves", async () => {
-      expect(await send(cToken, 'harnessReduceReservesFresh', [reserves.add(1)])).toHaveTokenFailure('BAD_INPUT', 'REDUCE_RESERVES_VALIDATION');
+      expect(await send(cToken, 'harnessReduceReservesFresh', [reserves.plus(1)])).toHaveTokenFailure('BAD_INPUT', 'REDUCE_RESERVES_VALIDATION');
       expect(await call(cToken, 'totalReserves')).toEqualNumber(reserves);
     });
 
     it("fails if amount exceeds available cash", async () => {
-      const cashLessThanReserves = reserves.sub(2);
+      const cashLessThanReserves = reserves.minus(2);
       await send(cToken.underlying, 'harnessSetBalance', [cToken._address, cashLessThanReserves]);
       expect(await send(cToken, 'harnessReduceReservesFresh', [reserves])).toHaveTokenFailure('TOKEN_INSUFFICIENT_CASH', 'REDUCE_RESERVES_CASH_NOT_AVAILABLE');
       expect(await call(cToken, 'totalReserves')).toEqualNumber(reserves);
@@ -136,7 +137,7 @@ describe('CToken', function () {
     it("increases admin balance and reduces reserves on success", async () => {
       const balance = etherUnsigned(await call(cToken.underlying, 'balanceOf', [root]));
       expect(await send(cToken, 'harnessReduceReservesFresh', [reserves])).toSucceed();
-      expect(await call(cToken.underlying, 'balanceOf', [root])).toEqualNumber(balance.add(reserves));
+      expect(await call(cToken.underlying, 'balanceOf', [root])).toEqualNumber(balance.plus(reserves));
       expect(await call(cToken, 'totalReserves')).toEqualNumber(0);
     });
 
@@ -153,7 +154,7 @@ describe('CToken', function () {
   describe("_reduceReserves", () => {
     let cToken;
     beforeEach(async () => {
-      cToken = await makeCToken();
+      cToken = await makeCToken({ supportMarket: true });
       await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
       expect(await send(cToken, 'harnessSetTotalReserves', [reserves])).toSucceed();
       expect(
@@ -168,7 +169,7 @@ describe('CToken', function () {
     });
 
     it("returns error from _reduceReservesFresh without emitting any extra logs", async () => {
-      const {reply, receipt} = await both(cToken, 'harnessReduceReservesFresh', [reserves.add(1)]);
+      const {reply, receipt} = await both(cToken, 'harnessReduceReservesFresh', [reserves.plus(1)]);
       expect(reply).toHaveTokenError('BAD_INPUT');
       expect(receipt).toHaveTokenFailure('BAD_INPUT', 'REDUCE_RESERVES_VALIDATION');
     });

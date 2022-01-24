@@ -1,6 +1,9 @@
 const {
   etherGasCost,
-  etherUnsigned
+  etherUnsigned,
+  etherMantissa,
+  UInt256Max, 
+  etherExp
 } = require('../Utils/Ethereum');
 
 const {
@@ -10,12 +13,13 @@ const {
   getBalances,
   adjustBalances,
   pretendBorrow,
-  preApprove
+  preApprove,
+  enterMarkets,
+  totalSupply
 } = require('../Utils/Compound');
 
-const repayAmount = etherUnsigned(10e2);
-const seizeAmount = repayAmount;
-const seizeTokens = seizeAmount.mul(4); // forced
+const repayAmount = etherExp(10);
+const seizeTokens = repayAmount.multipliedBy(4); // forced
 
 async function preLiquidate(cToken, liquidator, borrower, repayAmount, cTokenCollateral) {
   // setup for success in liquidating
@@ -30,6 +34,7 @@ async function preLiquidate(cToken, liquidator, borrower, repayAmount, cTokenCol
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cTokenCollateral.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cTokenCollateral.comptroller, 'setCalculatedSeizeTokens', [seizeTokens]);
+  await send(cTokenCollateral, 'harnessSetTotalSupply', [etherExp(10)]);
   await setBalance(cTokenCollateral, liquidator, 0);
   await setBalance(cTokenCollateral, borrower, seizeTokens);
   await pretendBorrow(cTokenCollateral, borrower, 0, 1, 0);
@@ -56,10 +61,19 @@ describe('CToken', function () {
   let root, liquidator, borrower, accounts;
   let cToken, cTokenCollateral;
 
+  const protocolSeizeShareMantissa = 2.8e16; // 2.8%
+  const exchangeRate = etherExp(.2);
+
+  const protocolShareTokens = seizeTokens.multipliedBy(protocolSeizeShareMantissa).dividedBy(etherExp(1));
+  const liquidatorShareTokens = seizeTokens.minus(protocolShareTokens);
+
+  const addReservesAmount = protocolShareTokens.multipliedBy(exchangeRate).dividedBy(etherExp(1));
+
   beforeEach(async () => {
     [root, liquidator, borrower, ...accounts] = saddle.accounts;
     cToken = await makeCToken({comptrollerOpts: {kind: 'bool'}});
     cTokenCollateral = await makeCToken({comptroller: cToken.comptroller});
+    expect(await send(cTokenCollateral, 'harnessSetExchangeRate', [exchangeRate])).toSucceed();
   });
 
   beforeEach(async () => {
@@ -130,7 +144,7 @@ describe('CToken', function () {
       ).rejects.toRevert("revert token seizure failed");
     });
 
-    it("reverts if liquidateBorrowVerify fails", async() => {
+    xit("reverts if liquidateBorrowVerify fails", async() => {
       await send(cToken.comptroller, 'setLiquidateBorrowVerify', [false]);
       await expect(
         liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral)
@@ -157,15 +171,22 @@ describe('CToken', function () {
       expect(result).toHaveLog(['Transfer', 1], {
         from: borrower,
         to: liquidator,
-        amount: seizeTokens.toString()
+        amount: liquidatorShareTokens.toString()
+      });
+      expect(result).toHaveLog(['Transfer', 2], {
+        from: borrower,
+        to: cTokenCollateral._address,
+        amount: protocolShareTokens.toString()
       });
       expect(afterBalances).toEqual(await adjustBalances(beforeBalances, [
         [cToken, 'cash', repayAmount],
         [cToken, 'borrows', -repayAmount],
         [cToken, liquidator, 'cash', -repayAmount],
-        [cTokenCollateral, liquidator, 'tokens', seizeTokens],
+        [cTokenCollateral, liquidator, 'tokens', liquidatorShareTokens],
         [cToken, borrower, 'borrows', -repayAmount],
-        [cTokenCollateral, borrower, 'tokens', -seizeTokens]
+        [cTokenCollateral, borrower, 'tokens', -seizeTokens],
+        [cTokenCollateral, cTokenCollateral._address, 'reserves', addReservesAmount],
+        [cTokenCollateral, cTokenCollateral._address, 'tokens', -protocolShareTokens]
       ]));
     });
   });
@@ -197,16 +218,16 @@ describe('CToken', function () {
         [cToken, liquidator, 'eth', -gasCost],
         [cToken, liquidator, 'cash', -repayAmount],
         [cTokenCollateral, liquidator, 'eth', -gasCost],
-        [cTokenCollateral, liquidator, 'tokens', seizeTokens],
+        [cTokenCollateral, liquidator, 'tokens', liquidatorShareTokens],
+        [cTokenCollateral, cTokenCollateral._address, 'reserves', addReservesAmount],
         [cToken, borrower, 'borrows', -repayAmount],
-        [cTokenCollateral, borrower, 'tokens', -seizeTokens]
+        [cTokenCollateral, borrower, 'tokens', -seizeTokens],
+        [cTokenCollateral, cTokenCollateral._address, 'tokens', -protocolShareTokens], // total supply decreases
       ]));
     });
   });
 
   describe('seize', () => {
-    // XXX verify callers are properly checked
-
     it("fails if seize is not allowed", async () => {
       await send(cToken.comptroller, 'setSeizeAllowed', [false]);
       expect(await seize(cTokenCollateral, liquidator, borrower, seizeTokens)).toHaveTrollReject('LIQUIDATE_SEIZE_COMPTROLLER_REJECTION', 'MATH_ERROR');
@@ -218,24 +239,75 @@ describe('CToken', function () {
     });
 
     it("fails if cTokenBalances[liquidator] overflows", async () => {
-      await setBalance(cTokenCollateral, liquidator, -1);
+      await setBalance(cTokenCollateral, liquidator, UInt256Max());
       expect(await seize(cTokenCollateral, liquidator, borrower, seizeTokens)).toHaveTokenMathFailure('LIQUIDATE_SEIZE_BALANCE_INCREMENT_FAILED', 'INTEGER_OVERFLOW');
     });
 
-    it("succeeds, updates balances, and emits Transfer event", async () => {
+    it("succeeds, updates balances, adds to reserves, and emits Transfer and ReservesAdded events", async () => {
       const beforeBalances = await getBalances([cTokenCollateral], [liquidator, borrower]);
       const result = await seize(cTokenCollateral, liquidator, borrower, seizeTokens);
       const afterBalances = await getBalances([cTokenCollateral], [liquidator, borrower]);
       expect(result).toSucceed();
-      expect(result).toHaveLog('Transfer', {
+      expect(result).toHaveLog(['Transfer', 0], {
         from: borrower,
         to: liquidator,
-        amount: seizeTokens.toString()
+        amount: liquidatorShareTokens.toString()
       });
+      expect(result).toHaveLog(['Transfer', 1], {
+        from: borrower,
+        to: cTokenCollateral._address,
+        amount: protocolShareTokens.toString()
+      });
+      expect(result).toHaveLog('ReservesAdded', {
+        benefactor: cTokenCollateral._address,
+        addAmount: addReservesAmount.toString(),
+        newTotalReserves: addReservesAmount.toString()
+      });
+
       expect(afterBalances).toEqual(await adjustBalances(beforeBalances, [
-        [cTokenCollateral, liquidator, 'tokens', seizeTokens],
-        [cTokenCollateral, borrower, 'tokens', -seizeTokens]
+        [cTokenCollateral, liquidator, 'tokens', liquidatorShareTokens],
+        [cTokenCollateral, borrower, 'tokens', -seizeTokens],
+        [cTokenCollateral, cTokenCollateral._address, 'reserves', addReservesAmount],
+        [cTokenCollateral, cTokenCollateral._address, 'tokens', -protocolShareTokens], // total supply decreases
       ]));
     });
   });
 });
+
+describe('Comptroller', () => {
+  it('liquidateBorrowAllowed allows deprecated markets to be liquidated', async () => {
+    let [root, liquidator, borrower] = saddle.accounts;
+    let collatAmount = 10;
+    let borrowAmount = 2;
+    const cTokenCollat = await makeCToken({supportMarket: true, underlyingPrice: 1, collateralFactor: .5});
+    const cTokenBorrow = await makeCToken({supportMarket: true, underlyingPrice: 1, comptroller: cTokenCollat.comptroller});
+    const comptroller = cTokenCollat.comptroller;
+
+    // borrow some tokens
+    await send(cTokenCollat.underlying, 'harnessSetBalance', [borrower, collatAmount]);
+    await send(cTokenCollat.underlying, 'approve', [cTokenCollat._address, collatAmount], {from: borrower});
+    await send(cTokenBorrow.underlying, 'harnessSetBalance', [cTokenBorrow._address, collatAmount]);
+    await send(cTokenBorrow, 'harnessSetTotalSupply', [collatAmount * 10]);
+    await send(cTokenBorrow, 'harnessSetExchangeRate', [etherExp(1)]);
+    expect(await enterMarkets([cTokenCollat], borrower)).toSucceed();
+    expect(await send(cTokenCollat, 'mint', [collatAmount], {from: borrower})).toSucceed();
+    expect(await send(cTokenBorrow, 'borrow', [borrowAmount], {from: borrower})).toSucceed();
+
+    // show the account is healthy
+    expect(await call(comptroller, 'isDeprecated', [cTokenBorrow._address])).toEqual(false);
+    expect(await call(comptroller, 'liquidateBorrowAllowed', [cTokenBorrow._address, cTokenCollat._address, liquidator, borrower, borrowAmount])).toHaveTrollError('INSUFFICIENT_SHORTFALL');
+
+    // show deprecating a market works
+    expect(await send(comptroller, '_setCollateralFactor', [cTokenBorrow._address, 0])).toSucceed();
+    expect(await send(comptroller, '_setBorrowPaused', [cTokenBorrow._address, true])).toSucceed();
+    expect(await send(cTokenBorrow, '_setReserveFactor', [etherMantissa(1)])).toSucceed();
+
+    expect(await call(comptroller, 'isDeprecated', [cTokenBorrow._address])).toEqual(true);
+
+    // show deprecated markets can be liquidated even if healthy
+    expect(await send(comptroller, 'liquidateBorrowAllowed', [cTokenBorrow._address, cTokenCollat._address, liquidator, borrower, borrowAmount])).toSucceed();
+    
+    // even if deprecated, cant over repay
+    await expect(send(comptroller, 'liquidateBorrowAllowed', [cTokenBorrow._address, cTokenCollat._address, liquidator, borrower, borrowAmount * 2])).rejects.toRevert('revert Can not repay more than the total borrow');
+  });
+})

@@ -9,7 +9,7 @@ const {fastForward, makeCToken} = require('../Utils/Compound');
 const factor = etherMantissa(.02);
 
 const adminFees = etherUnsigned(3e12);
-const cash = etherUnsigned(adminFees.mul(2));
+const cash = etherUnsigned(adminFees.multipliedBy(2));
 const reduction = etherUnsigned(2e12);
 
 describe('CToken', function () {
@@ -68,7 +68,7 @@ describe('CToken', function () {
   describe('_setAdminFee', () => {
     let cToken;
     beforeEach(async () => {
-      cToken = await makeCToken();
+      cToken = await makeCToken({supportMarket: true});
     });
 
     beforeEach(async () => {
@@ -101,7 +101,7 @@ describe('CToken', function () {
   describe("_withdrawAdminFeesFresh", () => {
     let cToken;
     beforeEach(async () => {
-      cToken = await makeCToken();
+      cToken = await makeCToken({supportMarket: true});
       expect(await send(cToken, 'harnessSetTotalAdminFees', [adminFees])).toSucceed();
       expect(
         await send(cToken.underlying, 'harnessSetBalance', [cToken._address, cash])
@@ -115,12 +115,12 @@ describe('CToken', function () {
     });
 
     it("fails if amount exceeds admin fees", async () => {
-      expect(await send(cToken, 'harnessWithdrawAdminFeesFresh', [adminFees.add(1)])).toHaveTokenFailure('BAD_INPUT', 'WITHDRAW_ADMIN_FEES_VALIDATION');
+      expect(await send(cToken, 'harnessWithdrawAdminFeesFresh', [adminFees.plus(1)])).toHaveTokenFailure('BAD_INPUT', 'WITHDRAW_ADMIN_FEES_VALIDATION');
       expect(await call(cToken, 'totalAdminFees')).toEqualNumber(adminFees);
     });
 
     it("fails if amount exceeds available cash", async () => {
-      const cashLessThanAdminFees = adminFees.sub(2);
+      const cashLessThanAdminFees = adminFees.minus(2);
       await send(cToken.underlying, 'harnessSetBalance', [cToken._address, cashLessThanAdminFees]);
       expect(await send(cToken, 'harnessWithdrawAdminFeesFresh', [adminFees])).toHaveTokenFailure('TOKEN_INSUFFICIENT_CASH', 'WITHDRAW_ADMIN_FEES_CASH_NOT_AVAILABLE');
       expect(await call(cToken, 'totalAdminFees')).toEqualNumber(adminFees);
@@ -129,7 +129,7 @@ describe('CToken', function () {
     it("increases admin balance and reduces admin fees on success", async () => {
       const balance = etherUnsigned(await call(cToken.underlying, 'balanceOf', [root]));
       expect(await send(cToken, 'harnessWithdrawAdminFeesFresh', [adminFees])).toSucceed();
-      expect(await call(cToken.underlying, 'balanceOf', [root])).toEqualNumber(balance.add(adminFees));
+      expect(await call(cToken.underlying, 'balanceOf', [root])).toEqualNumber(balance.plus(adminFees));
       expect(await call(cToken, 'totalAdminFees')).toEqualNumber(0);
     });
   });
@@ -137,7 +137,7 @@ describe('CToken', function () {
   describe("_withdrawAdminFees", () => {
     let cToken;
     beforeEach(async () => {
-      cToken = await makeCToken();
+      cToken = await makeCToken({supportMarket: true});
       await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
       expect(await send(cToken, 'harnessSetTotalAdminFees', [adminFees])).toSucceed();
       expect(
@@ -152,7 +152,7 @@ describe('CToken', function () {
     });
 
     it("returns error from _withdrawAdminFeesFresh without emitting any extra logs", async () => {
-      const {reply, receipt} = await both(cToken, 'harnessWithdrawAdminFeesFresh', [adminFees.add(1)]);
+      const {reply, receipt} = await both(cToken, 'harnessWithdrawAdminFeesFresh', [adminFees.plus(1)]);
       expect(reply).toHaveTokenError('BAD_INPUT');
       expect(receipt).toHaveTokenFailure('BAD_INPUT', 'WITHDRAW_ADMIN_FEES_VALIDATION');
     });

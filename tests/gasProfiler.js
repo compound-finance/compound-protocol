@@ -69,7 +69,7 @@ describe('CToken', () => {
   const mintAmount = etherUnsigned(10e4);
   const mintTokens = mintAmount.div(exchangeRate);
   const redeemTokens = etherUnsigned(10e3);
-  const redeemAmount = redeemTokens.mul(exchangeRate);
+  const redeemAmount = redeemTokens.multipliedBy(exchangeRate);
   const filename = './gasCosts.json';
 
   beforeEach(async () => {

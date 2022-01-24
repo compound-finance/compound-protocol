@@ -19,20 +19,17 @@ describe('CToken', function () {
     it("fails when non erc-20 underlying", async () => {
       await expect(makeCToken({ underlying: { _address: root } })).rejects.toRevert("revert");
     });
-
+    
+    /*
     it("fails when 0 initial exchange rate", async () => {
       await expect(makeCToken({ exchangeRate: 0 })).rejects.toRevert("revert initial exchange rate must be greater than zero.");
     });
+    */
 
     it("succeeds with erc-20 underlying and non-zero exchange rate", async () => {
       const cToken = await makeCToken();
       expect(await call(cToken, 'underlying')).toEqual(cToken.underlying._address);
-      expect(await call(cToken, 'admin')).toEqual(root);
-    });
-
-    it("succeeds when setting admin to contructor argument", async () => {
-      const cToken = await makeCToken({ admin: admin });
-      expect(await call(cToken, 'admin')).toEqual(admin);
+      expect(await call(cToken.comptroller, 'admin')).toEqual(root);
     });
   });
 
@@ -40,7 +37,7 @@ describe('CToken', function () {
     let cToken;
 
     beforeEach(async () => {
-      cToken = await makeCToken({ name: "CToken Foo", symbol: "cFOO", decimals: 10 });
+      cToken = await makeCToken({name: "CToken Foo", symbol: "cFOO"});
     });
 
     it('should return correct name', async () => {
@@ -52,15 +49,15 @@ describe('CToken', function () {
     });
 
     it('should return correct decimals', async () => {
-      expect(await call(cToken, 'decimals')).toEqualNumber(10);
+      expect(await call(cToken, 'decimals')).toEqualNumber(18);
     });
   });
 
   describe('balanceOfUnderlying', () => {
     it("has an underlying balance", async () => {
-      const cToken = await makeCToken({ supportMarket: true, exchangeRate: 2 });
+      const cToken = await makeCToken({supportMarket: true});
       await send(cToken, 'harnessSetBalance', [root, 100]);
-      expect(await call(cToken, 'balanceOfUnderlying', [root])).toEqualNumber(200);
+      expect(await call(cToken, 'balanceOfUnderlying', [root])).toEqualNumber(20);
     });
   });
 
@@ -103,7 +100,7 @@ describe('CToken', function () {
 
     beforeEach(async () => {
       borrower = accounts[0];
-      cToken = await makeCToken();
+      cToken = await makeCToken({ supportMarket: true });
     });
 
     beforeEach(async () => {
@@ -171,10 +168,10 @@ describe('CToken', function () {
   });
 
   describe('exchangeRateStored', () => {
-    let cToken, exchangeRate = 2;
+    let cToken, exchangeRate = .2;
 
     beforeEach(async () => {
-      cToken = await makeCToken({ exchangeRate });
+      cToken = await makeCToken();
     });
 
     it("returns initial exchange rate with zero cTokenSupply", async () => {

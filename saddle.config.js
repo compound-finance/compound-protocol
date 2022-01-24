@@ -51,6 +51,7 @@ module.exports = {
     },
     test: {
       providers: [
+        // {http: "http://127.0.0.1:8545/"},
         {
           ganache: {
             gasLimit: 200000000,

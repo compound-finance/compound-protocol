@@ -55,7 +55,7 @@ describe('CompoundLens', () => {
     });
 
     it('is correct for cEth', async () => {
-      let cEth = await makeCToken({kind: 'cether'});
+      let cEth = await makeCToken({kind: 'cether', supportMarket: true});
       expect(
         cullTuple(await call(compoundLens, 'cTokenMetadata', [cEth._address]))
       ).toEqual({
@@ -79,8 +79,8 @@ describe('CompoundLens', () => {
 
   describe('cTokenMetadataAll', () => {
     it('is correct for a cErc20 and cEther', async () => {
-      let cErc20 = await makeCToken();
-      let cEth = await makeCToken({kind: 'cether'});
+      let cErc20 = await makeCToken({supportMarket: true});
+      let cEth = await makeCToken({kind: 'cether', supportMarket: true});
       expect(
         (await call(compoundLens, 'cTokenMetadataAll', [[cErc20._address, cEth._address]])).map(cullTuple)
       ).toEqual([
@@ -122,7 +122,7 @@ describe('CompoundLens', () => {
 
   describe('cTokenBalances', () => {
     it('is correct for cERC20', async () => {
-      let cErc20 = await makeCToken();
+      let cErc20 = await makeCToken({supportMarket: true});
       expect(
         cullTuple(await call(compoundLens, 'cTokenBalances', [cErc20._address, acct]))
       ).toEqual(
@@ -138,7 +138,7 @@ describe('CompoundLens', () => {
     });
 
     it('is correct for cETH', async () => {
-      let cEth = await makeCToken({kind: 'cether'});
+      let cEth = await makeCToken({kind: 'cether', supportMarket: true});
       let ethBalance = await web3.eth.getBalance(acct);
       expect(
         cullTuple(await call(compoundLens, 'cTokenBalances', [cEth._address, acct], {gasPrice: '0'}))
@@ -157,8 +157,8 @@ describe('CompoundLens', () => {
 
   describe('cTokenBalancesAll', () => {
     it('is correct for cEth and cErc20', async () => {
-      let cErc20 = await makeCToken();
-      let cEth = await makeCToken({kind: 'cether'});
+      let cErc20 = await makeCToken({ supportMarket: true });
+      let cEth = await makeCToken({ kind: 'cether', supportMarket: true });
       let ethBalance = await web3.eth.getBalance(acct);
       
       expect(
@@ -186,7 +186,7 @@ describe('CompoundLens', () => {
 
   describe('cTokenUnderlyingPrice', () => {
     it('gets correct price for cErc20', async () => {
-      let cErc20 = await makeCToken();
+      let cErc20 = await makeCToken({ supportMarket: true });
       expect(
         cullTuple(await call(compoundLens, 'cTokenUnderlyingPrice', [cErc20._address]))
       ).toEqual(
@@ -198,7 +198,7 @@ describe('CompoundLens', () => {
     });
 
     it('gets correct price for cEth', async () => {
-      let cEth = await makeCToken({kind: 'cether'});
+      let cEth = await makeCToken({ kind: 'cether', supportMarket: true });
       expect(
         cullTuple(await call(compoundLens, 'cTokenUnderlyingPrice', [cEth._address]))
       ).toEqual(
