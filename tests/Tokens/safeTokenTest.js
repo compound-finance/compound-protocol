@@ -45,7 +45,7 @@ describe('CEther', function () {
       });
 
       it("reverts if it fails", async () => {
-        await expect(call(cToken, 'harnessDoTransferOut', [root, 77], {value: 0})).rejects.toRevert();
+        await expect(call(cToken, 'harnessDoTransferOut', [root, 77], {value: 0})).rejects.toRevert("revert doTransferOut failed");
       });
     });
   });

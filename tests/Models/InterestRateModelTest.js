@@ -1,8 +1,20 @@
 const {
   makeInterestRateModel,
   getBorrowRate,
-  getSupplyRate
+  getSupplyRate,
+  balanceOf,
+  fastForward,
+  pretendBorrow,
+  quickMint,
+  quickBorrow,
+  enterMarkets
 } = require('../Utils/Compound');
+const {
+  etherExp,
+  etherDouble,
+  etherUnsigned,
+  etherMantissa
+} = require('../Utils/Ethereum');
 
 function utilizationRate(cash, borrows, reserves) {
   return borrows ? borrows / (cash + borrows - reserves) : 0;
@@ -57,6 +69,26 @@ function makeUtilization(util) {
 
 const blocksPerYear = 2102400;
 
+async function preBorrow(cToken, borrower, borrowAmount) {
+  await send(cToken.comptroller, 'setBorrowAllowed', [true]);
+  await send(cToken.comptroller, 'setBorrowVerify', [true]);
+  await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
+  await send(cToken.underlying, 'harnessSetBalance', [cToken._address, borrowAmount]);
+  await send(cToken, 'harnessSetFailTransferToAddress', [borrower, false]);
+  await send(cToken, 'harnessSetAccountBorrows', [borrower, 0, 0]);
+  await send(cToken, 'harnessSetTotalBorrows', [0]);
+}
+
+async function borrow(cToken, borrower, borrowAmount, opts = {}) {
+  // make sure to have a block delta so we accrue interest
+  await send(cToken, 'harnessFastForward', [1]);
+  return send(cToken, 'borrow', [borrowAmount], {from: borrower});
+}
+
+async function borrowFresh(cToken, borrower, borrowAmount) {
+  return send(cToken, 'harnessBorrowFresh', [borrower, borrowAmount]);
+}
+
 describe('InterestRateModel', () => {
   let root, accounts;
   beforeEach(async() => {
@@ -67,13 +99,14 @@ describe('InterestRateModel', () => {
     'baseP025-slopeP20': { base: 0.025, slope: 0.20, model: 'white-paper' },
     'baseP05-slopeP45': { base: 0.05, slope: 0.45, model: 'white-paper' },
     'white-paper': { base: 0.1, slope: 0.45, model: 'white-paper' },
-    'jump-rate': { base: 0.1, slope: 0.45, model: 'jump-rate' }
+    'jump-rate': { base: 0.1, slope: 0.45, model: 'jump-rate' },
+    'reactive-jump-rate': { base: 0.1, slope: 0.45, model: 'reactive-jump-rate' }
   };
 
   Object.entries(expectedRates).forEach(async ([kind, info]) => {
     let model;
     beforeAll(async () => {
-      model = await makeInterestRateModel({ kind: info.model, baseRate: info.base, multiplier: info.slope });
+      model = await makeInterestRateModel({ kind: info.model, baseRate: info.base, multiplier: info.slope, comptrollerOpts: {kind: 'bool'} });
     });
 
     describe(kind, () => {
@@ -123,6 +156,60 @@ describe('InterestRateModel', () => {
         it('handles overflow utilization rate times slope + base', async () => {
           const badModel = await makeInterestRateModel({ kind, baseRate: -1, multiplier: 1e48, jump: 1e48 });
           await expect(getBorrowRate(badModel, 0, 1, 0)).rejects.toRevert("revert SafeMath: multiplication overflow");
+        });
+      }
+
+      if (kind == 'reactive-jump-rate') {
+        it('should revert if not called by cToken', async () => {
+          await expect(call(model, 'resetInterestCheckpoints')).rejects.toRevert("revert");
+        });
+
+        it('multiplier sets to zero when avgBorrowRatePerBlock < baseRatePerBlock', async () => {
+          let cToken = model.cToken;
+
+          await send(cToken, 'harnessSetAccrualBlockNumber', [1000000]);
+          await send(cToken, 'harnessSetBlockNumber', [1000000]);
+          await send(cToken, 'harnessFastForward', [5]);
+
+          for(let i = 0; i < 40; i++) {
+            await send(cToken, 'accrueInterest');
+            await send(cToken, 'harnessFastForward', [3000]);
+          }
+
+          expect(await call(model, 'multiplierPerBlock')).toEqual('0');
+        });
+
+        it('dynamically changes multiplier', async () => {
+          let newModel = await makeInterestRateModel({ kind: 'reactive-jump-rate', base: 0.1, multiplier: 0.65, comptrollerOpts: {kind: 'bool'} });
+
+          let cToken = newModel.cToken;
+
+          await send(cToken, 'harnessSetAccrualBlockNumber', [1000000]);
+          await send(cToken, 'harnessSetBlockNumber', [1000000]);
+          await send(cToken, 'harnessFastForward', [5]);
+          
+          await send(cToken, 'harnessSetBorrowIndex', ["10"]);
+          await send(cToken, 'accrueInterest');
+          let borrowIndex = await call(cToken, 'borrowIndex');
+          for(let i = 0; i < 40; i++) {
+            await send(cToken, 'accrueInterest');
+
+            borrowIndex += 5;
+            await send(cToken, 'harnessSetBorrowIndex', [borrowIndex.toString()]);
+            await send(cToken, 'harnessFastForward', [5]);
+          }
+          let currBorrowIndex = await call(cToken, 'borrowIndex');
+          let updatedBorrowIndex = currBorrowIndex / 2000;
+          await send(cToken, 'harnessSetBorrowIndex', [updatedBorrowIndex.toString()]);
+          await send(cToken, 'accrueInterest');
+        });
+
+        it('successfully sets new IRM', async () => {
+          let newIRM = await makeInterestRateModel({ kind: 'reactive-jump-rate', comptrollerOpts: {kind: 'bool'} });
+          expect(await call(model, 'interestCheckpointCount')).toEqual('8');
+          await send(model.cToken, '_setInterestRateModel', [newIRM._address]);
+          expect(await call(model, 'interestCheckpointCount')).toEqual('0');
+          await send(model.cToken, '_setInterestRateModel', [model._address]);
         });
       }
     });

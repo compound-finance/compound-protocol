@@ -25,7 +25,8 @@ contract CErc20DelegatorScenario is CErc20Delegator {
     implementation_,
     becomeImplementationData,
     0,
-    0) public {}
+    0,
+    address(0)) public {}
 }
 
 contract CErc20DelegateHarness is CErc20Delegate {
@@ -64,6 +65,10 @@ contract CErc20DelegateHarness is CErc20Delegate {
 
     function harnessFastForward(uint blocks) public {
         blockNumber += blocks;
+    }
+
+    function harnessIncrementTotalBorrows(uint addtlBorrow_) public {
+        totalBorrows = totalBorrows + addtlBorrow_;
     }
 
     function harnessSetBalance(address account, uint amount) external {
@@ -159,8 +164,22 @@ contract CErc20DelegateHarness is CErc20Delegate {
         return _withdrawFuseFeesFresh(amount);
     }
 
-    function harnessSetFuseFeeFresh(uint newFuseFeeMantissa) public returns (uint) {
-        return _setFuseFeeFresh(newFuseFeeMantissa);
+    function harnessGetFuseInterestRate() public view returns (uint) {
+        return fuseAdmin.interestFeeRate();
+    }
+
+    function harnessSetFuseFee(int256 newFuseFeeMantissa) public returns (uint) {
+        uint error = accrueInterest();
+        if (error != uint(Error.NO_ERROR)) {
+            return fail(Error(error), FailureInfo.SET_ADMIN_FEE_ACCRUE_INTEREST_FAILED);
+        }
+        return harnessSetFuseFeeFresh(newFuseFeeMantissa);
+    }
+
+    function harnessSetFuseFeeFresh(int256 newFuseFeeMantissa) public returns (uint) {
+        fuseAdmin._setCustomInterestFeeRate(address(comptroller), newFuseFeeMantissa);
+        _setAdminFeeFresh(uint(-1));
+        return fuseFeeMantissa;
     }
 
     function harnessWithdrawAdminFeesFresh(uint amount) public returns (uint) {
@@ -186,7 +205,8 @@ contract CErc20DelegateHarness is CErc20Delegate {
     uint internal pendingFuseFeeMantissa = 0;
 
     function getPendingFuseFeeFromAdmin() internal view returns (uint) {
-        return pendingFuseFeeMantissa;
+        //return pendingFuseFeeMantissa;
+        return fuseAdmin.interestFeeRate();
     }
 
     function setPendingFuseFee(uint newPendingFuseFeeMantissa) external {

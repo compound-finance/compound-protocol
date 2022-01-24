@@ -24,19 +24,9 @@ describe('Comptroller', () => {
       expect(await call(comptroller, 'pendingAdmin')).toEqualNumber(0);
     });
 
-    it("on success it sets closeFactor and maxAssets as specified", async () => {
+    it("on success it sets closeFactor as specified", async () => {
       const comptroller = await makeComptroller();
       expect(await call(comptroller, 'closeFactorMantissa')).toEqualNumber(0.051e18);
-      expect(await call(comptroller, 'maxAssets')).toEqualNumber(10);
-    });
-
-    it("allows small and large maxAssets", async () => {
-      const comptroller = await makeComptroller({maxAssets: 0});
-      expect(await call(comptroller, 'maxAssets')).toEqualNumber(0);
-
-      // 5000 is an arbitrary number larger than what we expect to ever actually use
-      await send(comptroller, '_setMaxAssets', [5000]);
-      expect(await call(comptroller, 'maxAssets')).toEqualNumber(5000);
     });
   });
 

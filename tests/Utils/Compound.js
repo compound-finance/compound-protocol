@@ -5,8 +5,45 @@ const {
   encodeParameters,
   etherBalance,
   etherMantissa,
-  etherUnsigned
+  etherUnsigned,
+  mergeInterface
 } = require('./Ethereum');
+const BigNumber = require('bignumber.js');
+var fuseFeeDistributor;
+
+async function makeFuseFeeDistributor(opts = {}) {
+  const {
+    root = saddle.account,
+    kind = 'default'
+  } = opts || {};
+
+  if (kind == 'default') {
+    const fuseAdmin = await deploy('FuseFeeDistributor');
+    await send(fuseAdmin, 'initialize', [0]);
+    return fuseAdmin;
+  }
+}
+
+async function makeRewardsDistributor(opts = {}) {
+  let distributor;
+  const {
+    root = saddle.account,
+    admin = root,
+    rewardToken
+  } = opts || {};
+
+  let rewardsDistributorDelegatee, rewardsDistributorDelegator;
+  rewardsDistributorDelegatee = await deploy('RewardsDistributorDelegateHarness');
+  rewardsDistributorDelegator = await deploy('RewardsDistributorDelegator', 
+    [
+      admin,
+      opts.rewardToken._address,
+      rewardsDistributorDelegatee._address,
+    ]);
+  const comp = opts.rewardToken || await deploy('Comp', [opts.compOwner || root]);
+  distributor = await saddle.getContractAt('RewardsDistributorDelegateHarness', rewardsDistributorDelegator._address);
+  return Object.assign(distributor, { comp });
+}
 
 async function makeComptroller(opts = {}) {
   const {
@@ -14,8 +51,12 @@ async function makeComptroller(opts = {}) {
     kind = 'unitroller-v1'
   } = opts || {};
 
+  if (!fuseFeeDistributor) {
+    fuseFeeDistributor = await makeFuseFeeDistributor(opts.fuseFeeDistributorOpts);
+  }
+
   if (kind == 'bool') {
-    return await deploy('BoolComptroller');
+    return await deploy('BoolComptroller', [fuseFeeDistributor._address]);
   }
 
   if (kind == 'false-marker') {
@@ -26,13 +67,12 @@ async function makeComptroller(opts = {}) {
     const comptroller = await deploy('ComptrollerHarness');
     const priceOracle = opts.priceOracle || await makePriceOracle(opts.priceOracleOpts);
     const closeFactor = etherMantissa(dfn(opts.closeFactor, .051));
-    const maxAssets = etherUnsigned(dfn(opts.maxAssets, 10));
 
     await send(comptroller, '_setCloseFactor', [closeFactor]);
-    await send(comptroller, '_setMaxAssets', [maxAssets]);
     await send(comptroller, '_setPriceOracle', [priceOracle._address]);
 
     comptroller.options.address = comptroller._address;
+    await send(comptroller, 'setFuseAdmin', [fuseFeeDistributor._address]);
 
     return Object.assign(comptroller, { priceOracle });
   }
@@ -42,18 +82,20 @@ async function makeComptroller(opts = {}) {
     const comptroller = await deploy('ComptrollerHarness');
     const priceOracle = opts.priceOracle || await makePriceOracle(opts.priceOracleOpts);
     const closeFactor = etherMantissa(dfn(opts.closeFactor, .051));
-    const maxAssets = etherUnsigned(dfn(opts.maxAssets, 10));
     const liquidationIncentive = etherMantissa(1);
+    const comp = opts.comp || await deploy('Comp', [opts.compOwner || root]);
+    const compRate = etherUnsigned(dfn(opts.compRate, 1e18));
 
     await send(unitroller, '_setPendingImplementation', [comptroller._address]);
     await send(comptroller, '_become', [unitroller._address]);
-    comptroller.options.address = unitroller._address;
-    await send(comptroller, '_setLiquidationIncentive', [liquidationIncentive]);
-    await send(comptroller, '_setCloseFactor', [closeFactor]);
-    await send(comptroller, '_setMaxAssets', [maxAssets]);
-    await send(comptroller, '_setPriceOracle', [priceOracle._address]);
+    mergeInterface(unitroller, comptroller);
+    await send(unitroller, '_setLiquidationIncentive', [liquidationIncentive]);
+    await send(unitroller, '_setCloseFactor', [closeFactor]);
+    await send(unitroller, '_setPriceOracle', [priceOracle._address]);
+    await send(unitroller, 'setFuseAdmin', [fuseFeeDistributor._address]);
+    await send(unitroller, 'setCompAddress', [comp._address]); // harness only
 
-    return Object.assign(comptroller, { priceOracle });
+    return Object.assign(unitroller, { priceOracle, comp });
   }
 }
 
@@ -63,6 +105,7 @@ async function makeCToken(opts = {}) {
     kind = 'cerc20'
   } = opts || {};
 
+  fuseFeeDistributor = await makeFuseFeeDistributor(opts.fuseFeeDistributorOpts);
   const comptroller = opts.comptroller || await makeComptroller(opts.comptrollerOpts);
   const interestRateModel = opts.interestRateModel || await makeInterestRateModel(opts.interestRateModelOpts);
   const exchangeRate = etherMantissa(dfn(opts.exchangeRate, 1));
@@ -116,6 +159,7 @@ async function makeCToken(opts = {}) {
     default:
       underlying = opts.underlying || await makeToken(opts.underlyingOpts);
       cDelegatee = await deploy('CErc20DelegateHarness');
+      await send(fuseFeeDistributor, '_editCErc20DelegateWhitelist', [['0x0000000000000000000000000000000000000000'], [cDelegatee._address], [false], [true]]);
       cDelegator = await deploy('CErc20Delegator',
         [
           underlying._address,
@@ -126,7 +170,8 @@ async function makeCToken(opts = {}) {
           cDelegatee._address,
           "0x0",
           0,
-          0
+          0,
+          fuseFeeDistributor._address
         ]
                                    );
       cToken = await saddle.getContractAt('CErc20DelegateHarness', cDelegator._address); // XXXS at
@@ -178,6 +223,17 @@ async function makeInterestRateModel(opts = {}) {
     const jump = etherMantissa(dfn(opts.jump, 0));
     const kink = etherMantissa(dfn(opts.kink, 0));
     return await deploy('JumpRateModel', [baseRate, multiplier, jump, kink]);
+  }
+
+  if (kind == 'reactive-jump-rate') {
+    let cToken = opts.cToken || await makeCToken();
+    const baseRate = etherMantissa(dfn(opts.baseRate, 0));
+    const multiplier = etherMantissa(dfn(opts.multiplier, 1e-18));
+    const jump = etherMantissa(dfn(opts.jump, 20));
+    const kink = etherMantissa(dfn(opts.kink, 80));
+    let model = await deploy('ReactiveJumpRateModelV2', [baseRate, multiplier, jump, kink, root, cToken._address]);
+    await send(cToken, 'harnessSetInterestRateModel', [model._address]);
+    return Object.assign(model, { cToken });
   }
 }
 
@@ -279,7 +335,7 @@ async function adjustBalances(balances, deltas) {
       ([cToken, key, diff] = delta);
       account = cToken._address;
     }
-    balances[cToken._address][account][key] = balances[cToken._address][account][key].add(diff);
+    balances[cToken._address][account][key] = new BigNumber(balances[cToken._address][account][key]).plus(diff);
   }
   return balances;
 }
@@ -306,6 +362,15 @@ async function quickMint(cToken, minter, mintAmount, opts = {}) {
   return send(cToken, 'mint', [mintAmount], { from: minter });
 }
 
+async function quickBorrow(cToken, minter, borrowAmount, opts = {}) {
+  // make sure to accrue interest
+  await fastForward(cToken, 1);
+
+  if (dfn(opts.exchangeRate))
+    expect(await send(cToken, 'harnessSetExchangeRate', [etherMantissa(opts.exchangeRate)])).toSucceed();
+
+  return send(cToken, 'borrow', [borrowAmount], { from: minter });
+}
 
 async function preSupply(cToken, account, tokens, opts = {}) {
   if (dfn(opts.total, true)) {
@@ -365,6 +430,8 @@ module.exports = {
   makeInterestRateModel,
   makePriceOracle,
   makeToken,
+  makeRewardsDistributor,
+  makeFuseFeeDistributor,
 
   balanceOf,
   totalSupply,
@@ -380,6 +447,7 @@ module.exports = {
 
   preApprove,
   quickMint,
+  quickBorrow,
 
   preSupply,
   quickRedeem,

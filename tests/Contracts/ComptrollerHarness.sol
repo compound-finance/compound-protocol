@@ -4,10 +4,60 @@ import "../../contracts/Comptroller.sol";
 import "../../contracts/PriceOracle.sol";
 
 contract ComptrollerHarness is Comptroller {
+    address compAddress;
+    uint public blockNumber;
+
     constructor() Comptroller() public {}
 
     function setPauseGuardian(address harnessedPauseGuardian) public {
         pauseGuardian = harnessedPauseGuardian;
+    }
+
+    function setFuseAdmin(address payable fuseFeeDistributorAddress) public {
+        fuseAdmin = IFuseFeeDistributor(fuseFeeDistributorAddress);
+    }
+
+    function setCompAddress(address compAddress_) public {
+        compAddress = compAddress_;
+    }
+
+    function getCompAddress() public view returns (address) {
+        return compAddress;
+    }
+
+    function harnessFastForward(uint blocks) public returns (uint) {
+        blockNumber += blocks;
+        return blockNumber;
+    }
+
+    function getBlockNumber() public view returns (uint) {
+        return blockNumber;
+    }
+
+    function setBlockNumber(uint number) public {
+        blockNumber = number;
+    }
+
+    function getCompMarkets() public view returns (address[] memory) {
+        uint m = allMarkets.length;
+        uint n = 0;
+
+        RewardsDistributorDelegate rdd = RewardsDistributorDelegate(rewardsDistributors[0]);
+
+        for (uint i = 0; i < m; i++) {
+            if (rdd.compSupplySpeeds(address(allMarkets[i])) > 0 || rdd.compBorrowSpeeds(address(allMarkets[i])) > 0) {
+                n++;
+            }
+        }
+
+        address[] memory compMarkets = new address[](n);
+        uint k = 0;
+        for (uint i = 0; i < m; i++) {
+            if (rdd.compSupplySpeeds(address(allMarkets[i])) > 0 || rdd.compBorrowSpeeds(address(allMarkets[i])) > 0) {
+                compMarkets[k++] = address(allMarkets[i]);
+            }
+        }
+        return compMarkets;
     }
 }
 
@@ -52,7 +102,12 @@ contract ComptrollerBorked {
     }
 }
 
-contract BoolComptroller is ComptrollerInterface {
+contract BoolComptroller is ComptrollerInterface, ComptrollerV3Storage {
+    constructor(IFuseFeeDistributor _fuseAdmin) public {
+        admin = msg.sender;
+        fuseAdmin = _fuseAdmin;
+    }
+
     bool allowMint = true;
     bool allowRedeem = true;
     bool allowBorrow = true;
@@ -74,6 +129,11 @@ contract BoolComptroller is ComptrollerInterface {
 
     uint noError = 0;
     uint opaqueError = noError + 11; // an arbitrary, opaque error code
+
+    address[] oldImplementations;
+    address[] newImplementations;
+    bool[] allowResign;
+    bool[] statuses;
 
     /*** Assets You Are In ***/
 
@@ -268,7 +328,28 @@ contract BoolComptroller is ComptrollerInterface {
         return failCalculateSeizeTokens ? (opaqueError, 0) : (noError, calculatedSeizeTokens);
     }
 
+    /*** NonReentrancy ***/
+
+    function _beforeNonReentrant() external {
+        _notEntered = false;
+    }
+    function _afterNonReentrant() external {
+        _notEntered = true;
+    }
+
     /**** Mock Settors ****/
+
+    function harnessInitWhitelist(address cDelegatee) public {
+        oldImplementations.push(address(0));
+        newImplementations.push(cDelegatee);
+        allowResign.push(false);
+        statuses.push(true);
+        fuseAdmin._editCErc20DelegateWhitelist(oldImplementations, newImplementations, allowResign, statuses);
+    }
+
+    function harnessWhitelistCheck(address implementation, address implementation_) public view returns (bool) {
+        return fuseAdmin.cErc20DelegateWhitelist(implementation, implementation_, false);
+    }
 
     /*** Policy Hooks ***/
 

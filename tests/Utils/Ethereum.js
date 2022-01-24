@@ -1,14 +1,18 @@
 "use strict";
 
-const BigNum = require('bignumber.js');
+const BigNumber = require('bignumber.js');
 const ethers = require('ethers');
+
+function UInt256Max() {
+  return ethers.constants.MaxUint256;
+}
 
 function address(n) {
   return `0x${n.toString(16).padStart(40, '0')}`;
 }
 
 function bigNumberify(num) {
-  return ethers.utils.bigNumberify(new BigNum(num).toFixed());
+  return ethers.utils.bigNumberify(new BigNumber(num).toFixed());
 }
 
 function encodeParameters(types, values) {
@@ -17,24 +21,41 @@ function encodeParameters(types, values) {
 }
 
 async function etherBalance(addr) {
-  return ethers.utils.bigNumberify(new BigNum(await web3.eth.getBalance(addr)).toFixed());
+  return new BigNumber(await web3.eth.getBalance(addr));
 }
 
 async function etherGasCost(receipt) {
   const tx = await web3.eth.getTransaction(receipt.transactionHash);
-  const gasUsed = new BigNum(receipt.gasUsed);
-  const gasPrice = new BigNum(tx.gasPrice);
-  return ethers.utils.bigNumberify(gasUsed.times(gasPrice).toFixed());
+  const gasUsed = new BigNumber(receipt.gasUsed);
+  const gasPrice = new BigNumber(tx.gasPrice);
+  return gasUsed.times(gasPrice);
 }
 
-function etherMantissa(num) {
+function etherExp(num) { return etherMantissa(num, 1e18) }
+function etherDouble(num) { return etherMantissa(num, 1e36) }
+function etherMantissa(num, scale = 1e18) {
   if (num < 0)
-    return ethers.utils.bigNumberify(new BigNum(2).pow(256).plus(num).toFixed());
-  return ethers.utils.bigNumberify(new BigNum(num).times(1e18).toFixed());
+    return new BigNumber(2).pow(256).plus(num);
+  return new BigNumber(num).times(scale);
 }
 
 function etherUnsigned(num) {
-  return ethers.utils.bigNumberify(new BigNum(num).toFixed());
+  return new BigNumber(num);
+}
+
+function mergeInterface(into, from) {
+  const key = (item) => item.inputs ? `${item.name}/${item.inputs.length}` : item.name;
+  const existing = into.options.jsonInterface.reduce((acc, item) => {
+    acc[key(item)] = true;
+    return acc;
+  }, {});
+  const extended = from.options.jsonInterface.reduce((acc, item) => {
+    if (!(key(item) in existing))
+      acc.push(item)
+    return acc;
+  }, into.options.jsonInterface.slice());
+  into.options.jsonInterface = into.options.jsonInterface.concat(from.options.jsonInterface);
+  return into;
 }
 
 function getContractDefaults() {
@@ -117,8 +138,11 @@ module.exports = {
   encodeParameters,
   etherBalance,
   etherGasCost,
+  etherExp,
+  etherDouble,
   etherMantissa,
   etherUnsigned,
+  mergeInterface,
   keccak256,
   unlockedAccounts,
   unlockedAccount,
@@ -135,5 +159,6 @@ module.exports = {
   setTime,
 
   both,
-  sendFallback
+  sendFallback,
+  UInt256Max
 };
