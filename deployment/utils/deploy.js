@@ -1,8 +1,19 @@
+const hardhat = require("hardhat");
+const {
+    assertUpgradeIsSafe,
+} = require("./storageLayout");
+
 module.exports = async function deploy(name, options) {
-    const { deploy } = deployments;
+    const {
+        deploy
+    } = deployments;
     const {
         deployer,
     } = await getNamedAccounts();
+
+    if (!options.skipUpgradeSafety) {
+        await assertUpgradeIsSafe(hardhat, options.contract || name,  name)
+    }
 
     if (options.skipIfSameBytecode) {
         const deployedContract = await deployments.getOrNull(name)
@@ -11,10 +22,8 @@ module.exports = async function deploy(name, options) {
             const artifact = await deployments.getArtifact(options.contract || name)
 
             if (deployedContract.bytecode === artifact.bytecode) {
-                if (options.log) {
-                    console.log(`reusing "${name}" at ${deployedContract.address}`);
-                }
-    
+                console.log(`Reusing "${name}" at ${deployedContract.address}`);
+
                 return {
                     ...deployedContract,
                     newlyDeployed: false,

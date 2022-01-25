@@ -6,5 +6,5 @@ const isTestnet = isLocalhost || hardhat.network.name === 'rinkeby'
 
 module.exports = {
     isLocalhost,
-    isTestnet
+    isTestnet,
 }

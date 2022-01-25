@@ -1,11 +1,18 @@
+const { assertStorageLayoutChangeSafeForAll } = require('./utils/storageLayout');
+
 require('dotenv').config()
 
-// const ethers = require("ethers");
-
+require('@openzeppelin/hardhat-upgrades');
 require("@nomiclabs/hardhat-solhint");
 require("hardhat-deploy");
 require("hardhat-contract-sizer");
 require("hardhat-deploy-ethers");
+require("@nomiclabs/hardhat-ethers");
+
+task(
+  "checkUpgradabilityAll",
+  "Checks storage slot upgradability for all contracts"
+).setAction(assertStorageLayoutChangeSafeForAll);
 
 module.exports = {
     solidity: {

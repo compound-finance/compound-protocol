@@ -4,6 +4,7 @@ const deployComptrollerLens = async ({}) => {
     await deploy('CompoundLens', {
         args: [],
         skipIfSameBytecode: true,
+        skipUpgradeSafety: true,
     })
 }
 

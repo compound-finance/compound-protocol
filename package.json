@@ -15,6 +15,7 @@
     "test": "./script/test",
     "test:prepare": "NO_RUN=true ./script/test",
     "checksize": "npx run ./script/saddle/comptrollerSize.js",
+    "hardhat": "cd deployment && yarn && yarn hardhat",
     "hardhat:node": "cd deployment && yarn && yarn hardhat node",
     "hardhat:deploy": "cd deployment && yarn && yarn hardhat deploy"
   },

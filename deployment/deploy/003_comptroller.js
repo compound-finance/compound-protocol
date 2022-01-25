@@ -10,10 +10,12 @@ const deployComptroller = async ({ getNamedAccounts, deployments }) => {
     } = await getNamedAccounts();
 
     const proxyDeployment = await deploy('Unitroller', {
+        skipIfAlreadyDeployed: true,
         log: true,
     })
 
     const implementationDeployment = await deploy('Comptroller', {
+        skipIfSameBytecode: true,
         log: true,
     })
 

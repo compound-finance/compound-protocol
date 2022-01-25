@@ -1,4 +1,6 @@
-const config = require('../config')
+const hardhat = require('hardhat')
+
+const config = require('../config');
 const deploy = require('../utils/deploy');
 const { isTestnet } = require('../utils/env');
 const execute = require('../utils/execute');
@@ -40,10 +42,11 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                 multisig,
             ],
             skipIfSameBytecode: true,
+            skipUpgradeSafety: true,
             log: true,
         })
 
-        const JumpRateModel = await ethers.getContract(`${token.symbol}RateModel`, deployer)
+        const JumpRateModel = await hardhat.ethers.getContract(`${token.symbol}RateModel`, deployer)
 
         const multiplierPerBlock = (multiplierPerYear * ONE) / (blocksPerYear * kink)
         const baseRatePerBlock = baseApr / blocksPerYear
@@ -73,7 +76,7 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
         const tokenAbi = [
             "function decimals() view returns (uint8)",
         ];
-        const underlyingContract = new ethers.Contract(underlying, tokenAbi, ethers.provider);
+        const underlyingContract = new hardhat.ethers.Contract(underlying, tokenAbi, ethers.provider);
 
         const underlyingDecimals = await underlyingContract.decimals()
         const initialExchangeRateMantissa = (oneWithDecimals(underlyingDecimals) * ONE) / (BigInt(token.initialTokensPerUnderlying) * oneWithDecimals(token.decimals))
@@ -151,6 +154,7 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                     const d = await deploy(`${token.symbol}ChainlinkPriceAggregatorMock`, {
                         contract: 'ChainlinkPriceAggregatorMock',
                         args: [0, token.oracle.price],
+                        skipUpgradeSafety: true,
                     })
 
                     return d.address

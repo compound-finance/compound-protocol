@@ -12,6 +12,7 @@ const deployOracle = async ({ getNamedAccounts, deployments }) => {
             multisig,
         ],
         skipIfSameBytecode: true,
+        skipUpgradeSafety: true,
     })
 
     const currentoracle = await view({
