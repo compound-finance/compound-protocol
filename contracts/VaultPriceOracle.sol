@@ -5,10 +5,12 @@ import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
 import "../Interface/PriceOracle.sol";
+import "../Interface/BasePriceOracle.sol";
 import "../Interface/CToken.sol";
 import "../Interface/CErc20.sol";
 import "../Interface/AggregatorV3Interface.sol";
-import "../Interface/BasePriceOracle.sol";
+import "../Interface/LiquidityGauge.sol";
+import "../Interface/RibbonVault.sol";
 
 /**
  * @title VaultPriceOracle
@@ -123,18 +125,31 @@ contract VaultPriceOracle is PriceOracle, BasePriceOracle {
         require(address(feed) != address(0), "No Chainlink price feed found for this underlying ERC20 token.");
         FeedBaseCurrency baseCurrency = feedBaseCurrencies[underlying];
 
+        RibbonVault vault = RibbonVault(LiquidityGauge(underlying).LP_TOKEN());
+        uint256 rVaultDecimals = vault.decimals();
+        uint256 rVaultToAssetExchangeRate = vault.pricePerShare() // (ex: rETH-THETA -> ETH, rBTC-THETA -> BTC)
+
+        // underlying = rETH-THETA-gauge
+        // vault = rETH-THETA
+        // feed = ETH (underlying asset of vault rETH-THETA)
+        // underlying price = feed * (vault token to asset of vault exchange rate)
+
+        // rETH-THETA-gauge -> rETH-THETA -> ETH
+
         if (baseCurrency == FeedBaseCurrency.ETH) {
             (, int256 tokenEthPrice, , , ) = feed.latestRoundData();
-            return tokenEthPrice >= 0 ? uint256(tokenEthPrice) : 0;
+            return tokenEthPrice >= 0 ? uint256(tokenEthPrice).mul(rVaultToAssetExchangeRate).div(rVaultDecimals) : 0;
         } else if (baseCurrency == FeedBaseCurrency.USD) {
             (, int256 ethUsdPrice, , , ) = ETH_USD_PRICE_FEED.latestRoundData();
             if (ethUsdPrice <= 0) return 0;
             (, int256 tokenUsdPrice, , , ) = feed.latestRoundData();
+            tokenUsdPrice = tokenUsdPrice.mul(rVaultToAssetExchangeRate).div(rVaultDecimals);
             return tokenUsdPrice >= 0 ? uint256(tokenUsdPrice).mul(1e18).div(uint256(ethUsdPrice)) : 0;
         } else if (baseCurrency == FeedBaseCurrency.BTC) {
             (, int256 btcEthPrice, , , ) = BTC_ETH_PRICE_FEED.latestRoundData();
             if (btcEthPrice <= 0) return 0;
             (, int256 tokenBtcPrice, , , ) = feed.latestRoundData();
+            tokenBtcPrice = tokenBtcPrice.mul(rVaultToAssetExchangeRate).div(rVaultDecimals);
             return tokenBtcPrice >= 0 ? uint256(tokenBtcPrice).mul(uint256(btcEthPrice)).div(1e8) : 0;
         }
     }
