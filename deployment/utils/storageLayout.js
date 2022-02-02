@@ -13,6 +13,7 @@ const {
     getUnlinkedBytecode,
     isCurrentValidationData,
 } = require("@openzeppelin/upgrades-core");
+const { getAllContractNames, getDeploymentContractName } = require("./deployment");
 
 async function assertStorageLayoutChangeSafeForAll(_taskArguments, hre) {
     const allContracts = await getAllContractNames(hre);
@@ -20,10 +21,6 @@ async function assertStorageLayoutChangeSafeForAll(_taskArguments, hre) {
     for (let i = 0; i < allContracts.length; i++) {
         await assertUpgradeIsSafe(hre, await getDeploymentContractName(allContracts[i]), allContracts[i]);
     }
-}
-
-async function getAllContractNames(hre) {
-    return Object.keys(await hre.deployments.all());
 }
 
 async function assertUpgradeIsSafe(hre, contractName, deploymentName) {
@@ -85,18 +82,6 @@ async function readValidations(hre) {
 
 function getValidationsCachePath(hre) {
     return path.join(hre.config.paths.cache, "validations.json");
-}
-
-async function getDeploymentContractName(deploymentName) {
-    const deployment = await hre.deployments.get(deploymentName)
-
-    const contractNames = Object.values(JSON.parse(deployment.metadata).settings.compilationTarget)
-
-    if (contractNames.length !== 1) {
-        throw new Error('Found more than one contract for deployment')
-    }
-
-    return contractNames[0]
 }
 
 module.exports = {

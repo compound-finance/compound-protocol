@@ -11,6 +11,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.4",
+    "@nomiclabs/hardhat-etherscan": "^3.0.0",
     "@nomiclabs/hardhat-solhint": "^2.0.0",
     "@openzeppelin/hardhat-upgrades": "^1.13.0",
     "@openzeppelin/upgrades-core": "^1.11.1",

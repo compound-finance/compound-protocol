@@ -1,3 +1,4 @@
+const { verifyAllContracts } = require('./utils/verify');
 const { assertStorageLayoutChangeSafeForAll } = require('./utils/storageLayout');
 
 require('dotenv').config()
@@ -8,11 +9,17 @@ require("hardhat-deploy");
 require("hardhat-contract-sizer");
 require("hardhat-deploy-ethers");
 require("@nomiclabs/hardhat-ethers");
+require("@nomiclabs/hardhat-etherscan");
 
 task(
   "checkUpgradabilityAll",
   "Checks storage slot upgradability for all contracts"
 ).setAction(assertStorageLayoutChangeSafeForAll);
+
+task(
+  "verifyAllContracts",
+  "Verify all contracts"
+).setAction(verifyAllContracts);
 
 module.exports = {
     solidity: {
@@ -66,6 +73,9 @@ module.exports = {
     paths: {
       root: '../',
       deploy: 'deployment/deploy',
+    },
+    etherscan: {
+      apiKey: process.env.ETHERSCAN_API_KEY,
     },
   };
   
