@@ -21,7 +21,7 @@ describe('PriceOracleChainlink', function () {
                 kind: 'chainlink',
             })
             comptroller = await makeComptroller({priceOracle})
-            underlying = await makeToken({comptroller})
+            underlying = await makeToken({})
             cToken = await makeCToken({
                 kind: 'cerc20',
                 underlying,
@@ -42,6 +42,24 @@ describe('PriceOracleChainlink', function () {
             const result = await call(priceOracle, 'getUnderlyingPrice', [cToken._address]);
             expect(result).toEqualNumber(etherMantissa(4000));
         })
+
+        it('get price of token with 8 decimals', async () => {
+            underlying = await makeToken({
+                decimals: 8,
+            });
+            cToken = await makeCToken({
+                kind: 'cerc20',
+                underlying,
+                comptroller,
+            });
+            const aggregator = await makeChainlinkAggregator({
+                decimals: 8,
+                answer: '3600000000000',
+            });
+            await send(priceOracle, '_setAggregator', [underlying._address, aggregator._address]);
+            const result = await call(priceOracle, 'getUnderlyingPrice', [cToken._address]);
+            expect(result).toEqualNumber(etherMantissa(360000000000000));
+        });
 
         it('get ether price', async () => {
             const aggregator = await makeChainlinkAggregator({

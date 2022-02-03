@@ -4,6 +4,7 @@ import "./PriceOracle.sol";
 import "./CToken.sol";
 import "./CErc20.sol";
 import "./interfaces/IChainlinkAggregator.sol";
+import "./EIP20Interface.sol";
 
 contract ChainlinkPriceOracle is PriceOracle, ExponentialNoError {
     /// @notice Indicator that this is a PriceOracle contract (for inspection)
@@ -37,7 +38,10 @@ contract ChainlinkPriceOracle is PriceOracle, ExponentialNoError {
 
         address underlying = CErc20(cTokenAddress).underlying();
 
-        return getPriceFromChainlink(underlying);
+        uint price = getPriceFromChainlink(underlying);
+        uint256 underlyingDecimals = EIP20Interface(underlying).decimals();
+
+        return mul_(price, 10**(18 - underlyingDecimals));
     }
 
     /**
