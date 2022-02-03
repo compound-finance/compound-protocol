@@ -931,7 +931,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
     function _supportMarket(CToken cToken) external returns (uint) {
         // 1. Ensure the sender is the admin of the Comptroller
         // 2. Ensure the admin of the cToken is the admin of the Comptroller
-        if (/* 1. */ msg.sender != admin || /* 2. */ cToken.admin != admin) {
+        if (/* 1. */ msg.sender != admin || /* 2. */ cToken.admin() != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SUPPORT_MARKET_OWNER_CHECK);
         }
 
