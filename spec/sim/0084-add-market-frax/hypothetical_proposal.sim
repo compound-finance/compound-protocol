@@ -1,0 +1,79 @@
+#!/usr/bin/env -S yarn repl -s
+
+-- Adapted from TylerEther's USDP & FEI tests --
+
+PrintTransactionLogs
+
+-- Token holder addresses for mocking
+Alias CompHolder "0x7587caefc8096f5f40acb83a09df031a018c66ec" -- Compound Team 2
+Alias CompHolder2 "0x5608169973d639649196A84EE4085a708bcBf397" -- Compound Team 3
+Alias TokenHolder "0xC564EE9f21Ed8A2d8E7e76c085740d5e4c5FaFbE" -- AnySwap Fantom Bridge
+Alias CUSDCHolder "0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8" -- Binance 7
+
+-- New oracle address
+Alias NewOracle "0xA469ddB19F903F4de66FdAE32Eb0d5a87C3826b3"
+
+Web3Fork "https://mainnet-eth.compound.finance/@14138248" (CompHolder CompHolder2 TokenHolder CUSDCHolder)
+UseConfigs mainnet
+
+--------------------------------------------------------------------
+-- Governance proposal
+--------------------------------------------------------------------
+-- Delegate and propose
+From CompHolder (Comp Delegate CompHolder)
+From CompHolder2 (Comp Delegate CompHolder)
+From CompHolder (GovernorBravo GovernorBravo Propose "Add FRAX Market" [(Address Comptroller) (Address Comptroller) (Address cFRAX)] [0 0 0] ["_setPriceOracle(address)" "_supportMarket(address)" "_setReserveFactor(uint256)"] [[(Address NewOracle)] [(Address cFRAX)] [250000000000000000]])
+
+-- Fast forward, vote, queue, execute
+MineBlock
+AdvanceBlocks 14000
+From CompHolder (GovernorBravo GovernorBravo Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+GovernorBravo GovernorBravo Proposal LastProposal Queue
+IncreaseTime 604910
+GovernorBravo GovernorBravo Proposal LastProposal Execute
+
+--------------------------------------------------------------------
+-- Market supported test
+--------------------------------------------------------------------
+Assert True (Comptroller CheckListed cFRAX)
+
+--------------------------------------------------------------------
+-- Accrue interest test
+--------------------------------------------------------------------
+CToken cFRAX AccrueInterest
+
+--------------------------------------------------------------------
+-- Mint test
+--------------------------------------------------------------------
+From TokenHolder (Erc20 FRAX Approve (Address cFRAX) 10e18)
+Expect Changes (Erc20 FRAX TokenBalance TokenHolder) -10e18
+Expect Changes (Erc20 FRAX TokenBalance cFRAX) +10e18
+From TokenHolder (CToken cFRAX Mint 10e18)
+
+--------------------------------------------------------------------
+-- Borrow test
+--------------------------------------------------------------------
+-- Deposit collateral
+From CUSDCHolder (Erc20 USDC Approve (Address cUSDC) 10000e6) 
+From CUSDCHolder (CToken cUSDC Mint 1000e6)
+From CUSDCHolder (Comptroller EnterMarkets (cUSDC))
+-- Borrow the new token
+Expect Changes (Erc20 FRAX TokenBalance CUSDCHolder) +1e18
+Expect Changes (Erc20 FRAX TokenBalance cFRAX) -1e18
+From CUSDCHolder (CToken cFRAX Borrow 1e18)
+
+--------------------------------------------------------------------
+-- Repay borrow test
+--------------------------------------------------------------------
+From CUSDCHolder (Erc20 FRAX Approve (Address cFRAX) 1e18)
+Expect Changes (Erc20 FRAX TokenBalance CUSDCHolder) -1e18
+Expect Changes (Erc20 FRAX TokenBalance cFRAX) +1e18
+From CUSDCHolder (CToken cFRAX RepayBorrow 1e18)
+
+--------------------------------------------------------------------
+-- Redeem test  (note: 50 cToken == 1 Token initially)
+--------------------------------------------------------------------
+From TokenHolder (CToken cFRAX Redeem 50e8)
+
+Print "Integration ok"
