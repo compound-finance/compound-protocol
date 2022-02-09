@@ -7,7 +7,7 @@ const deployOracle = async ({ getNamedAccounts, deployments }) => {
         multisig,
     } = await getNamedAccounts()
 
-    const oracle = await deploy('ChainlinkPriceOracle', {
+    const oracle = await deploy('PriceOracleProxy', {
         args: [
             multisig,
         ],

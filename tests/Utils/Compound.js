@@ -287,8 +287,8 @@ async function makePriceOracle(opts = {}) {
     return await deploy('SimplePriceOracle');
   }
 
-  if (kind == 'chainlink') {
-    return await deploy('ChainlinkPriceOracle', [
+  if (kind == 'proxy') {
+    return await deploy('PriceOracleProxy', [
       root,
     ])
   }
@@ -315,7 +315,7 @@ async function makeChainlinkAggregator(opts = {}) {
   } = opts || {};
 
   if (kind == 'harness') {
-    return await deploy('ChainlinkPriceAggregatorMock', [
+    return await deploy('MockChainlinkPriceAggregator', [
       opts.decimals || 8,
       opts.answer || '100000000',
     ]);

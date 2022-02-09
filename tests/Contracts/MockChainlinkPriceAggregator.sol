@@ -1,9 +1,9 @@
 pragma solidity ^0.5.16;
 
-import "../CToken.sol";
-import "../interfaces/IChainlinkAggregator.sol";
+import "../../contracts/CToken.sol";
+import "../../contracts/interfaces/IChainlinkAggregator.sol";
 
-contract ChainlinkPriceAggregatorMock is IChainlinkAggregator {
+contract MockChainlinkPriceAggregator is IChainlinkAggregator {
     int256 private answer;
     uint8 public decimals;
 

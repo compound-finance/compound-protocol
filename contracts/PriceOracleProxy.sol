@@ -6,7 +6,7 @@ import "./CErc20.sol";
 import "./interfaces/IChainlinkAggregator.sol";
 import "./EIP20Interface.sol";
 
-contract ChainlinkPriceOracle is PriceOracle, ExponentialNoError {
+contract PriceOracleProxy is PriceOracle, ExponentialNoError {
     /// @notice Indicator that this is a PriceOracle contract (for inspection)
     bool public constant isPriceOracle = true;
 
@@ -16,11 +16,24 @@ contract ChainlinkPriceOracle is PriceOracle, ExponentialNoError {
     /// @notice chainlink price aggregator for each underlying assets
     mapping(address => IChainlinkAggregator) public aggregators;
 
-    /// @notice true if the cToken is cEther
-    mapping(address => bool) public cEthers;
+    /// @notice fixed price for each underlying assets
+    mapping(address => uint) public fixedPrices;
 
     constructor(address admin_) public {
         admin = admin_;
+    }
+
+    /**
+     * @notice Get the price of a specific token.
+     * @param token The token to get the price of
+     * @return The price
+     */
+    function getTokenPrice(address token) internal view returns (uint256) {
+        if (fixedPrices[token] != 0) {
+            return fixedPrices[token];
+        }
+
+        return getPriceFromChainlink(token);
     }
 
     /**
@@ -32,13 +45,9 @@ contract ChainlinkPriceOracle is PriceOracle, ExponentialNoError {
     function getUnderlyingPrice(CToken cToken) external view returns (uint) {
         address cTokenAddress = address(cToken);
 
-        if (cEthers[cTokenAddress]) {
-            return 1e18;
-        }
-
         address underlying = CErc20(cTokenAddress).underlying();
 
-        uint price = getPriceFromChainlink(underlying);
+        uint price = getTokenPrice(underlying);
         uint256 underlyingDecimals = EIP20Interface(underlying).decimals();
 
         return mul_(price, 10**(18 - underlyingDecimals));
@@ -68,5 +77,16 @@ contract ChainlinkPriceOracle is PriceOracle, ExponentialNoError {
         require(msg.sender == admin, "Only admin can add aggregator");
 
         aggregators[underlying] = aggregator;
+    }
+
+    /**
+     * @notice Set fixed price
+     * @param underlying The underlying token to set the price of
+     * @param price The price of the token
+     */
+    function _setFixedPrice(address underlying, uint256 price) external {
+        require(msg.sender == admin, "Only admin can set fixed price");
+
+        fixedPrices[underlying] = price;
     }
 }

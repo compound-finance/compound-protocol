@@ -26,7 +26,7 @@
             "initialTokensPerUnderlying": 50,
             "collateralFactor": 0.75,
             "oracle": {
-                "type": "mock",
+                "type": "fixed",
                 "price": "1"
             }
         },
@@ -51,7 +51,7 @@
             "initialTokensPerUnderlying": 50,
             "collateralFactor": 0.75,
             "oracle": {
-                "type": "mock",
+                "type": "fixed",
                 "price": "1"
             }
         },
@@ -76,7 +76,7 @@
             "initialTokensPerUnderlying": 50,
             "collateralFactor": 0.5,
             "oracle": {
-                "type": "mock",
+                "type": "fixed",
                 "price": "40000"
             }
         },
@@ -101,7 +101,7 @@
             "initialTokensPerUnderlying": 50,
             "collateralFactor": 0.5,
             "oracle": {
-                "type": "mock",
+                "type": "fixed",
                 "price": "10"
             }
         }

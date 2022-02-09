@@ -142,36 +142,44 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
 
         /* Setup price oracle for underlying token */
 
-        const priceAggregator = await view({
-            contractName: 'ChainlinkPriceOracle',
-            methodName: 'aggregators',
-            args: [underlying],
-        })
+        switch(token.oracle.type) {
+            case 'fixed': {
+                const targetFixedPrice = numberToMantissa(token.oracle.price)
+                const fixedPrice = await view({
+                    contractName: 'PriceOracleProxy',
+                    methodName: 'fixedPrices',
+                    args: [underlying],
+                })
 
-        const targetPriceAggregator = await (async () => {
-            switch(token.oracle.type) {
-                case 'mock': {
-                    const d = await deploy(`${token.symbol}ChainlinkPriceAggregatorMock`, {
-                        contract: 'ChainlinkPriceAggregatorMock',
-                        args: [0, token.oracle.price],
-                        skipUpgradeSafety: true,
+                if (fixedPrice !== targetFixedPrice) {
+                    await execute({
+                        contractName: 'PriceOracleProxy',
+                        methodName: '_setFixedPrice',
+                        args: [underlying, targetFixedPrice],
                     })
-
-                    return d.address
                 }
 
-                case 'chainlink': {
-                    return token.oracle.aggregator
-                }
+                break
             }
-        })()
 
-        if (priceAggregator !== targetPriceAggregator) {
-            await execute({
-                contractName: 'ChainlinkPriceOracle',
-                methodName: '_setAggregator',
-                args: [underlying, targetPriceAggregator],
-            })
+            case 'chainlink': {
+                const targetPriceAggregator = token.oracle.aggregator
+                const priceAggregator = await view({
+                    contractName: 'PriceOracleProxy',
+                    methodName: 'aggregators',
+                    args: [underlying],
+                })
+
+                if (priceAggregator !== targetPriceAggregator) {
+                    await execute({
+                        contractName: 'PriceOracleProxy',
+                        methodName: '_setAggregator',
+                        args: [underlying, targetPriceAggregator],
+                    })
+                }
+
+                break
+            }
         }
 
         /* Set interest rate model */
