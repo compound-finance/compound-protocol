@@ -84,8 +84,15 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
         let tokenDeployment = await (async () => {
             switch(token.type) {
                 case 'eth': {
-                    const cEther =  await deploy(token.symbol, {
-                        contract: 'CEther',
+                    const delegate = await deploy(`CWrappedNativeDelegate_${token.symbol}`, {
+                        contract: 'CWrappedNativeDelegate',
+                        args: [],
+                        skipIfSameBytecode: true,
+                        log: true,
+                    })
+
+                    const cToken = await deploy(token.symbol, {
+                        contract: 'CWrappedNativeDelegator',
                         args: [
                             underlying,
                             comptrollerDeployment.address,
@@ -94,13 +101,15 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                             token.name,
                             token.symbol,
                             8,
-                            multisig
+                            multisig,
+                            delegate.address,
+                            "0x",
                         ],
                         skipIfAlreadyDeployed: true,
                         log: true,
                     })
 
-                    return cEther
+                    return cToken
                 }
     
                 case 'token': {
@@ -352,6 +361,17 @@ async function getTokenAddress(token) {
     if (token.mock) {
         if (!isTestnet) {
             throw new Error('Cannot create mock token outside of testnet')
+        }
+
+        if (token.type === 'eth') {
+            const weth = await deploy(`WETH9`, {
+                contract: 'WETH9',
+                args: [],
+                log: true,
+                skipIfAlreadyDeployed: true,
+            })
+
+            return weth.address
         }
 
         const mockDeploy = await deploy(`ERC20Mock_${token.mock.symbol}`, {

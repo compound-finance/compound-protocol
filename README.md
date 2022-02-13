@@ -8,8 +8,8 @@ Changes
 
 - Added a fee taker on CToken for future profit sharing schema
 - PriceOracleProxy is a fork of [Cream Oracle](https://github.com/CreamFi/compound-protocol/blob/90da68ceaff949d1c8dd155e8729fc7cb4fb9ddb/contracts/PriceOracle/PriceOracleProxy.sol)
-- Added `underlying` (WETH) to CEther to make few components blockchain agnositic (oracle, lens)
 - Changed `block.number` to `block.timestamp` for COMP distribution and Interest rates so it's can run on blockchains with different or variable blocktimes
+- Added CWrappedNative a CToken that can handle both ETH and wETH
 
 Contracts
 =========

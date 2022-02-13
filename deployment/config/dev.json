@@ -3,18 +3,13 @@
         "symbol": "CTRS",
         "name": "Citrus"
     },
-    "weth": "0x0000000000000000000000000000000000000000",
     "tokens": [
         {
             "name": "Citrus xDai",
             "symbol": "ciXDAI",
             "decimals": 8,
             "type": "eth",
-            "mock": {
-                "name": "Mock wxDai",
-                "symbol": "WXDAI",
-                "decimals": 18
-            },
+            "mock": true,
             "compPerSecond": "0.006",
             "interestRate": {
                 "baseApr": 0,

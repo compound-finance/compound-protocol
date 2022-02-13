@@ -145,7 +145,4 @@ contract ComptrollerV5Storage is ComptrollerV4Storage {
 
     /// @notice Comp address for distribution
     address public compAddress = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
-
-    /// @notice Address of WETH
-    address public weth;
 }

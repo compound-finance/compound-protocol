@@ -15,7 +15,6 @@ interface ComptrollerLensInterface {
     function getAssetsIn(address) external view returns (CToken[] memory);
     function claimComp(address) external;
     function compAccrued(address) external view returns (uint);
-    function weth() external view returns (address);
 }
 
 interface GovernorBravoInterface {
@@ -111,16 +110,8 @@ contract CompoundLens {
         uint balanceOf = cToken.balanceOf(account);
         uint borrowBalanceCurrent = cToken.borrowBalanceCurrent(account);
         uint balanceOfUnderlying = cToken.balanceOfUnderlying(account);
-        uint tokenBalance;
-        uint tokenAllowance;
-
-        if (comptroller.weth() == address(underlying)) {
-            tokenBalance = account.balance;
-            tokenAllowance = account.balance;
-        } else {
-            tokenBalance = underlying.balanceOf(account);
-            tokenAllowance = underlying.allowance(account, address(cToken));
-        }
+        uint tokenBalance = underlying.balanceOf(account);
+        uint tokenAllowance = underlying.allowance(account, address(cToken));
 
         return CTokenBalances({
             cToken: address(cToken),

@@ -28,7 +28,7 @@ describe('PriceOracleProxy', function () {
             comptroller,
         });
         cEther = await makeCToken({
-            kind: 'cether',
+            kind: 'cwrappednative',
             comptroller,
         });
         BTC = await makeToken({
@@ -60,16 +60,6 @@ describe('PriceOracleProxy', function () {
         const result = await call(priceOracle, 'getUnderlyingPrice', [cBTC._address]);
         expect(result).toEqualNumber(etherMantissa(360000000000000));
     });
-
-    it('get ether price from chainlink', async () => {
-        const aggregator = await makeChainlinkAggregator({
-            decimals: 8,
-            answer: '100000000',
-        });
-        await send(priceOracle, '_setAggregator', [comptroller.weth._address, aggregator._address]);
-        const result = await call(priceOracle, 'getUnderlyingPrice', [cEther._address]);
-        expect(result).toEqualNumber(etherMantissa(1));
-    })
 
     it('get fixed token price', async () => {
         await send(priceOracle, '_setFixedPrice', [underlying._address, '4000000000000000000000']);

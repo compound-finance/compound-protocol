@@ -116,12 +116,9 @@ async function makeComptroller(opts = {}) {
     await send(unitroller, 'harnessSetCompRate', [compRate]);
 
     const weth = await makeToken({
-      name: 'Wrapped Ether',
-      symbol: 'WETH',
-      decimals: 18,
+      kind: 'weth',
       quantity: 0,
     })
-    await send(unitroller, '_setWEthAddress', [weth._address]);
 
     return Object.assign(unitroller, { priceOracle, comp, weth });
   }
@@ -146,11 +143,8 @@ async function makeCToken(opts = {}) {
 
   switch (kind) {
     case 'cether':
-      const weth = comptroller.weth || await makeToken();
-
       cToken = await deploy('CEtherHarness',
         [
-          weth._address,
           comptroller._address,
           interestRateModel._address,
           exchangeRate,
@@ -159,6 +153,29 @@ async function makeCToken(opts = {}) {
           decimals,
           admin
         ])
+      break;
+
+    case 'cwrappednative':
+      underlying = comptroller.weth || await makeToken({
+        kind: 'weth',
+        quantity: 0,
+      });
+      cDelegatee = await deploy('CWrappedNativeDelegateHarness');
+      cDelegator = await deploy('CWrappedNativeDelegator',
+        [
+          underlying._address,
+          comptroller._address,
+          interestRateModel._address,
+          exchangeRate,
+          name,
+          symbol,
+          decimals,
+          admin,
+          cDelegatee._address,
+          "0x0"
+        ]
+      );
+      cToken = await saddle.getContractAt('CWrappedNativeDelegateHarness', cDelegator._address);
       break;
 
     case 'cdai':
@@ -306,6 +323,13 @@ async function makeToken(opts = {}) {
     const symbol = opts.symbol || 'OMG';
     const name = opts.name || `Erc20 ${symbol}`;
     return await deploy('ERC20Harness', [quantity, name, decimals, symbol]);
+  }
+
+  if (kind == 'weth') {
+    const quantity = etherUnsigned(dfn(opts.quantity, 0));
+    const token = await deploy('WETHHarness', [quantity]);
+
+    return token;
   }
 }
 

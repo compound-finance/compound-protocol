@@ -9,13 +9,7 @@ import "./CToken.sol";
  */
 contract CEther is CToken {
     /**
-     * @notice Underlying asset for this CToken, it should be set as WETH
-     */
-    address public underlying;
-
-    /**
      * @notice Construct a new CEther money market
-     * @param underlying_ The address of the underlying asset
      * @param comptroller_ The address of the Comptroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
@@ -24,8 +18,7 @@ contract CEther is CToken {
      * @param decimals_ ERC-20 decimal precision of this token
      * @param admin_ Address of the administrator of this token
      */
-    constructor(address underlying_,
-                ComptrollerInterface comptroller_,
+    constructor(ComptrollerInterface comptroller_,
                 InterestRateModel interestRateModel_,
                 uint initialExchangeRateMantissa_,
                 string memory name_,
@@ -36,10 +29,6 @@ contract CEther is CToken {
         admin = msg.sender;
 
         initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
-
-        // Set underlying and sanity check it
-        underlying = underlying_;
-        EIP20Interface(underlying).totalSupply();
 
         // Set the proper admin now that initialization is done
         admin = admin_;

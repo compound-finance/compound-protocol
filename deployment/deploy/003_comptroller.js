@@ -145,21 +145,6 @@ const deployComptroller = async ({ getNamedAccounts, deployments }) => {
         })
     }
 
-    const ethAddress = await view({
-        contractName: 'Comptroller',
-        deploymentName: 'Unitroller',
-        methodName: 'weth',
-    })
-
-    if (ethAddress !== config.weth) {
-        await execute({
-            contractName: 'Comptroller',
-            deploymentName: 'Unitroller',
-            methodName: '_setWEthAddress',
-            args: [config.weth]
-        })
-    }
-
     // Set admin
 
     const admin = await view({

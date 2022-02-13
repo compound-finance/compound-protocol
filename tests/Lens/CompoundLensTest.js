@@ -55,8 +55,7 @@ describe('CompoundLens', () => {
     });
 
     it('is correct for cEth', async () => {
-      const comptroller = await makeComptroller()
-      let cEth = await makeCToken({kind: 'cether', comptroller});
+      let cEth = await makeCToken({kind: 'cwrappednative'});
 
       expect(
         cullTuple(await call(compoundLens, 'cTokenMetadata', [cEth._address]))
@@ -73,7 +72,7 @@ describe('CompoundLens', () => {
         totalCash: "0",
         totalReserves: "0",
         totalSupply: "0",
-        underlyingAssetAddress: comptroller.weth._address,
+        underlyingAssetAddress: await call(cEth, 'underlying', []),
         underlyingDecimals: "18",
       });
     });
@@ -81,9 +80,8 @@ describe('CompoundLens', () => {
 
   describe('cTokenMetadataAll', () => {
     it('is correct for a cErc20 and cEther', async () => {
-      const comptroller = await makeComptroller()
-      let cErc20 = await makeCToken({comptroller});
-      let cEth = await makeCToken({kind: 'cether', comptroller});
+      let cErc20 = await makeCToken();
+      let cEth = await makeCToken({kind: 'cwrappednative'});
       expect(
         (await call(compoundLens, 'cTokenMetadataAll', [[cErc20._address, cEth._address]])).map(cullTuple)
       ).toEqual([
@@ -116,7 +114,7 @@ describe('CompoundLens', () => {
           totalCash: "0",
           totalReserves: "0",
           totalSupply: "0",
-          underlyingAssetAddress: comptroller.weth._address,
+          underlyingAssetAddress: await call(cEth, 'underlying', []),
           underlyingDecimals: "18",
         }
       ]);
@@ -141,8 +139,7 @@ describe('CompoundLens', () => {
     });
 
     it('is correct for cETH', async () => {
-      let cEth = await makeCToken({kind: 'cether'});
-      let ethBalance = await web3.eth.getBalance(acct);
+      let cEth = await makeCToken({kind: 'cwrappednative'});
       expect(
         cullTuple(await call(compoundLens, 'cTokenBalances', [cEth._address, acct], {gasPrice: '0'}))
       ).toEqual(
@@ -151,8 +148,8 @@ describe('CompoundLens', () => {
           balanceOfUnderlying: "0",
           borrowBalanceCurrent: "0",
           cToken: cEth._address,
-          tokenAllowance: ethBalance,
-          tokenBalance: ethBalance,
+          tokenAllowance: "0",
+          tokenBalance: "0",
         }
       );
     });
@@ -161,8 +158,7 @@ describe('CompoundLens', () => {
   describe('cTokenBalancesAll', () => {
     it('is correct for cEth and cErc20', async () => {
       let cErc20 = await makeCToken();
-      let cEth = await makeCToken({kind: 'cether'});
-      let ethBalance = await web3.eth.getBalance(acct);
+      let cEth = await makeCToken({kind: 'cwrappednative'});
       
       expect(
         (await call(compoundLens, 'cTokenBalancesAll', [[cErc20._address, cEth._address], acct], {gasPrice: '0'})).map(cullTuple)
@@ -180,8 +176,8 @@ describe('CompoundLens', () => {
           balanceOfUnderlying: "0",
           borrowBalanceCurrent: "0",
           cToken: cEth._address,
-          tokenAllowance: ethBalance,
-          tokenBalance: ethBalance,
+          tokenAllowance: "0",
+          tokenBalance: "0",
         }
       ]);
     })
@@ -201,13 +197,13 @@ describe('CompoundLens', () => {
     });
 
     it('gets correct price for cEth', async () => {
-      let cEth = await makeCToken({kind: 'cether'});
+      let cEth = await makeCToken({kind: 'cwrappednative'});
       expect(
         cullTuple(await call(compoundLens, 'cTokenUnderlyingPrice', [cEth._address]))
       ).toEqual(
         {
           cToken: cEth._address,
-          underlyingPrice: "1000000000000000000",
+          underlyingPrice: "0",
         }
       );
     });
@@ -216,7 +212,7 @@ describe('CompoundLens', () => {
   describe('cTokenUnderlyingPriceAll', () => {
     it('gets correct price for both', async () => {
       let cErc20 = await makeCToken();
-      let cEth = await makeCToken({kind: 'cether'});
+      let cEth = await makeCToken({kind: 'cwrappednative'});
       expect(
         (await call(compoundLens, 'cTokenUnderlyingPriceAll', [[cErc20._address, cEth._address]])).map(cullTuple)
       ).toEqual([
@@ -226,7 +222,7 @@ describe('CompoundLens', () => {
         },
         {
           cToken: cEth._address,
-          underlyingPrice: "1000000000000000000",
+          underlyingPrice: "0",
         }
       ]);
     });
