@@ -54,6 +54,16 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
     }
 
     /**
+     * @notice Get the current implementation of the delegator
+     * @return The address of the current implementation for delegation
+     */
+    function implementation() internal view returns (address impl) {
+        assembly {
+            impl := sload(0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)
+        }
+    }
+
+    /**
      * @notice Called by the admin to update the implementation of the delegator
      * @param implementation_ The address of the new implementation for delegation
      * @param allowResign Flag to indicate whether to call _resignImplementation on the old implementation
@@ -66,12 +76,14 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
             delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
         }
 
-        address oldImplementation = implementation;
-        implementation = implementation_;
+        address oldImplementation = implementation();
+        assembly {
+            sstore(0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc, implementation_)
+        }
 
         delegateToImplementation(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
 
-        emit NewImplementation(oldImplementation, implementation);
+        emit NewImplementation(oldImplementation, implementation());
     }
 
     /**
@@ -498,7 +510,7 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
      * @return The returned bytes from the delegatecall
      */
     function delegateToImplementation(bytes memory data) public returns (bytes memory) {
-        return delegateTo(implementation, data);
+        return delegateTo(implementation(), data);
     }
 
     /**
@@ -529,7 +541,7 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
         }
 
         // delegate all other functions to current implementation
-        (bool success, ) = implementation.delegatecall(msg.data);
+        (bool success, ) = implementation().delegatecall(msg.data);
 
         assembly {
             let free_mem_ptr := mload(0x40)
