@@ -5,8 +5,17 @@ import "./CToken.sol";
 import "./CErc20.sol";
 import "./interfaces/IChainlinkAggregator.sol";
 import "./EIP20Interface.sol";
+import "./ExponentialNoError.sol";
 
 contract PriceOracleProxy is PriceOracle, ExponentialNoError {
+    struct ExchangeRateInfo {
+        bool isSet;
+        /// @notice The base token
+        address base;
+        /// @notice The exchange rate
+        uint256 exchangeRate;
+    }
+
     /// @notice Indicator that this is a PriceOracle contract (for inspection)
     bool public constant isPriceOracle = true;
 
@@ -16,8 +25,8 @@ contract PriceOracleProxy is PriceOracle, ExponentialNoError {
     /// @notice chainlink price aggregator for each underlying assets
     mapping(address => IChainlinkAggregator) public aggregators;
 
-    /// @notice fixed price for each underlying assets
-    mapping(address => uint) public fixedPrices;
+    /// @notice exchange rate for each underlying assets
+    mapping(address => ExchangeRateInfo) public exchangeRates;
 
     constructor(address admin_) public {
         admin = admin_;
@@ -29,8 +38,8 @@ contract PriceOracleProxy is PriceOracle, ExponentialNoError {
      * @return The price
      */
     function getTokenPrice(address token) internal view returns (uint256) {
-        if (fixedPrices[token] != 0) {
-            return fixedPrices[token];
+        if (exchangeRates[token].isSet) {
+            return getPriceUsingExchangeRate(token);
         }
 
         return getPriceFromChainlink(token);
@@ -42,12 +51,12 @@ contract PriceOracleProxy is PriceOracle, ExponentialNoError {
       * @return The underlying asset price mantissa (scaled by 1e18).
       *  Zero means the price is unavailable.
       */
-    function getUnderlyingPrice(CToken cToken) external view returns (uint) {
+    function getUnderlyingPrice(CToken cToken) external view returns (uint256) {
         address cTokenAddress = address(cToken);
 
         address underlying = CErc20(cTokenAddress).underlying();
 
-        uint price = getTokenPrice(underlying);
+        uint256 price = getTokenPrice(underlying);
         uint256 underlyingDecimals = EIP20Interface(underlying).decimals();
 
         return mul_(price, 10**(18 - underlyingDecimals));
@@ -68,6 +77,20 @@ contract PriceOracleProxy is PriceOracle, ExponentialNoError {
         return mul_(uint256(price), 10**(18 - uint256(aggregator.decimals())));
     }
 
+    function getPriceUsingExchangeRate(address underlying) internal view returns (uint256) {
+        ExchangeRateInfo memory exchangeRate = exchangeRates[underlying];
+
+        uint256 basePrice;
+
+        if (exchangeRate.base == address(0)) {
+            basePrice = 1e18;
+        } else {
+            basePrice = getTokenPrice(exchangeRate.base);
+        }
+
+        return mul_(basePrice, exchangeRate.exchangeRate) / 1e18;
+    }
+
     /**
      * @notice Set Chainlink aggregator
      * @param underlying The underlying token that ChainLink aggregator gets the price of
@@ -82,11 +105,12 @@ contract PriceOracleProxy is PriceOracle, ExponentialNoError {
     /**
      * @notice Set fixed price
      * @param underlying The underlying token to set the price of
-     * @param price The price of the token
+     * @param base The underlying token to set the price of
+     * @param exchangeRate The price of the token
      */
-    function _setFixedPrice(address underlying, uint256 price) external {
-        require(msg.sender == admin, "Only admin can set fixed price");
+    function _setExchangeRate(address underlying, address base, uint256 exchangeRate) external {
+        require(msg.sender == admin, "Only admin can set exchange rate");
 
-        fixedPrices[underlying] = price;
+        exchangeRates[underlying] = ExchangeRateInfo({isSet: true, base: base, exchangeRate: exchangeRate});
     }
 }

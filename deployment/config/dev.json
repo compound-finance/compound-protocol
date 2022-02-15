@@ -21,8 +21,9 @@
             "initialTokensPerUnderlying": 50,
             "collateralFactor": 0.75,
             "oracle": {
-                "type": "fixed",
-                "price": "1"
+                "type": "exchangeRate",
+                "exchangeRate": "1",
+                "base": "usd"
             }
         },
         {
@@ -46,8 +47,9 @@
             "initialTokensPerUnderlying": 50,
             "collateralFactor": 0.75,
             "oracle": {
-                "type": "fixed",
-                "price": "1"
+                "type": "exchangeRate",
+                "exchangeRate": "1",
+                "base": "usd"
             }
         },
         {
@@ -71,8 +73,9 @@
             "initialTokensPerUnderlying": 50,
             "collateralFactor": 0.5,
             "oracle": {
-                "type": "fixed",
-                "price": "40000"
+                "type": "exchangeRate",
+                "exchangeRate": "40000",
+                "base": "usd"
             }
         },
         {
@@ -96,8 +99,9 @@
             "initialTokensPerUnderlying": 50,
             "collateralFactor": 0.5,
             "oracle": {
-                "type": "fixed",
-                "price": "10"
+                "type": "exchangeRate",
+                "exchangeRate": "10",
+                "base": "usd"
             }
         }
     ]

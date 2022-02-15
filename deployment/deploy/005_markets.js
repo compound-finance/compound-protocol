@@ -152,19 +152,27 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
         /* Setup price oracle for underlying token */
 
         switch(token.oracle.type) {
-            case 'fixed': {
-                const targetFixedPrice = numberToMantissa(token.oracle.price)
-                const fixedPrice = await view({
+            case 'exchangeRate': {
+                const targetExchangeRate = numberToMantissa(token.oracle.exchangeRate)
+                const exchangeRate = await view({
                     contractName: 'PriceOracleProxy',
-                    methodName: 'fixedPrices',
+                    methodName: 'exchangeRates',
                     args: [underlying],
                 })
 
-                if (fixedPrice !== targetFixedPrice) {
+                const base = (() => {
+                    if (token.oracle.base === 'usd') {
+                        return '0x0000000000000000000000000000000000000000'
+                    }
+
+                    return token.oracle.base
+                })()
+
+                if (!exchangeRate.exchangeRate.eq(targetExchangeRate)) {
                     await execute({
                         contractName: 'PriceOracleProxy',
-                        methodName: '_setFixedPrice',
-                        args: [underlying, targetFixedPrice],
+                        methodName: '_setExchangeRate',
+                        args: [underlying, base,  targetExchangeRate],
                     })
                 }
 
@@ -188,6 +196,10 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                 }
 
                 break
+            }
+
+            default: {
+                throw new Error('Incorrect oracle type')
             }
         }
 
