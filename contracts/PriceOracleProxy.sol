@@ -37,7 +37,7 @@ contract PriceOracleProxy is PriceOracle, ExponentialNoError {
      * @param token The token to get the price of
      * @return The price
      */
-    function getTokenPrice(address token) internal view returns (uint256) {
+    function getTokenPrice(address token) public view returns (uint256) {
         if (exchangeRates[token].isSet) {
             return getPriceUsingExchangeRate(token);
         }
@@ -51,7 +51,7 @@ contract PriceOracleProxy is PriceOracle, ExponentialNoError {
       * @return The underlying asset price mantissa (scaled by 1e18).
       *  Zero means the price is unavailable.
       */
-    function getUnderlyingPrice(CToken cToken) external view returns (uint256) {
+    function getUnderlyingPrice(CToken cToken) public view returns (uint256) {
         address cTokenAddress = address(cToken);
 
         address underlying = CErc20(cTokenAddress).underlying();
