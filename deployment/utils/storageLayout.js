@@ -24,7 +24,7 @@ async function assertStorageLayoutChangeSafeForAll(_taskArguments, hre) {
 }
 
 async function assertUpgradeIsSafe(hre, contractName, deploymentName) {
-    console.log(`Checking if contract ${contractName} is safe for upgrade`);
+    console.log(`Checking if contract ${deploymentName} is safe for upgrade`);
 
     const layout = await getStorageLayoutForContract(hre, contractName);
     const oldLayout = await loadPreviousStorageLayoutForContract(hre, deploymentName);

@@ -18,330 +18,334 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
     // NOTE: number of seconds per year, but named blocksPerYear everywhere else in the codebase
     const blocksPerYear = 31536000n
 
-    const marketAddresses = []
+    for (let marketPool of config.marketPools) {
+        const marketAddresses = []
 
-    /* Create markets */
-    for (const token of config.tokens) {
-        /* Create interest rates */
+        const unitrollerDeploymentName = `${marketPool.name} Unitroller`
 
-        const baseApr = numberToMantissa(token.interestRate.baseApr)
-        const kink = numberToMantissa(token.interestRate.targetUtil)
-        const targetApr = numberToMantissa(token.interestRate.targetApr)
-        const maxApr = numberToMantissa(token.interestRate.maxApr)
+        /* Create markets */
+        for (const market of marketPool.markets) {
+            /* Create interest rates */
 
-        const multiplierPerYear = ((targetApr - baseApr) * ONE) / kink
-        const jumpMultiplierPerYear = ((maxApr - targetApr) * ONE) / ((ONE - kink))
+            const baseApr = numberToMantissa(market.interestRate.baseApr)
+            const kink = numberToMantissa(market.interestRate.targetUtil)
+            const targetApr = numberToMantissa(market.interestRate.targetApr)
+            const maxApr = numberToMantissa(market.interestRate.maxApr)
 
-        const interestRateModel = await deploy(`${token.symbol}RateModel`, {
-            contract: 'JumpRateModelV2',
-            args: [
-                baseApr.toString(),
-                multiplierPerYear.toString(),
-                jumpMultiplierPerYear.toString(),
-                kink.toString(),
-                multisig,
-            ],
-            skipIfSameBytecode: true,
-            skipUpgradeSafety: true,
-            log: true,
-        })
+            const multiplierPerYear = ((targetApr - baseApr) * ONE) / kink
+            const jumpMultiplierPerYear = ((maxApr - targetApr) * ONE) / ((ONE - kink))
 
-        const JumpRateModel = await hardhat.ethers.getContract(`${token.symbol}RateModel`, deployer)
+            const interestRateModel = await deploy(`${market.symbol}RateModel`, {
+                contract: 'JumpRateModelV2',
+                args: [
+                    baseApr.toString(),
+                    multiplierPerYear.toString(),
+                    jumpMultiplierPerYear.toString(),
+                    kink.toString(),
+                    multisig,
+                ],
+                skipIfSameBytecode: true,
+                skipUpgradeSafety: true,
+                log: true,
+            })
 
-        const multiplierPerBlock = (multiplierPerYear * ONE) / (blocksPerYear * kink)
-        const baseRatePerBlock = baseApr / blocksPerYear
-        const jumpMultiplierPerBlock = jumpMultiplierPerYear / blocksPerYear
+            const JumpRateModel = await hardhat.ethers.getContract(`${market.symbol}RateModel`, deployer)
 
-        if (
-            (await JumpRateModel.multiplierPerBlock()).toBigInt() !== multiplierPerBlock ||
-            (await JumpRateModel.multiplierPerBlock()).toBigInt() !== multiplierPerBlock ||
-            (await JumpRateModel.baseRatePerBlock()).toBigInt() !== baseRatePerBlock ||
-            (await JumpRateModel.jumpMultiplierPerBlock()).toBigInt() !== jumpMultiplierPerBlock ||
-            (await JumpRateModel.kink()).toBigInt() !== kink
-        ) {
-            await JumpRateModel.updateJumpRateModel(
-                baseApr.toString(),
-                multiplierPerYear.toString(),
-                jumpMultiplierPerYear.toString(),
-                kink.toString(),
-            )
-        }
+            const multiplierPerBlock = (multiplierPerYear * ONE) / (blocksPerYear * kink)
+            const baseRatePerBlock = baseApr / blocksPerYear
+            const jumpMultiplierPerBlock = jumpMultiplierPerYear / blocksPerYear
 
-        /* Create cToken */
-
-        const comptrollerDeployment = await deployments.get('Unitroller')
-
-        const underlying = await getTokenAddress(token)
-
-        const tokenAbi = [
-            "function decimals() view returns (uint8)",
-        ];
-        const underlyingContract = new hardhat.ethers.Contract(underlying, tokenAbi, ethers.provider);
-
-        const underlyingDecimals = await underlyingContract.decimals()
-        const initialExchangeRateMantissa = (oneWithDecimals(underlyingDecimals) * ONE) / (BigInt(token.initialTokensPerUnderlying) * oneWithDecimals(token.decimals))
-
-        let tokenDeployment = await (async () => {
-            switch(token.type) {
-                case 'eth': {
-                    const delegate = await deploy(`CWrappedNativeDelegate_${token.symbol}`, {
-                        contract: 'CWrappedNativeDelegate',
-                        args: [],
-                        skipIfSameBytecode: true,
-                        log: true,
-                    })
-
-                    const cToken = await deploy(token.symbol, {
-                        contract: 'CWrappedNativeDelegator',
-                        args: [
-                            underlying,
-                            comptrollerDeployment.address,
-                            JumpRateModel.address,
-                            initialExchangeRateMantissa.toString(),
-                            token.name,
-                            token.symbol,
-                            8,
-                            multisig,
-                            delegate.address,
-                            "0x",
-                        ],
-                        skipIfAlreadyDeployed: true,
-                        log: true,
-                    })
-
-                    return cToken
-                }
-    
-                case 'token': {
-                    const delegate = await deploy(`CErc20Delegate_${token.symbol}`, {
-                        contract: 'CErc20Delegate',
-                        args: [],
-                        skipIfSameBytecode: true,
-                        log: true,
-                    })
-
-                    const cToken = await deploy(token.symbol, {
-                        contract: 'CErc20Delegator',
-                        args: [
-                            underlying,
-                            comptrollerDeployment.address,
-                            JumpRateModel.address,
-                            initialExchangeRateMantissa.toString(),
-                            token.name,
-                            token.symbol,
-                            8,
-                            multisig,
-                            delegate.address,
-                            "0x",
-                        ],
-                        skipIfAlreadyDeployed: true,
-                        log: true,
-                    })
-
-                    return cToken
-                }
-    
-                default: {
-                    throw new Error(`token type: ${token.type} not handled`)
-                }
+            if (
+                (await JumpRateModel.multiplierPerBlock()).toBigInt() !== multiplierPerBlock ||
+                (await JumpRateModel.multiplierPerBlock()).toBigInt() !== multiplierPerBlock ||
+                (await JumpRateModel.baseRatePerBlock()).toBigInt() !== baseRatePerBlock ||
+                (await JumpRateModel.jumpMultiplierPerBlock()).toBigInt() !== jumpMultiplierPerBlock ||
+                (await JumpRateModel.kink()).toBigInt() !== kink
+            ) {
+                await JumpRateModel.updateJumpRateModel(
+                    baseApr.toString(),
+                    multiplierPerYear.toString(),
+                    jumpMultiplierPerYear.toString(),
+                    kink.toString(),
+                )
             }
-        })()
 
-        marketAddresses.push(tokenDeployment.address)
+            /* Create cToken */
 
-        /* Setup price oracle for underlying token */
+            const comptrollerDeployment = await deployments.get(unitrollerDeploymentName)
 
-        switch(token.oracle.type) {
-            case 'exchangeRate': {
-                const targetExchangeRate = numberToMantissa(token.oracle.exchangeRate)
-                const exchangeRate = await view({
-                    contractName: 'PriceOracleProxy',
-                    methodName: 'exchangeRates',
-                    args: [underlying],
-                })
+            const underlying = await getTokenAddress(market)
 
-                const base = (() => {
-                    if (token.oracle.base === 'usd') {
-                        return '0x0000000000000000000000000000000000000000'
+            const tokenAbi = [
+                "function decimals() view returns (uint8)",
+            ];
+            const underlyingContract = new hardhat.ethers.Contract(underlying, tokenAbi, ethers.provider);
+
+            const underlyingDecimals = await underlyingContract.decimals()
+            const initialExchangeRateMantissa = (oneWithDecimals(underlyingDecimals) * ONE) / (BigInt(market.initialTokensPerUnderlying) * oneWithDecimals(market.decimals))
+
+            let tokenDeployment = await (async () => {
+                switch(market.type) {
+                    case 'eth': {
+                        const delegate = await deploy(`CWrappedNativeDelegate_${market.symbol}`, {
+                            contract: 'CWrappedNativeDelegate',
+                            args: [],
+                            skipIfSameBytecode: true,
+                            log: true,
+                        })
+
+                        const cToken = await deploy(market.symbol, {
+                            contract: 'CWrappedNativeDelegator',
+                            args: [
+                                underlying,
+                                comptrollerDeployment.address,
+                                JumpRateModel.address,
+                                initialExchangeRateMantissa.toString(),
+                                market.name,
+                                market.symbol,
+                                8,
+                                multisig,
+                                delegate.address,
+                                "0x",
+                            ],
+                            skipIfAlreadyDeployed: true,
+                            log: true,
+                        })
+
+                        return cToken
                     }
 
-                    return token.oracle.base
-                })()
+                    case 'token': {
+                        const delegate = await deploy(`CErc20Delegate_${market.symbol}`, {
+                            contract: 'CErc20Delegate',
+                            args: [],
+                            skipIfSameBytecode: true,
+                            log: true,
+                        })
 
-                if (!exchangeRate.exchangeRate.eq(targetExchangeRate)) {
-                    await execute({
+                        const cToken = await deploy(market.symbol, {
+                            contract: 'CErc20Delegator',
+                            args: [
+                                underlying,
+                                comptrollerDeployment.address,
+                                JumpRateModel.address,
+                                initialExchangeRateMantissa.toString(),
+                                market.name,
+                                market.symbol,
+                                8,
+                                multisig,
+                                delegate.address,
+                                "0x",
+                            ],
+                            skipIfAlreadyDeployed: true,
+                            log: true,
+                        })
+
+                        return cToken
+                    }
+
+                    default: {
+                        throw new Error(`token type: ${market.type} not handled`)
+                    }
+                }
+            })()
+
+            marketAddresses.push(tokenDeployment.address)
+
+            /* Setup price oracle for underlying token */
+
+            switch(market.oracle.type) {
+                case 'exchangeRate': {
+                    const targetExchangeRate = numberToMantissa(market.oracle.exchangeRate)
+                    const exchangeRate = await view({
                         contractName: 'PriceOracleProxy',
-                        methodName: '_setExchangeRate',
-                        args: [underlying, base,  targetExchangeRate],
+                        methodName: 'exchangeRates',
+                        args: [underlying],
                     })
+
+                    const base = (() => {
+                        if (market.oracle.base === 'usd') {
+                            return '0x0000000000000000000000000000000000000000'
+                        }
+
+                        return market.oracle.base
+                    })()
+
+                    if (!exchangeRate.exchangeRate.eq(targetExchangeRate)) {
+                        await execute({
+                            contractName: 'PriceOracleProxy',
+                            methodName: '_setExchangeRate',
+                            args: [underlying, base,  targetExchangeRate],
+                        })
+                    }
+
+                    break
                 }
 
-                break
-            }
-
-            case 'chainlink': {
-                const targetPriceAggregator = token.oracle.aggregator
-                const priceAggregator = await view({
-                    contractName: 'PriceOracleProxy',
-                    methodName: 'aggregators',
-                    args: [underlying],
-                })
-
-                if (priceAggregator !== targetPriceAggregator) {
-                    await execute({
+                case 'chainlink': {
+                    const targetPriceAggregator = market.oracle.aggregator
+                    const priceAggregator = await view({
                         contractName: 'PriceOracleProxy',
-                        methodName: '_setAggregator',
-                        args: [underlying, targetPriceAggregator],
+                        methodName: 'aggregators',
+                        args: [underlying],
                     })
+
+                    if (priceAggregator !== targetPriceAggregator) {
+                        await execute({
+                            contractName: 'PriceOracleProxy',
+                            methodName: '_setAggregator',
+                            args: [underlying, targetPriceAggregator],
+                        })
+                    }
+
+                    break
                 }
 
-                break
+                default: {
+                    throw new Error('Incorrect oracle type')
+                }
             }
 
-            default: {
-                throw new Error('Incorrect oracle type')
-            }
-        }
+            /* Set interest rate model */
 
-        /* Set interest rate model */
-
-        const interestRateModelAddress = await view({
-            contractName: 'CErc20',
-            deploymentName: token.symbol,
-            methodName: 'interestRateModel',
-        })
-
-        if (interestRateModel.address !== interestRateModelAddress) {
-            await execute({
+            const interestRateModelAddress = await view({
                 contractName: 'CErc20',
-                deploymentName: token.symbol,
-                methodName: '_setInterestRateModel',
-                args: [interestRateModelAddress]
+                deploymentName: market.symbol,
+                methodName: 'interestRateModel',
             })
-        }
 
-        const market = await view({
-            contractName: 'Comptroller',
-            deploymentName: 'Unitroller',
-            methodName: 'markets',
-            args: [tokenDeployment.address],
-        })
+            if (interestRateModel.address !== interestRateModelAddress) {
+                await execute({
+                    contractName: 'CErc20',
+                    deploymentName: market.symbol,
+                    methodName: '_setInterestRateModel',
+                    args: [interestRateModelAddress]
+                })
+            }
 
-        if (!market.isListed) {
-            await execute({
+            const m = await view({
                 contractName: 'Comptroller',
-                deploymentName: 'Unitroller',
-                methodName: '_supportMarket',
+                deploymentName: unitrollerDeploymentName,
+                methodName: 'markets',
                 args: [tokenDeployment.address],
             })
-        }
 
-        const collateralFactor = token.deprecated ? ZERO : numberToMantissa(token.collateralFactor)
+            if (!m.isListed) {
+                await execute({
+                    contractName: 'Comptroller',
+                    deploymentName: unitrollerDeploymentName,
+                    methodName: '_supportMarket',
+                    args: [tokenDeployment.address],
+                })
+            }
 
-        if (collateralFactor !== market.collateralFactorMantissa.toBigInt()) {
-            await execute({
+            const collateralFactor = market.deprecated ? ZERO : numberToMantissa(market.collateralFactor)
+
+            if (collateralFactor !== m.collateralFactorMantissa.toBigInt()) {
+                await execute({
+                    contractName: 'Comptroller',
+                    deploymentName: unitrollerDeploymentName,
+                    methodName: '_setCollateralFactor',
+                    args: [tokenDeployment.address, collateralFactor],
+                })
+            }
+
+            const targetCompSpeed = numberToMantissa(market.compPerSecond)
+
+            const compSpeed = await view({
                 contractName: 'Comptroller',
-                deploymentName: 'Unitroller',
-                methodName: '_setCollateralFactor',
-                args: [tokenDeployment.address, collateralFactor],
+                deploymentName: unitrollerDeploymentName,
+                methodName: 'compSpeeds',
+                args: [tokenDeployment.address],
             })
-        }
 
-        const targetCompSpeed = numberToMantissa(token.compPerSecond)
+            if (compSpeed.toBigInt() !== targetCompSpeed) {
+                await execute({
+                    contractName: 'Comptroller',
+                    deploymentName: unitrollerDeploymentName,
+                    methodName: '_setCompSpeed',
+                    args: [tokenDeployment.address, targetCompSpeed],
+                })
+            }
 
-        const compSpeed = await view({
-            contractName: 'Comptroller',
-            deploymentName: 'Unitroller',
-            methodName: 'compSpeeds',
-            args: [tokenDeployment.address],
-        })
+            const targetReserveFactor = market.deprecated ? ONE : numberToMantissa(market.reserve)
 
-        if (compSpeed.toBigInt() !== targetCompSpeed) {
-            await execute({
-                contractName: 'Comptroller',
-                deploymentName: 'Unitroller',
-                methodName: '_setCompSpeed',
-                args: [tokenDeployment.address, targetCompSpeed],
-            })
-        }
-
-        const targetReserveFactor = token.deprecated ? ONE : numberToMantissa(token.reserve)
-
-        const reserveFactor = await view({
-            contractName: 'CErc20',
-            deploymentName: token.symbol,
-            methodName: 'reserveFactorMantissa',
-            args: [],
-        })
-
-        if (reserveFactor.toBigInt() !== targetReserveFactor) {
-            await execute({
+            const reserveFactor = await view({
                 contractName: 'CErc20',
-                deploymentName: token.symbol,
-                methodName: '_setReserveFactor',
-                args: [targetReserveFactor],
+                deploymentName: market.symbol,
+                methodName: 'reserveFactorMantissa',
+                args: [],
             })
-        }
 
-        const isPaused = await view({
-            contractName: 'Comptroller',
-            deploymentName: 'Unitroller',
-            methodName: 'borrowGuardianPaused',
-            args: [tokenDeployment.address],
-        })
+            if (reserveFactor.toBigInt() !== targetReserveFactor) {
+                await execute({
+                    contractName: 'CErc20',
+                    deploymentName: market.symbol,
+                    methodName: '_setReserveFactor',
+                    args: [targetReserveFactor],
+                })
+            }
 
-        if (token.deprecated && !isPaused) {
-            await execute({
+            const isPaused = await view({
                 contractName: 'Comptroller',
-                deploymentName: 'Unitroller',
-                methodName: '_setBorrowPaused',
-                args: [tokenDeployment.address, true],
+                deploymentName: unitrollerDeploymentName,
+                methodName: 'borrowGuardianPaused',
+                args: [tokenDeployment.address],
             })
+
+            if (market.deprecated && !isPaused) {
+                await execute({
+                    contractName: 'Comptroller',
+                    deploymentName: unitrollerDeploymentName,
+                    methodName: '_setBorrowPaused',
+                    args: [tokenDeployment.address, true],
+                })
+            }
+
+            // const feeTaker = await view({
+            //     contractName: 'CErc20',
+            //     deploymentName: token.symbol,
+            //     methodName: 'feeTaker',
+            //     args: [],
+            // })
+
+            // if (feeTaker !== multisig) {
+            //     await execute({
+            //         contractName: 'CErc20',
+            //         deploymentName: token.symbol,
+            //         methodName: '_setFeeTaker',
+            //         args: [multisig],
+            //     })
+            // }
         }
 
-        // const feeTaker = await view({
-        //     contractName: 'CErc20',
-        //     deploymentName: token.symbol,
-        //     methodName: 'feeTaker',
-        //     args: [],
-        // })
 
-        // if (feeTaker !== multisig) {
-        //     await execute({
-        //         contractName: 'CErc20',
-        //         deploymentName: token.symbol,
-        //         methodName: '_setFeeTaker',
-        //         args: [multisig],
-        //     })
-        // }
-    }
+        /* Check that deleted markets are deprecated */
 
-
-    /* Check that deleted markets are deprecated */
-
-    const activeMarketAddresses = (await Promise.all((await view({
-        contractName: 'Comptroller',
-        deploymentName: 'Unitroller',
-        methodName: 'getAllMarkets',
-        args: [],
-    })).map(async marketAddresses => {
-        const isDeprecated = await view({
+        const activeMarketAddresses = (await Promise.all((await view({
             contractName: 'Comptroller',
-            deploymentName: 'Unitroller',
-            methodName: 'isDeprecated',
-            args: [marketAddresses],
-        })
+            deploymentName: unitrollerDeploymentName,
+            methodName: 'getAllMarkets',
+            args: [],
+        })).map(async marketAddresses => {
+            const isDeprecated = await view({
+                contractName: 'Comptroller',
+                deploymentName: unitrollerDeploymentName,
+                methodName: 'isDeprecated',
+                args: [marketAddresses],
+            })
 
-        return {
-            address: marketAddresses,
-            isDeprecated,
+            return {
+                address: marketAddresses,
+                isDeprecated,
+            }
+        }))).filter(x => !x.isDeprecated).map(x => x.address)
+
+        const incorrectMarketAddresses = activeMarketAddresses.filter(x => !marketAddresses.includes(x))
+
+        if (incorrectMarketAddresses.length > 0) {
+            throw new Error(`Markets ${incorrectMarketAddresses.join(',')} are active but they are no longer tracked`)
         }
-    }))).filter(x => !x.isDeprecated).map(x => x.address)
-
-    const incorrectMarketAddresses = activeMarketAddresses.filter(x => !marketAddresses.includes(x))
-
-    if (incorrectMarketAddresses.length > 0) {
-        throw new Error(`Markets ${incorrectMarketAddresses.join(',')} are active but they are no longer tracked`)
     }
 }
 

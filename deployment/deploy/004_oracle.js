@@ -1,3 +1,4 @@
+const config = require('../config')
 const deploy = require("../utils/deploy");
 const execute = require('../utils/execute');
 const view = require('../utils/view');
@@ -15,19 +16,23 @@ const deployOracle = async ({ getNamedAccounts, deployments }) => {
         skipUpgradeSafety: true,
     })
 
-    const currentoracle = await view({
-        contractName: 'Comptroller',
-        deploymentName: 'Unitroller',
-        methodName: 'oracle',
-    })
+    for (let marketPool of config.marketPools) {
+        const unitrollerDeploymentName = `${marketPool.name} Unitroller`
 
-    if(currentoracle !== oracle.address) {
-        await execute({
+        const currentoracle = await view({
             contractName: 'Comptroller',
-            deploymentName: 'Unitroller',
-            methodName: '_setPriceOracle',
-            args: [oracle.address],
+            deploymentName: unitrollerDeploymentName,
+            methodName: 'oracle',
         })
+
+        if(currentoracle !== oracle.address) {
+            await execute({
+                contractName: 'Comptroller',
+                deploymentName: unitrollerDeploymentName,
+                methodName: '_setPriceOracle',
+                args: [oracle.address],
+            })
+        }
     }
 }
 
