@@ -20,6 +20,7 @@
     "hardhat": "^2.6.8",
     "hardhat-contract-sizer": "^2.1.1",
     "hardhat-deploy": "^0.9.6",
-    "hardhat-deploy-ethers": "^0.3.0-beta.11"
+    "hardhat-deploy-ethers": "^0.3.0-beta.11",
+    "lodash": "^4.17.21"
   }
 }

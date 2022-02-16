@@ -10,8 +10,6 @@ const deployComptroller = async ({ getNamedAccounts, deployments }) => {
     } = await getNamedAccounts();
 
     for (let marketPool of config.marketPools) {
-        console.log(marketPool)
-
         const unitrollerDeploymentName = `${marketPool.name} Unitroller`
         const comptrollerDeploymentName = `${marketPool.name} Comptroller`;
 

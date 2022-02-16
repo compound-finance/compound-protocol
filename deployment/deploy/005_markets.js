@@ -1,4 +1,5 @@
 const hardhat = require('hardhat')
+const _ = require('lodash')
 
 const config = require('../config');
 const deploy = require('../utils/deploy');
@@ -9,14 +10,43 @@ const view = require('../utils/view');
 const ZERO = 0n
 const ONE = 10n ** 18n
 
+// NOTE: number of seconds per year, but named blocksPerYear everywhere else in the codebase
+const blocksPerYear = 31536000n
+
 const deployMarkets = async ({ getNamedAccounts, deployments }) => {
     const {
         deployer,
         multisig,
     } = await getNamedAccounts();
 
-    // NOTE: number of seconds per year, but named blocksPerYear everywhere else in the codebase
-    const blocksPerYear = 31536000n
+    /* Sanity checks */
+    {
+        const markets = _.flatMap(config.marketPools, x => x.markets)
+        const marketNameMap = {}
+
+        // Check for duplicate markets
+        markets.forEach(market => {
+            if (marketNameMap[market.symbol]) {
+                throw new Error(`Duplicate ${market.symbol} market`)
+            }
+
+            marketNameMap[market.symbol] = true
+        })
+
+        // check oracle configs are the same for each underlying
+        const oracleMap = {}
+        markets.forEach(market => {
+            const key = market.underlying || market.mock.symbol
+
+            if (oracleMap[key]) {
+                if (!_.isEqual(oracleMap[key], market.oracle)) {
+                    throw new Error(`Different oracle config for ${key}`)
+                }
+            }
+
+            oracleMap[key] = market.oracle
+        })
+    }
 
     for (let marketPool of config.marketPools) {
         const marketAddresses = []
@@ -26,49 +56,7 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
         /* Create markets */
         for (const market of marketPool.markets) {
             /* Create interest rates */
-
-            const baseApr = numberToMantissa(market.interestRate.baseApr)
-            const kink = numberToMantissa(market.interestRate.targetUtil)
-            const targetApr = numberToMantissa(market.interestRate.targetApr)
-            const maxApr = numberToMantissa(market.interestRate.maxApr)
-
-            const multiplierPerYear = ((targetApr - baseApr) * ONE) / kink
-            const jumpMultiplierPerYear = ((maxApr - targetApr) * ONE) / ((ONE - kink))
-
-            const interestRateModel = await deploy(`${market.symbol}RateModel`, {
-                contract: 'JumpRateModelV2',
-                args: [
-                    baseApr.toString(),
-                    multiplierPerYear.toString(),
-                    jumpMultiplierPerYear.toString(),
-                    kink.toString(),
-                    multisig,
-                ],
-                skipIfSameBytecode: true,
-                skipUpgradeSafety: true,
-                log: true,
-            })
-
-            const JumpRateModel = await hardhat.ethers.getContract(`${market.symbol}RateModel`, deployer)
-
-            const multiplierPerBlock = (multiplierPerYear * ONE) / (blocksPerYear * kink)
-            const baseRatePerBlock = baseApr / blocksPerYear
-            const jumpMultiplierPerBlock = jumpMultiplierPerYear / blocksPerYear
-
-            if (
-                (await JumpRateModel.multiplierPerBlock()).toBigInt() !== multiplierPerBlock ||
-                (await JumpRateModel.multiplierPerBlock()).toBigInt() !== multiplierPerBlock ||
-                (await JumpRateModel.baseRatePerBlock()).toBigInt() !== baseRatePerBlock ||
-                (await JumpRateModel.jumpMultiplierPerBlock()).toBigInt() !== jumpMultiplierPerBlock ||
-                (await JumpRateModel.kink()).toBigInt() !== kink
-            ) {
-                await JumpRateModel.updateJumpRateModel(
-                    baseApr.toString(),
-                    multiplierPerYear.toString(),
-                    jumpMultiplierPerYear.toString(),
-                    kink.toString(),
-                )
-            }
+            const interestRateModel = await getInterestRateModel(market)
 
             /* Create cToken */
 
@@ -99,7 +87,7 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                             args: [
                                 underlying,
                                 comptrollerDeployment.address,
-                                JumpRateModel.address,
+                                interestRateModel.address,
                                 initialExchangeRateMantissa.toString(),
                                 market.name,
                                 market.symbol,
@@ -128,7 +116,7 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                             args: [
                                 underlying,
                                 comptrollerDeployment.address,
-                                JumpRateModel.address,
+                                interestRateModel.address,
                                 initialExchangeRateMantissa.toString(),
                                 market.name,
                                 market.symbol,
@@ -268,7 +256,7 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                 })
             }
 
-            const targetReserveFactor = market.deprecated ? ONE : numberToMantissa(market.reserve)
+            const targetReserveFactor = market.deprecated || market.borrowable === false ? ONE : numberToMantissa(market.reserve)
 
             const reserveFactor = await view({
                 contractName: 'CErc20',
@@ -407,4 +395,77 @@ async function getTokenAddress(token) {
     }
 
     return token.underlying
+}
+
+async function getInterestRateModel(market) {
+    const {
+        deployer,
+        multisig,
+    } = await getNamedAccounts();
+
+    const {
+        name,
+        baseApr,
+        kink,
+        targetApr,
+        maxApr,
+    } = (() => {
+        if (market.borrowable === false) {
+            return {
+                name: `UnBorrowableRateModel`,
+                baseApr: numberToMantissa(0),
+                kink: numberToMantissa(0.5),
+                targetApr: numberToMantissa(0),
+                maxApr: numberToMantissa(0),
+            }
+        }
+
+        return {
+            name: `${market.symbol}RateModel`,
+            baseApr: numberToMantissa(market.interestRate.baseApr),
+            kink: numberToMantissa(market.interestRate.targetUtil),
+            targetApr: numberToMantissa(market.interestRate.targetApr),
+            maxApr: numberToMantissa(market.interestRate.maxApr),
+        }
+    })()
+
+    const multiplierPerYear = ((targetApr - baseApr) * ONE) / kink
+    const jumpMultiplierPerYear = ((maxApr - targetApr) * ONE) / ((ONE - kink))
+
+    const interestRateModel = await deploy(name, {
+        contract: 'JumpRateModelV2',
+        args: [
+            baseApr.toString(),
+            multiplierPerYear.toString(),
+            jumpMultiplierPerYear.toString(),
+            kink.toString(),
+            multisig,
+        ],
+        skipIfSameBytecode: true,
+        skipUpgradeSafety: true,
+        log: true,
+    })
+
+    const JumpRateModel = await hardhat.ethers.getContract(name, deployer)
+
+    const multiplierPerBlock = (multiplierPerYear * ONE) / (blocksPerYear * kink)
+    const baseRatePerBlock = baseApr / blocksPerYear
+    const jumpMultiplierPerBlock = jumpMultiplierPerYear / blocksPerYear
+
+    if (
+        (await JumpRateModel.multiplierPerBlock()).toBigInt() !== multiplierPerBlock ||
+        (await JumpRateModel.multiplierPerBlock()).toBigInt() !== multiplierPerBlock ||
+        (await JumpRateModel.baseRatePerBlock()).toBigInt() !== baseRatePerBlock ||
+        (await JumpRateModel.jumpMultiplierPerBlock()).toBigInt() !== jumpMultiplierPerBlock ||
+        (await JumpRateModel.kink()).toBigInt() !== kink
+    ) {
+        await JumpRateModel.updateJumpRateModel(
+            baseApr.toString(),
+            multiplierPerYear.toString(),
+            jumpMultiplierPerYear.toString(),
+            kink.toString(),
+        )
+    }
+
+    return interestRateModel
 }

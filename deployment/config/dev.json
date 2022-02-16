@@ -107,6 +107,26 @@
                         "exchangeRate": "10",
                         "base": "usd"
                     }
+                },
+                {
+                    "name": "Citrus LP 3pool Curve",
+                    "symbol": "ci3CRV",
+                    "decimals": 8,
+                    "type": "token",
+                    "mock": {
+                        "name": "Mock 3CRV",
+                        "symbol": "3CRV",
+                        "decimals": 18
+                    },
+                    "compPerSecond": "0",
+                    "borrowable": false,
+                    "initialTokensPerUnderlying": 50,
+                    "collateralFactor": 0.5,
+                    "oracle": {
+                        "type": "exchangeRate",
+                        "exchangeRate": "1",
+                        "base": "usd"
+                    }
                 }
             ]
         }

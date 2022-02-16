@@ -105,6 +105,114 @@
                     }
                 }
             ]
+        },
+        {
+            "id": "realt",
+            "name": "RealT",
+            "markets": [
+                {
+                    "name": "Citrus xDai (RealT pool)",
+                    "symbol": "cirtXDAI",
+                    "decimals": 8,
+                    "type": "eth",
+                    "underlying": "0xc778417E063141139Fce010982780140Aa0cD5Ab",
+                    "compPerSecond": "0.006",
+                    "interestRate": {
+                        "baseApr": 0,
+                        "targetUtil": 0.8,
+                        "targetApr": 0.032,
+                        "maxApr": 0.25
+                    },
+                    "reserve": 0.10,
+                    "initialTokensPerUnderlying": 50,
+                    "collateralFactor": 0.75,
+                    "oracle": {
+                        "type": "chainlink",
+                        "aggregator": "0x2bA49Aaa16E6afD2a993473cfB70Fa8559B523cF"
+                    }
+                },
+                {
+                    "name": "Citrus USDC (RealT pool)",
+                    "symbol": "cirtUSDC",
+                    "decimals": 8,
+                    "type": "token",
+                    "underlying": "0x8aC9BB3fF7F21E0B55c829869805D9Db73BC8DC1",
+                    "compPerSecond": "0.006",
+                    "interestRate": {
+                        "baseApr": 0,
+                        "targetUtil": 0.8,
+                        "targetApr": 0.032,
+                        "maxApr": 0.25
+                    },
+                    "reserve": 0.10,
+                    "initialTokensPerUnderlying": 50,
+                    "collateralFactor": 0.75,
+                    "oracle": {
+                        "type": "chainlink",
+                        "aggregator": "0xa24de01df22b63d23Ebc1882a5E3d4ec0d907bFB"
+                    }
+                },
+                {
+                    "name": "Citrus RealT 212 N Park Ave",
+                    "symbol": "ciRealT-212-N-Park-Ave",
+                    "decimals": 18,
+                    "type": "token",
+                    "mock": {
+                        "name": "Mock RealT 212 N Park Ave",
+                        "symbol": "RealT-212-N-Park-Ave",
+                        "decimals": 18
+                    },
+                    "compPerSecond": "0",
+                    "borrowable": false,
+                    "initialTokensPerUnderlying": 1,
+                    "collateralFactor": 0.60,
+                    "oracle": {
+                        "type": "exchangeRate",
+                        "exchangeRate": "50.72",
+                        "base": "0x8aC9BB3fF7F21E0B55c829869805D9Db73BC8DC1"
+                    }
+                },
+                {
+                    "name": "Citrus RealT 9151 Whittier Ave",
+                    "symbol": "ciRealT-9151-Whittier-Ave",
+                    "decimals": 18,
+                    "type": "token",
+                    "mock": {
+                        "name": "Mock RealT 9151 Whittier Ave",
+                        "symbol": "RealT-9151-Whittier-Ave",
+                        "decimals": 18
+                    },
+                    "compPerSecond": "0",
+                    "borrowable": false,
+                    "initialTokensPerUnderlying": 1,
+                    "collateralFactor": 0.60,
+                    "oracle": {
+                        "type": "exchangeRate",
+                        "exchangeRate": "50.02",
+                        "base": "0x8aC9BB3fF7F21E0B55c829869805D9Db73BC8DC1"
+                    }
+                },
+                {
+                    "name": "Citrus RealT 9943 Marlowe St",
+                    "symbol": "ciRealT-9943-Marlowe-St",
+                    "decimals": 18,
+                    "type": "token",
+                    "mock": {
+                        "name": "Mock RealT 9943 Marlowe St",
+                        "symbol": "RealT-9943-Marlowe-St",
+                        "decimals": 18
+                    },
+                    "compPerSecond": "0",
+                    "borrowable": false,
+                    "initialTokensPerUnderlying": 1,
+                    "collateralFactor": 0.80,
+                    "oracle": {
+                        "type": "exchangeRate",
+                        "exchangeRate": "68.50",
+                        "base": "0x8aC9BB3fF7F21E0B55c829869805D9Db73BC8DC1"
+                    }
+                }
+            ]
         }
     ]
 }
