@@ -11,6 +11,7 @@ Changes
 - Changed `block.number` to `block.timestamp` for COMP distribution and Interest rates so it's can run on blockchains with different or variable blocktimes
 - Added CWrappedNative a CToken that can handle both ETH and wETH
 - Implemented EIP-1967 for CErc20Delegator and CWrappedNativeDelegator so future upgrades are easier
+- Added ComptrollerManager to manage multiple Comptrollers as once
 
 Contracts
 =========
