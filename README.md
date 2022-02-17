@@ -12,6 +12,7 @@ Changes
 - Added CWrappedNative a CToken that can handle both ETH and wETH
 - Implemented EIP-1967 for CErc20Delegator and CWrappedNativeDelegator so future upgrades are easier
 - Added ComptrollerManager to manage multiple Comptrollers as once
+- Updated Maximillion to handle CWrappedNative
 
 Contracts
 =========
