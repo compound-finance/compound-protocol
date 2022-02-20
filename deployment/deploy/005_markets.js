@@ -281,7 +281,7 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
                 args: [tokenDeployment.address],
             })
 
-            if (market.deprecated && !isPaused) {
+            if ((market.deprecated || market.borrowable === false) && !isPaused) {
                 await execute({
                     contractName: 'Comptroller',
                     deploymentName: unitrollerDeploymentName,
