@@ -284,10 +284,13 @@ contract CErc20Interface is CErc20Storage {
 }
 
 contract CWrappedNativeStorage {
+    uint256 internal constant USE_WRAPPED = 1;
+    uint256 internal constant USE_NATIVE = 2;
+
     /**
      * @notice Underlying asset for this CToken
      */
-    bool internal shouldUseNative;
+    uint256 internal nativeStatus = USE_WRAPPED;
 }
 
 contract CWrappedNativeInterface is CWrappedNativeStorage, CErc20Storage {

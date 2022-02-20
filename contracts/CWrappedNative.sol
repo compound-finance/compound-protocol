@@ -226,7 +226,7 @@ contract CWrappedNative is CToken, CWrappedNativeInterface {
      *            See here: https://medium.com/coinmonks/missing-return-value-bug-at-least-130-tokens-affected-d67bf08521ca
      */
     function doTransferIn(address from, uint amount) internal returns (uint) {
-        if (shouldUseNative) {
+        if (nativeStatus == USE_NATIVE) {
             // Sanity checks
             require(msg.sender == from, "sender mismatch");
             require(msg.value == amount, "value mismatch");
@@ -272,7 +272,7 @@ contract CWrappedNative is CToken, CWrappedNativeInterface {
      *            See here: https://medium.com/coinmonks/missing-return-value-bug-at-least-130-tokens-affected-d67bf08521ca
      */
     function doTransferOut(address payable to, uint amount) internal {
-        if (shouldUseNative) {
+        if (nativeStatus == USE_NATIVE) {
             IWETH(underlying).withdraw(amount);
 
             /* Send the Ether, with minimal gas and revert on failure */
@@ -321,8 +321,8 @@ contract CWrappedNative is CToken, CWrappedNativeInterface {
     }
 
     modifier useNative() {
-        shouldUseNative = true;
+        nativeStatus = USE_NATIVE;
         _;
-        shouldUseNative = false;
+        nativeStatus = USE_WRAPPED;
     }
 }

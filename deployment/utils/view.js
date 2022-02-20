@@ -1,6 +1,6 @@
 const { deployments } = require("hardhat");
 
-module.exports = async function execute({
+module.exports = async function view({
     contractName,
     deploymentName,
     methodName,
