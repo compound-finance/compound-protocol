@@ -1,7 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "./PriceOracle.sol";
-import "./CToken.sol";
+import "./CTokenInterface.sol";
 import "./CErc20.sol";
 import "./interfaces/IChainlinkAggregator.sol";
 import "./EIP20Interface.sol";
@@ -51,7 +51,7 @@ contract PriceOracleProxy is PriceOracle, ExponentialNoError {
       * @return The underlying asset price mantissa (scaled by 1e18).
       *  Zero means the price is unavailable.
       */
-    function getUnderlyingPrice(CToken cToken) public view returns (uint256) {
+    function getUnderlyingPrice(CTokenInterface cToken) public view returns (uint256) {
         address cTokenAddress = address(cToken);
 
         address underlying = CErc20(cTokenAddress).underlying();

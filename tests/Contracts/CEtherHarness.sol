@@ -1,6 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "../../contracts/CEther.sol";
+import "../../contracts/CTokenInterface.sol";
 import "./ComptrollerScenario.sol";
 
 contract CEtherHarness is CEther {
@@ -114,7 +115,7 @@ contract CEtherHarness is CEther {
         return err;
     }
 
-    function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CToken cTokenCollateral) public returns (uint) {
+    function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CTokenInterface cTokenCollateral) public returns (uint) {
         (uint err,) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
         return err;
     }

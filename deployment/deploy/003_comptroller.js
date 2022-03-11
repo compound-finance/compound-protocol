@@ -1,6 +1,9 @@
+const hardhat = require("hardhat");
+
 const config = require('../config')
 const deploy = require("../utils/deploy");
 const execute = require("../utils/execute");
+const { assertSafeProxy } = require('../utils/storageLayout');
 const view = require("../utils/view");
 
 const deployComptroller = async ({ getNamedAccounts, deployments }) => {
@@ -8,6 +11,8 @@ const deployComptroller = async ({ getNamedAccounts, deployments }) => {
         multisig,
         guardian,
     } = await getNamedAccounts();
+
+    await assertSafeProxy(hardhat, 'Unitroller', 'Comptroller')
 
     for (let marketPool of config.marketPools) {
         const unitrollerDeploymentName = `${marketPool.name} Unitroller`

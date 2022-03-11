@@ -1,6 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "../../contracts/ComptrollerG3.sol";
+import "../../contracts/CTokenInterface.sol";
 
 contract ComptrollerScenarioG3 is ComptrollerG3 {
     uint public blockNumber;
@@ -16,7 +17,7 @@ contract ComptrollerScenarioG3 is ComptrollerG3 {
         return compAddress;
     }
 
-    function membershipLength(CToken cToken) public view returns (uint) {
+    function membershipLength(CTokenInterface cToken) public view returns (uint) {
         return accountAssets[address(cToken)].length;
     }
 
@@ -53,7 +54,7 @@ contract ComptrollerScenarioG3 is ComptrollerG3 {
         return compMarkets;
     }
 
-    function unlist(CToken cToken) public {
+    function unlist(CTokenInterface cToken) public {
         markets[address(cToken)].isListed = false;
     }
 }

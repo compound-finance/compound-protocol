@@ -1,6 +1,10 @@
 pragma solidity ^0.5.16;
 
+import "./CWrappedNativeStorage.sol";
+import "./CErc20Storage.sol";
 import "./CToken.sol";
+import "./CWrappedNativeInterface.sol";
+import "./EIP20NonStandardInterface.sol";
 
 interface IWETH {
     function deposit() external payable;
@@ -12,7 +16,7 @@ interface IWETH {
  * @notice CTokens which wraps Wrapped Ether
  * @author Citrus
  */
-contract CWrappedNative is CToken, CWrappedNativeInterface {
+contract CWrappedNative is CWrappedNativeStorage, CErc20Storage, CToken, CWrappedNativeInterface {
     /**
      * @notice Initialize the new money market
      * @param underlying_ The address of the underlying asset

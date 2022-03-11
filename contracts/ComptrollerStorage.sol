@@ -1,6 +1,6 @@
 pragma solidity ^0.5.16;
 
-import "./CToken.sol";
+import "./CTokenInterface.sol";
 import "./PriceOracle.sol";
 
 contract UnitrollerAdminStorage {
@@ -50,7 +50,7 @@ contract ComptrollerV1Storage is UnitrollerAdminStorage {
     /**
      * @notice Per-account mapping of "assets you are in", capped by maxAssets
      */
-    mapping(address => CToken[]) public accountAssets;
+    mapping(address => CTokenInterface[]) public accountAssets;
 
 }
 
@@ -74,7 +74,7 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
     }
 
     /**
-     * @notice Official mapping of cTokens -> Market metadata
+     * @notice Official mapping of cTokenInterfaces -> Market metadata
      * @dev Used e.g. to determine if a market is supported
      */
     mapping(address => Market) public markets;
@@ -104,7 +104,7 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
     }
 
     /// @notice A list of all markets
-    CToken[] public allMarkets;
+    CTokenInterface[] public allMarkets;
 
     /// @notice The rate at which the flywheel distributes COMP, per block
     uint public compRate;

@@ -4,6 +4,7 @@ import "../../contracts/CErc20Immutable.sol";
 import "../../contracts/CErc20Delegator.sol";
 import "../../contracts/CErc20Delegate.sol";
 import "../../contracts/CDaiDelegate.sol";
+import "../../contracts/CTokenInterface.sol";
 import "./ComptrollerScenario.sol";
 
 contract CErc20Harness is CErc20Immutable {
@@ -125,7 +126,7 @@ contract CErc20Harness is CErc20Immutable {
         return err;
     }
 
-    function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CToken cTokenCollateral) public returns (uint) {
+    function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CTokenInterface cTokenCollateral) public returns (uint) {
         (uint err,) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
         return err;
     }
@@ -203,7 +204,7 @@ contract CEvil is CErc20Scenario {
     decimals_,
     admin_) public {}
 
-    function evilSeize(CToken treasure, address liquidator, address borrower, uint seizeTokens) public returns (uint) {
+    function evilSeize(CTokenInterface treasure, address liquidator, address borrower, uint seizeTokens) public returns (uint) {
         return treasure.seize(liquidator, borrower, seizeTokens);
     }
 }
@@ -348,7 +349,7 @@ contract CErc20DelegateHarness is CErc20Delegate {
         return err;
     }
 
-    function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CToken cTokenCollateral) public returns (uint) {
+    function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CTokenInterface cTokenCollateral) public returns (uint) {
         (uint err,) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
         return err;
     }

@@ -5,6 +5,7 @@ const config = require('../config');
 const deploy = require('../utils/deploy');
 const { isTestnet } = require('../utils/env');
 const execute = require('../utils/execute');
+const { assertSafeProxy } = require('../utils/storageLayout');
 const view = require('../utils/view');
 
 const ZERO = 0n
@@ -18,6 +19,9 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
         deployer,
         multisig,
     } = await getNamedAccounts();
+
+    await assertSafeProxy(hardhat, 'CWrappedNativeDelegator', 'CWrappedNativeDelegate')
+    await assertSafeProxy(hardhat, 'CErc20Delegator', 'CErc20Delegate')
 
     /* Sanity checks */
     {

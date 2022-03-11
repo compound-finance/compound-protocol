@@ -1,6 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "./CWrappedNative.sol";
+import "./CDelegateInterface.sol";
 
 /**
  * @title Compound's CWrappedNativeDelegate Contract

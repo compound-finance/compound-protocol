@@ -3,6 +3,7 @@ pragma solidity ^0.5.16;
 import "../../contracts/CWrappedNativeImmutable.sol";
 import "../../contracts/CWrappedNativeDelegator.sol";
 import "../../contracts/CWrappedNativeDelegate.sol";
+import "../../contracts/CTokenInterface.sol";
 
 contract CWrappedNativeHarness is CWrappedNativeImmutable {
     uint blockNumber = 100000;
@@ -132,7 +133,7 @@ contract CWrappedNativeHarness is CWrappedNativeImmutable {
         return err;
     }
 
-    function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CToken cTokenCollateral) public returns (uint) {
+    function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CTokenInterface cTokenCollateral) public returns (uint) {
         (uint err,) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
         return err;
     }
@@ -275,7 +276,7 @@ contract CWrappedNativeDelegateHarness is CWrappedNativeDelegate {
         return err;
     }
 
-    function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CToken cTokenCollateral) public returns (uint) {
+    function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CTokenInterface cTokenCollateral) public returns (uint) {
         (uint err,) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
         return err;
     }

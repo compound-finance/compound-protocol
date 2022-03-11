@@ -1,6 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "../../contracts/ComptrollerG5.sol";
+import "../../contracts/CErc20Interface.sol";
 
 contract ComptrollerScenarioG5 is ComptrollerG5 {
     uint public blockNumber;
@@ -16,7 +17,7 @@ contract ComptrollerScenarioG5 is ComptrollerG5 {
         return compAddress;
     }
 
-    function membershipLength(CToken cToken) public view returns (uint) {
+    function membershipLength(CErc20Interface cToken) public view returns (uint) {
         return accountAssets[address(cToken)].length;
     }
 
@@ -53,7 +54,7 @@ contract ComptrollerScenarioG5 is ComptrollerG5 {
         return compMarkets;
     }
 
-    function unlist(CToken cToken) public {
+    function unlist(CErc20Interface cToken) public {
         markets[address(cToken)].isListed = false;
     }
 }

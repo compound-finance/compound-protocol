@@ -1,8 +1,8 @@
 pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
-import "../CErc20.sol";
-import "../CToken.sol";
+import "../CErc20Interface.sol";
+import "../CTokenInterface.sol";
 import "../PriceOracle.sol";
 import "../EIP20Interface.sol";
 import "../Governance/GovernorAlpha.sol";
@@ -12,7 +12,7 @@ interface ComptrollerLensInterface {
     function markets(address) external view returns (bool, uint);
     function oracle() external view returns (PriceOracle);
     function getAccountLiquidity(address) external view returns (uint, uint, uint);
-    function getAssetsIn(address) external view returns (CToken[] memory);
+    function getAssetsIn(address) external view returns (CTokenInterface[] memory);
     function claimComp(address) external;
     function compAccrued(address) external view returns (uint);
 }
@@ -58,11 +58,11 @@ contract CompoundLens {
         uint underlyingDecimals;
     }
 
-    function cTokenMetadata(CToken cToken) public returns (CTokenMetadata memory) {
+    function cTokenMetadata(CTokenInterface cToken) public returns (CTokenMetadata memory) {
         uint exchangeRateCurrent = cToken.exchangeRateCurrent();
         ComptrollerLensInterface comptroller = ComptrollerLensInterface(address(cToken.comptroller()));
         (bool isListed, uint collateralFactorMantissa) = comptroller.markets(address(cToken));
-        CErc20 cErc20 = CErc20(address(cToken));
+        CErc20Interface cErc20 = CErc20Interface(address(cToken));
         address underlyingAssetAddress = cErc20.underlying();
         uint underlyingDecimals = EIP20Interface(cErc20.underlying()).decimals();
 
@@ -84,7 +84,7 @@ contract CompoundLens {
         });
     }
 
-    function cTokenMetadataAll(CToken[] calldata cTokens) external returns (CTokenMetadata[] memory) {
+    function cTokenMetadataAll(CTokenInterface[] calldata cTokens) external returns (CTokenMetadata[] memory) {
         uint cTokenCount = cTokens.length;
         CTokenMetadata[] memory res = new CTokenMetadata[](cTokenCount);
         for (uint i = 0; i < cTokenCount; i++) {
@@ -102,9 +102,9 @@ contract CompoundLens {
         uint tokenAllowance;
     }
 
-    function cTokenBalances(CToken cToken, address payable account) public returns (CTokenBalances memory) {
+    function cTokenBalances(CTokenInterface cToken, address payable account) public returns (CTokenBalances memory) {
         ComptrollerLensInterface comptroller = ComptrollerLensInterface(address(cToken.comptroller()));
-        CErc20 cErc20 = CErc20(address(cToken));
+        CErc20Interface cErc20 = CErc20Interface(address(cToken));
         EIP20Interface underlying = EIP20Interface(cErc20.underlying());
 
         uint balanceOf = cToken.balanceOf(account);
@@ -123,7 +123,7 @@ contract CompoundLens {
         });
     }
 
-    function cTokenBalancesAll(CToken[] calldata cTokens, address payable account) external returns (CTokenBalances[] memory) {
+    function cTokenBalancesAll(CTokenInterface[] calldata cTokens, address payable account) external returns (CTokenBalances[] memory) {
         uint cTokenCount = cTokens.length;
         CTokenBalances[] memory res = new CTokenBalances[](cTokenCount);
         for (uint i = 0; i < cTokenCount; i++) {
@@ -137,7 +137,7 @@ contract CompoundLens {
         uint underlyingPrice;
     }
 
-    function cTokenUnderlyingPrice(CToken cToken) public returns (CTokenUnderlyingPrice memory) {
+    function cTokenUnderlyingPrice(CTokenInterface cToken) public returns (CTokenUnderlyingPrice memory) {
         ComptrollerLensInterface comptroller = ComptrollerLensInterface(address(cToken.comptroller()));
         PriceOracle priceOracle = comptroller.oracle();
 
@@ -147,7 +147,7 @@ contract CompoundLens {
         });
     }
 
-    function cTokenUnderlyingPriceAll(CToken[] calldata cTokens) external returns (CTokenUnderlyingPrice[] memory) {
+    function cTokenUnderlyingPriceAll(CTokenInterface[] calldata cTokens) external returns (CTokenUnderlyingPrice[] memory) {
         uint cTokenCount = cTokens.length;
         CTokenUnderlyingPrice[] memory res = new CTokenUnderlyingPrice[](cTokenCount);
         for (uint i = 0; i < cTokenCount; i++) {
@@ -157,7 +157,7 @@ contract CompoundLens {
     }
 
     struct AccountLimits {
-        CToken[] markets;
+        CTokenInterface[] markets;
         uint liquidity;
         uint shortfall;
     }

@@ -2,6 +2,7 @@ pragma solidity ^0.5.16;
 
 import "../../contracts/ComptrollerG1.sol";
 import "../../contracts/PriceOracle.sol";
+import "../../contracts/CTokenInterface.sol";
 
 // XXX we should delete G1 everything...
 //  requires fork/deploy bytecode tests
@@ -11,7 +12,7 @@ contract ComptrollerScenarioG1 is ComptrollerG1 {
 
     constructor() ComptrollerG1() public {}
 
-    function membershipLength(CToken cToken) public view returns (uint) {
+    function membershipLength(CTokenInterface cToken) public view returns (uint) {
         return accountAssets[address(cToken)].length;
     }
 
@@ -40,11 +41,11 @@ contract ComptrollerScenarioG1 is ComptrollerG1 {
         uint redeemTokens,
         uint borrowAmount) public view returns (uint, uint, uint) {
         (Error err, uint liquidity, uint shortfall) =
-            super.getHypotheticalAccountLiquidityInternal(account, CToken(cTokenModify), redeemTokens, borrowAmount);
+            super.getHypotheticalAccountLiquidityInternal(account, CTokenInterface(cTokenModify), redeemTokens, borrowAmount);
         return (uint(err), liquidity, shortfall);
     }
 
-    function unlist(CToken cToken) public {
+    function unlist(CTokenInterface cToken) public {
         markets[address(cToken)].isListed = false;
     }
 }

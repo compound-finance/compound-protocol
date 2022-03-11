@@ -1,6 +1,8 @@
 pragma solidity ^0.5.16;
 
 import "./CToken.sol";
+import "./CErc20Storage.sol";
+import "./CErc20Interface.sol";
 
 interface CompLike {
   function delegate(address delegatee) external;
@@ -11,7 +13,7 @@ interface CompLike {
  * @notice CTokens which wrap an EIP-20 underlying
  * @author Compound
  */
-contract CErc20 is CToken, CErc20Interface {
+contract CErc20 is CErc20Storage, CToken {
     /**
      * @notice Initialize the new money market
      * @param underlying_ The address of the underlying asset

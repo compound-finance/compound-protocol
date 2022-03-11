@@ -40,6 +40,13 @@ async function assertUpgradeIsSafe(hre, contractName, deploymentName) {
     }
 }
 
+async function assertSafeProxy(hre, proxyContractName, implementationContractName) {
+    const proxyLayout = await getStorageLayoutForContract(hre, proxyContractName);
+    const implementationLayout = await getStorageLayoutForContract(hre, implementationContractName);
+
+    assertStorageUpgradeSafe(proxyLayout, implementationLayout, false);
+}
+
 async function getStorageLayoutForContract(hre, contractName) {
     const validations = await readValidations(hre);
     const implFactory = await hre.ethers.getContractFactory(contractName);
@@ -87,4 +94,5 @@ function getValidationsCachePath(hre) {
 module.exports = {
     assertStorageLayoutChangeSafeForAll,
     assertUpgradeIsSafe,
+    assertSafeProxy,
 }
