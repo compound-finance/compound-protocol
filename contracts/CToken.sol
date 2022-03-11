@@ -700,7 +700,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     function liquidateBorrowInternal(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) internal nonReentrant {
         accrueInterest();
 
-        error = cTokenCollateral.accrueInterest();
+        uint error = cTokenCollateral.accrueInterest();
         if (error != NO_ERROR) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted liquidation failed
             revert LiquidateAccrueCollateralInterestFailed(error);
