@@ -1,6 +1,8 @@
 const {
   address,
   encodeParameters,
+  solidityKeccak256,
+  etherExp,
 } = require('../Utils/Ethereum');
 const {
   makeComptroller,
@@ -331,6 +333,26 @@ describe('CompoundLens', () => {
           delegate: "0x0000000000000000000000000000000000000000",
           votes: "0",
           allocated: "5"
+        });
+      });
+
+      it('calculate airdrop', async () => {
+        const merkleRoot = solidityKeccak256(
+          ['address', 'uint256'],
+          [acct, etherExp(0.5).toString()]
+        )
+
+        let comptroller = await makeComptroller();
+        await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
+        await send(comptroller, 'setBlockNumber', [150]);
+
+        expect(
+          cullTuple(await call(compoundLens, 'getCompBalanceMetadataExt', [comp._address, comptroller._address, acct, etherExp(0.5), []]))
+        ).toEqual({
+          balance: "10000000000000000000000000",
+          delegate: "0x0000000000000000000000000000000000000000",
+          votes: "0",
+          allocated: etherExp(0.5).multipliedBy(50).toString(),
         });
       });
     });

@@ -1,5 +1,7 @@
 pragma solidity ^0.5.16;
 
+import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
+
 import "./CTokenInterface.sol";
 import "./ErrorReporter.sol";
 import "./ExponentialNoError.sol";
@@ -1207,10 +1209,50 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
+     * @notice Calculate additional accrued COMP from the airdrop for an account,
+     *          it will distrubute only between two specified blocks
+     * @param account The address to calculate airdrop rewards for
+     */
+    function updateAirdropRewards(address account) public {
+        uint compSpeed = compAirdropSpeeds[account];
+        uint blockNumber = getBlockNumber();
+        // The distribution hasn't started
+        if (blockNumber < airdropStartBlock) {
+          return;
+        }
+        // // The distribution is finished
+        if (blockNumber > airdropEndBlock) {
+            blockNumber = airdropEndBlock;
+        }
+        uint deltaBlocks = sub_(blockNumber, lastAirdropBlock[account]);
+        if (deltaBlocks > 0 && compSpeed > 0) {
+            uint newAccrued = mul_(deltaBlocks, compSpeed);
+            uint accountAccrued = add_(compAccrued[account], newAccrued);
+
+            compAccrued[account] = accountAccrued;
+            lastAirdropBlock[account] = blockNumber;
+        }
+    }
+
+    /**
+     * @notice Claim airdrop and all the comp accrued by holder in all markets
+     * @param holder The address to claim COMP for
+     */
+    function claimComp(address holder, uint256 compSpeed, bytes32[] memory proof) public {
+        require(lastAirdropBlock[holder] == 0, "airdrop already claimed");
+        bytes32 node = keccak256(abi.encodePacked(holder, compSpeed));
+        require(MerkleProof.verify(proof, airdropMerkleRoot, node), "invalid proof for airdrop claim");
+        compAirdropSpeeds[holder] = compSpeed;
+        lastAirdropBlock[holder] = airdropStartBlock;
+        return claimComp(holder);
+    }
+
+    /**
      * @notice Claim all the comp accrued by holder in all markets
      * @param holder The address to claim COMP for
      */
     function claimComp(address holder) public {
+        updateAirdropRewards(holder);
         return claimComp(holder, allMarkets);
     }
 
@@ -1359,5 +1401,15 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
         require(adminOrInitializing(), "only admin can set comp address");
 
         compAddress = compAddress_;
+    }
+
+    function _setAirdrop(bytes32 merkleRoot, uint startBlock, uint endBlock) public {
+        require(adminOrInitializing(), "only admin can set airdrop");
+        require(startBlock > 0, "start block cannot be zero");
+        require(startBlock < endBlock, "cannot set start after end");
+
+        airdropMerkleRoot = merkleRoot;
+        airdropStartBlock = startBlock;
+        airdropEndBlock = endBlock;
     }
 }

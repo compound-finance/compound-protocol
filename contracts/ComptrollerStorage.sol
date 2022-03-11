@@ -145,4 +145,19 @@ contract ComptrollerV5Storage is ComptrollerV4Storage {
 
     /// @notice Comp address for distribution
     address public compAddress = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+
+    bytes32 public airdropMerkleRoot;
+
+    /// @notice The portion of COMP that each holder receives per block as part of the airdrop
+    mapping(address => uint) public compAirdropSpeeds;
+
+    /// @notice Last block at which an account claimed their airdrop
+    mapping(address => uint) public lastAirdropBlock;
+
+    /// @notice Block at which the airdrop distribution starts
+    uint public airdropStartBlock;
+
+    /// @notice Block at which the airdrop distribution ends
+    uint public airdropEndBlock;
+
 }

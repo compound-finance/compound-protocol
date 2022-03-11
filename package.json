@@ -30,6 +30,7 @@
     "solparse": "^2.2.8"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^2.5.0",
     "eth-saddle": "^0.1.21"
   },
   "resolutions": {

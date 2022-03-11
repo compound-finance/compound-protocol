@@ -62,6 +62,32 @@ function keccak256(values) {
   return ethers.utils.keccak256(values);
 }
 
+function getMerkleRoot(values) {
+  if (values.length !== 2) {
+    // NOTE: use a library if you need more that one level
+    throw new Error('Not Implemented')
+  }
+
+  const leftLeft = values[0];
+  const rightLeave = values[1];
+
+  if (leftLeft <= rightLeave) {
+    return keccak256(
+      encodeParameters(
+        ['bytes32', 'bytes32'],
+        [leftLeft, rightLeave]
+      )
+    )
+  } else {
+    return keccak256(
+      encodeParameters(
+        ['bytes32', 'bytes32'],
+        [rightLeave, leftLeft]
+      )
+    )
+  }
+}
+
 function unlockedAccounts() {
   let provider = web3.currentProvider;
   if (provider._providers)
@@ -131,6 +157,9 @@ async function sendFallback(contract, opts = {}) {
 module.exports = {
   address,
   encodeParameters,
+  solidityKeccak256: ethers.utils.solidityKeccak256,
+  solidityPack: ethers.utils.solidityPack,
+  getMerkleRoot,
   etherBalance,
   etherGasCost,
   etherExp,

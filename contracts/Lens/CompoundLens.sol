@@ -14,6 +14,7 @@ interface ComptrollerLensInterface {
     function getAccountLiquidity(address) external view returns (uint, uint, uint);
     function getAssetsIn(address) external view returns (CTokenInterface[] memory);
     function claimComp(address) external;
+    function claimComp(address, uint256, bytes32[] calldata) external;
     function compAccrued(address) external view returns (uint);
 }
 
@@ -371,6 +372,22 @@ contract CompoundLens {
     function getCompBalanceMetadataExt(Comp comp, ComptrollerLensInterface comptroller, address account) external returns (CompBalanceMetadataExt memory) {
         uint balance = comp.balanceOf(account);
         comptroller.claimComp(account);
+        uint newBalance = comp.balanceOf(account);
+        uint accrued = comptroller.compAccrued(account);
+        uint total = add(accrued, newBalance, "sum comp total");
+        uint allocated = sub(total, balance, "sub allocated");
+
+        return CompBalanceMetadataExt({
+            balance: balance,
+            votes: uint256(comp.getCurrentVotes(account)),
+            delegate: comp.delegates(account),
+            allocated: allocated
+        });
+    }
+
+    function getCompBalanceMetadataExt(Comp comp, ComptrollerLensInterface comptroller, address account, uint256 compSpeed, bytes32[] calldata proof) external returns (CompBalanceMetadataExt memory) {
+        uint balance = comp.balanceOf(account);
+        comptroller.claimComp(account, compSpeed, proof);
         uint newBalance = comp.balanceOf(account);
         uint accrued = comptroller.compAccrued(account);
         uint total = add(accrued, newBalance, "sum comp total");

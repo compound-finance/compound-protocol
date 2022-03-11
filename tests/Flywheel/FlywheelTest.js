@@ -10,7 +10,12 @@ const {
   etherExp,
   etherDouble,
   etherUnsigned,
-  etherMantissa
+  etherMantissa,
+  keccak256,
+  encodeParameters,
+  solidityKeccak256,
+  solidityPack,
+  getMerkleRoot
 } = require('../Utils/Ethereum');
 
 const compRate = etherUnsigned(1e18);
@@ -735,6 +740,149 @@ describe('Flywheel', () => {
       await expect(
         send(comptroller, 'claimComp', [[a1, a2], [cNOT._address], true, true])
       ).rejects.toRevert('revert market must be listed');
+    });
+  });
+
+  describe('claimComp airdrop', () => {
+    it('should accrue comp and then transfer comp accrued', async () => {
+      const merkleRoot = solidityKeccak256(
+        ['address', 'uint256'],
+        [a1, etherExp(0.5).toString()]
+      )
+      const compRemaining = compRate.multipliedBy(100);
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
+      await send(comptroller, 'setBlockNumber', [150]);
+      const a1AccruedPre = await compAccrued(comptroller, a1);
+      const compBalancePre = await compBalance(comptroller, a1);
+      const tx = await send(comptroller, 'claimComp', [a1, etherExp(0.5), []]);
+      const a1AccruedPost = await compAccrued(comptroller, a1);
+      const compBalancePost = await compBalance(comptroller, a1);
+      expect(tx.gasUsed).toBeLessThan(400000);
+      expect(a1AccruedPre).toEqualNumber(0);
+      expect(a1AccruedPost).toEqualNumber(0);
+      expect(compBalancePre).toEqualNumber(0);
+      expect(compBalancePost).toEqualNumber(etherExp(0.5).multipliedBy(50));
+    });
+
+    it('should not claim airdrop twice', async () => {
+      const merkleRoot = solidityKeccak256(
+        ['address', 'uint256'],
+        [a1, etherExp(0.5).toString()]
+      )
+      const compRemaining = compRate.multipliedBy(100);
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
+      await send(comptroller, 'setBlockNumber', [150]);
+      const a1AccruedPre = await compAccrued(comptroller, a1);
+      const compBalancePre = await compBalance(comptroller, a1);
+      await send(comptroller, 'claimComp', [a1, etherExp(0.5), []]);
+      await expect(send(comptroller, 'claimComp', [a1, etherExp(0.5), []])).rejects.toRevert('revert airdrop already claimed')
+      const a1AccruedPost = await compAccrued(comptroller, a1);
+      const compBalancePost = await compBalance(comptroller, a1);
+      expect(a1AccruedPre).toEqualNumber(0);
+      expect(a1AccruedPost).toEqualNumber(0);
+      expect(compBalancePre).toEqualNumber(0);
+      expect(compBalancePost).toEqualNumber(etherExp(0.5).multipliedBy(50));
+    });
+
+    it('should not claim if not started', async () => {
+      const merkleRoot = solidityKeccak256(
+        ['address', 'uint256'],
+        [a1, etherExp(0.5).toString()]
+      )
+      const compRemaining = compRate.multipliedBy(100);
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
+      await send(comptroller, 'setBlockNumber', [50]);
+      const a1AccruedPre = await compAccrued(comptroller, a1);
+      const compBalancePre = await compBalance(comptroller, a1);
+      await send(comptroller, 'claimComp', [a1, etherExp(0.5), []]);
+      const a1AccruedPost = await compAccrued(comptroller, a1);
+      const compBalancePost = await compBalance(comptroller, a1);
+      expect(a1AccruedPre).toEqualNumber(0);
+      expect(a1AccruedPost).toEqualNumber(0);
+      expect(compBalancePre).toEqualNumber(0);
+      expect(compBalancePost).toEqualNumber(0);
+    });
+
+    it('should only distribute airdrop until the end', async () => {
+      const merkleRoot = solidityKeccak256(
+        ['address', 'uint256'],
+        [a1, etherExp(0.5).toString()]
+      )
+      const compRemaining = compRate.multipliedBy(200);
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
+      await send(comptroller, 'setBlockNumber', [250]);
+      const a1AccruedPre = await compAccrued(comptroller, a1);
+      const compBalancePre = await compBalance(comptroller, a1);
+      await send(comptroller, 'claimComp', [a1, etherExp(0.5), []]);
+      const a1AccruedPost = await compAccrued(comptroller, a1);
+      const compBalancePost = await compBalance(comptroller, a1);
+      expect(a1AccruedPre).toEqualNumber(0);
+      expect(a1AccruedPost).toEqualNumber(0);
+      expect(compBalancePre).toEqualNumber(0);
+      expect(compBalancePost).toEqualNumber(etherExp(0.5).multipliedBy(100));
+    });
+
+    it('should distribute airdrop to account in the merkle tree', async () => {
+      const a1Node = solidityKeccak256(
+        ['address', 'uint256'],
+        [a1, etherExp(0.5).toString()]
+      )
+      const a2Node = solidityKeccak256(
+        ['address', 'uint256'],
+        [a2, etherExp(0.5).toString()]
+      )
+      const merkleRoot = getMerkleRoot([a1Node, a2Node]);
+      const compRemaining = compRate.multipliedBy(200);
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
+      await send(comptroller, 'setBlockNumber', [250]);
+      const a1AccruedPre = await compAccrued(comptroller, a1);
+      const compBalancePre = await compBalance(comptroller, a1);
+      await send(comptroller, 'claimComp', [a1, etherExp(0.5), [a2Node]]);
+      const a1AccruedPost = await compAccrued(comptroller, a1);
+      const compBalancePost = await compBalance(comptroller, a1);
+      expect(a1AccruedPre).toEqualNumber(0);
+      expect(a1AccruedPost).toEqualNumber(0);
+      expect(compBalancePre).toEqualNumber(0);
+      expect(compBalancePost).toEqualNumber(etherExp(0.5).multipliedBy(100));
+    });
+
+    it('should revert if account not in the merkle tree', async () => {
+      const a1Node = solidityKeccak256(
+        ['address', 'uint256'],
+        [a3, etherExp(0.5).toString()]
+      )
+      const a2Node = solidityKeccak256(
+        ['address', 'uint256'],
+        [a2, etherExp(0.5).toString()]
+      )
+      const merkleRoot = getMerkleRoot([a1Node, a2Node]);
+      const compRemaining = compRate.multipliedBy(200);
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
+      await send(comptroller, 'setBlockNumber', [250]);
+      await expect(send(comptroller, 'claimComp', [a1, etherExp(0.5), [a2Node]])).rejects.toRevert('revert invalid proof for airdrop claim');
+    });
+
+    it('should revert when providing revert invalid data', async () => {
+      const a1Node = solidityKeccak256(
+        ['address', 'uint256'],
+        [a1, etherExp(0.5).toString()]
+      )
+      const a2Node = solidityKeccak256(
+        ['address', 'uint256'],
+        [a2, etherExp(0.5).toString()]
+      )
+      const merkleRoot = getMerkleRoot([a1Node, a2Node]);
+      const compRemaining = compRate.multipliedBy(200);
+      await send(comptroller.comp, 'transfer', [comptroller._address, compRemaining], {from: root});
+      await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
+      await send(comptroller, 'setBlockNumber', [250]);
+      await expect(send(comptroller, 'claimComp', [a1, etherExp(1), [a2Node]])).rejects.toRevert('revert invalid proof for airdrop claim');
     });
   });
 
