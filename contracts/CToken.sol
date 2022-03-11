@@ -305,9 +305,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
              */
             uint totalCash = getCashPrior();
             uint cashPlusBorrowsMinusReserves = totalCash + totalBorrows - totalReserves;
-            Exp memory exchangeRate = Exp({mantissa: cashPlusBorrowsMinusReserves * expScale / _totalSupply});
+            uint exchangeRate = cashPlusBorrowsMinusReserves * expScale / _totalSupply;
 
-            return exchangeRate.mantissa;
+            return exchangeRate;
         }
     }
 
