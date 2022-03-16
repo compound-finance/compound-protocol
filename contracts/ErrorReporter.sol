@@ -81,23 +81,17 @@ contract TokenErrorReporter {
 
     error MintComptrollerRejection(uint256 errorCode);
     error MintFreshnessCheck();
-    error MintAccrueInterestFailed(uint256 errorCode);
 
     error RedeemComptrollerRejection(uint256 errorCode);
     error RedeemFreshnessCheck();
-    error RedeemAccrueInterestFailed(uint256 errorCode);
     error RedeemTransferOutNotPossible();
 
     error BorrowComptrollerRejection(uint256 errorCode);
     error BorrowFreshnessCheck();
-    error BorrowAccrueInterestFailed(uint256 errorCode);
     error BorrowCashNotAvailable();
 
     error RepayBorrowComptrollerRejection(uint256 errorCode);
     error RepayBorrowFreshnessCheck();
-    error RepayBorrowAccrueInterestFailed(uint256 errorCode);
-
-    error RepayBehalfAccrueInterestFailed(uint256 errorCode);
 
     error LiquidateComptrollerRejection(uint256 errorCode);
     error LiquidateFreshnessCheck();
@@ -117,21 +111,17 @@ contract TokenErrorReporter {
     error SetComptrollerOwnerCheck();
     error SetPendingAdminOwnerCheck();
 
-    error SetReserveFactorAccrueInterestFailed(uint256 errorCode);
     error SetReserveFactorAdminCheck();
     error SetReserveFactorFreshCheck();
     error SetReserveFactorBoundsCheck();
 
-    error AddReservesAccrueInterestFailed(uint256 errorCode);
     error AddReservesFactorFreshCheck(uint256 actualAddAmount);
 
-    error ReduceReservesAccrueInterestFailed(uint256 errorCode);
     error ReduceReservesAdminCheck();
     error ReduceReservesFreshCheck();
     error ReduceReservesCashNotAvailable();
     error ReduceReservesCashValidation();
 
-    error SetInterestRateModelAccrueInterestFailed(uint256 errorCode);
     error SetInterestRateModelOwnerCheck();
     error SetInterestRateModelFreshCheck();
 }
