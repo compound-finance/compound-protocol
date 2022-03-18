@@ -104,3 +104,12 @@ Linting
 To lint the code, run:
 
     yarn lint
+
+Automated Security Checks
+-------
+
+First you need to install slither: [how to install slither](https://github.com/crytic/slither#how-to-install)
+
+To check for security issues, run:
+
+    yarn slither

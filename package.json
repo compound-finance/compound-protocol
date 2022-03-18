@@ -17,7 +17,8 @@
     "checksize": "npx run ./script/saddle/comptrollerSize.js",
     "hardhat": "cd deployment && yarn && yarn hardhat",
     "hardhat:node": "cd deployment && yarn && yarn hardhat node",
-    "hardhat:deploy": "cd deployment && yarn && yarn hardhat deploy"
+    "hardhat:deploy": "cd deployment && yarn && yarn hardhat deploy",
+    "slither": "yarn hardhat compile && slither . --hardhat-ignore-compile --compile-force-framework hardhat"
   },
   "repository": "git@github.com:compound-finance/compound-protocol.git",
   "author": "Compound Finance",
