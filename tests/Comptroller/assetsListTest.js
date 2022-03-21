@@ -5,21 +5,22 @@ const {
 } = require('../Utils/Compound');
 
 describe('assetListTest', () => {
-  let root, customer, accounts;
+  let customer;
   let comptroller;
-  let allTokens, OMG, ZRX, BAT, REP, DAI, SKT;
+  let allTokens, OMG, ZRX, BAT, SKT;
 
   beforeEach(async () => {
-    [root, customer, ...accounts] = saddle.accounts;
+    [, customer] = saddle.accounts;
     comptroller = await makeComptroller({maxAssets: 10});
-    allTokens = [OMG, ZRX, BAT, REP, DAI, SKT] = await Promise.all(
+    allTokens = await Promise.all(
       ['OMG', 'ZRX', 'BAT', 'REP', 'DAI', 'sketch']
         .map(async (name) => makeCToken({comptroller, name, symbol: name, supportMarket: name != 'sketch', underlyingPrice: 0.5}))
     );
+    [OMG, ZRX, BAT, , , SKT] = allTokens;
   });
 
   async function checkMarkets(expectedTokens) {
-    for (let token of allTokens) {
+    for (const token of allTokens) {
       const isExpected = expectedTokens.some(e => e.symbol == token.symbol);
       expect(await call(comptroller, 'checkMembership', [customer, token._address])).toEqual(isExpected);
     }
@@ -28,7 +29,7 @@ describe('assetListTest', () => {
   async function enterAndCheckMarkets(enterTokens, expectedTokens, expectedErrors = null) {
     const {reply, receipt} = await both(comptroller, 'enterMarkets', [enterTokens.map(t => t._address)], {from: customer});
     const assetsIn = await call(comptroller, 'getAssetsIn', [customer]);
-    expectedErrors = expectedErrors || enterTokens.map(_ => 'NO_ERROR');
+    expectedErrors = expectedErrors || enterTokens.map(() => 'NO_ERROR');
 
     reply.forEach((tokenReply, i) => {
       expect(tokenReply).toHaveTrollError(expectedErrors[i]);
@@ -40,7 +41,7 @@ describe('assetListTest', () => {
     await checkMarkets(expectedTokens);
 
     return receipt;
-  };
+  }
 
   async function exitAndCheckMarkets(exitToken, expectedTokens, expectedError = 'NO_ERROR') {
     const {reply, receipt} = await both(comptroller, 'exitMarket', [exitToken._address], {from: customer});
@@ -50,16 +51,16 @@ describe('assetListTest', () => {
     expect(assetsIn).toEqual(expectedTokens.map(t => t._address));
     await checkMarkets(expectedTokens);
     return receipt;
-  };
+  }
 
   describe('enterMarkets', () => {
     it("properly emits events", async () => {
       const result1 = await enterAndCheckMarkets([OMG], [OMG]);
       const result2 = await enterAndCheckMarkets([OMG], [OMG]);
       expect(result1).toHaveLog('MarketEntered', {
-          cToken: OMG._address,
-          account: customer
-        });
+        cToken: OMG._address,
+        account: customer
+      });
       expect(result2.events).toEqual({});
     });
 

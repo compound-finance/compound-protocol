@@ -118,7 +118,7 @@ async function makeComptroller(opts = {}) {
     const weth = await makeToken({
       kind: 'weth',
       quantity: 0,
-    })
+    });
 
     return Object.assign(unitroller, { priceOracle, comp, weth });
   }
@@ -142,103 +142,103 @@ async function makeCToken(opts = {}) {
   let cDelegator, cDelegatee, cDaiMaker;
 
   switch (kind) {
-    case 'cether':
-      cToken = await deploy('CEtherHarness',
-        [
-          comptroller._address,
-          interestRateModel._address,
-          exchangeRate,
-          name,
-          symbol,
-          decimals,
-          admin
-        ])
-      break;
+  case 'cether':
+    cToken = await deploy('CEtherHarness',
+      [
+        comptroller._address,
+        interestRateModel._address,
+        exchangeRate,
+        name,
+        symbol,
+        decimals,
+        admin
+      ]);
+    break;
 
-    case 'cwrappednative':
-      underlying = comptroller.weth || await makeToken({
-        kind: 'weth',
-        quantity: 0,
-      });
-      cDelegatee = await deploy('CWrappedNativeDelegateHarness');
-      cDelegator = await deploy('CWrappedNativeDelegator',
-        [
-          underlying._address,
-          comptroller._address,
-          interestRateModel._address,
-          exchangeRate,
-          name,
-          symbol,
-          decimals,
-          admin,
-          cDelegatee._address,
-          "0x0"
-        ]
-      );
-      cToken = await saddle.getContractAt('CWrappedNativeDelegateHarness', cDelegator._address);
-      break;
+  case 'cwrappednative':
+    underlying = comptroller.weth || await makeToken({
+      kind: 'weth',
+      quantity: 0,
+    });
+    cDelegatee = await deploy('CWrappedNativeDelegateHarness');
+    cDelegator = await deploy('CWrappedNativeDelegator',
+      [
+        underlying._address,
+        comptroller._address,
+        interestRateModel._address,
+        exchangeRate,
+        name,
+        symbol,
+        decimals,
+        admin,
+        cDelegatee._address,
+        "0x0"
+      ]
+    );
+    cToken = await saddle.getContractAt('CWrappedNativeDelegateHarness', cDelegator._address);
+    break;
 
-    case 'cdai':
-      cDaiMaker  = await deploy('CDaiDelegateMakerHarness');
-      underlying = cDaiMaker;
-      cDelegatee = await deploy('CDaiDelegateHarness');
-      cDelegator = await deploy('CErc20Delegator',
-        [
-          underlying._address,
-          comptroller._address,
-          interestRateModel._address,
-          exchangeRate,
-          name,
-          symbol,
-          decimals,
-          admin,
-          cDelegatee._address,
-          encodeParameters(['address', 'address'], [cDaiMaker._address, cDaiMaker._address])
-        ]
-      );
-      cToken = await saddle.getContractAt('CDaiDelegateHarness', cDelegator._address);
-      break;
+  case 'cdai':
+    cDaiMaker = await deploy('CDaiDelegateMakerHarness');
+    underlying = cDaiMaker;
+    cDelegatee = await deploy('CDaiDelegateHarness');
+    cDelegator = await deploy('CErc20Delegator',
+      [
+        underlying._address,
+        comptroller._address,
+        interestRateModel._address,
+        exchangeRate,
+        name,
+        symbol,
+        decimals,
+        admin,
+        cDelegatee._address,
+        encodeParameters(['address', 'address'], [cDaiMaker._address, cDaiMaker._address])
+      ]
+    );
+    cToken = await saddle.getContractAt('CDaiDelegateHarness', cDelegator._address);
+    break;
     
-    case 'ccomp':
-      underlying = await deploy('Comp', [opts.compHolder || root, 'COMP', 'Compound']);
-      cDelegatee = await deploy('CErc20DelegateHarness');
-      cDelegator = await deploy('CErc20Delegator',
-        [
-          underlying._address,
-          comptroller._address,
-          interestRateModel._address,
-          exchangeRate,
-          name,
-          symbol,
-          decimals,
-          admin,
-          cDelegatee._address,
-          "0x0"
-        ]
-      );
-      cToken = await saddle.getContractAt('CErc20DelegateHarness', cDelegator._address);
-      break;
+  case 'ccomp':
+    underlying = await deploy('Comp', [opts.compHolder || root, 'COMP', 'Compound']);
+    cDelegatee = await deploy('CErc20DelegateHarness');
+    cDelegator = await deploy('CErc20Delegator',
+      [
+        underlying._address,
+        comptroller._address,
+        interestRateModel._address,
+        exchangeRate,
+        name,
+        symbol,
+        decimals,
+        admin,
+        cDelegatee._address,
+        "0x0"
+      ]
+    );
+    cToken = await saddle.getContractAt('CErc20DelegateHarness', cDelegator._address);
+    break;
 
-    case 'cerc20':
-    default:
-      underlying = opts.underlying || await makeToken(opts.underlyingOpts);
-      cDelegatee = await deploy('CErc20DelegateHarness');
-      cDelegator = await deploy('CErc20Delegator',
-        [
-          underlying._address,
-          comptroller._address,
-          interestRateModel._address,
-          exchangeRate,
-          name,
-          symbol,
-          decimals,
-          admin,
-          cDelegatee._address,
-          "0x0"
-        ]
-      );
-      cToken = await saddle.getContractAt('CErc20DelegateHarness', cDelegator._address);
-      break;
+  case 'cerc20':
+  default:
+    underlying = opts.underlying || await makeToken(opts.underlyingOpts);
+    cDelegatee = await deploy('CErc20DelegateHarness');
+    cDelegator = await deploy('CErc20Delegator',
+      [
+        underlying._address,
+        comptroller._address,
+        interestRateModel._address,
+        exchangeRate,
+        name,
+        symbol,
+        decimals,
+        admin,
+        cDelegatee._address,
+        "0x0"
+      ]
+    );
+    cToken = await saddle.getContractAt('CErc20DelegateHarness', cDelegator._address);
+    break;
       
   }
 
@@ -265,7 +265,6 @@ async function makeCToken(opts = {}) {
 
 async function makeInterestRateModel(opts = {}) {
   const {
-    root = saddle.account,
     kind = 'harnessed'
   } = opts || {};
 
@@ -307,13 +306,12 @@ async function makePriceOracle(opts = {}) {
   if (kind == 'proxy') {
     return await deploy('PriceOracleProxy', [
       root,
-    ])
+    ]);
   }
 }
 
 async function makeToken(opts = {}) {
   const {
-    root = saddle.account,
     kind = 'erc20'
   } = opts || {};
 
@@ -388,9 +386,9 @@ async function setEtherBalance(cEther, balance) {
 
 async function getBalances(cTokens, accounts) {
   const balances = {};
-  for (let cToken of cTokens) {
+  for (const cToken of cTokens) {
     const cBalances = balances[cToken._address] = {};
-    for (let account of accounts) {
+    for (const account of accounts) {
       cBalances[account] = {
         eth: await etherBalance(account),
         cash: cToken.underlying && await balanceOf(cToken.underlying, account),
@@ -410,7 +408,7 @@ async function getBalances(cTokens, accounts) {
 }
 
 async function adjustBalances(balances, deltas) {
-  for (let delta of deltas) {
+  for (const delta of deltas) {
     let cToken, account, key, diff;
     if (delta.length == 4) {
       ([cToken, account, key, diff] = delta);

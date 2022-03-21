@@ -4,18 +4,15 @@ const {
 } = require('../Utils/Compound');
 const {
   etherExp,
-  etherDouble,
   etherUnsigned
 } = require('../Utils/Ethereum');
 
 
 // NB: coverage doesn't like this
 describe.skip('Flywheel trace ops', () => {
-  let root, a1, a2, a3, accounts;
   let comptroller, market;
   beforeEach(async () => {
-    let interestRateModelOpts = {borrowRate: 0.000001};
-    [root, a1, a2, a3, ...accounts] = saddle.accounts;
+    const interestRateModelOpts = {borrowRate: 0.000001};
     comptroller = await makeComptroller();
     market = await makeCToken({comptroller, supportMarket: true, underlyingPrice: 3, interestRateModelOpts});
     await send(comptroller, '_addCompMarkets', [[market].map(c => c._address)]);

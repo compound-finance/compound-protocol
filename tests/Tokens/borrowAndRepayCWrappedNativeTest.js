@@ -28,9 +28,9 @@ async function setEtherBalance(cToken, balance) {
 }
 
 describe('CWrappedNative', function () {
-  let cToken, root, borrower, benefactor, accounts;
+  let cToken, root, borrower, benefactor;
   beforeEach(async () => {
-    [root, borrower, benefactor, ...accounts] = saddle.accounts;
+    [root, borrower, benefactor] = saddle.accounts;
     cToken = await makeCToken({kind: 'cwrappednative', comptrollerOpts: {kind: 'bool'}});
   });
 
@@ -49,7 +49,7 @@ describe('CWrappedNative', function () {
       return send(cToken, 'harnessBorrowFreshNative', [borrower, borrowAmount], {from: borrower});
     }
 
-    async function borrow(cToken, borrower, borrowAmount, opts = {}) {
+    async function borrow(cToken, borrower, borrowAmount) {
       await send(cToken, 'harnessFastForward', [1]);
       return send(cToken, 'borrowNative', [borrowAmount], {from: borrower});
     }
@@ -297,7 +297,7 @@ describe('CWrappedNative', function () {
 
       it("reverts if overpaying", async () => {
         const beforeAccountBorrowSnap = await borrowSnapshot(cToken, borrower);
-        let tooMuch = new BigNumber(beforeAccountBorrowSnap.principal).plus(1);
+        const tooMuch = new BigNumber(beforeAccountBorrowSnap.principal).plus(1);
         await expect(repayBorrow(cToken, borrower, tooMuch)).rejects.toRevert("revert REPAY_BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED");
         // await assert.toRevertWithError(repayBorrow(cToken, borrower, tooMuch), 'MATH_ERROR', "revert repayBorrow failed");
       });
@@ -329,7 +329,7 @@ describe('CWrappedNative', function () {
         expect(afterAccountBorrowSnap.principal).toEqualNumber(beforeAccountBorrowSnap.principal.minus(repayAmount));
       });
     });
-  })
+  });
 
   describe('use WETH', () => {
     async function preBorrow(cToken, borrower, borrowAmount) {
@@ -346,7 +346,7 @@ describe('CWrappedNative', function () {
       return send(cToken, 'harnessBorrowFresh', [borrower, borrowAmount]);
     }
 
-    async function borrow(cToken, borrower, borrowAmount, opts = {}) {
+    async function borrow(cToken, borrower, borrowAmount) {
       // make sure to have a block delta so we accrue interest
       await send(cToken, 'harnessFastForward', [1]);
       return send(cToken, 'borrow', [borrowAmount], {from: borrower});
@@ -628,5 +628,5 @@ describe('CWrappedNative', function () {
         expect(afterAccountBorrowSnap.principal).toEqualNumber(beforeAccountBorrowSnap.principal.minus(repayAmount));
       });
     });
-  })
+  });
 });

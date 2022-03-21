@@ -45,3 +45,4 @@ deployments/localhost
 artifacts
 cache
 .env
+.vscode

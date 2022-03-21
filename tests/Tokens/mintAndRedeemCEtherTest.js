@@ -7,7 +7,6 @@ const {
 
 const {
   makeCToken,
-  balanceOf,
   fastForward,
   setBalance,
   setEtherBalance,
@@ -21,7 +20,7 @@ const mintTokens = mintAmount.dividedBy(exchangeRate);
 const redeemTokens = etherUnsigned(10e3);
 const redeemAmount = redeemTokens.multipliedBy(exchangeRate);
 
-async function preMint(cToken, minter, mintAmount, mintTokens, exchangeRate) {
+async function preMint(cToken, exchangeRate) {
   await send(cToken.comptroller, 'setMintAllowed', [true]);
   await send(cToken.comptroller, 'setMintVerify', [true]);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
@@ -46,20 +45,22 @@ async function preRedeem(cToken, redeemer, redeemTokens, redeemAmount, exchangeR
   await setBalance(cToken, redeemer, redeemTokens);
 }
 
+// eslint-disable-next-line no-unused-vars
 async function redeemCTokens(cToken, redeemer, redeemTokens, redeemAmount) {
   return send(cToken, 'redeem', [redeemTokens], {from: redeemer});
 }
 
+// eslint-disable-next-line no-unused-vars
 async function redeemUnderlying(cToken, redeemer, redeemTokens, redeemAmount) {
   return send(cToken, 'redeemUnderlying', [redeemAmount], {from: redeemer});
 }
 
 describe('CEther', () => {
-  let root, minter, redeemer, accounts;
+  let minter, redeemer;
   let cToken;
 
   beforeEach(async () => {
-    [root, minter, redeemer, ...accounts] = saddle.accounts;
+    [, minter, redeemer] = saddle.accounts;
     cToken = await makeCToken({kind: 'cether', comptrollerOpts: {kind: 'bool'}});
     await fastForward(cToken, 1);
   });
@@ -67,7 +68,7 @@ describe('CEther', () => {
   [mintExplicit, mintFallback].forEach((mint) => {
     describe(mint.name, () => {
       beforeEach(async () => {
-        await preMint(cToken, minter, mintAmount, mintTokens, exchangeRate);
+        await preMint(cToken, exchangeRate);
       });
 
       it("reverts if interest accrual fails", async () => {

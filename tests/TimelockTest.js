@@ -14,21 +14,21 @@ describe('Timelock', () => {
   let blockTimestamp;
   let timelock;
   let delay = oneWeekInSeconds;
-  let newDelay = delay.multipliedBy(2);
+  const newDelay = delay.multipliedBy(2);
   let target;
-  let value = zero;
+  const value = zero;
   let signature = 'setDelay(uint256)';
   let data = encodeParameters(['uint256'], [newDelay.toFixed()]);
-  let revertData = encodeParameters(['uint256'], [etherUnsigned(60 * 60).toFixed()]);
+  const revertData = encodeParameters(['uint256'], [etherUnsigned(60 * 60).toFixed()]);
   let eta;
   let queuedTxHash;
 
   beforeEach(async () => {
-    [root, notAdmin, newAdmin] = accounts;
+    [root, notAdmin, newAdmin] = saddle.accounts;
     timelock = await deploy('TimelockHarness', [root, delay]);
 
     blockTimestamp = etherUnsigned(100);
-    await freezeTime(blockTimestamp.toNumber())
+    await freezeTime(blockTimestamp.toNumber());
     target = timelock.options.address;
     eta = blockTimestamp.plus(delay);
 
@@ -42,12 +42,12 @@ describe('Timelock', () => {
 
   describe('constructor', () => {
     it('sets address of admin', async () => {
-      let configuredAdmin = await call(timelock, 'admin');
+      const configuredAdmin = await call(timelock, 'admin');
       expect(configuredAdmin).toEqual(root);
     });
 
     it('sets delay', async () => {
-      let configuredDelay = await call(timelock, 'delay');
+      const configuredDelay = await call(timelock, 'delay');
       expect(configuredDelay).toEqual(delay.toString());
     });
   });
@@ -344,7 +344,7 @@ describe('Timelock', () => {
       expect(queueTransactionsHashValueBefore).toEqual(true);
 
       const newBlockTimestamp = blockTimestamp.plus(delay).plus(1);
-      await freezeTime(newBlockTimestamp.toNumber())
+      await freezeTime(newBlockTimestamp.toNumber());
 
       const result = await send(timelock, 'executeTransaction', [target, value, signature, data, eta], {
         from: root

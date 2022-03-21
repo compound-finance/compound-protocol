@@ -32,7 +32,7 @@ async function borrowFresh(cToken, borrower, borrowAmount) {
   return send(cToken, 'harnessBorrowFresh', [borrower, borrowAmount]);
 }
 
-async function borrow(cToken, borrower, borrowAmount, opts = {}) {
+async function borrow(cToken, borrower, borrowAmount) {
   // make sure to have a block delta so we accrue interest
   await send(cToken, 'harnessFastForward', [1]);
   return send(cToken, 'borrow', [borrowAmount], {from: borrower});
@@ -67,9 +67,9 @@ async function repayBorrowBehalf(cToken, payer, borrower, repayAmount) {
 }
 
 describe('CToken', function () {
-  let cToken, root, borrower, benefactor, accounts;
+  let cToken, borrower, benefactor;
   beforeEach(async () => {
-    [root, borrower, benefactor, ...accounts] = saddle.accounts;
+    [, borrower, benefactor] = saddle.accounts;
     cToken = await makeCToken({comptrollerOpts: {kind: 'bool'}});
   });
 

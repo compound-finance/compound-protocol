@@ -28,12 +28,12 @@ describe('CompoundLens', () => {
 
   beforeEach(async () => {
     compoundLens = await deploy('CompoundLens');
-    acct = accounts[0];
+    acct = saddle.accounts[0];
   });
 
   describe('cTokenMetadata', () => {
     it('is correct for a cErc20', async () => {
-      let cErc20 = await makeCToken();
+      const cErc20 = await makeCToken();
       expect(
         cullTuple(await call(compoundLens, 'cTokenMetadata', [cErc20._address]))
       ).toEqual(
@@ -57,7 +57,7 @@ describe('CompoundLens', () => {
     });
 
     it('is correct for cEth', async () => {
-      let cEth = await makeCToken({kind: 'cwrappednative'});
+      const cEth = await makeCToken({kind: 'cwrappednative'});
 
       expect(
         cullTuple(await call(compoundLens, 'cTokenMetadata', [cEth._address]))
@@ -82,8 +82,8 @@ describe('CompoundLens', () => {
 
   describe('cTokenMetadataAll', () => {
     it('is correct for a cErc20 and cEther', async () => {
-      let cErc20 = await makeCToken();
-      let cEth = await makeCToken({kind: 'cwrappednative'});
+      const cErc20 = await makeCToken();
+      const cEth = await makeCToken({kind: 'cwrappednative'});
       expect(
         (await call(compoundLens, 'cTokenMetadataAll', [[cErc20._address, cEth._address]])).map(cullTuple)
       ).toEqual([
@@ -125,7 +125,7 @@ describe('CompoundLens', () => {
 
   describe('cTokenBalances', () => {
     it('is correct for cERC20', async () => {
-      let cErc20 = await makeCToken();
+      const cErc20 = await makeCToken();
       expect(
         cullTuple(await call(compoundLens, 'cTokenBalances', [cErc20._address, acct]))
       ).toEqual(
@@ -141,7 +141,7 @@ describe('CompoundLens', () => {
     });
 
     it('is correct for cETH', async () => {
-      let cEth = await makeCToken({kind: 'cwrappednative'});
+      const cEth = await makeCToken({kind: 'cwrappednative'});
       expect(
         cullTuple(await call(compoundLens, 'cTokenBalances', [cEth._address, acct], {gasPrice: '0'}))
       ).toEqual(
@@ -159,8 +159,8 @@ describe('CompoundLens', () => {
 
   describe('cTokenBalancesAll', () => {
     it('is correct for cEth and cErc20', async () => {
-      let cErc20 = await makeCToken();
-      let cEth = await makeCToken({kind: 'cwrappednative'});
+      const cErc20 = await makeCToken();
+      const cEth = await makeCToken({kind: 'cwrappednative'});
       
       expect(
         (await call(compoundLens, 'cTokenBalancesAll', [[cErc20._address, cEth._address], acct], {gasPrice: '0'})).map(cullTuple)
@@ -182,12 +182,12 @@ describe('CompoundLens', () => {
           tokenBalance: "0",
         }
       ]);
-    })
+    });
   });
 
   describe('cTokenUnderlyingPrice', () => {
     it('gets correct price for cErc20', async () => {
-      let cErc20 = await makeCToken();
+      const cErc20 = await makeCToken();
       expect(
         cullTuple(await call(compoundLens, 'cTokenUnderlyingPrice', [cErc20._address]))
       ).toEqual(
@@ -199,7 +199,7 @@ describe('CompoundLens', () => {
     });
 
     it('gets correct price for cEth', async () => {
-      let cEth = await makeCToken({kind: 'cwrappednative'});
+      const cEth = await makeCToken({kind: 'cwrappednative'});
       expect(
         cullTuple(await call(compoundLens, 'cTokenUnderlyingPrice', [cEth._address]))
       ).toEqual(
@@ -213,8 +213,8 @@ describe('CompoundLens', () => {
 
   describe('cTokenUnderlyingPriceAll', () => {
     it('gets correct price for both', async () => {
-      let cErc20 = await makeCToken();
-      let cEth = await makeCToken({kind: 'cwrappednative'});
+      const cErc20 = await makeCToken();
+      const cEth = await makeCToken({kind: 'cwrappednative'});
       expect(
         (await call(compoundLens, 'cTokenUnderlyingPriceAll', [[cErc20._address, cEth._address]])).map(cullTuple)
       ).toEqual([
@@ -232,7 +232,7 @@ describe('CompoundLens', () => {
 
   describe('getAccountLimits', () => {
     it('gets correct values', async () => {
-      let comptroller = await makeComptroller();
+      const comptroller = await makeComptroller();
 
       expect(
         cullTuple(await call(compoundLens, 'getAccountLimits', [comptroller._address, acct]))
@@ -274,7 +274,7 @@ describe('CompoundLens', () => {
             votes: "0",
           }
         ]);
-      })
+      });
     });
 
     describe('getGovProposals', () => {
@@ -297,7 +297,7 @@ describe('CompoundLens', () => {
             targets: targets
           }
         ]);
-      })
+      });
     });
   });
 
@@ -323,7 +323,7 @@ describe('CompoundLens', () => {
 
     describe('getCompBalanceMetadataExt', () => {
       it('gets correct values', async () => {
-        let comptroller = await makeComptroller();
+        const comptroller = await makeComptroller();
         await send(comptroller, 'setCompAccrued', [acct, 5]); // harness only
 
         expect(
@@ -340,9 +340,9 @@ describe('CompoundLens', () => {
         const merkleRoot = solidityKeccak256(
           ['address', 'uint256'],
           [acct, etherExp(0.5).toString()]
-        )
+        );
 
-        let comptroller = await makeComptroller();
+        const comptroller = await makeComptroller();
         await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
         await send(comptroller, 'setBlockNumber', [150]);
 
@@ -376,7 +376,7 @@ describe('CompoundLens', () => {
       it('reverts on future value', async () => {
         await expect(
           call(compoundLens, 'getCompVotes', [comp._address, acct, [currentBlock + 1]])
-        ).rejects.toRevert('revert Comp::getPriorVotes: not yet determined')
+        ).rejects.toRevert('revert Comp::getPriorVotes: not yet determined');
       });
     });
   });

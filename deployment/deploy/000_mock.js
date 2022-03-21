@@ -1,8 +1,6 @@
-const deploy = require("../utils/deploy");
 const { isTestnet } = require("../utils/env");
 
-const deployMocks = async ({ getNamedAccounts, deployments }) => {
-}
+const deployMocks = async () => {};
 
 deployMocks.id = "000_mock";
 deployMocks.tags = ["mocks"];

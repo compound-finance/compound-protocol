@@ -34,11 +34,11 @@ describe('CToken', function () {
       await send(cToken, 'harnessSetBalance', [root, 100]);
       expect(await call(cToken, 'balanceOf', [root])).toEqualNumber(100);
 
-      await send(cToken.comptroller, 'setTransferAllowed', [false])
+      await send(cToken.comptroller, 'setTransferAllowed', [false]);
       expect(await send(cToken, 'transfer', [root, 50])).toHaveTrollReject('TRANSFER_COMPTROLLER_REJECTION');
 
-      await send(cToken.comptroller, 'setTransferAllowed', [true])
-      await send(cToken.comptroller, 'setTransferVerify', [false])
+      await send(cToken.comptroller, 'setTransferAllowed', [true]);
+      await send(cToken.comptroller, 'setTransferVerify', [false]);
       // no longer support verifyTransfer on cToken end
       // await expect(send(cToken, 'transfer', [accounts[0], 50])).rejects.toRevert("revert transferVerify rejected transfer");
     });

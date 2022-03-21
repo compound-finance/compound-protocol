@@ -4,10 +4,10 @@ const {
 } = require('../Utils/Compound');
 
 describe('CToken', function () {
-  let root, accounts;
+  let accounts;
   let cToken, oldComptroller, newComptroller;
   beforeEach(async () => {
-    [root, ...accounts] = saddle.accounts;
+    [, ...accounts] = saddle.accounts;
     cToken = await makeCToken();
     oldComptroller = cToken.comptroller;
     newComptroller = await makeComptroller();

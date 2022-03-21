@@ -1,6 +1,6 @@
 const { address, etherMantissa } = require('../Utils/Ethereum');
 
-const { makeComptroller, makeCToken, makePriceOracle } = require('../Utils/Compound');
+const { makeCToken, makePriceOracle } = require('../Utils/Compound');
 
 describe('ComptrollerV1', function() {
   let root, accounts;
@@ -15,13 +15,13 @@ describe('ComptrollerV1', function() {
     unitroller = await deploy('Unitroller');
   });
 
-  let initializeBrains = async (priceOracle, closeFactor, maxAssets) => {
+  const initializeBrains = async (priceOracle, closeFactor, maxAssets) => {
     await send(unitroller, '_setPendingImplementation', [brains._address]);
     await send(brains, '_become', [unitroller._address, priceOracle._address, closeFactor, maxAssets, false]);
     return await saddle.getContractAt('ComptrollerG1', unitroller._address);
   };
 
-  let reinitializeBrains = async () => {
+  const reinitializeBrains = async () => {
     await send(unitroller, '_setPendingImplementation', [brains._address]);
     await send(brains, '_become', [unitroller._address, address(0), 0, 0, true]);
     return await saddle.getContractAt('ComptrollerG1', unitroller._address);

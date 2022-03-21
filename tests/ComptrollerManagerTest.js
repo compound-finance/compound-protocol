@@ -1,6 +1,5 @@
 const {
   makeComptroller,
-  makeCToken,
 } = require('./Utils/Compound');
 const {
   etherExp,
@@ -12,26 +11,23 @@ async function compAccrued(comptroller, user) {
 }
 
 async function compBalance(comp, user) {
-  return etherUnsigned(await call(comp, 'balanceOf', [user]))
+  return etherUnsigned(await call(comp, 'balanceOf', [user]));
 }
 
 describe('ComptrollerManager', () => {
-  let root, holder, accounts;
-  let comptrollerManager, comp, comptroller1, comptroller2, cLOW1, cLOW2;
+  let root, holder;
+  let comptrollerManager, comp, comptroller1, comptroller2;
   beforeEach(async () => {
-    let interestRateModelOpts = {borrowRate: 0.000001};
-    [root, holder, ...accounts] = saddle.accounts;
+    [root, holder] = saddle.accounts;
     comptrollerManager = await deploy('ComptrollerManager');
-    comp =  await deploy('Comp', [root, 'COMP', 'Compound']);
+    comp = await deploy('Comp', [root, 'COMP', 'Compound']);
     comptroller1 = await makeComptroller({comp});
-    cLOW1 = await makeCToken({comptroller: comptroller1, supportMarket: true, underlyingPrice: 1, interestRateModelOpts});
     comptroller2 = await makeComptroller({comp});
-    cLOW2 = await makeCToken({comptroller: comptroller2, supportMarket: true, underlyingPrice: 1, interestRateModelOpts});
   });
 
   describe('claimComp', () => {
     it('should claim from multiple Comptroller', async () => {
-      const compRemaining = etherExp(1), accruedAmt = etherUnsigned(0.0009e18)
+      const compRemaining = etherExp(1), accruedAmt = etherUnsigned(0.0009e18);
       await send(comptroller1.comp, 'transfer', [comptroller1._address, compRemaining], {from: root});
       await send(comptroller1, 'setCompAccrued', [holder, accruedAmt]);
       await send(comptroller2.comp, 'transfer', [comptroller2._address, compRemaining], {from: root});

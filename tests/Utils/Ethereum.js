@@ -27,8 +27,8 @@ async function etherGasCost(receipt) {
   return gasUsed.times(gasPrice);
 }
 
-function etherExp(num) { return etherMantissa(num, 1e18) }
-function etherDouble(num) { return etherMantissa(num, 1e36) }
+function etherExp(num) { return etherMantissa(num, 1e18); }
+function etherDouble(num) { return etherMantissa(num, 1e36); }
 function etherMantissa(num, scale = 1e18) {
   if (num < 0)
     return new BigNumber(2).pow(256).plus(num);
@@ -45,9 +45,9 @@ function mergeInterface(into, from) {
     acc[key(item)] = true;
     return acc;
   }, {});
-  const extended = from.options.jsonInterface.reduce((acc, item) => {
+  from.options.jsonInterface.reduce((acc, item) => {
     if (!(key(item) in existing))
-      acc.push(item)
+      acc.push(item);
     return acc;
   }, into.options.jsonInterface.slice());
   into.options.jsonInterface = into.options.jsonInterface.concat(from.options.jsonInterface);
@@ -65,7 +65,7 @@ function keccak256(values) {
 function getMerkleRoot(values) {
   if (values.length !== 2) {
     // NOTE: use a library if you need more that one level
-    throw new Error('Not Implemented')
+    throw new Error('Not Implemented');
   }
 
   const leftLeft = values[0];
@@ -77,14 +77,14 @@ function getMerkleRoot(values) {
         ['bytes32', 'bytes32'],
         [leftLeft, rightLeave]
       )
-    )
+    );
   } else {
     return keccak256(
       encodeParameters(
         ['bytes32', 'bytes32'],
         [rightLeave, leftLeft]
       )
-    )
+    );
   }
 }
 
@@ -122,12 +122,12 @@ async function freezeTime(seconds) {
 }
 
 async function advanceBlocks(blocks) {
-  let { result: num } = await rpc({ method: 'eth_blockNumber' });
+  const { result: num } = await rpc({ method: 'eth_blockNumber' });
   await rpc({ method: 'evm_mineBlockNumber', params: [blocks + parseInt(num)] });
 }
 
 async function blockNumber() {
-  let { result: num } = await rpc({ method: 'eth_blockNumber' });
+  const { result: num } = await rpc({ method: 'eth_blockNumber' });
   return parseInt(num);
 }
 

@@ -22,6 +22,7 @@ function loadScenario(file) {
 
   // Check if directory, and if so, recurse
   if (stat && stat.isDirectory()) {
+    // eslint-disable-next-line no-undef
     loadScenarios(fullPath);
   } else {
     // Ignore files if they don't match `.scen`
@@ -41,7 +42,7 @@ function loadScenario(file) {
           scenarios[`${name}: ${key}`] = val;
         });
       } catch (e) {
-        throw `Cannot parse scenario ${file}: ${e}`
+        throw `Cannot parse scenario ${file}: ${e}`;
       }
     }
   }
@@ -76,32 +77,33 @@ function run(file) {
         let fn = it;
 
         switch (events[0]) {
-          case "Pending":
-            fn = it.todo;
-            events = [];
-            break;
-          case "Gas":
-            // Skip gas tests on coverage
-            if (network === 'coverage') {
-              fn = it.skip;
-            }
-            events.shift();
-            break;
-          case "Only":
-            fn = it.only;
-            events.shift();
-            break;
-          case "Skip":
+        case "Pending":
+          fn = it.todo;
+          events = [];
+          break;
+        case "Gas":
+          // Skip gas tests on coverage
+          if (network === 'coverage') {
             fn = it.skip;
-            events.shift();
-            break;
+          }
+          events.shift();
+          break;
+        case "Only":
+          fn = it.only;
+          events.shift();
+          break;
+        case "Skip":
+          fn = it.skip;
+          events.shift();
+          break;
         }
 
         if (events.length === 0) {
           fn("scenario: " + name);
         } else {
           let finalWorld;
-          let runner = async () => {
+          const runner = async () => {
+            // eslint-disable-next-line no-undef
             let world = await initWorld(expect, new ConsolePrinter(verbose), web3, saddle, network, accounts, basePath, TOTAL_GAS);
             world = loadVerbose(world);
             world = loadInvokationOpts(world);
@@ -113,13 +115,13 @@ function run(file) {
             // console.log(["Final world", finalWorld, finalWorld.actions]);
 
             return finalWorld;
-          }
+          };
 
           const spec = fn("scenario: " + name, runner, 720000);
           afterEach(() => {
             if (finalWorld)
               spec.result.description += ` [${finalWorld.gasCounter.value} wei]`;
-          })
+          });
         }
       } else {
         it.skip("scenario: " + name, async () => {});

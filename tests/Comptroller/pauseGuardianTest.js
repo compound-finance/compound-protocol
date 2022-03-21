@@ -1,4 +1,4 @@
-const { address, both, etherMantissa } = require('../Utils/Ethereum');
+const { address } = require('../Utils/Ethereum');
 const { makeComptroller, makeCToken } = require('../Utils/Compound');
 
 describe('Comptroller', () => {
@@ -16,7 +16,7 @@ describe('Comptroller', () => {
 
     describe("failing", () => {
       it("emits a failure log if not sent by admin", async () => {
-        let result = await send(comptroller, '_setPauseGuardian', [root], {from: accounts[1]});
+        const result = await send(comptroller, '_setPauseGuardian', [root], {from: accounts[1]});
         expect(result).toHaveTrollFailure('UNAUTHORIZED', 'SET_PAUSE_GUARDIAN_OWNER_CHECK');
       });
 
@@ -48,7 +48,7 @@ describe('Comptroller', () => {
       });
 
       it('changes pending pause guardian', async () => {
-        let pauseGuardian = await call(comptroller, 'pauseGuardian');
+        const pauseGuardian = await call(comptroller, 'pauseGuardian');
         expect(pauseGuardian).toEqual(accounts[1]);
       });
     });
@@ -60,7 +60,7 @@ describe('Comptroller', () => {
       comptroller = cToken.comptroller;
     });
 
-    let globalMethods = ["Transfer", "Seize"];
+    const globalMethods = ["Transfer", "Seize"];
     describe('succeeding', () => {
       let pauseGuardian;
       beforeEach(async () => {
@@ -74,11 +74,13 @@ describe('Comptroller', () => {
           await expect(send(comptroller, `_set${method}Paused`, [false], {from: accounts[2]})).rejects.toRevert("revert only pause guardian and admin can pause");
         });
 
+
         it(`PauseGuardian can pause of ${method}GuardianPaused`, async () => {
+          let result, state;
           result = await send(comptroller, `_set${method}Paused`, [true], {from: pauseGuardian});
           expect(result).toHaveLog(`ActionPaused`, {action: method, pauseState: true});
 
-          let camelCase = method.charAt(0).toLowerCase() + method.substring(1);
+          const camelCase = method.charAt(0).toLowerCase() + method.substring(1);
 
           state = await call(comptroller, `${camelCase}GuardianPaused`);
           expect(state).toEqual(true);
@@ -114,7 +116,7 @@ describe('Comptroller', () => {
       });
     });
 
-    let marketMethods = ["Borrow", "Mint"];
+    const marketMethods = ["Borrow", "Mint"];
     describe('succeeding', () => {
       let pauseGuardian;
       beforeEach(async () => {
@@ -129,10 +131,11 @@ describe('Comptroller', () => {
         });
 
         it(`PauseGuardian can pause of ${method}GuardianPaused`, async () => {
+          let result, state;
           result = await send(comptroller, `_set${method}Paused`, [cToken._address, true], {from: pauseGuardian});
           expect(result).toHaveLog(`ActionPaused`, {cToken: cToken._address, action: method, pauseState: true});
 
-          let camelCase = method.charAt(0).toLowerCase() + method.substring(1);
+          const camelCase = method.charAt(0).toLowerCase() + method.substring(1);
 
           state = await call(comptroller, `${camelCase}GuardianPaused`, [cToken._address]);
           expect(state).toEqual(true);

@@ -6,17 +6,17 @@ const {
 } = require('../Utils/Compound');
 
 describe('Comptroller', () => {
-  let root, accounts;
+  let accounts;
 
   beforeEach(async () => {
-    [root, ...accounts] = saddle.accounts;
+    [, ...accounts] = saddle.accounts;
   });
 
   describe('liquidity', () => {
     it("fails if a price has not been set", async () => {
       const cToken = await makeCToken({supportMarket: true});
       await enterMarkets([cToken], accounts[1]);
-      let result = await call(cToken.comptroller, 'getAccountLiquidity', [accounts[1]]);
+      const result = await call(cToken.comptroller, 'getAccountLiquidity', [accounts[1]]);
       expect(result).toHaveTrollError('PRICE_ERROR');
     });
 
@@ -24,7 +24,7 @@ describe('Comptroller', () => {
       const collateralFactor = 0.5, underlyingPrice = 1, user = accounts[1], amount = 1e6;
       const cToken = await makeCToken({supportMarket: true, collateralFactor, underlyingPrice});
 
-      let error, liquidity, shortfall;
+      let liquidity, shortfall;
 
       // not in market yet, hypothetical borrow should have no effect
       ({1: liquidity, 2: shortfall} = await call(cToken.comptroller, 'getHypotheticalAccountLiquidity', [user, cToken._address, 0, amount]));
@@ -64,6 +64,7 @@ describe('Comptroller', () => {
 
       let error, liquidity, shortfall;
 
+      // eslint-disable-next-line prefer-const
       ({0: error, 1: liquidity, 2: shortfall} = await call(cToken3.comptroller, 'getAccountLiquidity', [user]));
       expect(error).toEqualNumber(0);
       expect(liquidity).toEqualNumber(collateral);

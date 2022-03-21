@@ -25,6 +25,7 @@
   "license": "UNLICENSED",
   "devDependencies": {
     "bignumber.js": "9.0.0",
+    "eslint": "^7",
     "jest-diff": "^26.4.2",
     "jest-junit": "^11.1.0",
     "solium": "^1.2.5",

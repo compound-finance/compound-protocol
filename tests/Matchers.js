@@ -1,7 +1,7 @@
 const { last } = require('./Utils/JS');
 const { address, etherUnsigned } = require('./Utils/Ethereum');
 const { default: diff } = require('jest-diff');
-const { ComptrollerErr, TokenErr, IRErr, MathErr } = require('./Errors');
+const { ComptrollerErr, TokenErr, MathErr } = require('./Errors');
 
 function opts(comment) {
   return {
@@ -15,7 +15,7 @@ function fail(msg, received=undefined) {
   return {
     pass: false,
     message: () => {
-      return received === undefined ? msg : `${msg}\n\nReceived: ${this.utils.printReceived(received)}`
+      return received === undefined ? msg : `${msg}\n\nReceived: ${this.utils.printReceived(received)}`;
     }
   };
 }
@@ -26,18 +26,18 @@ function logReporterFormatter(reporter) {
 
 function logFormatter(log, reporter=undefined) {
   return "Log {\n" + Object.entries(log).map(([key, values]) => {
-    let valuesFormatted = typeof(values) === 'object'
+    const valuesFormatted = typeof(values) === 'object'
       ?
-        '\n' + Object.entries(values).map(([k, v]) => {
-          let vShow = v;
-          vShow = reporter && k === 'error' ? reporter.ErrorInv[v] : vShow;
-          vShow = reporter && k === 'info' ? reporter.FailureInfoInv[v] : vShow;
-          vShow = reporter && k === 'detail' && reporter.ErrorInv[values['error']] === 'MATH_ERROR' ? MathErr.ErrorInv[v] : vShow;
+      '\n' + Object.entries(values).map(([k, v]) => {
+        let vShow = v;
+        vShow = reporter && k === 'error' ? reporter.ErrorInv[v] : vShow;
+        vShow = reporter && k === 'info' ? reporter.FailureInfoInv[v] : vShow;
+        vShow = reporter && k === 'detail' && reporter.ErrorInv[values['error']] === 'MATH_ERROR' ? MathErr.ErrorInv[v] : vShow;
 
-          return `\t  ${k}: ${vShow}`;
-        }).join("\n")
+        return `\t  ${k}: ${vShow}`;
+      }).join("\n")
       :
-        values;
+      values;
 
     return `\t${key}: ${valuesFormatted}`;
   }).join("\n") + "\n}";
@@ -48,28 +48,28 @@ function match(received, expected, pass, opts, receivedFormatter=undefined) {
 
   const message = pass
     ? () =>
-        this.utils.matcherHint(opts.comment, undefined, undefined, opts) +
+      this.utils.matcherHint(opts.comment, undefined, undefined, opts) +
         '\n\n' +
         `Expected: ${this.utils.printExpected(expected)}\n` +
         `Received: ${receivedFormatter(received)}`
     : () => {
-        const diffString = diff(expected, received, {
-          expand: this.expand,
-        });
-        return (
-          this.utils.matcherHint(opts.comment, undefined, undefined, opts) +
+      const diffString = diff(expected, received, {
+        expand: this.expand,
+      });
+      return (
+        this.utils.matcherHint(opts.comment, undefined, undefined, opts) +
           '\n\n' +
           (diffString && diffString.includes('- Expect')
             ? `Difference:\n\n${diffString}`
             : `Expected: ${this.utils.printExpected(expected)}\n` +
               `Received: ${receivedFormatter(received)}`)
-        );
-      };
+      );
+    };
 
   return {
     pass: pass,
     message: message
-  }
+  };
 }
 
 function solo(received, expectedThing, pass, opts, receivedFormatter=undefined) {
@@ -77,31 +77,31 @@ function solo(received, expectedThing, pass, opts, receivedFormatter=undefined) 
 
   const message = pass
     ? () =>
-        this.utils.matcherHint(opts.comment, undefined, undefined, opts) +
+      this.utils.matcherHint(opts.comment, undefined, undefined, opts) +
         '\n\n' +
         `Expected: ${expectedThing}\n` +
         `Received: ${receivedFormatter(received)}`
     : () => {
-        return (
-          this.utils.matcherHint(opts.comment, undefined, undefined, opts) +
+      return (
+        this.utils.matcherHint(opts.comment, undefined, undefined, opts) +
           '\n\n' +
               `Expected: ${expectedThing}\n` +
               `Received: ${receivedFormatter(received)}`
-        );
-      };
+      );
+    };
 
   return {
     pass: pass,
     message: message
-  }
+  };
 }
 
 function hasError(actual, expectedErrorName, reporter) {
-  let actualErrorCode = typeof(actual) === 'object' ? actual[0] : actual;
-  let expectedErrorCode = reporter.Error[expectedErrorName];
-  let pass = actualErrorCode == expectedErrorCode;
+  const actualErrorCode = typeof(actual) === 'object' ? actual[0] : actual;
+  const expectedErrorCode = reporter.Error[expectedErrorName];
+  const pass = actualErrorCode == expectedErrorCode;
 
-  return match.call(this, actual, expectedErrorName, pass, opts.call(this, `hasError[${reporter}]`))
+  return match.call(this, actual, expectedErrorName, pass, opts.call(this, `hasError[${reporter}]`));
 }
 
 function arrayEqual(a, b) {
@@ -131,7 +131,7 @@ function doObjectEqual(a, b, partial, map) {
     return false;
   }
 
-  for (let key of Object.keys(b)) {
+  for (const key of Object.keys(b)) {
     if (!doObjectEqual(map(a[key]), map(b[key]), false, map)) {
       return false;
     }
@@ -152,7 +152,7 @@ function doGetLog(result, logType, comment) {
   if (Array.isArray(logType)) {
     [logType, el] = logType;
   }
-  let logs = Array.isArray(result.events[logType]) ? result.events[logType] : [result.events[logType]];
+  const logs = Array.isArray(result.events[logType]) ? result.events[logType] : [result.events[logType]];
 
   const log = logs[el !== undefined ? el : logs.length - 1];
   if (!log) {
@@ -168,14 +168,14 @@ function doGetLog(result, logType, comment) {
   };
 }
 
-let mapValues = (l, f) => {
+const mapValues = (l, f) => {
   return Object.entries(l).reduce((acc, [key, value]) => {
-    return {...acc, [key]: f(value)}
-   }, {});
-  }
+    return {...acc, [key]: f(value)};
+  }, {});
+};
 
 function hasLog(result, logType, params) {
-  let {failure, log} = doGetLog.call(this, result, logType, "hasLog");
+  const {failure, log} = doGetLog.call(this, result, logType, "hasLog");
   if (failure) {
     return failure;
   }
@@ -186,16 +186,16 @@ function hasLog(result, logType, params) {
     delete returnValues[i]; // delete log entries "0", "1", etc, since they are dups
   }
 
-  let actual = mapValues(returnValues, (x) => x.toString());
-  let expected = mapValues(params, (x) => x.toString());
+  const actual = mapValues(returnValues, (x) => x.toString());
+  const expected = mapValues(params, (x) => x.toString());
 
   // TODO: Maybe a better success message for `isNot`?
-  let pass = objectEqual(actual, expected);
+  const pass = objectEqual(actual, expected);
   return match.call(this, actual, expected, pass, opts(`hasLog [params]`), logFormatter);
 }
 
 function hasFailure(result, expectedError, expectedInfo, expectedDetail, reporter, comment) {
-  let {failure, log} = doGetLog.call(this, result, 'Failure', comment);
+  const {failure, log} = doGetLog.call(this, result, 'Failure', comment);
   if (failure) {
     return failure;
   }
@@ -261,12 +261,12 @@ function revert(actual, msg) {
     pass: !!actual['message'] && actual.message === `VM Exception while processing transaction: ${msg}`,
     message: () => {
       if (actual["message"]) {
-        return `expected VM Exception while processing transaction: ${msg}, got ${actual["message"]}`
+        return `expected VM Exception while processing transaction: ${msg}, got ${actual["message"]}`;
       } else {
-        return `expected revert, but transaction succeeded: ${JSON.stringify(actual)}`
+        return `expected revert, but transaction succeeded: ${JSON.stringify(actual)}`;
       }
     }
-  }
+  };
 }
 
 function toBeWithinDelta(received, expected, delta) {
@@ -284,7 +284,7 @@ function toBeWithinDelta(received, expected, delta) {
       pass: false,
     };
   }
-};
+}
 
 
 expect.extend({
@@ -295,7 +295,7 @@ expect.extend({
       address(0),
       actual === address(0),
       opts('Expected to be zero address')
-    )
+    );
   },
 
   toBeWithinDelta(actual, expected, delta) {

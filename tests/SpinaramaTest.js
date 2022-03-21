@@ -109,6 +109,8 @@ describe('Spinarama', () => {
 
     // XXX not yet converted below this point...moving on to certora
 
+    /* eslint-disable no-undef */
+
     it.skip('can have partial failure succeed', async () => {
       const {moneyMarketHarness,
         priceOracle,
@@ -286,7 +288,7 @@ describe('Spinarama', () => {
     it.skip('should fail', async () => {
       const {moneyMarketHarness,
         priceOracle,
-        interestRateModel} = await setupMoneyMarket(root)
+        interestRateModel} = await setupMoneyMarket(root);
       const spinarama = await Spinarama.new(moneyMarketHarness._address).send({from: root});
       const OMG = await setupSupply(root, accounts[0], spinarama, moneyMarketHarness, priceOracle, interestRateModel);
       const BAT = await setupBorrow(root, accounts[0], spinarama, moneyMarketHarness, priceOracle, interestRateModel);
@@ -310,7 +312,7 @@ describe('Spinarama', () => {
     it.skip('should fail', async () => {
       const {moneyMarketHarness,
         priceOracle,
-        interestRateModel} = await setupMoneyMarket(root)
+        interestRateModel} = await setupMoneyMarket(root);
       const spinarama = await Spinarama.new(moneyMarketHarness._address).send({from: root});
       const OMG = await setupSupply(root, accounts[0], spinarama, moneyMarketHarness, priceOracle, interestRateModel);
       const BAT = await setupBorrow(root, accounts[0], spinarama, moneyMarketHarness, priceOracle, interestRateModel);
@@ -326,4 +328,6 @@ describe('Spinarama', () => {
       ).rejects.toRevert();
     });
   });
+
+  /* eslint-enable no-undef */
 });

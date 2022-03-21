@@ -1,17 +1,3 @@
-const {
-  etherBalance,
-  etherGasCost,
-  getContract
-} = require('./Utils/Ethereum');
-
-const {
-  makeComptroller,
-  makeCToken,
-  makePriceOracle,
-  pretendBorrow,
-  borrowSnapshot
-} = require('./Utils/Compound');
-
 describe('Const', () => {
   it("does the right thing and not too expensive", async () => {
     const base = await deploy('ConstBase');

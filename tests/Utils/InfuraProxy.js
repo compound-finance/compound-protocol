@@ -13,15 +13,17 @@
 //   --data "{\"jsonrpc\": \"2.0\", \"method\": \"eth_blockNumber\", \"params\": [], \"id\": 1}"
 //  {"jsonrpc":"2.0","id":1,"result":"0x10675d7"}
 
+
 const http = require('http');
 const https = require('https');
 
 const port = 1337;
+// eslint-disable-next-line no-unused-vars
 const server = http.createServer(handle).listen(port);
 const cache = {};
 
 async function handle(req, res) {
-  let data = ''
+  let data = '';
   req.on('data', (d) => data += d);
   req.on('end', async () => {
     const [network, project] = req.url.substr(1).split('/');
@@ -45,7 +47,7 @@ async function handle(req, res) {
         res.writeHead(200, {'Content-Type': 'application/javascript'});
         res.end(cache[key] = result);
       } catch (e) {
-        console.error(e)
+        console.error(e);
         res.writeHead(500, {'Content-Type': 'application/javascript'});
         res.end(JSON.stringify({error: 'request failed'}));
       }
@@ -54,7 +56,7 @@ async function handle(req, res) {
 }
 
 async function fetch(options) {
-  let data = ''
+  let data = '';
   return new Promise(
     (okay, fail) => {
       const req = https.request(options, (res) => {

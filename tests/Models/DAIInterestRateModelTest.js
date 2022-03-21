@@ -2,7 +2,6 @@ const BigNum = require('bignumber.js');
 const {Ganache} = require('eth-saddle/dist/config');
 const {etherUnsigned} = require('../Utils/Ethereum');
 const {
-  makeInterestRateModel,
   getBorrowRate,
   getSupplyRate
 } = require('../Utils/Compound');
@@ -21,7 +20,8 @@ function baseRoofRateFn(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves)
   const gapPerBlock = 0.04 / blocksPerYear;
   const jumpPerBlock = jump / blocksPerYear;
 
-  let baseRatePerBlock = dsrPerBlock / assumedOneMinusReserveFactor, multiplierPerBlock;
+  const baseRatePerBlock = dsrPerBlock / assumedOneMinusReserveFactor;
+  let multiplierPerBlock;
   if (baseRatePerBlock < stabilityFeePerBlock) {
     multiplierPerBlock = (stabilityFeePerBlock - baseRatePerBlock + gapPerBlock) / kink;
   } else {
@@ -52,7 +52,7 @@ function daiSupplyRate(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves, 
   return cashSupplyRate.plus(lendingSupplyRate).toNumber();
 }
 
-let fork = "https://kovan-eth.compound.finance/@14764778";
+const fork = "https://kovan-eth.compound.finance/@14764778";
 
 async function getKovanFork() {
   const kovan = new web3.constructor(
@@ -73,10 +73,10 @@ describe('DAIInterestRateModelV3', () => {
     it("sets jug and ilk address and pokes", async () => {
       // NB: Going back a certain distance requires an archive node, currently that add-on is $250/mo
       //  https://community.infura.io/t/error-returned-error-project-id-does-not-have-access-to-archive-state/847
-      const {kovan, root, accounts} = await getKovanFork();
+      const {kovan, root} = await getKovanFork();
 
       // TODO: Get contract craz
-      let {contract: model} = await saddle.deployFull('DAIInterestRateModelV3', [
+      const {contract: model} = await saddle.deployFull('DAIInterestRateModelV3', [
         etherUnsigned(0.8e18),
         etherUnsigned(0.9e18),
         "0xea190dbdc7adf265260ec4da6e9675fd4f5a78bb",
@@ -84,9 +84,9 @@ describe('DAIInterestRateModelV3', () => {
         "0xe3e07f4f3e2f5a5286a99b9b8deed08b8e07550b" // kovan timelock
       ], {gas: 20000000, gasPrice: 20000, from: root}, kovan);
 
-      let args = [0.5e18, 0.45e18, 500].map(etherUnsigned);
+      const args = [0.5e18, 0.45e18, 500].map(etherUnsigned);
       // let mult = await call(model, 'multiplierPerBlock');
-      let sr = await call(model, 'getSupplyRate', [...args, etherUnsigned(0.1e18)]);
+      await call(model, 'getSupplyRate', [...args, etherUnsigned(0.1e18)]);
       // TODO: This doesn't check the return valie?
     });
   });

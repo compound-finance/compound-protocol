@@ -1,6 +1,5 @@
 const {
   etherGasCost,
-  etherUnsigned,
   etherMantissa,
   UInt256Max, 
   etherExp
@@ -57,7 +56,7 @@ async function seize(cToken, liquidator, borrower, seizeAmount) {
 }
 
 describe('CToken', function () {
-  let root, liquidator, borrower, accounts;
+  let liquidator, borrower;
   let cToken, cTokenCollateral;
 
   const protocolSeizeShareMantissa = 2.8e16; // 2.8%
@@ -69,7 +68,7 @@ describe('CToken', function () {
   const addReservesAmount = protocolShareTokens.multipliedBy(exchangeRate).dividedBy(etherExp(1));
 
   beforeEach(async () => {
-    [root, liquidator, borrower, ...accounts] = saddle.accounts;
+    [, liquidator, borrower] = saddle.accounts;
     cToken = await makeCToken({comptrollerOpts: {kind: 'bool'}});
     cTokenCollateral = await makeCToken({comptroller: cToken.comptroller});
     expect(await send(cTokenCollateral, 'harnessSetExchangeRate', [exchangeRate])).toSucceed();
@@ -277,9 +276,9 @@ describe('CToken', function () {
 
 describe('Comptroller', () => {
   it('liquidateBorrowAllowed allows deprecated markets to be liquidated', async () => {
-    let [root, liquidator, borrower] = saddle.accounts;
-    let collatAmount = 10;
-    let borrowAmount = 2;
+    const [, liquidator, borrower] = saddle.accounts;
+    const collatAmount = 10;
+    const borrowAmount = 2;
     const cTokenCollat = await makeCToken({supportMarket: true, underlyingPrice: 1, collateralFactor: .5});
     const cTokenBorrow = await makeCToken({supportMarket: true, underlyingPrice: 1, comptroller: cTokenCollat.comptroller});
     const comptroller = cTokenCollat.comptroller;
@@ -311,4 +310,4 @@ describe('Comptroller', () => {
     // even if deprecated, cant over repay
     await expect(send(comptroller, 'liquidateBorrowAllowed', [cTokenBorrow._address, cTokenCollat._address, liquidator, borrower, borrowAmount * 2])).rejects.toRevert('revert Can not repay more than the total borrow');
   });
-})
+});

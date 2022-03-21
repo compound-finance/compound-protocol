@@ -7,12 +7,9 @@ const {
 
 const {
   makeCToken,
-  balanceOf,
   borrowSnapshot,
   totalBorrows,
   fastForward,
-  setBalance,
-  preApprove,
   pretendBorrow,
   setEtherBalance,
   getBalances,
@@ -38,7 +35,7 @@ async function borrowFresh(cToken, borrower, borrowAmount) {
   return send(cToken, 'harnessBorrowFresh', [borrower, borrowAmount], {from: borrower});
 }
 
-async function borrow(cToken, borrower, borrowAmount, opts = {}) {
+async function borrow(cToken, borrower, borrowAmount) {
   await send(cToken, 'harnessFastForward', [1]);
   return send(cToken, 'borrow', [borrowAmount], {from: borrower});
 }
@@ -66,9 +63,9 @@ async function repayBorrowBehalf(cToken, payer, borrower, repayAmount) {
 }
 
 describe('CEther', function () {
-  let cToken, root, borrower, benefactor, accounts;
+  let cToken, root, borrower, benefactor;
   beforeEach(async () => {
-    [root, borrower, benefactor, ...accounts] = saddle.accounts;
+    [root, borrower, benefactor] = saddle.accounts;
     cToken = await makeCToken({kind: 'cether', comptrollerOpts: {kind: 'bool'}});
   });
 
@@ -293,7 +290,7 @@ describe('CEther', function () {
 
     it("reverts if overpaying", async () => {
       const beforeAccountBorrowSnap = await borrowSnapshot(cToken, borrower);
-      let tooMuch = new BigNumber(beforeAccountBorrowSnap.principal).plus(1);
+      const tooMuch = new BigNumber(beforeAccountBorrowSnap.principal).plus(1);
       await expect(repayBorrow(cToken, borrower, tooMuch)).rejects.toRevert("revert REPAY_BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED");
       // await assert.toRevertWithError(repayBorrow(cToken, borrower, tooMuch), 'MATH_ERROR', "revert repayBorrow failed");
     });

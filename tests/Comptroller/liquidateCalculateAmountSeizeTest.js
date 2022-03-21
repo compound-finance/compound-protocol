@@ -18,11 +18,9 @@ function rando(min, max) {
 }
 
 describe('Comptroller', () => {
-  let root, accounts;
   let comptroller, cTokenBorrowed, cTokenCollateral;
 
   beforeEach(async () => {
-    [root, ...accounts] = saddle.accounts;
     comptroller = await makeComptroller();
     cTokenBorrowed = await makeCToken({comptroller: comptroller, underlyingPrice: 0});
     cTokenCollateral = await makeCToken({comptroller: comptroller, underlyingPrice: 0});
@@ -72,7 +70,7 @@ describe('Comptroller', () => {
       [2e18, 1e18, 1e18, 1e18, 1e18],
       [2e18, 2e18, 1.42e18, 1.3e18, 2.45e18],
       [2.789e18, 5.230480842e18, 771.32e18, 1.3e18, 10002.45e18],
-      [ 7.009232529961056e+24,2.5278726317240445e+24,2.6177112093242585e+23,1179713989619784000,7.790468414639561e+24 ],
+      [ 7.009232529961056e+24, 2.5278726317240445e+24, 2.6177112093242585e+23, 1179713989619784000, 7.790468414639561e+24 ],
       [rando(0, 1e25), rando(0, 1e25), rando(1, 1e25), rando(1e18, 1.5e18), rando(0, 1e25)]
     ].forEach((testCase) => {
       it(`returns the correct value for ${testCase}`, async () => {

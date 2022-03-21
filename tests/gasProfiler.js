@@ -1,6 +1,5 @@
 const {
   etherUnsigned,
-  etherMantissa,
   etherExp,
 } = require('./Utils/Ethereum');
 
@@ -13,7 +12,7 @@ const {
 } = require('./Utils/Compound');
 
 async function compBalance(comptroller, user) {
-  return etherUnsigned(await call(comptroller.comp, 'balanceOf', [user]))
+  return etherUnsigned(await call(comptroller.comp, 'balanceOf', [user]));
 }
 
 async function compAccrued(comptroller, user) {
@@ -29,7 +28,6 @@ async function fastForwardPatch(patch, comptroller, blocks) {
 }
 
 const fs = require('fs');
-const util = require('util');
 const diffStringsUnified = require('jest-diff').default;
 
 
@@ -38,7 +36,6 @@ async function preRedeem(
   redeemer,
   redeemTokens,
   redeemAmount,
-  exchangeRate
 ) {
   await preSupply(cToken, redeemer, redeemTokens);
   await send(cToken.underlying, 'harnessSetBalance', [
@@ -46,12 +43,6 @@ async function preRedeem(
     redeemAmount
   ]);
 }
-
-const sortOpcodes = (opcodesMap) => {
-  return Object.values(opcodesMap)
-    .map(elem => [elem.fee, elem.name])
-    .sort((a, b) => b[0] - a[0]);
-};
 
 const getGasCostFile = name => {
   try {
@@ -64,14 +55,14 @@ const getGasCostFile = name => {
 };
 
 const recordGasCost = (totalFee, key, filename, opcodes = {}) => {
-  let fileObj = getGasCostFile(filename);
+  const fileObj = getGasCostFile(filename);
   const newCost = {fee: totalFee, opcodes: opcodes};
   console.log(diffStringsUnified(fileObj[key], newCost));
   fileObj[key] = newCost;
   fs.writeFileSync(filename, JSON.stringify(fileObj, null, ' '), 'utf-8');
 };
 
-async function mint(cToken, minter, mintAmount, exchangeRate) {
+async function mint(cToken, minter, mintAmount) {
   expect(await preApprove(cToken, minter, mintAmount, {})).toSucceed();
   return send(cToken, 'mint', [mintAmount], { from: minter });
 }
@@ -84,9 +75,8 @@ async function claimComp(comptroller, holder) {
 /// transiently fails, not sure why
 
 describe('Gas report', () => {
-  let root, minter, redeemer, accounts, cToken;
+  let root, minter, redeemer, cToken;
   const exchangeRate = 50e3;
-  const preMintAmount = etherUnsigned(30e4);
   const mintAmount = etherUnsigned(10e4);
   const mintTokens = mintAmount.div(exchangeRate);
   const redeemTokens = etherUnsigned(10e3);
@@ -95,7 +85,7 @@ describe('Gas report', () => {
 
   describe('CToken', () => {
     beforeEach(async () => {
-      [root, minter, redeemer, ...accounts] = saddle.accounts;
+      [root, minter, redeemer] = saddle.accounts;
       cToken = await makeCToken({
         comptrollerOpts: { kind: 'bool'}, 
         interestRateModelOpts: { kind: 'white-paper'},
@@ -162,7 +152,9 @@ describe('Gas report', () => {
     });
 
     it.skip('print mint opcode list', async () => {
+      // eslint-disable-next-line no-undef
       await preMint(cToken, minter, mintAmount, mintTokens, exchangeRate);
+      // eslint-disable-next-line no-undef
       const trxReceipt = await quickMint(cToken, minter, mintAmount);
       const opcodeCount = {};
       await saddle.trace(trxReceipt, {
@@ -170,18 +162,20 @@ describe('Gas report', () => {
           opcodeCount[log.op] = (opcodeCount[log.op] || 0) + 1;
         }
       });
+      // eslint-disable-next-line no-undef
       console.log(getOpcodeDigest(opcodeCount));
     });
   });
 
+  let comptroller;
   describe.each([
     ['unitroller-g6'],
     ['unitroller']
   ])('Comp claims %s', (patch) => {
     beforeEach(async () => {
-      [root, minter, redeemer, ...accounts] = saddle.accounts;
+      [root, minter, redeemer] = saddle.accounts;
       comptroller = await makeComptroller({ kind: patch });
-      let interestRateModelOpts = {borrowRate: 0.000001};
+      const interestRateModelOpts = {borrowRate: 0.000001};
       cToken = await makeCToken({comptroller, supportMarket: true, underlyingPrice: 2, interestRateModelOpts});
       if (patch == 'unitroller') {
         await send(comptroller, '_setCompSpeed', [cToken._address, etherExp(0.05)]);

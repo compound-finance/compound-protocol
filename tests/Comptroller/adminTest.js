@@ -16,7 +16,7 @@ describe('admin / _setPendingAdmin / _acceptAdmin', () => {
 
   describe('pendingAdmin()', () => {
     it('should return correct pending admin', async () => {
-      expect(await call(comptroller, 'pendingAdmin')).toBeAddressZero()
+      expect(await call(comptroller, 'pendingAdmin')).toBeAddressZero();
     });
   });
 

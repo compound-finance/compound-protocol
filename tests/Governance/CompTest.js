@@ -76,7 +76,7 @@ describe('Comp', () => {
 
   describe('numCheckpoints', () => {
     it('returns the number of checkpoints for a delegate', async () => {
-      let guy = accounts[0];
+      const guy = accounts[0];
       await send(comp, 'transfer', [guy, '100']); //give an account a few tokens for readability
       await expect(call(comp, 'numCheckpoints', [a1])).resolves.toEqual('0');
 
@@ -99,20 +99,20 @@ describe('Comp', () => {
     });
 
     it('does not add more than one checkpoint in a block', async () => {
-      let guy = accounts[0];
+      const guy = accounts[0];
 
       await send(comp, 'transfer', [guy, '100']); //give an account a few tokens for readability
       await expect(call(comp, 'numCheckpoints', [a1])).resolves.toEqual('0');
       await minerStop();
 
       let t1 = send(comp, 'delegate', [a1], { from: guy });
-      let t2 = send(comp, 'transfer', [a2, 10], { from: guy });
-      let t3 = send(comp, 'transfer', [a2, 10], { from: guy });
+      const t2 = send(comp, 'transfer', [a2, 10], { from: guy });
+      const t3 = send(comp, 'transfer', [a2, 10], { from: guy });
 
       await minerStart();
       t1 = await t1;
-      t2 = await t2;
-      t3 = await t3;
+      await t2;
+      await t3;
 
       await expect(call(comp, 'numCheckpoints', [a1])).resolves.toEqual('1');
 

@@ -1,5 +1,5 @@
-let rand = x => new bn(Math.floor(Math.random() * x));
-let range = count => [...Array(count).keys()];
+const rand = x => new bn(Math.floor(Math.random() * x));
+const range = count => [...Array(count).keys()];
 
 const bn = require('bignumber.js');
 bn.config({ ROUNDING_MODE: bn.ROUND_HALF_DOWN });
@@ -10,7 +10,7 @@ const PRECISION_DECIMALS = 15;
 
 class AssertionError extends Error {
   constructor(assertion, reason, event, index) {
-    let message = `Assertion Error: ${reason} when processing ${JSON.stringify(
+    const message = `Assertion Error: ${reason} when processing ${JSON.stringify(
       event
     )} at pos ${index}`;
 
@@ -22,8 +22,8 @@ class AssertionError extends Error {
 
 expect.extend({
   toFuzzPass(assertion, expected, actual, reason, state, events) {
-    let eventStr = events
-      .filter(({ action, failed }) => !failed)
+    const eventStr = events
+      .filter(({ failed }) => !failed)
       .map(event => `${JSON.stringify(event)},`)
       .join('\n');
 
@@ -45,24 +45,25 @@ describe.skip('CompWheelFuzzTest', () => {
 
   // First, we're going to build a simple simulator of the Compound protocol
 
-  let randAccount = globals => {
+  const randAccount = globals => {
     return globals.accounts[rand(globals.accounts.length)];
   };
 
-  let get = src => {
+  const get = src => {
     return src || new bn(0);
   };
 
-  let isPositive = (src) => {
+  const isPositive = (src) => {
+    // eslint-disable-next-line no-undef
     assert(bn.isBigNumber(src), "isPositive got wrong type: expected bigNumber");
     return src.decimalPlaces(PRECISION_DECIMALS).isGreaterThan(0);
-  }
+  };
 
-  let almostEqual = (expected, actual) => {
+  const almostEqual = (expected, actual) => {
     return expected.decimalPlaces(PRECISION_DECIMALS).eq(actual.decimalPlaces(PRECISION_DECIMALS));
   };
 
-  let deepCopy = src => {
+  const deepCopy = src => {
     return Object.entries(src).reduce((acc, [key, val]) => {
       if (bn.isBigNumber(val)) {
         return {
@@ -78,7 +79,7 @@ describe.skip('CompWheelFuzzTest', () => {
     }, {});
   };
 
-  let initialState = globals => {
+  const initialState = globals => {
     return {
       // ctoken
       accrualBlockNumber: globals.blockNumber,
@@ -102,7 +103,7 @@ describe.skip('CompWheelFuzzTest', () => {
       compBorrowSpeed: new bn(1),
       compBorrowIndex: new bn(1),
       compBorrowIndexSnapshots: {},
-      compSupplyIndexUpdatedBlock: globals.blockNumber,
+      compBorrowIndexUpdatedBlock: globals.blockNumber,
 
       compAccruedWithCrank: {}, // naive method, accruing all accounts every block
       compAccruedWithIndex: {}, // with indices
@@ -112,7 +113,7 @@ describe.skip('CompWheelFuzzTest', () => {
     };
   };
 
-  let getExchangeRate = ({
+  const getExchangeRate = ({
     totalCash,
     totalSupply,
     totalBorrows,
@@ -128,8 +129,8 @@ describe.skip('CompWheelFuzzTest', () => {
     }
   };
 
-  let getBorrowRate = (cash, borrows, reserves) => {
-    let denom = cash.plus(borrows).minus(reserves);
+  const getBorrowRate = (cash, borrows, reserves) => {
+    const denom = cash.plus(borrows).minus(reserves);
     if (denom.isZero()) {
       return new bn(0);
     } else if (denom.lt(0)) {
@@ -137,13 +138,13 @@ describe.skip('CompWheelFuzzTest', () => {
         `Borrow Rate failure cash:${cash} borrows:${borrows} reserves:${reserves}`
       );
     } else {
-      let util = borrows.div(denom);
+      const util = borrows.div(denom);
       return util.times(0.001);
     }
   };
 
   // only used after events are run to test invariants
-  let trueUpComp = (globals, state) => {
+  const trueUpComp = (globals, state) => {
     state = accrueInterest(globals, state);
 
     state = Object.keys(state.compSupplyIndexSnapshots).reduce(
@@ -161,13 +162,11 @@ describe.skip('CompWheelFuzzTest', () => {
 
   // manual flywheel loops through every account and updates comp accrued mapping
   // cranked within accrue interest (borrowBalance not updated, totalBorrows should be)
-  let flywheelByCrank = (
+  const flywheelByCrank = (
     state,
     deltaBlocks,
-    borrowIndexNew,
-    borrowIndexPrev
   ) => {
-    let {
+    const {
       balances,
       compBorrowSpeed,
       compSupplySpeed,
@@ -178,7 +177,7 @@ describe.skip('CompWheelFuzzTest', () => {
     } = state;
 
     // suppliers
-    for (let [account, balance] of Object.entries(balances)) {
+    for (const [account, balance] of Object.entries(balances)) {
       if (isPositive(totalSupply)) {
         compAccruedWithCrank[account] = get(
           state.compAccruedWithCrank[account]
@@ -192,9 +191,9 @@ describe.skip('CompWheelFuzzTest', () => {
     }
 
     // borrowers
-    for (let [account, borrowBalance] of Object.entries(borrowBalances)) {
+    for (const [account] of Object.entries(borrowBalances)) {
       if (isPositive(totalBorrows)) {
-        let truedUpBorrowBalance = getAccruedBorrowBalance(state, account);
+        const truedUpBorrowBalance = getAccruedBorrowBalance(state, account);
 
         compAccruedWithCrank[account] = get(
           state.compAccruedWithCrank[account]
@@ -214,28 +213,27 @@ describe.skip('CompWheelFuzzTest', () => {
   };
 
   // real deal comp index flywheel™️
-  let borrowerFlywheelByIndex = (globals, state, account) => {
-    let {
+  const borrowerFlywheelByIndex = (globals, state, account) => {
+    let {compBorrowIndex} = state;
+    const {
       compBorrowSpeed,
-      compBorrowIndex,
       compBorrowIndexSnapshots,
       compAccruedWithIndex,
       totalBorrows,
       borrowBalances,
       compBorrowIndexUpdatedBlock,
       borrowIndex,
-      borrowIndexSnapshots
     } = state;
 
-    let deltaBlocks = globals.blockNumber.minus(compBorrowIndexUpdatedBlock);
+    const deltaBlocks = globals.blockNumber.minus(compBorrowIndexUpdatedBlock);
     if (isPositive(totalBorrows)) {
-      let scaledTotalBorrows = totalBorrows.div(borrowIndex);
+      const scaledTotalBorrows = totalBorrows.div(borrowIndex);
       compBorrowIndex = compBorrowIndex.plus(
         compBorrowSpeed.times(deltaBlocks).div(scaledTotalBorrows)
       );
     }
 
-    let indexSnapshot = compBorrowIndexSnapshots[account];
+    const indexSnapshot = compBorrowIndexSnapshots[account];
 
     if (
       indexSnapshot !== undefined &&
@@ -243,7 +241,7 @@ describe.skip('CompWheelFuzzTest', () => {
       borrowBalances[account] !== undefined
     ) {
       // to simulate borrowBalanceStored
-      let borrowBalanceNew = borrowBalances[account]
+      const borrowBalanceNew = borrowBalances[account]
         .times(borrowIndex)
         .div(state.borrowIndexSnapshots[account]);
       compAccruedWithIndex[account] = get(compAccruedWithIndex[account]).plus(
@@ -265,18 +263,18 @@ describe.skip('CompWheelFuzzTest', () => {
   };
 
   // real deal comp index flywheel™️
-  let supplierFlywheelByIndex = (globals, state, account) => {
-    let {
+  const supplierFlywheelByIndex = (globals, state, account) => {
+    let {compSupplyIndex} = state;
+    const {
       balances,
       compSupplySpeed,
-      compSupplyIndex,
       compSupplyIndexSnapshots,
       compAccruedWithIndex,
       totalSupply,
       compSupplyIndexUpdatedBlock
     } = state;
 
-    let deltaBlocks = globals.blockNumber.minus(compSupplyIndexUpdatedBlock);
+    const deltaBlocks = globals.blockNumber.minus(compSupplyIndexUpdatedBlock);
 
     if (isPositive(totalSupply)) {
       compSupplyIndex = compSupplyIndex.plus(
@@ -284,7 +282,7 @@ describe.skip('CompWheelFuzzTest', () => {
       );
     }
 
-    let indexSnapshot = compSupplyIndexSnapshots[account];
+    const indexSnapshot = compSupplyIndexSnapshots[account];
     if (indexSnapshot !== undefined) {
       // if had prev snapshot,  accrue some comp
       compAccruedWithIndex[account] = get(compAccruedWithIndex[account]).plus(
@@ -304,13 +302,16 @@ describe.skip('CompWheelFuzzTest', () => {
     };
   };
 
-  let accrueActiveBlocks = (state, deltaBlocks) => {
+  const accrueActiveBlocks = (state, deltaBlocks) => {
     let {
       activeBorrowBlocks,
-      activeSupplyBlocks,
+      activeSupplyBlocks
+    } = state;
+    const {
       totalBorrows,
       totalSupply
     } = state;
+    
     if (isPositive(totalSupply)) {
       activeSupplyBlocks = activeSupplyBlocks.plus(deltaBlocks);
     }
@@ -326,9 +327,9 @@ describe.skip('CompWheelFuzzTest', () => {
     };
   };
 
-  let getAccruedBorrowBalance = (state, account) => {
-    let prevBorrowBalance = state.borrowBalances[account];
-    let checkpointBorrowIndex = state.borrowIndexSnapshots[account];
+  const getAccruedBorrowBalance = (state, account) => {
+    const prevBorrowBalance = state.borrowBalances[account];
+    const checkpointBorrowIndex = state.borrowIndexSnapshots[account];
     if (
       prevBorrowBalance !== undefined &&
       checkpointBorrowIndex !== undefined
@@ -341,27 +342,25 @@ describe.skip('CompWheelFuzzTest', () => {
     }
   };
 
-  let accrueInterest = (globals, state) => {
-    let {
-      balances,
+  const accrueInterest = (globals, state) => {
+    const {
       totalCash,
       totalBorrows,
-      totalSupply,
       totalReserves,
       accrualBlockNumber,
       borrowIndex,
       reserveFactor
     } = state;
 
-    let deltaBlocks = globals.blockNumber.minus(accrualBlockNumber);
+    const deltaBlocks = globals.blockNumber.minus(accrualBlockNumber);
     state = accrueActiveBlocks(state, deltaBlocks);
 
-    let borrowRate = getBorrowRate(totalCash, totalBorrows, totalReserves);
-    let simpleInterestFactor = deltaBlocks.times(borrowRate);
-    let borrowIndexNew = borrowIndex.times(simpleInterestFactor.plus(1));
-    let interestAccumulated = totalBorrows.times(simpleInterestFactor);
-    let totalBorrowsNew = totalBorrows.plus(interestAccumulated);
-    let totalReservesNew = totalReserves
+    const borrowRate = getBorrowRate(totalCash, totalBorrows, totalReserves);
+    const simpleInterestFactor = deltaBlocks.times(borrowRate);
+    const borrowIndexNew = borrowIndex.times(simpleInterestFactor.plus(1));
+    const interestAccumulated = totalBorrows.times(simpleInterestFactor);
+    const totalBorrowsNew = totalBorrows.plus(interestAccumulated);
+    const totalReservesNew = totalReserves
       .plus(interestAccumulated)
       .times(reserveFactor);
 
@@ -381,37 +380,39 @@ describe.skip('CompWheelFuzzTest', () => {
     };
   };
 
-  let mine = {
+  const mine = {
     action: 'mine',
     rate: 10,
-    run: (globals, state, {}, { assert }) => {
+    run: (globals, state) => {
       return state;
     },
-    gen: globals => {
+    gen: () => {
       return {
         mine: rand(100).plus(1)
       };
     }
   };
 
-  let gift = {
+  const gift = {
     action: 'gift',
     rate: 3,
-    run: (globals, state, { amount }, { assert }) => {
+    run: (globals, state, { amount }) => {
       amount = new bn(amount);
       return {
         ...state,
         totalCash: state.totalCash.plus(amount)
       };
     },
-    gen: globals => {
+    gen: () => {
       return {
         amount: rand(1000)
       };
     }
   };
 
-  let test = {
+  /* eslint-disable */
+
+  const test = {
     action: 'test',
     run: (globals, state, { amount }, { assert }) => {
       console.log(state);
@@ -419,7 +420,9 @@ describe.skip('CompWheelFuzzTest', () => {
     }
   };
 
-  let borrow = {
+  /* eslint-enable */
+
+  const borrow = {
     action: 'borrow',
     rate: 10,
     run: (globals, state, { account, amount }, { assert }) => {
@@ -427,13 +430,13 @@ describe.skip('CompWheelFuzzTest', () => {
       state = accrueInterest(globals, state);
       state = borrowerFlywheelByIndex(globals, state, account);
 
-      let newTotalCash = state.totalCash.minus(amount);
+      const newTotalCash = state.totalCash.minus(amount);
       assert(
         isPositive(newTotalCash.plus(state.totalReserves)),
         'Attempted to borrow more than total cash'
       );
 
-      let newBorrowBalance = getAccruedBorrowBalance(state, account).plus(
+      const newBorrowBalance = getAccruedBorrowBalance(state, account).plus(
         amount
       );
       assert(
@@ -465,7 +468,7 @@ describe.skip('CompWheelFuzzTest', () => {
     }
   };
 
-  let repayBorrow = {
+  const repayBorrow = {
     action: 'repayBorrow',
     rate: 10,
     run: (globals, state, { account, amount }, { assert }) => {
@@ -473,10 +476,8 @@ describe.skip('CompWheelFuzzTest', () => {
       state = accrueInterest(globals, state);
       state = borrowerFlywheelByIndex(globals, state, account);
 
-      let accruedBorrowBalance = getAccruedBorrowBalance(state, account);
+      const accruedBorrowBalance = getAccruedBorrowBalance(state, account);
       assert(isPositive(accruedBorrowBalance), 'No active borrow');
-
-      let newTotalBorrows;
 
       if (amount.isGreaterThan(accruedBorrowBalance)) {
         // repay full borrow
@@ -502,17 +503,17 @@ describe.skip('CompWheelFuzzTest', () => {
     }
   };
 
-  let mint = {
+  const mint = {
     action: 'mint',
     rate: 10,
-    run: (globals, state, { account, amount }, { assert }) => {
+    run: (globals, state, { account, amount }) => {
       amount = new bn(amount);
       state = accrueInterest(globals, state);
       state = supplierFlywheelByIndex(globals, state, account);
 
-      let balance = get(state.balances[account]);
-      let exchangeRate = getExchangeRate(state);
-      let tokens = amount.div(exchangeRate);
+      const balance = get(state.balances[account]);
+      const exchangeRate = getExchangeRate(state);
+      const tokens = amount.div(exchangeRate);
       return {
         ...state,
         totalCash: state.totalCash.plus(amount), // ignores transfer fees
@@ -531,7 +532,7 @@ describe.skip('CompWheelFuzzTest', () => {
     }
   };
 
-  let redeem = {
+  const redeem = {
     action: 'redeem',
     rate: 10,
     run: (globals, state, { account, tokens }, { assert }) => {
@@ -539,10 +540,10 @@ describe.skip('CompWheelFuzzTest', () => {
       state = accrueInterest(globals, state);
       state = supplierFlywheelByIndex(globals, state, account);
 
-      let balance = get(state.balances[account]);
+      const balance = get(state.balances[account]);
       assert(balance.isGreaterThan(tokens), 'Redeem fails for insufficient balance');
-      let exchangeRate = getExchangeRate(state);
-      let amount = tokens.times(exchangeRate);
+      const exchangeRate = getExchangeRate(state);
+      const amount = tokens.times(exchangeRate);
 
       return {
         ...state,
@@ -562,7 +563,7 @@ describe.skip('CompWheelFuzzTest', () => {
     }
   };
 
-  let actors = {
+  const actors = {
     mine,
     mint,
     redeem,
@@ -572,7 +573,7 @@ describe.skip('CompWheelFuzzTest', () => {
     // test
   };
 
-  let generateGlobals = () => {
+  const generateGlobals = () => {
     return {
       blockNumber: new bn(1000),
       accounts: ['Adam Savage', 'Ben Solo', 'Jeffrey Lebowski']
@@ -580,12 +581,12 @@ describe.skip('CompWheelFuzzTest', () => {
   };
 
   // assert amount distributed by the crank is expected, that it equals # blocks with a supply * comp speed
-  let crankCorrectnessInvariant = (globals, state, events, invariantFn) => {
-    let expected = state.activeSupplyBlocks
+  const crankCorrectnessInvariant = (globals, state, events, invariantFn) => {
+    const expected = state.activeSupplyBlocks
       .times(state.compSupplySpeed)
       .plus(state.activeBorrowBlocks.times(state.compBorrowSpeed));
 
-    let actual = Object.values(state.compAccruedWithCrank).reduce(
+    const actual = Object.values(state.compAccruedWithCrank).reduce(
       (acc, val) => acc.plus(val),
       new bn(0)
     );
@@ -598,9 +599,9 @@ describe.skip('CompWheelFuzzTest', () => {
   };
 
   // assert comp distributed by index is the same as amount distributed by crank
-  let indexCorrectnessInvariant = (globals, state, events, invariantFn) => {
-    let expected = state.compAccruedWithCrank;
-    let actual = state.compAccruedWithIndex;
+  const indexCorrectnessInvariant = (globals, state, events, invariantFn) => {
+    const expected = state.compAccruedWithCrank;
+    const actual = state.compAccruedWithIndex;
     invariantFn(
       (expected, actual) => {
         return Object.keys(expected).reduce((succeeded, account) => {
@@ -616,21 +617,21 @@ describe.skip('CompWheelFuzzTest', () => {
     );
   };
 
-  let testInvariants = (globals, state, events, invariantFn) => {
+  const testInvariants = (globals, state, events, invariantFn) => {
     crankCorrectnessInvariant(globals, state, events, invariantFn);
     indexCorrectnessInvariant(globals, state, events, invariantFn);
   };
 
-  let randActor = () => {
+  const randActor = () => {
     // TODO: Handle weighting actors
-    let actorKeys = Object.keys(actors);
-    let actorsLen = actorKeys.length;
+    const actorKeys = Object.keys(actors);
+    const actorsLen = actorKeys.length;
     return actors[actorKeys[rand(actorsLen)]];
   };
 
-  let executeAction = (globals, state, event, i) => {
+  const executeAction = (globals, state, event, i) => {
     const prevState = deepCopy(state);
-    assert = (assertion, reason) => {
+    const assert = (assertion, reason) => {
       if (!assertion) {
         throw new AssertionError(assertion, reason, event, i);
       }
@@ -654,13 +655,13 @@ describe.skip('CompWheelFuzzTest', () => {
     }
   };
 
-  let runEvents = (globals, initState, events) => {
-    let state = events.reduce(executeAction.bind(null, globals), initState);
+  const runEvents = (globals, initState, events) => {
+    const state = events.reduce(executeAction.bind(null, globals), initState);
     return trueUpComp(globals, state);
   };
 
-  let generateEvent = globals => {
-    let actor = randActor();
+  const generateEvent = globals => {
+    const actor = randActor();
 
     return {
       ...actor.gen(globals),
@@ -668,19 +669,19 @@ describe.skip('CompWheelFuzzTest', () => {
     };
   };
 
-  let generateEvents = (globals, count) => {
+  const generateEvents = (globals, count) => {
     return range(count).map(() => {
       return generateEvent(globals);
     });
   };
 
   function go(invariantFn) {
-    let globals = generateGlobals();
-    let initState = initialState(globals);
-    let events = generateEvents(globals, NUM_EVENTS);
-    let state = runEvents(globals, initState, events);
+    const globals = generateGlobals();
+    const initState = initialState(globals);
+    const events = generateEvents(globals, NUM_EVENTS);
+    const state = runEvents(globals, initState, events);
 
-    let invariantFnBound = (assertion, expected, actual, reason) => {
+    const invariantFnBound = (assertion, expected, actual, reason) => {
       invariantFn(assertion, expected, actual, reason, state, events);
     };
 
@@ -689,7 +690,7 @@ describe.skip('CompWheelFuzzTest', () => {
 
   range(RUN_COUNT).forEach(count => {
     it(`runs: ${count}`, () => {
-      let invariant = (assertion, expected, actual, reason, state, events) => {
+      const invariant = (assertion, expected, actual, reason, state, events) => {
         expect(assertion).toFuzzPass(expected, actual, reason, state, events);
       };
 

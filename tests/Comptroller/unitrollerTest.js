@@ -4,7 +4,6 @@ const {
 } = require('../Utils/Ethereum');
 
 const {
-  makeComptroller,
   makePriceOracle
 } = require('../Utils/Compound');
 
@@ -21,7 +20,7 @@ describe('Unitroller', () => {
     unitroller = await deploy('Unitroller');
   });
 
-  let setPending = (implementation, from) => {
+  const setPending = (implementation, from) => {
     return send(unitroller, '_setPendingImplementation', [implementation._address], {from});
   };
 
@@ -46,7 +45,7 @@ describe('Unitroller', () => {
       });
 
       it("does not change pending implementation address", async () => {
-        expect(await call(unitroller, 'pendingComptrollerImplementation')).toBeAddressZero()
+        expect(await call(unitroller, 'pendingComptrollerImplementation')).toBeAddressZero();
       });
     });
 
@@ -58,9 +57,9 @@ describe('Unitroller', () => {
 
       it("emits NewPendingImplementation event", async () => {
         expect(await send(unitroller, '_setPendingImplementation', [brains._address])).toHaveLog('NewPendingImplementation', {
-            oldPendingImplementation: address(0),
-            newPendingImplementation: brains._address
-          });
+          oldPendingImplementation: address(0),
+          newPendingImplementation: brains._address
+        });
       });
     });
   });
@@ -155,7 +154,7 @@ describe('Unitroller', () => {
       });
 
       it("gets list of ints", async () => {
-        expect(await call(troll, 'listOInts', [[1,2,3]])).toEqual(["1", "2", "3"]);
+        expect(await call(troll, 'listOInts', [[1, 2, 3]])).toEqual(["1", "2", "3"]);
       });
     });
   });

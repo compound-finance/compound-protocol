@@ -49,19 +49,21 @@ async function preRedeem(cToken, redeemer, redeemTokens, redeemAmount, exchangeR
   await send(cToken, 'harnessSetExchangeRate', [etherMantissa(exchangeRate)]);
 }
 
+// eslint-disable-next-line no-unused-vars
 async function redeemFreshTokens(cToken, redeemer, redeemTokens, redeemAmount) {
   return send(cToken, 'harnessRedeemFresh', [redeemer, redeemTokens, 0]);
 }
 
+// eslint-disable-next-line no-unused-vars
 async function redeemFreshAmount(cToken, redeemer, redeemTokens, redeemAmount) {
   return send(cToken, 'harnessRedeemFresh', [redeemer, 0, redeemAmount]);
 }
 
 describe('CToken', function () {
-  let root, minter, redeemer, accounts;
+  let minter, redeemer;
   let cToken;
   beforeEach(async () => {
-    [root, minter, redeemer, ...accounts] = saddle.accounts;
+    [, minter, redeemer] = saddle.accounts;
     cToken = await makeCToken({comptrollerOpts: {kind: 'bool'}, exchangeRate});
   });
 

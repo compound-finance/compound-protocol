@@ -33,8 +33,6 @@ describe('Comptroller', () => {
   describe('_setLiquidationIncentive', () => {
     const initialIncentive = etherMantissa(1.0);
     const validIncentive = etherMantissa(1.1);
-    const tooSmallIncentive = etherMantissa(0.99999);
-    const tooLargeIncentive = etherMantissa(1.50000001);
 
     let comptroller;
     beforeEach(async () => {
@@ -60,7 +58,7 @@ describe('Comptroller', () => {
   });
 
   describe('_setPriceOracle', () => {
-    let comptroller, oldOracle, newOracle;
+    let comptroller, oldOracle, newOracle, notOracle;
     beforeEach(async () => {
       comptroller = await makeComptroller();
       oldOracle = comptroller.priceOracle;
@@ -107,7 +105,6 @@ describe('Comptroller', () => {
 
   describe('_setCollateralFactor', () => {
     const half = etherMantissa(0.5);
-    const one = etherMantissa(1);
 
     it("fails if not called by admin", async () => {
       const cToken = await makeCToken();
@@ -150,7 +147,7 @@ describe('Comptroller', () => {
     });
 
     it("fails if asset is not a CToken", async () => {
-      const comptroller = await makeComptroller()
+      const comptroller = await makeComptroller();
       const asset = await makeToken(root);
       await expect(send(comptroller, '_supportMarket', [asset._address])).rejects.toRevert();
     });
@@ -197,5 +194,5 @@ describe('Comptroller', () => {
       const cToken = await makeCToken({comptroller: comptroller});
       await expect(call(comptroller, 'redeemVerify', [cToken._address, accounts[0], 5, 0])).rejects.toRevert("revert redeemTokens zero");
     });
-  })
+  });
 });

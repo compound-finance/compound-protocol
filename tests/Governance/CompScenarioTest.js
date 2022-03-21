@@ -1,10 +1,10 @@
 
 describe('CompScenario', () => {
-  let root, accounts;
+  let root;
   let comp;
 
   beforeEach(async () => {
-    [root, ...accounts] = saddle.accounts;
+    [root] = saddle.accounts;
     comp = await deploy('CompScenario', [root]);
   });
 
@@ -21,13 +21,13 @@ describe('CompScenario', () => {
         let remaining = checkpoints;
         let offset = 0;
         while (remaining > 0) {
-          let amt = remaining > 1000 ? 1000 : remaining;
+          const amt = remaining > 1000 ? 1000 : remaining;
           await comp.methods.generateCheckpoints(amt, offset).send({from: root, gas: 200000000});
           remaining -= amt;
           offset += amt;
         }
 
-        let result = await comp.methods.getPriorVotes(root, 1).send();
+        const result = await comp.methods.getPriorVotes(root, 1).send();
 
         await saddle.trace(result, {
           constants: {
@@ -40,7 +40,7 @@ describe('CompScenario', () => {
               log.show();
             }
           },
-          exec: (logs, info) => {
+          exec: (logs) => {
             expect(logs.length).toEqual(expectedReads);
           }
         });

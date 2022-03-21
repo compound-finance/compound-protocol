@@ -22,7 +22,7 @@ const {
 } = require('../Utils/Compound');
 
 describe('CWrappedNative', () => {
-  let root, minter, redeemer, accounts;
+  let minter, redeemer;
   let cToken;
 
   describe('use native', () => {
@@ -33,7 +33,7 @@ describe('CWrappedNative', () => {
     const redeemAmount = redeemTokens.multipliedBy(exchangeRate);
 
     beforeEach(async () => {
-      [root, minter, redeemer, ...accounts] = saddle.accounts;
+      [, minter, redeemer] = saddle.accounts;
       cToken = await makeCToken({kind: 'cwrappednative', comptrollerOpts: {kind: 'bool'}});
       await fastForward(cToken, 1);
     });
@@ -63,7 +63,7 @@ describe('CWrappedNative', () => {
       await setBalance(cToken, redeemer, redeemTokens);
     }
 
-    async function redeemCTokens(cToken, redeemer, redeemTokens, redeemAmount) {
+    async function redeemCTokens(cToken, redeemer, redeemTokens) {
       return send(cToken, 'redeemNative', [redeemTokens], {from: redeemer});
     }
 
@@ -129,7 +129,7 @@ describe('CWrappedNative', () => {
         });
       });
     });
-  })
+  });
 
   describe('use WETH', () => {
     const exchangeRate = 50e3;
@@ -139,7 +139,7 @@ describe('CWrappedNative', () => {
     const redeemAmount = redeemTokens.multipliedBy(exchangeRate);
 
     beforeEach(async () => {
-      [root, minter, redeemer, ...accounts] = saddle.accounts;
+      [, minter, redeemer, ] = saddle.accounts;
       cToken = await makeCToken({kind: 'cwrappednative', comptrollerOpts: {kind: 'bool'}, exchangeRate});
     });
 
@@ -168,10 +168,12 @@ describe('CWrappedNative', () => {
       await send(cToken, 'harnessSetExchangeRate', [etherMantissa(exchangeRate)]);
     }
 
+    // eslint-disable-next-line no-unused-vars
     async function redeemFreshTokens(cToken, redeemer, redeemTokens, redeemAmount) {
       return send(cToken, 'harnessRedeemFresh', [redeemer, redeemTokens, 0]);
     }
 
+    // eslint-disable-next-line no-unused-vars
     async function redeemFreshAmount(cToken, redeemer, redeemTokens, redeemAmount) {
       return send(cToken, 'harnessRedeemFresh', [redeemer, 0, redeemAmount]);
     }
@@ -401,5 +403,5 @@ describe('CWrappedNative', () => {
         });
       });
     });
-  })
+  });
 });

@@ -86,7 +86,7 @@ describe('admin / _setPendingAdmin / _acceptAdmin', () => {
 
       // Check admin stays the same
       expect(await call(cToken, 'admin')).toEqual(root);
-      expect(await call(cToken, 'pendingAdmin') [accounts[0]]).toEqual();
+      expect(await call(cToken, 'pendingAdmin')[accounts[0]]).toEqual();
     });
 
     it('should succeed and set admin and clear pending admin', async () => {

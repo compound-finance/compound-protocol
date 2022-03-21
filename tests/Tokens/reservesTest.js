@@ -44,7 +44,7 @@ describe('CToken', function () {
     });
 
     it("accepts newReserveFactor in valid range and emits log", async () => {
-      const result = await send(cToken, 'harnessSetReserveFactorFresh', [factor])
+      const result = await send(cToken, 'harnessSetReserveFactorFresh', [factor]);
       expect(result).toSucceed();
       expect(await call(cToken, 'reserveFactorMantissa')).toEqualNumber(factor);
       expect(result).toHaveLog("NewReserveFactor", {
@@ -198,7 +198,7 @@ describe('CToken', function () {
     });
 
     it("add reserves for CEther", async () => {
-      const balanceBefore = await getBalances([cToken], [])
+      const balanceBefore = await getBalances([cToken], []);
       const reservedAdded = etherExp(1);
       const result = await send(cToken, "_addReserves", {value: reservedAdded}); //assert no erro
       expect(result).toSucceed();

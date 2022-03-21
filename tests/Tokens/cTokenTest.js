@@ -108,7 +108,7 @@ describe('CToken', function () {
     });
 
     beforeEach(async () => {
-      await setBorrowRate(cToken, .001)
+      await setBorrowRate(cToken, .001);
       await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
     });
 
@@ -122,14 +122,14 @@ describe('CToken', function () {
     it("returns successful result from borrowBalanceStored with no interest", async () => {
       await setBorrowRate(cToken, 0);
       await pretendBorrow(cToken, borrower, 1, 1, 5e18);
-      expect(await call(cToken, 'borrowBalanceCurrent', [borrower])).toEqualNumber(5e18)
+      expect(await call(cToken, 'borrowBalanceCurrent', [borrower])).toEqualNumber(5e18);
     });
 
     it("returns successful result from borrowBalanceCurrent with no interest", async () => {
       await setBorrowRate(cToken, 0);
       await pretendBorrow(cToken, borrower, 1, 3, 5e18);
       expect(await send(cToken, 'harnessFastForward', [5])).toSucceed();
-      expect(await call(cToken, 'borrowBalanceCurrent', [borrower])).toEqualNumber(5e18 * 3)
+      expect(await call(cToken, 'borrowBalanceCurrent', [borrower])).toEqualNumber(5e18 * 3);
     });
   });
 
@@ -143,7 +143,7 @@ describe('CToken', function () {
     });
 
     it("returns 0 for account with no borrows", async () => {
-      expect(await call(cToken, 'borrowBalanceStored', [borrower])).toEqualNumber(0)
+      expect(await call(cToken, 'borrowBalanceStored', [borrower])).toEqualNumber(0);
     });
 
     it("returns stored principal when account and market indexes are the same", async () => {
@@ -172,7 +172,8 @@ describe('CToken', function () {
   });
 
   describe('exchangeRateStored', () => {
-    let cToken, exchangeRate = 2;
+    let cToken;
+    const exchangeRate = 2;
 
     beforeEach(async () => {
       cToken = await makeCToken({ exchangeRate });

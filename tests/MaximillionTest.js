@@ -1,13 +1,10 @@
 const {
   etherBalance,
   etherGasCost,
-  getContract
 } = require('./Utils/Ethereum');
 
 const {
-  makeComptroller,
   makeCToken,
-  makePriceOracle,
   pretendBorrow,
   borrowSnapshot
 } = require('./Utils/Compound');

@@ -6,16 +6,16 @@ const {
 } = require('../../Utils/Ethereum');
 
 describe('GovernorAlpha#propose/5', () => {
-  let gov, root, acct;
+  let gov, root, acct, accounts, comp;
 
   beforeAll(async () => {
-    [root, acct, ...accounts] = accounts;
+    [root, acct, ...accounts] = saddle.accounts;
     comp = await deploy('Comp', [root, 'COMP', 'Compound']);
     gov = await deploy('GovernorAlpha', [address(0), comp._address, address(0)]);
   });
 
   let trivialProposal, targets, values, signatures, callDatas;
-  let proposalBlock;
+  let proposalBlock, proposalId;
   beforeAll(async () => {
     targets = [root];
     values = ["0"];
@@ -68,7 +68,7 @@ describe('GovernorAlpha#propose/5', () => {
     });
 
     it("Targets, Values, Signatures, Calldatas are set according to parameters", async () => {
-      let dynamicFields = await call(gov, 'getActions', [trivialProposal.id]);
+      const dynamicFields = await call(gov, 'getActions', [trivialProposal.id]);
       expect(dynamicFields.targets).toEqual(targets);
       expect(dynamicFields.values).toEqual(values);
       expect(dynamicFields.signatures).toEqual(signatures);
@@ -123,7 +123,7 @@ describe('GovernorAlpha#propose/5', () => {
       await send(comp, 'delegate', [accounts[2]], { from: accounts[2] });
 
       await mineBlock();
-      let nextProposalId = await gov.methods['propose'](targets, values, signatures, callDatas, "yoot").call({ from: accounts[2] });
+      const nextProposalId = await gov.methods['propose'](targets, values, signatures, callDatas, "yoot").call({ from: accounts[2] });
       // let nextProposalId = await call(gov, 'propose', [targets, values, signatures, callDatas, "second proposal"], { from: accounts[2] });
 
       expect(+nextProposalId).toEqual(+trivialProposal.id + 1);
@@ -133,7 +133,7 @@ describe('GovernorAlpha#propose/5', () => {
       await send(comp, 'transfer', [accounts[3], etherMantissa(400001)]);
       await send(comp, 'delegate', [accounts[3]], { from: accounts[3] });
       await mineBlock();
-      let nextProposalId = await gov.methods['propose'](targets, values, signatures, callDatas, "yoot").call({ from: accounts[3] });
+      const nextProposalId = await gov.methods['propose'](targets, values, signatures, callDatas, "yoot").call({ from: accounts[3] });
 
       expect(
         await send(gov, 'propose', [targets, values, signatures, callDatas, "second proposal"], { from: accounts[3] })

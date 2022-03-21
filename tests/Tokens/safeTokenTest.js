@@ -4,13 +4,12 @@ const {
   adjustBalances
 } = require('../Utils/Compound');
 
-const exchangeRate = 5;
 
 describe('CEther', function () {
-  let root, nonRoot, accounts;
+  let root, nonRoot;
   let cToken;
   beforeEach(async () => {
-    [root, nonRoot, ...accounts] = saddle.accounts;
+    [root, nonRoot] = saddle.accounts;
     cToken = await makeCToken({kind: 'cether', comptrollerOpts: {kind: 'bool'}});
   });
 
