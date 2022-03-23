@@ -16,6 +16,7 @@ interface ComptrollerLensInterface {
     function claimComp(address) external;
     function claimComp(address, uint256, bytes32[] calldata) external;
     function compAccrued(address) external view returns (uint);
+    function compLocked(address) external view returns (uint);
 }
 
 interface GovernorBravoInterface {
@@ -367,6 +368,7 @@ contract CompoundLens {
         uint votes;
         address delegate;
         uint allocated;
+        uint locked;
     }
 
     function getCompBalanceMetadataExt(Comp comp, ComptrollerLensInterface comptroller, address account) external returns (CompBalanceMetadataExt memory) {
@@ -381,7 +383,8 @@ contract CompoundLens {
             balance: balance,
             votes: uint256(comp.getCurrentVotes(account)),
             delegate: comp.delegates(account),
-            allocated: allocated
+            allocated: allocated,
+            locked: comptroller.compLocked(account)
         });
     }
 
@@ -397,7 +400,8 @@ contract CompoundLens {
             balance: balance,
             votes: uint256(comp.getCurrentVotes(account)),
             delegate: comp.delegates(account),
-            allocated: allocated
+            allocated: allocated,
+            locked: comptroller.compLocked(account)
         });
     }
 

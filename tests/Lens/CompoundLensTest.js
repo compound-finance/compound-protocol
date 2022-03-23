@@ -332,7 +332,8 @@ describe('CompoundLens', () => {
           balance: "10000000000000000000000000",
           delegate: "0x0000000000000000000000000000000000000000",
           votes: "0",
-          allocated: "5"
+          allocated: "5",
+          locked: "0"
         });
       });
 
@@ -353,8 +354,76 @@ describe('CompoundLens', () => {
           delegate: "0x0000000000000000000000000000000000000000",
           votes: "0",
           allocated: etherExp(0.5).multipliedBy(50).toString(),
+          locked: etherExp(0.5).multipliedBy(50).toString()
         });
       });
+
+      describe('calculate locked comp', () => {
+
+        it('currentBlock before start ', async () => {
+          const merkleRoot = solidityKeccak256(
+            ['address', 'uint256'],
+            [acct, etherExp(0.5).toString()]
+          )
+
+          let comptroller = await makeComptroller();
+          await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
+          await send(comptroller, 'setBlockNumber', [50]);
+
+          expect(
+            cullTuple(await call(compoundLens, 'getCompBalanceMetadataExt', [comp._address, comptroller._address, acct, etherExp(0.5), []]))
+          ).toEqual({
+            balance: "10000000000000000000000000",
+            delegate: "0x0000000000000000000000000000000000000000",
+            votes: "0",
+            allocated: "0",
+            locked: etherExp(0.5).multipliedBy(100).toString()
+          });
+        });
+
+        it('currentBlock during airdrop', async () => {
+          const merkleRoot = solidityKeccak256(
+            ['address', 'uint256'],
+            [acct, etherExp(0.5).toString()]
+          )
+
+          let comptroller = await makeComptroller();
+          await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
+          await send(comptroller, 'setBlockNumber', [120]);
+
+          expect(
+            cullTuple(await call(compoundLens, 'getCompBalanceMetadataExt', [comp._address, comptroller._address, acct, etherExp(0.5), []]))
+          ).toEqual({
+            balance: "10000000000000000000000000",
+            delegate: "0x0000000000000000000000000000000000000000",
+            votes: "0",
+            allocated: etherExp(0.5).multipliedBy(20).toString(),
+            locked: etherExp(0.5).multipliedBy(80).toString()
+          });
+        });
+
+        it('currentBlock after end', async () => {
+          const merkleRoot = solidityKeccak256(
+            ['address', 'uint256'],
+            [acct, etherExp(0.5).toString()]
+          )
+
+          let comptroller = await makeComptroller();
+          await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
+          await send(comptroller, 'setBlockNumber', [250]);
+
+          expect(
+            cullTuple(await call(compoundLens, 'getCompBalanceMetadataExt', [comp._address, comptroller._address, acct, etherExp(0.5), []]))
+          ).toEqual({
+            balance: "10000000000000000000000000",
+            delegate: "0x0000000000000000000000000000000000000000",
+            votes: "0",
+            allocated: etherExp(0.5).multipliedBy(100).toString(),
+            locked: "0"
+          });
+        });
+      })
+
     });
 
     describe('getCompVotes', () => {

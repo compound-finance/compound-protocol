@@ -1298,6 +1298,31 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
+     * @notice Calculates the amount of COMP locked in the comptroller for a holder
+     * @param holder The addresses to calculate the locked COMP for
+     * @return The amount of locked COMP
+     */
+    function compLocked(address holder)
+        public
+        view
+        returns (uint)
+    {
+        uint currentBlock = getBlockNumber();
+        uint blocksCount;
+        uint compSpeedPerBlock = compAirdropSpeeds[holder];
+
+        if (currentBlock >= airdropEndBlock) {
+            blocksCount = 0;
+        } else if (currentBlock > airdropStartBlock) {
+            blocksCount = sub_(airdropEndBlock, currentBlock);
+        } else {
+            blocksCount = sub_(airdropEndBlock, airdropStartBlock);
+        }
+
+        return mul_(compSpeedPerBlock, blocksCount);
+    }
+
+    /**
      * @notice Transfer COMP to the user
      * @dev Note: If there is not enough COMP, we do not perform the transfer all.
      * @param user The address of the user to transfer COMP to

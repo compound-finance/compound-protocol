@@ -159,5 +159,4 @@ contract ComptrollerV5Storage is ComptrollerV4Storage {
 
     /// @notice Block at which the airdrop distribution ends
     uint public airdropEndBlock;
-
 }
