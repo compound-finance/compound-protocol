@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.10;
 
 import "./CToken.sol";
 import "./ErrorReporter.sol";
@@ -1124,7 +1124,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
                 amountToSubtract = currentAccrual;
             }
-            
+
             if (amountToSubtract > 0) {
                 // Subtract the bad accrual amount from what they have accrued.
                 // Users will keep whatever they have correctly accrued.
@@ -1289,7 +1289,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         Double memory deltaIndex = Double({mantissa: sub_(borrowIndex, borrowerIndex)});
 
         uint borrowerAmount = div_(CToken(cToken).borrowBalanceStored(borrower), marketBorrowIndex);
-        
+
         // Calculate COMP accrued: cTokenAmount * accruedPerBorrowedUnit
         uint borrowerDelta = mul_(borrowerAmount, deltaIndex);
 
