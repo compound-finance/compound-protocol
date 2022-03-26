@@ -3,7 +3,7 @@
 */
 
 // SPDX-License-Identifier: BSD-3-Clause
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.10;
 
 // File: openzeppelin-solidity/contracts/token/ERC20/ERC20Basic.sol
 

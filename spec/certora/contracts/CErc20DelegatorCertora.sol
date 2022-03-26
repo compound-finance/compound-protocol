@@ -1,4 +1,4 @@
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.10;
 
 import "../../../contracts/CErc20Delegator.sol";
 import "../../../contracts/EIP20Interface.sol";
