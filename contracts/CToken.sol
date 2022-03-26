@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.10;
 
 import "./ComptrollerInterface.sol";
 import "./CTokenInterfaces.sol";
@@ -1135,7 +1135,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     function doTransferIn(address from, uint amount) virtual internal returns (uint);
 
     /**
-     * @dev Performs a transfer out, ideally returning an explanatory error code upon failure tather than reverting.
+     * @dev Performs a transfer out, ideally returning an explanatory error code upon failure rather than reverting.
      *  If caller has not called checked protocol's balance, may revert due to insufficient cash held in the contract.
      *  If caller has checked protocol's balance, and verified it is >= amount, this should not revert in normal conditions.
      */
