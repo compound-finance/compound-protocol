@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.10;
 
 import "./CErc20Delegate.sol";
 
@@ -127,12 +127,14 @@ contract CDaiDelegate is CErc20Delegate {
      * @return The actual amount that is transferred
      */
     function doTransferIn(address from, uint amount) override internal returns (uint) {
+        // Read from storage once
+        address underlying_ = underlying;
         // Perform the EIP-20 transfer in
-        EIP20Interface token = EIP20Interface(underlying);
+        EIP20Interface token = EIP20Interface(underlying_);
         require(token.transferFrom(from, address(this), amount), "unexpected EIP-20 transfer in return");
 
         DaiJoinLike daiJoin = DaiJoinLike(daiJoinAddress);
-        GemLike dai = GemLike(underlying);
+        GemLike dai = GemLike(underlying_);
         PotLike pot = PotLike(potAddress);
         VatLike vat = VatLike(vatAddress);
 

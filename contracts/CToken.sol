@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.10;
 
 import "./ComptrollerInterface.sol";
 import "./CTokenInterfaces.sol";
@@ -137,7 +137,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @dev This will overwrite the approval amount for `spender`
      *  and is subject to issues noted [here](https://eips.ethereum.org/EIPS/eip-20#approve)
      * @param spender The address of the account which may transfer tokens
-     * @param amount The number of tokens that are approved (-1 means infinite)
+     * @param amount The number of tokens that are approved (uint256.max means infinite)
      * @return Whether or not the approval succeeded
      */
     function approve(address spender, uint256 amount) override external returns (bool) {
@@ -221,7 +221,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @return The total borrows with interest
      */
     function totalBorrowsCurrent() override external nonReentrant returns (uint) {
-        require(accrueInterest() == NO_ERROR, "accrue interest failed");
+        accrueInterest();
         return totalBorrows;
     }
 
@@ -231,7 +231,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @return The calculated balance
      */
     function borrowBalanceCurrent(address account) override external nonReentrant returns (uint) {
-        require(accrueInterest() == NO_ERROR, "accrue interest failed");
+        accrueInterest();
         return borrowBalanceStored(account);
     }
 
@@ -272,7 +272,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @return Calculated exchange rate scaled by 1e18
      */
     function exchangeRateCurrent() override public nonReentrant returns (uint) {
-        require(accrueInterest() == NO_ERROR, "accrue interest failed");
+        accrueInterest();
         return exchangeRateStored();
     }
 
@@ -288,7 +288,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     /**
      * @notice Calculates the exchange rate from the underlying to the CToken
      * @dev This function does not accrue interest before calculating the exchange rate
-     * @return (error code, calculated exchange rate scaled by 1e18)
+     * @return calculated exchange rate scaled by 1e18
      */
     function exchangeRateStoredInternal() virtual internal view returns (uint) {
         uint _totalSupply = totalSupply;
@@ -305,9 +305,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
              */
             uint totalCash = getCashPrior();
             uint cashPlusBorrowsMinusReserves = totalCash + totalBorrows - totalReserves;
-            Exp memory exchangeRate = Exp({mantissa: cashPlusBorrowsMinusReserves * expScale / _totalSupply});
+            uint exchangeRate = cashPlusBorrowsMinusReserves * expScale / _totalSupply;
 
-            return exchangeRate.mantissa;
+            return exchangeRate;
         }
     }
 
@@ -384,11 +384,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param mintAmount The amount of the underlying asset to supply
      */
     function mintInternal(uint mintAmount) internal nonReentrant {
-        uint error = accrueInterest();
-        if (error != NO_ERROR) {
-            // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
-            revert MintAccrueInterestFailed(error);
-        }
+        accrueInterest();
         // mintFresh emits the actual Mint event if successful and logs on errors, so we don't need to
         mintFresh(msg.sender, mintAmount);
     }
@@ -458,11 +454,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param redeemTokens The number of cTokens to redeem into underlying
      */
     function redeemInternal(uint redeemTokens) internal nonReentrant {
-        uint error = accrueInterest();
-        if (error != NO_ERROR) {
-            // accrueInterest emits logs on errors, but we still want to log the fact that an attempted redeem failed
-            revert RedeemAccrueInterestFailed(error);
-        }
+        accrueInterest();
         // redeemFresh emits redeem-specific logs on errors, so we don't need to
         redeemFresh(payable(msg.sender), redeemTokens, 0);
     }
@@ -473,11 +465,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param redeemAmount The amount of underlying to receive from redeeming cTokens
      */
     function redeemUnderlyingInternal(uint redeemAmount) internal nonReentrant {
-        uint error = accrueInterest();
-        if (error != NO_ERROR) {
-            // accrueInterest emits logs on errors, but we still want to log the fact that an attempted redeem failed
-            revert RedeemAccrueInterestFailed(error);
-        }
+        accrueInterest();
         // redeemFresh emits redeem-specific logs on errors, so we don't need to
         redeemFresh(payable(msg.sender), 0, redeemAmount);
     }
@@ -565,11 +553,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
       * @param borrowAmount The amount of the underlying asset to borrow
       */
     function borrowInternal(uint borrowAmount) internal nonReentrant {
-        uint error = accrueInterest();
-        if (error != NO_ERROR) {
-            // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
-            revert BorrowAccrueInterestFailed(error);
-        }
+        accrueInterest();
         // borrowFresh emits borrow-specific logs on errors, so we don't need to
         borrowFresh(payable(msg.sender), borrowAmount);
     }
@@ -633,11 +617,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param repayAmount The amount to repay, or -1 for the full outstanding amount
      */
     function repayBorrowInternal(uint repayAmount) internal nonReentrant {
-        uint error = accrueInterest();
-        if (error != NO_ERROR) {
-            // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
-            revert RepayBorrowAccrueInterestFailed(error);
-        }
+        accrueInterest();
         // repayBorrowFresh emits repay-borrow-specific logs on errors, so we don't need to
         repayBorrowFresh(msg.sender, msg.sender, repayAmount);
     }
@@ -648,11 +628,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param repayAmount The amount to repay, or -1 for the full outstanding amount
      */
     function repayBorrowBehalfInternal(address borrower, uint repayAmount) internal nonReentrant {
-        uint error = accrueInterest();
-        if (error != NO_ERROR) {
-            // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
-            revert RepayBehalfAccrueInterestFailed(error);
-        }
+        accrueInterest();
         // repayBorrowFresh emits repay-borrow-specific logs on errors, so we don't need to
         repayBorrowFresh(msg.sender, borrower, repayAmount);
     }
@@ -722,13 +698,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param repayAmount The amount of the underlying borrowed asset to repay
      */
     function liquidateBorrowInternal(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) internal nonReentrant {
-        uint error = accrueInterest();
-        if (error != NO_ERROR) {
-            // accrueInterest emits logs on errors, but we still want to log the fact that an attempted liquidation failed
-            revert LiquidateAccrueBorrowInterestFailed(error);
-        }
+        accrueInterest();
 
-        error = cTokenCollateral.accrueInterest();
+        uint error = cTokenCollateral.accrueInterest();
         if (error != NO_ERROR) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted liquidation failed
             revert LiquidateAccrueCollateralInterestFailed(error);
@@ -951,11 +923,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
     function _setReserveFactor(uint newReserveFactorMantissa) override external nonReentrant returns (uint) {
-        uint error = accrueInterest();
-        if (error != NO_ERROR) {
-            // accrueInterest emits logs on errors, but on top of that we want to log the fact that an attempted reserve factor change failed.
-            revert SetReserveFactorAccrueInterestFailed(error);
-        }
+        accrueInterest();
         // _setReserveFactorFresh emits reserve-factor-specific logs on errors, so we don't need to.
         return _setReserveFactorFresh(newReserveFactorMantissa);
     }
@@ -995,15 +963,11 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _addReservesInternal(uint addAmount) internal nonReentrant returns (uint) {
-        uint error = accrueInterest();
-        if (error != NO_ERROR) {
-            // accrueInterest emits logs on errors, but on top of that we want to log the fact that an attempted reduce reserves failed.
-            revert AddReservesAccrueInterestFailed(error);
-        }
+        accrueInterest();
 
         // _addReservesFresh emits reserve-addition-specific logs on errors, so we don't need to.
-        (error, ) = _addReservesFresh(addAmount);
-        return error;
+        _addReservesFresh(addAmount);
+        return NO_ERROR;
     }
 
     /**
@@ -1055,11 +1019,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _reduceReserves(uint reduceAmount) override external nonReentrant returns (uint) {
-        uint error = accrueInterest();
-        if (error != NO_ERROR) {
-            // accrueInterest emits logs on errors, but on top of that we want to log the fact that an attempted reduce reserves failed.
-            revert ReduceReservesAccrueInterestFailed(error);
-        }
+        accrueInterest();
         // _reduceReservesFresh emits reserve-reduction-specific logs on errors, so we don't need to.
         return _reduceReservesFresh(reduceAmount);
     }
@@ -1118,11 +1078,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _setInterestRateModel(InterestRateModel newInterestRateModel) override public returns (uint) {
-        uint error = accrueInterest();
-        if (error != NO_ERROR) {
-            // accrueInterest emits logs on errors, but on top of that we want to log the fact that an attempted change of interest rate model failed
-            revert SetInterestRateModelAccrueInterestFailed(error);
-        }
+        accrueInterest();
         // _setInterestRateModelFresh emits interest-rate-model-update-specific logs on errors, so we don't need to.
         return _setInterestRateModelFresh(newInterestRateModel);
     }
@@ -1179,7 +1135,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     function doTransferIn(address from, uint amount) virtual internal returns (uint);
 
     /**
-     * @dev Performs a transfer out, ideally returning an explanatory error code upon failure tather than reverting.
+     * @dev Performs a transfer out, ideally returning an explanatory error code upon failure rather than reverting.
      *  If caller has not called checked protocol's balance, may revert due to insufficient cash held in the contract.
      *  If caller has checked protocol's balance, and verified it is >= amount, this should not revert in normal conditions.
      */
