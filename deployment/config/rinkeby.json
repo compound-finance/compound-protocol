@@ -3,6 +3,74 @@
         "symbol": "CTRS",
         "name": "Citrus"
     },
+    "mocks": {
+        "USDC": {
+            "name": "Mock USDC",
+            "symbol": "USDC",
+            "decimals": 8
+        },
+        "WBTC": {
+            "name": "Mock WBTC",
+            "symbol": "WBTC",
+            "decimals": 8
+        },
+        "LINK": {
+            "name": "Mock LINK",
+            "symbol": "LINK",
+            "decimals": 18
+        },
+        "RealT-212-N-Park-Ave": {
+            "name": "Mock RealT 212 N Park Ave",
+            "symbol": "RealT-212-N-Park-Ave",
+            "decimals": 18
+        },
+        "RealT-9151-Whittier-Ave": {
+            "name": "Mock RealT 9151 Whittier Ave",
+            "symbol": "RealT-9151-Whittier-Ave",
+            "decimals": 18
+        },
+        "RealT-9943-Marlowe-St": {
+            "name": "Mock RealT 9943 Marlowe St",
+            "symbol": "RealT-9943-Marlowe-St",
+            "decimals": 18
+        }
+    },
+    "oracle": {
+        "base": "usd",
+        "tokens": {
+            "0xc778417E063141139Fce010982780140Aa0cD5Ab": {
+                "type": "chainlink",
+                "aggregator": "0x2bA49Aaa16E6afD2a993473cfB70Fa8559B523cF"
+            },
+            "USDC": {
+                "type": "chainlink",
+                "aggregator": "0xa24de01df22b63d23Ebc1882a5E3d4ec0d907bFB"
+            },
+            "WBTC": {
+                "type": "chainlink",
+                "aggregator": "0xECe365B379E1dD183B20fc5f022230C044d51404"
+            },
+            "LINK": {
+                "type": "chainlink",
+                "aggregator": "0xd8bD0a1cB028a31AA859A21A3758685a95dE4623"
+            },
+            "RealT-212-N-Park-Ave": {
+                "type": "exchangeRate",
+                "exchangeRate": "50.72",
+                "base": "USDC"
+            },
+            "RealT-9151-Whittier-Ave": {
+                "type": "exchangeRate",
+                "exchangeRate": "50.02",
+                "base": "USDC"
+            },
+            "RealT-9943-Marlowe-St": {
+                "type": "exchangeRate",
+                "exchangeRate": "68.50",
+                "base": "USDC"
+            }
+        }
+    },
     "marketPools": [
         {
             "id": "primary",
@@ -23,22 +91,14 @@
                     },
                     "reserve": 0.10,
                     "initialTokensPerUnderlying": 50,
-                    "collateralFactor": 0.75,
-                    "oracle": {
-                        "type": "chainlink",
-                        "aggregator": "0x2bA49Aaa16E6afD2a993473cfB70Fa8559B523cF"
-                    }
+                    "collateralFactor": 0.75
                 },
                 {
                     "name": "Citrus USDC",
                     "symbol": "ciUSDC",
                     "decimals": 8,
                     "type": "token",
-                    "mock": {
-                        "name": "Mock USDC",
-                        "symbol": "USDC",
-                        "decimals": 8
-                    },
+                    "underlying": "USDC",
                     "compPerSecond": "0.006",
                     "interestRate": {
                         "baseApr": 0,
@@ -48,22 +108,14 @@
                     },
                     "reserve": 0.10,
                     "initialTokensPerUnderlying": 50,
-                    "collateralFactor": 0.75,
-                    "oracle": {
-                        "type": "chainlink",
-                        "aggregator": "0xa24de01df22b63d23Ebc1882a5E3d4ec0d907bFB"
-                    }
+                    "collateralFactor": 0.75
                 },
                 {
                     "name": "Citrus Wrapped Bitcoin",
                     "symbol": "ciWBTC",
                     "decimals": 8,
                     "type": "token",
-                    "mock": {
-                        "name": "Mock WBTC",
-                        "symbol": "WBTC",
-                        "decimals": 8
-                    },
+                    "underlying": "WBTC",
                     "compPerSecond": "0.006",
                     "interestRate": {
                         "baseApr": 0,
@@ -73,22 +125,14 @@
                     },
                     "reserve": 0.15,
                     "initialTokensPerUnderlying": 50,
-                    "collateralFactor": 0.5,
-                    "oracle": {
-                        "type": "chainlink",
-                        "aggregator": "0xECe365B379E1dD183B20fc5f022230C044d51404"
-                    }
+                    "collateralFactor": 0.5
                 },
                 {
                     "name": "Citrus LINK",
                     "symbol": "ciLINK",
                     "decimals": 8,
                     "type": "token",
-                    "mock": {
-                        "name": "Mock LINK",
-                        "symbol": "LINK",
-                        "decimals": 18
-                    },
+                    "underlying": "LINK",
                     "compPerSecond": "0.006",
                     "interestRate": {
                         "baseApr": 0,
@@ -98,11 +142,7 @@
                     },
                     "reserve": 0.15,
                     "initialTokensPerUnderlying": 50,
-                    "collateralFactor": 0.5,
-                    "oracle": {
-                        "type": "chainlink",
-                        "aggregator": "0xd8bD0a1cB028a31AA859A21A3758685a95dE4623"
-                    }
+                    "collateralFactor": 0.5
                 }
             ]
         },
@@ -125,18 +165,14 @@
                     },
                     "reserve": 0.10,
                     "initialTokensPerUnderlying": 50,
-                    "collateralFactor": 0.75,
-                    "oracle": {
-                        "type": "chainlink",
-                        "aggregator": "0x2bA49Aaa16E6afD2a993473cfB70Fa8559B523cF"
-                    }
+                    "collateralFactor": 0.75
                 },
                 {
                     "name": "Citrus USDC (RealT pool)",
                     "symbol": "cirtUSDC",
                     "decimals": 8,
                     "type": "token",
-                    "underlying": "0x8aC9BB3fF7F21E0B55c829869805D9Db73BC8DC1",
+                    "underlying": "USDC",
                     "compPerSecond": "0.006",
                     "interestRate": {
                         "baseApr": 0,
@@ -146,71 +182,40 @@
                     },
                     "reserve": 0.10,
                     "initialTokensPerUnderlying": 50,
-                    "collateralFactor": 0.75,
-                    "oracle": {
-                        "type": "chainlink",
-                        "aggregator": "0xa24de01df22b63d23Ebc1882a5E3d4ec0d907bFB"
-                    }
+                    "collateralFactor": 0.75
                 },
                 {
                     "name": "Citrus RealT 212 N Park Ave",
                     "symbol": "ciRealT-212-N-Park-Ave",
                     "decimals": 18,
                     "type": "token",
-                    "mock": {
-                        "name": "Mock RealT 212 N Park Ave",
-                        "symbol": "RealT-212-N-Park-Ave",
-                        "decimals": 18
-                    },
+                    "underlying": "RealT-212-N-Park-Ave",
                     "compPerSecond": "0",
                     "borrowable": false,
                     "initialTokensPerUnderlying": 1,
-                    "collateralFactor": 0.60,
-                    "oracle": {
-                        "type": "exchangeRate",
-                        "exchangeRate": "50.72",
-                        "base": "0x8aC9BB3fF7F21E0B55c829869805D9Db73BC8DC1"
-                    }
+                    "collateralFactor": 0.60
                 },
                 {
                     "name": "Citrus RealT 9151 Whittier Ave",
                     "symbol": "ciRealT-9151-Whittier-Ave",
                     "decimals": 18,
                     "type": "token",
-                    "mock": {
-                        "name": "Mock RealT 9151 Whittier Ave",
-                        "symbol": "RealT-9151-Whittier-Ave",
-                        "decimals": 18
-                    },
+                    "underlying": "RealT-9151-Whittier-Ave",
                     "compPerSecond": "0",
                     "borrowable": false,
                     "initialTokensPerUnderlying": 1,
-                    "collateralFactor": 0.60,
-                    "oracle": {
-                        "type": "exchangeRate",
-                        "exchangeRate": "50.02",
-                        "base": "0x8aC9BB3fF7F21E0B55c829869805D9Db73BC8DC1"
-                    }
+                    "collateralFactor": 0.60
                 },
                 {
                     "name": "Citrus RealT 9943 Marlowe St",
                     "symbol": "ciRealT-9943-Marlowe-St",
                     "decimals": 18,
                     "type": "token",
-                    "mock": {
-                        "name": "Mock RealT 9943 Marlowe St",
-                        "symbol": "RealT-9943-Marlowe-St",
-                        "decimals": 18
-                    },
+                    "underlying": "RealT-9943-Marlowe-St",
                     "compPerSecond": "0",
                     "borrowable": false,
                     "initialTokensPerUnderlying": 1,
-                    "collateralFactor": 0.80,
-                    "oracle": {
-                        "type": "exchangeRate",
-                        "exchangeRate": "68.50",
-                        "base": "0x8aC9BB3fF7F21E0B55c829869805D9Db73BC8DC1"
-                    }
+                    "collateralFactor": 0.80
                 }
             ]
         }

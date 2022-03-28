@@ -306,6 +306,7 @@ async function makePriceOracle(opts = {}) {
   if (kind == 'proxy') {
     return await deploy('PriceOracleProxy', [
       root,
+      opts.base || "0x0000000000000000000000000000000000000000",
     ]);
   }
 }

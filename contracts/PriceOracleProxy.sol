@@ -8,6 +8,24 @@ import "./EIP20Interface.sol";
 import "./ExponentialNoError.sol";
 
 contract PriceOracleProxy is PriceOracle, ExponentialNoError {
+    enum OracleType {
+        NONE,
+        CHAINLINK,
+        FIXED
+    }
+
+    struct TokenInfo {
+        uint8 decimals;
+
+        OracleType oracleType;
+    }
+
+    struct ChainlinkInfo {
+        IChainlinkAggregator aggregator;
+
+        uint8 decimals;
+    }
+
     struct ExchangeRateInfo {
         bool isSet;
         /// @notice The base token
@@ -22,14 +40,22 @@ contract PriceOracleProxy is PriceOracle, ExponentialNoError {
     /// @notice admin can add price aggregators
     address public admin;
 
+    /// @notice all other tokens are priced against the base token. Its price is 1e18
+    /// @dev address(0) represent usd
+    address public baseTokenAddress;
+
+    /// @notice tokens managed by the oracle
+    mapping(address => TokenInfo) public tokens;
+
     /// @notice chainlink price aggregator for each underlying assets
-    mapping(address => IChainlinkAggregator) public aggregators;
+    mapping(address => ChainlinkInfo) public chainlinkAggregators;
 
     /// @notice exchange rate for each underlying assets
     mapping(address => ExchangeRateInfo) public exchangeRates;
 
-    constructor(address admin_) public {
+    constructor(address admin_, address baseTokenAddress_) public {
         admin = admin_;
+        baseTokenAddress = baseTokenAddress_;
     }
 
     /**
@@ -38,11 +64,19 @@ contract PriceOracleProxy is PriceOracle, ExponentialNoError {
      * @return The price
      */
     function getTokenPrice(address token) public view returns (uint256) {
-        if (exchangeRates[token].isSet) {
+        if (token == baseTokenAddress) {
+            return 1e18;
+        }
+
+        TokenInfo memory tokenInfo = tokens[token];
+
+        if (tokenInfo.oracleType == OracleType.CHAINLINK) {
+            return getPriceFromChainlink(token);
+        } else if (tokenInfo.oracleType == OracleType.FIXED) {
             return getPriceUsingExchangeRate(token);
         }
 
-        return getPriceFromChainlink(token);
+        revert("Token not registered");
     }
 
     /**
@@ -59,7 +93,7 @@ contract PriceOracleProxy is PriceOracle, ExponentialNoError {
         uint256 price = getTokenPrice(underlying);
         uint256 underlyingDecimals = EIP20Interface(underlying).decimals();
 
-        return mul_(price, 10**(18 - underlyingDecimals));
+        return underlyingDecimals <= 18 ? mul_(price, 10**(18 - underlyingDecimals)) : div_(price, 10**(underlyingDecimals - 18));
     }
 
     /**
@@ -68,49 +102,60 @@ contract PriceOracleProxy is PriceOracle, ExponentialNoError {
      * @return The price, scaled by 1e18
      */
     function getPriceFromChainlink(address underlying) internal view returns (uint256) {
-        IChainlinkAggregator aggregator = aggregators[underlying];
+        ChainlinkInfo memory chainlink = chainlinkAggregators[underlying];
 
-        (, int256 price, , , ) = aggregator.latestRoundData();
+        (, int256 price, , , ) = chainlink.aggregator.latestRoundData();
         require(price > 0, "invalid price");
 
         // Extend the decimals to 1e18.
-        return mul_(uint256(price), 10**(18 - uint256(aggregator.decimals())));
+        return mul_(uint256(price), 10**(18 - uint256(chainlink.decimals)));
     }
 
-    function getPriceUsingExchangeRate(address underlying) internal view returns (uint256) {
-        ExchangeRateInfo memory exchangeRate = exchangeRates[underlying];
+    /**
+     * @notice Get fixed exchange rate for token
+     * @param token The token the price will be given
+     * @return The price, scaled by 1e18
+     */
+    function getPriceUsingExchangeRate(address token) internal view returns (uint256) {
+        ExchangeRateInfo memory exchangeRate = exchangeRates[token];
 
-        uint256 basePrice;
+        uint256 basePrice = getTokenPrice(exchangeRate.base);
 
-        if (exchangeRate.base == address(0)) {
-            basePrice = 1e18;
-        } else {
-            basePrice = getTokenPrice(exchangeRate.base);
-        }
+        return div_(mul_(basePrice, exchangeRate.exchangeRate), 1e18);
+    }
 
-        return mul_(basePrice, exchangeRate.exchangeRate) / 1e18;
+    function setTokenInfo(address token, OracleType oracleType) internal {
+        tokens[token] = TokenInfo({
+            decimals: EIP20Interface(token).decimals(),
+            oracleType: oracleType
+        });
     }
 
     /**
      * @notice Set Chainlink aggregator
-     * @param underlying The underlying token that ChainLink aggregator gets the price of
+     * @param token The token that ChainLink aggregator gets the price of
      * @param aggregator The Chainlink aggregator to get the price from
      */
-    function _setAggregator(address underlying, IChainlinkAggregator aggregator) external {
+    function _setAggregator(address token, IChainlinkAggregator aggregator) external {
         require(msg.sender == admin, "Only admin can add aggregator");
 
-        aggregators[underlying] = aggregator;
+        setTokenInfo(token, OracleType.CHAINLINK);
+        chainlinkAggregators[token] = ChainlinkInfo({
+            aggregator: aggregator,
+            decimals: aggregator.decimals()
+        });
     }
 
     /**
      * @notice Set fixed price
-     * @param underlying The underlying token to set the price of
-     * @param base The underlying token to set the price of
+     * @param token The token to set the price of
+     * @param base The token that is priced against
      * @param exchangeRate The price of the token
      */
-    function _setExchangeRate(address underlying, address base, uint256 exchangeRate) external {
+    function _setExchangeRate(address token, address base, uint256 exchangeRate) external {
         require(msg.sender == admin, "Only admin can set exchange rate");
 
-        exchangeRates[underlying] = ExchangeRateInfo({isSet: true, base: base, exchangeRate: exchangeRate});
+        setTokenInfo(token, OracleType.FIXED);
+        exchangeRates[token] = ExchangeRateInfo({isSet: true, base: base, exchangeRate: exchangeRate});
     }
 }

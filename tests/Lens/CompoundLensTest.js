@@ -364,9 +364,9 @@ describe('CompoundLens', () => {
           const merkleRoot = solidityKeccak256(
             ['address', 'uint256'],
             [acct, etherExp(0.5).toString()]
-          )
+          );
 
-          let comptroller = await makeComptroller();
+          const comptroller = await makeComptroller();
           await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
           await send(comptroller, 'setBlockNumber', [50]);
 
@@ -385,9 +385,9 @@ describe('CompoundLens', () => {
           const merkleRoot = solidityKeccak256(
             ['address', 'uint256'],
             [acct, etherExp(0.5).toString()]
-          )
+          );
 
-          let comptroller = await makeComptroller();
+          const comptroller = await makeComptroller();
           await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
           await send(comptroller, 'setBlockNumber', [120]);
 
@@ -406,9 +406,9 @@ describe('CompoundLens', () => {
           const merkleRoot = solidityKeccak256(
             ['address', 'uint256'],
             [acct, etherExp(0.5).toString()]
-          )
+          );
 
-          let comptroller = await makeComptroller();
+          const comptroller = await makeComptroller();
           await send(comptroller, '_setAirdrop', [merkleRoot, 100, 200]);
           await send(comptroller, 'setBlockNumber', [250]);
 
@@ -422,7 +422,7 @@ describe('CompoundLens', () => {
             locked: "0"
           });
         });
-      })
+      });
 
     });
 

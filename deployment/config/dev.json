@@ -3,6 +3,59 @@
         "symbol": "CTRS",
         "name": "Citrus"
     },
+    "mocks": {
+        "WXDAI": "WETH",
+        "USDC": {
+            "name": "Mock USDC",
+            "symbol": "USDC",
+            "decimals": 8
+        },
+        "WBTC": {
+            "name": "Mock WBTC",
+            "symbol": "WBTC",
+            "decimals": 8
+        },
+        "STAKE": {
+            "name": "Mock Stake",
+            "symbol": "STAKE",
+            "decimals": 18
+        },
+        "3CRV": {
+            "name": "Mock 3CRV",
+            "symbol": "3CRV",
+            "decimals": 18
+        }
+    },
+    "oracle": {
+        "base": "0x0000000000000000000000000000000000000000",
+        "tokens": {
+            "WXDAI": {
+                "type": "exchangeRate",
+                "exchangeRate": "1",
+                "base": "usd"
+            },
+            "USDC": {
+                "type": "exchangeRate",
+                "exchangeRate": "1",
+                "base": "usd"
+            },
+            "WBTC": {
+                "type": "exchangeRate",
+                "exchangeRate": "40000",
+                "base": "usd"
+            },
+            "STAKE": {
+                "type": "exchangeRate",
+                "exchangeRate": "10",
+                "base": "usd"
+            },
+            "3CRV": {
+                "type": "exchangeRate",
+                "exchangeRate": "1",
+                "base": "usd"
+            }
+        }
+    },
     "marketPools": [
         {
             "id": "primary",
@@ -13,7 +66,7 @@
                     "symbol": "ciXDAI",
                     "decimals": 8,
                     "type": "eth",
-                    "mock": true,
+                    "underlying": "WXDAI",
                     "compPerSecond": "0.006",
                     "interestRate": {
                         "baseApr": 0,
@@ -23,23 +76,14 @@
                     },
                     "reserve": 0.10,
                     "initialTokensPerUnderlying": 50,
-                    "collateralFactor": 0.75,
-                    "oracle": {
-                        "type": "exchangeRate",
-                        "exchangeRate": "1",
-                        "base": "usd"
-                    }
+                    "collateralFactor": 0.75
                 },
                 {
                     "name": "Citrus USDC",
                     "symbol": "ciUSDC",
                     "decimals": 8,
                     "type": "token",
-                    "mock": {
-                        "name": "Mock USDC",
-                        "symbol": "USDC",
-                        "decimals": 8
-                    },
+                    "underlying": "USDC",
                     "compPerSecond": "0.006",
                     "interestRate": {
                         "baseApr": 0,
@@ -49,23 +93,14 @@
                     },
                     "reserve": 0.10,
                     "initialTokensPerUnderlying": 50,
-                    "collateralFactor": 0.75,
-                    "oracle": {
-                        "type": "exchangeRate",
-                        "exchangeRate": "1",
-                        "base": "usd"
-                    }
+                    "collateralFactor": 0.75
                 },
                 {
                     "name": "Citrus Wrapped Bitcoin",
                     "symbol": "ciWBTC",
                     "decimals": 8,
                     "type": "token",
-                    "mock": {
-                        "name": "Mock WBTC",
-                        "symbol": "WBTC",
-                        "decimals": 8
-                    },
+                    "underlying": "WBTC",
                     "compPerSecond": "0.006",
                     "interestRate": {
                         "baseApr": 0,
@@ -75,23 +110,14 @@
                     },
                     "reserve": 0.15,
                     "initialTokensPerUnderlying": 50,
-                    "collateralFactor": 0.5,
-                    "oracle": {
-                        "type": "exchangeRate",
-                        "exchangeRate": "40000",
-                        "base": "usd"
-                    }
+                    "collateralFactor": 0.5
                 },
                 {
                     "name": "Citrus Stake",
                     "symbol": "ciSTAKE",
                     "decimals": 8,
                     "type": "token",
-                    "mock": {
-                        "name": "Mock Stake",
-                        "symbol": "STAKE",
-                        "decimals": 18
-                    },
+                    "underlying": "STAKE",
                     "compPerSecond": "0.006",
                     "interestRate": {
                         "baseApr": 0,
@@ -101,32 +127,18 @@
                     },
                     "reserve": 0.15,
                     "initialTokensPerUnderlying": 50,
-                    "collateralFactor": 0.5,
-                    "oracle": {
-                        "type": "exchangeRate",
-                        "exchangeRate": "10",
-                        "base": "usd"
-                    }
+                    "collateralFactor": 0.5
                 },
                 {
                     "name": "Citrus LP 3pool Curve",
                     "symbol": "ci3CRV",
                     "decimals": 8,
                     "type": "token",
-                    "mock": {
-                        "name": "Mock 3CRV",
-                        "symbol": "3CRV",
-                        "decimals": 18
-                    },
+                    "underlying": "3CRV",
                     "compPerSecond": "0",
                     "borrowable": false,
                     "initialTokensPerUnderlying": 50,
-                    "collateralFactor": 0.5,
-                    "oracle": {
-                        "type": "exchangeRate",
-                        "exchangeRate": "1",
-                        "base": "usd"
-                    }
+                    "collateralFactor": 0.5
                 }
             ]
         }

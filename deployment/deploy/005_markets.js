@@ -3,8 +3,9 @@ const _ = require('lodash');
 
 const config = require('../config');
 const deploy = require('../utils/deploy');
-const { isTestnet } = require('../utils/env');
 const execute = require('../utils/execute');
+const getTokenAddress = require('../utils/getTokenAddress');
+const { numberToMantissa, oneWithDecimals } = require('../utils/numbers');
 const { assertSafeProxy } = require('../utils/storageLayout');
 const view = require('../utils/view');
 
@@ -35,20 +36,6 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
 
       marketNameMap[market.symbol] = true;
     });
-
-    // check oracle configs are the same for each underlying
-    const oracleMap = {};
-    markets.forEach(market => {
-      const key = market.underlying || market.mock.symbol;
-
-      if (oracleMap[key]) {
-        if (!_.isEqual(oracleMap[key], market.oracle)) {
-          throw new Error(`Different oracle config for ${key}`);
-        }
-      }
-
-      oracleMap[key] = market.oracle;
-    });
   }
 
   for (const marketPool of config.marketPools) {
@@ -65,7 +52,7 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
 
       const comptrollerDeployment = await deployments.get(unitrollerDeploymentName);
 
-      const underlying = await getTokenAddress(market);
+      const underlying = await getTokenAddress(market.underlying);
 
       const tokenAbi = [
         "function decimals() view returns (uint8)",
@@ -143,59 +130,6 @@ const deployMarkets = async ({ getNamedAccounts, deployments }) => {
 
       marketAddresses.push(tokenDeployment.address);
 
-      /* Setup price oracle for underlying token */
-
-      switch(market.oracle.type) {
-      case 'exchangeRate': {
-        const targetExchangeRate = numberToMantissa(market.oracle.exchangeRate);
-        const exchangeRate = await view({
-          contractName: 'PriceOracleProxy',
-          methodName: 'exchangeRates',
-          args: [underlying],
-        });
-
-        const base = (() => {
-          if (market.oracle.base === 'usd') {
-            return '0x0000000000000000000000000000000000000000';
-          }
-
-          return market.oracle.base;
-        })();
-
-        if (!exchangeRate.exchangeRate.eq(targetExchangeRate)) {
-          await execute({
-            contractName: 'PriceOracleProxy',
-            methodName: '_setExchangeRate',
-            args: [underlying, base, targetExchangeRate],
-          });
-        }
-
-        break;
-      }
-
-      case 'chainlink': {
-        const targetPriceAggregator = market.oracle.aggregator;
-        const priceAggregator = await view({
-          contractName: 'PriceOracleProxy',
-          methodName: 'aggregators',
-          args: [underlying],
-        });
-
-        if (priceAggregator !== targetPriceAggregator) {
-          await execute({
-            contractName: 'PriceOracleProxy',
-            methodName: '_setAggregator',
-            args: [underlying, targetPriceAggregator],
-          });
-        }
-
-        break;
-      }
-
-      default: {
-        throw new Error('Incorrect oracle type');
-      }
-      }
 
       /* Set interest rate model */
 
@@ -344,62 +278,6 @@ deployMarkets.id = "005_markets";
 
 module.exports = deployMarkets;
 
-
-function numberToMantissa(number) {
-  // eslint-disable-next-line prefer-const
-  let [integrerPart, decimalPart] = number.toString().split('.');
-
-  if (!decimalPart) {
-    decimalPart = '';
-  }
-
-  return BigInt(integrerPart + decimalPart.slice(0, 18).padEnd(18, '0'));
-}
-
-function oneWithDecimals(decimals) {
-  return 10n ** BigInt(decimals);
-}
-
-// Get token address, deploy a mock if required
-async function getTokenAddress(token) {
-  const {
-    deployer
-  } = await getNamedAccounts();
-
-  if (token.mock) {
-    if (!isTestnet) {
-      throw new Error('Cannot create mock token outside of testnet');
-    }
-
-    if (token.type === 'eth') {
-      const weth = await deploy(`WETH9`, {
-        contract: 'WETH9',
-        args: [],
-        log: true,
-        skipIfAlreadyDeployed: true,
-      });
-
-      return weth.address;
-    }
-
-    const mockDeploy = await deploy(`ERC20Mock_${token.mock.symbol}`, {
-      contract: 'ERC20Mock',
-      args: [
-        token.mock.name,
-        token.mock.symbol,
-        token.mock.decimals,
-        deployer,
-        (1000n * oneWithDecimals(token.mock.decimals)).toString(),
-      ],
-      log: true,
-      skipIfAlreadyDeployed: true,
-    });
-
-    return mockDeploy.address;
-  }
-
-  return token.underlying;
-}
 
 async function getInterestRateModel(market) {
   const {
