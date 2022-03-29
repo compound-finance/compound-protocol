@@ -94,7 +94,8 @@
     "IRM_UNI_Updateable": "0xd88b94128ff2b8cf2d7886cd1c1e46757418ca2a",
     "GovernorBravoDelegator": "0xc0da02939e1441f497fd74f78ce7decb17b66529",
     "GovernorBravoDelegateG1": "0xAAAaaAAAaaaa8FdB04F544F4EEe52939CddCe378",
-    "GovernorBravoDelegate": "0x563a63d650a5d259abae9248dddc6867813d3f87"
+    "GovernorBravoDelegateG2": "0x563A63d650a5D259abAE9248dddC6867813d3f87",
+    "GovernorBravoDelegate": "0x30065B703DE5d473975A2db5bBB790A23FD6EFbD"
   },
   "Blocks": {
     "cAAVEDelegate": 12654137,
@@ -161,7 +162,8 @@
     "IRM_UNI_Updateable": 11015612,
     "GovernorBravoDelegator": 12006099,
     "GovernorBravoDelegateG1": 12005518,
-    "GovernorBravoDelegate": 13170179
+    "GovernorBravoDelegateG2": 13170179,
+    "GovernorBravoDelegate": 14261439
   },
   "PriceData": {
     "description": "Open Oracle Price Data",
@@ -249,6 +251,11 @@
         "contract": "GovernorBravoDelegate",
         "address": "0xAAAaaAAAaaaa8FdB04F544F4EEe52939CddCe378"
     },
+    "GovernorBravoDelegateG2": {
+        "name": "GovernorBravoDelegate",
+        "contract": "GovernorBravoDelegate",
+        "address": "0x563a63d650a5d259abae9248dddc6867813d3f87"
+    },
     "GovernorBravoDelegator": {
         "name": "GovernorBravoDelegator",
         "contract": "GovernorBravoDelegator",
@@ -257,7 +264,7 @@
     "GovernorBravoDelegate": {
         "name": "GovernorBravoDelegate",
         "contract": "GovernorBravoDelegate",
-        "address": "0x563a63d650a5d259abae9248dddc6867813d3f87"
+        "address": "0x30065B703DE5d473975A2db5bBB790A23FD6EFbD"
     }
   },
   "Timelock": {
@@ -326,6 +333,7 @@
     "IRM_UNI_Updateable": "?",
     "GovernorBravoDelegate": "0x",
     "GovernorBravoDelegateG1": "0x",
+    "GovernorBravoDelegateG2": "0x",
     "GovernorBravoDelegator": "0x0000000000000000000000006d903f6003cca6255d85cca4d3b5e5146dc33925000000000000000000000000c00e94cb662c3520282e6f5717214004a7f268880000000000000000000000006d903f6003cca6255d85cca4d3b5e5146dc33925000000000000000000000000aaaaaaaaaaaa8fdb04f544f4eee52939cddce3780000000000000000000000000000000000000000000000000000000000004380000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000152d02c7e14af6800000"
   },
   "Tokens": {

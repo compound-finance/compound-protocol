@@ -62,7 +62,8 @@
         "cWBTC": "0x541c9cB0E97b77F142684cc33E8AC9aC17B1990F",
         "USDC": "0x07865c6e87b9f70255377e024ace6630c1eaa37f",
         "ComptrollerRopsten": "0x1435b33741523dd5BB99f8FD8Dc00cF926fE96Fb",
-        "SimplePriceOracle": "0x7BBF806F69ea21Ea9B8Af061AD0C1c41913063A1"
+        "SimplePriceOracle": "0x7BBF806F69ea21Ea9B8Af061AD0C1c41913063A1",
+        "GovernorBravoDelegate": "0x711088ede5EE218D539051881ce59D39cbA469bB"
     },
     "Blocks": {
         "ComptrollerG8": 10279074,

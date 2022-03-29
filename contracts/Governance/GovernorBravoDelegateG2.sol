@@ -9,7 +9,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
     string public constant name = "Compound Governor Bravo";
 
     /// @notice The minimum setable proposal threshold
-    uint public constant MIN_PROPOSAL_THRESHOLD = 1000e18; // 1,000 Comp
+    uint public constant MIN_PROPOSAL_THRESHOLD = 50000e18; // 50,000 Comp
 
     /// @notice The maximum setable proposal threshold
     uint public constant MAX_PROPOSAL_THRESHOLD = 100000e18; //100,000 Comp
