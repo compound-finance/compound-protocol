@@ -345,6 +345,16 @@ async function makeChainlinkAggregator(opts = {}) {
   }
 }
 
+async function makeTokensLiquidityPair(opts = {}) {
+  const {
+    kind = 'uniswap'
+  } = opts || {};
+
+  if (kind == 'uniswap') {
+    return await deploy('UniswapPairHarness', opts.tokens.map(x => x._address).sort());
+  }
+}
+
 async function balanceOf(token, account) {
   return etherUnsigned(await call(token, 'balanceOf', [account]));
 }
@@ -504,6 +514,7 @@ module.exports = {
   makePriceOracle,
   makeToken,
   makeChainlinkAggregator,
+  makeTokensLiquidityPair,
 
   balanceOf,
   totalSupply,
