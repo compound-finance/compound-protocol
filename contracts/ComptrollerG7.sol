@@ -61,6 +61,15 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
 
     /// @notice Emitted when borrow cap guardian is changed
     event NewBorrowCapGuardian(address oldBorrowCapGuardian, address newBorrowCapGuardian);
+    
+    /// @notice Emitted when new borrower is whitelisted
+    //Josh
+    event BorrowerWhitelisted(address borrower);
+
+    /// @notice Emitted when borrower's limits are changed
+    //Josh
+    event BorrowerLimitChanged(address borrower, uint256 borrowLimit);
+
 
     /// @notice Emitted when COMP is granted by admin
     event CompGranted(address recipient, uint amount);
@@ -321,6 +330,66 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         }
     }
 
+    //Josh
+    function whitelistBorrowerAdd(address borrower) public override returns (uint) {
+        if (msg.sender != admin) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_BORROWER_LIMIT_CHECK);
+        }
+
+        borrowerArray[borrower] = true;
+        borrowLimit[borrower] = 0;
+
+        emit BorrowerWhitelisted(borrower);
+
+
+        return 0;
+    }
+
+    //Josh
+    //Sets the notional limit of borrows for an address
+    function setBorrowerLimits(address borrower, uint256 _borrowLimit) public override returns (uint) {
+        if (msg.sender != admin) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_BORROWER_LIMIT_CHECK);
+        }
+
+        if (borrowerArray[borrower] != true) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_BORROWER_LIMIT_CHECK);
+        }
+        
+        borrowLimit[borrower] = _borrowLimit;
+
+        emit BorrowerLimitChanged(borrower, _borrowLimit);
+
+        return (_borrowLimit);
+    } 
+
+    //Josh
+    //Returns the notional value of borrows allowed for a borrower
+    function getBorrowerLimits(address borrower) public override view returns (uint256) {
+        require(borrowerArray[borrower] == true, "Address not permitted to borrow");
+        return borrowLimit[borrower];
+    }
+
+    //Josh
+    //Returns outstanding borrows notional value
+    function getNotionalBorrowsInternal(address borrower) internal view returns (uint256) {
+        CToken[] memory cTokens = getAllMarkets();
+        uint numMarkets = cTokens.length;
+        uint balance = 0;
+
+        for(uint i = 0; i < numMarkets; i++) {
+            CToken cToken = cTokens[i];
+            balance += oracle.getUnderlyingPrice(cToken) * cToken.borrowBalanceStored(borrower);
+        }
+        return balance;
+    }
+
+    //Josh
+    //returns notional value of a borrower's account
+    function getNotionalBorrows(address borrower) public view override returns (uint256) {
+        return getNotionalBorrowsInternal(borrower);
+    }
+
     /**
      * @notice Checks if the account should be allowed to borrow the underlying asset of the given market
      * @param cToken The market to verify the borrow against
@@ -354,6 +423,9 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
             return uint(Error.PRICE_ERROR);
         }
 
+        //Josh
+        uint newBorrows = getNotionalBorrowsInternal(borrower) + borrowAmount;
+        require(newBorrows < getBorrowerLimits(borrower), "Borrow request exceeds permitted borrow limits");
 
         uint borrowCap = borrowCaps[cToken];
         // Borrow cap of 0 corresponds to unlimited borrowing
