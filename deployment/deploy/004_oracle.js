@@ -43,6 +43,14 @@ const deployOracle = async ({ getNamedAccounts }) => {
 
     const underlying = await getTokenAddress(key);
 
+    const tokenInfo = await view({
+      contractName: 'PriceOracleProxy',
+      methodName: 'tokens',
+      args: [underlying],
+    });
+
+    const oracleType = getOracleType(tokenInfo.oracleType)
+
     switch(oracle.type) {
     case 'exchangeRate': {
       const targetExchangeRate = numberToMantissa(oracle.exchangeRate);
@@ -54,7 +62,7 @@ const deployOracle = async ({ getNamedAccounts }) => {
 
       const base = await getBase(oracle.base);
 
-      if (!exchangeRate.exchangeRate.eq(targetExchangeRate)) {
+      if (oracleType !== oracle.type || !exchangeRate.exchangeRate.eq(targetExchangeRate)) {
         await execute({
           contractName: 'PriceOracleProxy',
           methodName: '_setExchangeRate',
@@ -73,11 +81,29 @@ const deployOracle = async ({ getNamedAccounts }) => {
         args: [underlying],
       });
 
-      if (priceAggregator !== targetPriceAggregator) {
+      if (oracleType !== oracle.type || priceAggregator !== targetPriceAggregator) {
         await execute({
           contractName: 'PriceOracleProxy',
           methodName: '_setAggregator',
           args: [underlying, targetPriceAggregator],
+        });
+      }
+
+      break;
+    }
+
+    case 'twap': {
+      const uniswapTWAPInfo = await view({
+        contractName: 'PriceOracleProxy',
+        methodName: 'uniswapTWAPs',
+        args: [underlying],
+      });
+
+      if (oracleType !== oracle.type || uniswapTWAPInfo.base !==  oracle.base || uniswapTWAPInfo.pair !==  oracle.pair) {
+        await execute({
+          contractName: 'PriceOracleProxy',
+          methodName: '_setUniswapTWAP',
+          args: [underlying, oracle.base, oracle.pair],
         });
       }
 
@@ -102,4 +128,18 @@ async function getBase(base) {
   }
 
   return await getTokenAddress(base);
+}
+
+const oTypes = [
+  'none',
+  'chainlink',
+  'exchangeRate',
+  'twap'
+]
+function getOracleType(index) {
+  if (index < 0 || index > oTypes.length) {
+    throw new Error(`Invalid oracle type: ${index}`);
+  }
+
+  return oTypes[index];
 }
