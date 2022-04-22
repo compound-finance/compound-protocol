@@ -31,6 +31,7 @@
   },
   "resolutions": {
     "scrypt.js": "https://registry.npmjs.org/@compound-finance/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz",
-    "**/ganache-core": "github:compound-finance/ganache-core.git#jflatow/unbreak-fork"
+    "**/ganache-core": "github:compound-finance/ganache-core.git#jflatow/unbreak-fork",
+    "merkle-patricia-tree": "3.0.0"
   }
 }
