@@ -1,6 +1,7 @@
 Understanding of code base.
 
-***CToken, CErc20 and CEther*** The Compound cTokens, which are self-contained borrowing and lending contracts. CToken contains the core logic and CErc20 and CEther add public interfaces for Erc20 tokens and ether, respectively. Each CToken is assigned an interest rate and risk model (see InterestRateModel and Comptroller sections), and allows accounts to *mint* (supply capital), *redeem* (withdraw capital), *borrow* and *repay a borrow*. Each CToken is an ERC-20 compliant token where balances represent ownership of the market.
+## CToken, CErc20 and CEther
+The Compound cTokens, which are self-contained borrowing and lending contracts. CToken contains the core logic and CErc20 and CEther add public interfaces for Erc20 tokens and ether, respectively. Each CToken is assigned an interest rate and risk model (see InterestRateModel and Comptroller sections), and allows accounts to *mint* (supply capital), *redeem* (withdraw capital), *borrow* and *repay a borrow*. Each CToken is an ERC-20 compliant token where balances represent ownership of the market.
 
 There are currently two types of cTokens (both types expose the EIP-20 interface): 
 
@@ -41,21 +42,44 @@ Functions and associated steps:
     1. balance = exchangeRate * accountTokens[owner
 
 - [getAccountSnapshot](./CToken.sol#L203): Get a snapshot of the account's balances, and the cached exchange rate, used by comptroller to more efficiently perform liquidity checks,
+    1. Gets token balance, borrow balance, exchange rate
 
-***Comptroller***The risk model contract, which validates permissible user actions and disallows actions if they do not fit certain risk parameters. For instance, the Comptroller enforces that each borrowing user must maintain a sufficient collateral balance across all cTokens.
+- [borrowRatePerBlock, supplyRatePerBlock](./CToken.sol#L282): Gets current per-block borrow interest rate and supply interest rate for the cToken from [interestRateModel](./InterestRateModel.sol)
 
-***Comp***The Compound Governance Token (COMP). Holders of this token have the ability to govern the protocol via the governor contract.
+- [borrowRatePerBlock, supplyRatePerBlock](./CToken.sol#L235): Gets current per-block borrow interest rate and supply interest rate for the cToken from [interestRateModel](./InterestRateModel.sol)
 
-***Governor Alpha***The administrator of the Compound timelock contract. Holders of Comp token may create and vote on proposals which will be queued into the Compound timelock and then have effects on Compound cToken and Comptroller contracts. This contract may be replaced in the future with a beta version.
+- [totalBorrowsCurrent, borrowBalanceCurrent, borrowBalanceStored](./CToken.sol#L243): 
+    1. current total borrows plus accrued interest
+    2. 
 
-***InterestRateModel***Contracts which define interest rate models. These models algorithmically determine interest rates based on the current utilization of a given market (that is, how much of the supplied assets are liquid versus borrowed).
+- [borrowBalanceStoredInternal](./CToken.sol#L235): Gets current per-block borrow interest rate and supply interest rate for the cToken from [interestRateModel](./InterestRateModel.sol)
 
-***Careful Math***Library for safe math operations.
+## Comptroller
+The risk model contract, which validates permissible user actions and disallows actions if they do not fit certain risk parameters. For instance, the Comptroller enforces that each borrowing user must maintain a sufficient collateral balance across all cTokens.
 
-***ErrorReporter***Library for tracking error codes and failure conditions.
+## Open Oracle
+The [Open Oracle](https://github.com/nabaruns/open-oracle/tree/master/contracts) is a standard and SDK allowing reporters to sign key-value pairs (e.g. a price feed) that interested users can post to the blockchain. The system has a built-in view system that allows clients to easily share data and build aggregates (e.g. the median price from several sources).
 
-***Exponential***Library for handling fixed-point decimal numbers.
+## Comp
+The Compound Governance Token (COMP). Holders of this token have the ability to govern the protocol via the governor contract.
 
-***SafeToken***Library for safely handling Erc20 interaction.
+## Governor Alpha
+The administrator of the Compound timelock contract. Holders of Comp token may create and vote on proposals which will be queued into the Compound timelock and then have effects on Compound cToken and Comptroller contracts. This contract may be replaced in the future with a beta version.
 
-***WhitePaperInterestRateModel***Initial interest rate model, as defined in the Whitepaper. This contract accepts a base rate and slope parameter in its constructor.
+## InterestRateModel
+Contracts which define interest rate models. These models algorithmically determine interest rates based on the current utilization of a given market (that is, how much of the supplied assets are liquid versus borrowed).
+
+## Careful Math
+Library for safe math operations.
+
+## ErrorReporter
+Library for tracking error codes and failure conditions.
+
+## Exponential
+Library for handling fixed-point decimal numbers.
+
+## SafeToken
+Library for safely handling Erc20 interaction.
+
+## WhitePaperInterestRateModel
+Initial interest rate model, as defined in the Whitepaper. This contract accepts a base rate and slope parameter in its constructor.
