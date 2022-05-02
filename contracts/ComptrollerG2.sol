@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
 
 import "./CToken.sol";
 import "./ErrorReporter.sol";
@@ -338,6 +339,8 @@ contract ComptrollerG2 is ComptrollerV2Storage, ComptrollerInterface, Comptrolle
             return uint(Error.MARKET_NOT_LISTED);
         }
 
+        Error err;
+
         // *may include Policy Hook-type checks
 
         if (!markets[cToken].accountMembership[borrower]) {
@@ -345,7 +348,7 @@ contract ComptrollerG2 is ComptrollerV2Storage, ComptrollerInterface, Comptrolle
             require(msg.sender == cToken, "sender must be cToken");
 
             // attempt to add borrower to the market
-            Error err = addToMarketInternal(CToken(msg.sender), borrower);
+            err = addToMarketInternal(CToken(msg.sender), borrower);
             if (err != Error.NO_ERROR) {
                 return uint(err);
             }
@@ -358,7 +361,8 @@ contract ComptrollerG2 is ComptrollerV2Storage, ComptrollerInterface, Comptrolle
             return uint(Error.PRICE_ERROR);
         }
 
-        (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(borrower, CToken(cToken), 0, borrowAmount);
+        uint shortfall;
+        (err, , shortfall) = getHypotheticalAccountLiquidityInternal(borrower, CToken(cToken), 0, borrowAmount);
         if (err != Error.NO_ERROR) {
             return uint(err);
         }
