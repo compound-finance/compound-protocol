@@ -22,6 +22,7 @@ interface ComptrollerLensInterface {
 }
 
 interface GovernorBravoInterface {
+    // TODO: delete receipt
     struct Receipt {
         bool hasVoted;
         uint8 support;
@@ -31,6 +32,7 @@ interface GovernorBravoInterface {
         uint id;
         address proposer;
         uint eta;
+        // TODO: delete startBlock, endBlock, forVotes, againstVotes, abstainVotes
         uint startBlock;
         uint endBlock;
         uint forVotes;
@@ -41,6 +43,7 @@ interface GovernorBravoInterface {
     }
     function getActions(uint proposalId) external view returns (address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas);
     function proposals(uint proposalId) external view returns (Proposal memory);
+    // TODO: delete getReceipt
     function getReceipt(uint proposalId, address voter) external view returns (Receipt memory);
 }
 
@@ -255,13 +258,15 @@ contract CompoundLens {
         });
     }
 
+    // TODO: delete
     struct GovReceipt {
         uint proposalId;
         bool hasVoted;
         bool support;
         uint96 votes;
     }
-
+    
+    // TODO: delete
     function getGovReceipts(GovernorAlpha governor, address voter, uint[] memory proposalIds) public view returns (GovReceipt[] memory) {
         uint proposalCount = proposalIds.length;
         GovReceipt[] memory res = new GovReceipt[](proposalCount);
@@ -277,6 +282,7 @@ contract CompoundLens {
         return res;
     }
 
+    // TODO: delete
     struct GovBravoReceipt {
         uint proposalId;
         bool hasVoted;
@@ -284,6 +290,7 @@ contract CompoundLens {
         uint96 votes;
     }
 
+    // TODO: delete
     function getGovBravoReceipts(GovernorBravoInterface governor, address voter, uint[] memory proposalIds) public view returns (GovBravoReceipt[] memory) {
         uint proposalCount = proposalIds.length;
         GovBravoReceipt[] memory res = new GovBravoReceipt[](proposalCount);
@@ -299,6 +306,7 @@ contract CompoundLens {
         return res;
     }
 
+    // TODO: delete
     struct GovProposal {
         uint proposalId;
         address proposer;
@@ -315,6 +323,7 @@ contract CompoundLens {
         bool executed;
     }
 
+    // TODO: delete
     function setProposal(GovProposal memory res, GovernorAlpha governor, uint proposalId) internal view {
         (
             ,
@@ -338,6 +347,7 @@ contract CompoundLens {
         res.executed = executed;
     }
 
+    // TODO: delete
     function getGovProposals(GovernorAlpha governor, uint[] calldata proposalIds) external view returns (GovProposal[] memory) {
         GovProposal[] memory res = new GovProposal[](proposalIds.length);
         for (uint i = 0; i < proposalIds.length; i++) {
@@ -375,11 +385,11 @@ contract CompoundLens {
         uint[] values;
         string[] signatures;
         bytes[] calldatas;
-        uint startBlock;
-        uint endBlock;
-        uint forVotes;
-        uint againstVotes;
-        uint abstainVotes;
+        uint startBlock; // TODO: delete
+        uint endBlock; // TODO: delete
+        uint forVotes; // TODO: delete
+        uint againstVotes; // TODO: delete
+        uint abstainVotes; // TODO: delete
         bool canceled;
         bool executed;
     }
@@ -390,11 +400,11 @@ contract CompoundLens {
         res.proposalId = proposalId;
         res.proposer = p.proposer;
         res.eta = p.eta;
-        res.startBlock = p.startBlock;
-        res.endBlock = p.endBlock;
-        res.forVotes = p.forVotes;
-        res.againstVotes = p.againstVotes;
-        res.abstainVotes = p.abstainVotes;
+        res.startBlock = p.startBlock; // TODO: delete
+        res.endBlock = p.endBlock; // TODO: delete
+        res.forVotes = p.forVotes; // TODO: delete
+        res.againstVotes = p.againstVotes; // TODO: delete
+        res.abstainVotes = p.abstainVotes; // TODO: delete
         res.canceled = p.canceled;
         res.executed = p.executed;
     }
@@ -416,11 +426,11 @@ contract CompoundLens {
                 values: values,
                 signatures: signatures,
                 calldatas: calldatas,
-                startBlock: 0,
-                endBlock: 0,
-                forVotes: 0,
-                againstVotes: 0,
-                abstainVotes: 0,
+                startBlock: 0, // TODO: delete
+                endBlock: 0, // TODO: delete
+                forVotes: 0, // TODO: delete
+                againstVotes: 0, // TODO: delete
+                abstainVotes: 0, // TODO: delete
                 canceled: false,
                 executed: false
             });
@@ -431,23 +441,23 @@ contract CompoundLens {
 
     struct CompBalanceMetadata {
         uint balance;
-        uint votes;
-        address delegate;
+        uint votes; // TODO: delete
+        address delegate; // TODO: delete
     }
 
     function getCompBalanceMetadata(Comp comp, address account) external view returns (CompBalanceMetadata memory) {
         return CompBalanceMetadata({
             balance: comp.balanceOf(account),
-            votes: uint256(comp.getCurrentVotes(account)),
-            delegate: comp.delegates(account)
+            votes: uint256(comp.getCurrentVotes(account)), // TODO: delete
+            delegate: comp.delegates(account) // TODO: delete
         });
     }
 
     struct CompBalanceMetadataExt {
-        uint balance;
-        uint votes;
-        address delegate;
-        uint allocated;
+        uint balance; 
+        uint votes; // TODO: delete
+        address delegate; // TODO: delete
+        uint allocated; 
     }
 
     function getCompBalanceMetadataExt(Comp comp, ComptrollerLensInterface comptroller, address account) external returns (CompBalanceMetadataExt memory) {
@@ -460,17 +470,19 @@ contract CompoundLens {
 
         return CompBalanceMetadataExt({
             balance: balance,
-            votes: uint256(comp.getCurrentVotes(account)),
-            delegate: comp.delegates(account),
+            votes: uint256(comp.getCurrentVotes(account)), // TODO: delete
+            delegate: comp.delegates(account), // TODO: delete
             allocated: allocated
         });
     }
 
+    // TODO: delete
     struct CompVotes {
         uint blockNumber;
         uint votes;
     }
 
+    // TODO: delete
     function getCompVotes(Comp comp, address account, uint32[] calldata blockNumbers) external view returns (CompVotes[] memory) {
         CompVotes[] memory res = new CompVotes[](blockNumbers.length);
         for (uint i = 0; i < blockNumbers.length; i++) {
