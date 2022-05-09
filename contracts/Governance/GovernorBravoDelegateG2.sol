@@ -5,6 +5,9 @@ import "./GovernorBravoInterfaces.sol";
 
 contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoEvents {
 
+    /*
+    TODO: remove all constants related to creating and approving proposals
+
     /// @notice The name of this contract
     string public constant name = "Compound Governor Bravo";
 
@@ -28,13 +31,16 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
     uint public constant quorumVotes = 400000e18; // 400,000 = 4% of Comp
+    */
 
     /// @notice The maximum number of actions that can be included in a proposal
     uint public constant proposalMaxOperations = 10; // 10 actions
-
+    
+    // TODO: figure out if we need DOMAIN_TYPEHASH
     /// @notice The EIP-712 typehash for the contract's domain
     bytes32 public constant DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
 
+    // TODO: delete BALLOT_TYPEHASH
     /// @notice The EIP-712 typehash for the ballot struct used by the contract
     bytes32 public constant BALLOT_TYPEHASH = keccak256("Ballot(uint256 proposalId,uint8 support)");
 
@@ -50,16 +56,26 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         require(address(timelock) == address(0), "GovernorBravo::initialize: can only initialize once");
         require(msg.sender == admin, "GovernorBravo::initialize: admin only");
         require(timelock_ != address(0), "GovernorBravo::initialize: invalid timelock address");
+
+        // TODO: replace comp initialization with canto initialization 
         require(comp_ != address(0), "GovernorBravo::initialize: invalid comp address");
+        
+        /*
+        TODO: remove all checks for voting and proposal thresholds
         require(votingPeriod_ >= MIN_VOTING_PERIOD && votingPeriod_ <= MAX_VOTING_PERIOD, "GovernorBravo::initialize: invalid voting period");
         require(votingDelay_ >= MIN_VOTING_DELAY && votingDelay_ <= MAX_VOTING_DELAY, "GovernorBravo::initialize: invalid voting delay");
         require(proposalThreshold_ >= MIN_PROPOSAL_THRESHOLD && proposalThreshold_ <= MAX_PROPOSAL_THRESHOLD, "GovernorBravo::initialize: invalid proposal threshold");
+        */
 
         timelock = TimelockInterface(timelock_);
+        // TODO: replace comp and CompInterface with Canto declaration
         comp = CompInterface(comp_);
+        /*
+        TODO: delete these; no need for voting logic
         votingPeriod = votingPeriod_;
         votingDelay = votingDelay_;
         proposalThreshold = proposalThreshold_;
+        */
     }
 
     /**
@@ -71,6 +87,8 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
       * @param description String description of the proposal
       * @return Proposal id of new proposal
       */
+      /**
+      TODO: delete this propose function; proposals will be sent from off-chain and directly to the queue function below
     function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint) {
         // Reject proposals before initiating as Governor
         require(initialProposalId != 0, "GovernorBravo::propose: Governor Bravo not active");
@@ -114,6 +132,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         emit ProposalCreated(newProposal.id, msg.sender, targets, values, signatures, calldatas, startBlock, endBlock, description);
         return newProposal.id;
     }
+    */
 
     /**
       * @notice Queues a proposal of state succeeded
@@ -122,6 +141,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
     function queue(uint proposalId) external {
         require(state(proposalId) == ProposalState.Succeeded, "GovernorBravo::queue: proposal can only be queued if it is succeeded");
         Proposal storage proposal = proposals[proposalId];
+        // TODO: need to look into definition of timelock delay - make sure it meets our requirements
         uint eta = add256(block.timestamp, timelock.delay());
         for (uint i = 0; i < proposal.targets.length; i++) {
             queueOrRevertInternal(proposal.targets[i], proposal.values[i], proposal.signatures[i], proposal.calldatas[i], eta);
@@ -154,6 +174,8 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
       * @param proposalId The id of the proposal to cancel
       */
     function cancel(uint proposalId) external {
+        // TODO: only admin can cancel contracts; change logic here accordingly
+
         require(state(proposalId) != ProposalState.Executed, "GovernorBravo::cancel: cannot cancel executed proposal");
 
         Proposal storage proposal = proposals[proposalId];
@@ -187,6 +209,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         return (p.targets, p.values, p.signatures, p.calldatas);
     }
 
+    // TODO: delete getReceipt
     /**
       * @notice Gets the receipt for a voter on a given proposal
       * @param proposalId the id of proposal
@@ -203,6 +226,8 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
       * @return Proposal state
       */
     function state(uint proposalId) public view returns (ProposalState) {
+        // TODO: remove all logic related to proposal voting from here
+        // TODO: delete PENDING, DEFEATED, Canceled, Active, Succeeded state logic
         require(proposalCount >= proposalId && proposalId > initialProposalId, "GovernorBravo::state: invalid proposal id");
         Proposal storage proposal = proposals[proposalId];
         if (proposal.canceled) {
@@ -217,6 +242,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
             return ProposalState.Succeeded;
         } else if (proposal.executed) {
             return ProposalState.Executed;
+        // TODO: when is the Expired state needed? why add a grace period?
         } else if (block.timestamp >= add256(proposal.eta, timelock.GRACE_PERIOD())) {
             return ProposalState.Expired;
         } else {
@@ -224,6 +250,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         }
     }
 
+    // TODO: delete castVote
     /**
       * @notice Cast a vote for a proposal
       * @param proposalId The id of the proposal to vote on
@@ -233,6 +260,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         emit VoteCast(msg.sender, proposalId, support, castVoteInternal(msg.sender, proposalId, support), "");
     }
 
+    // TODO: delete castVoteWithReason
     /**
       * @notice Cast a vote for a proposal with a reason
       * @param proposalId The id of the proposal to vote on
@@ -243,6 +271,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         emit VoteCast(msg.sender, proposalId, support, castVoteInternal(msg.sender, proposalId, support), reason);
     }
 
+    // TODO: delete castVoteBySig
     /**
       * @notice Cast a vote for a proposal by signature
       * @dev External function that accepts EIP-712 signatures for voting on proposals.
@@ -256,6 +285,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         emit VoteCast(signatory, proposalId, support, castVoteInternal(signatory, proposalId, support), "");
     }
 
+    // TODO: delete castVoteInternal
     /**
       * @notice Internal function that caries out voting logic
       * @param voter The voter that is casting their vote
@@ -285,7 +315,8 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
 
         return votes;
     }
-
+    
+    // TODO: delete isWhitelisted
     /**
      * @notice View function which returns if an account is whitelisted
      * @param account Account to check white list status of
@@ -295,6 +326,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         return (whitelistAccountExpirations[account] > now);
     }
 
+    // TODO: delete _setVotingDelay
     /**
       * @notice Admin function for setting the voting delay
       * @param newVotingDelay new voting delay, in blocks
@@ -308,6 +340,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         emit VotingDelaySet(oldVotingDelay,votingDelay);
     }
 
+    // TODO: delete _setVotingPeriod
     /**
       * @notice Admin function for setting the voting period
       * @param newVotingPeriod new voting period, in blocks
@@ -321,6 +354,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         emit VotingPeriodSet(oldVotingPeriod, votingPeriod);
     }
 
+    // TODO: delete _setProposalThreshold
     /**
       * @notice Admin function for setting the proposal threshold
       * @dev newProposalThreshold must be greater than the hardcoded min
@@ -335,6 +369,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         emit ProposalThresholdSet(oldProposalThreshold, proposalThreshold);
     }
 
+    // TODO: delete _setWhitelistAccountExpiration
     /**
      * @notice Admin function for setting the whitelist expiration as a timestamp for an account. Whitelist status allows accounts to propose without meeting threshold
      * @param account Account address to set whitelist expiration for
@@ -347,6 +382,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         emit WhitelistAccountExpirationSet(account, expiration);
     }
 
+    // TODO: delete _setWhitelistGuardian
     /**
      * @notice Admin function for setting the whitelistGuardian. WhitelistGuardian can cancel proposals from whitelisted addresses
      * @param account Account to set whitelistGuardian to (0x0 to remove whitelistGuardian)
@@ -359,6 +395,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         emit WhitelistGuardianSet(oldGuardian, whitelistGuardian);
      }
 
+    // TODO: delete _initiate
     /**
       * @notice Initiate the GovernorBravo contract
       * @dev Admin only. Sets initial proposal id which initiates the contract, ensuring a continuous proposal id count

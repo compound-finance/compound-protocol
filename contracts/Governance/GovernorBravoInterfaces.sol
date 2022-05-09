@@ -3,9 +3,11 @@ pragma experimental ABIEncoderV2;
 
 
 contract GovernorBravoEvents {
+    // TODO: delete
     /// @notice An event emitted when a new proposal is created
     event ProposalCreated(uint id, address proposer, address[] targets, uint[] values, string[] signatures, bytes[] calldatas, uint startBlock, uint endBlock, string description);
 
+    // TODO: delete
     /// @notice An event emitted when a vote has been cast on a proposal
     /// @param voter The address which casted a vote
     /// @param proposalId The proposal id which was voted on
@@ -20,18 +22,22 @@ contract GovernorBravoEvents {
     /// @notice An event emitted when a proposal has been queued in the Timelock
     event ProposalQueued(uint id, uint eta);
 
+    // TODO: delete
     /// @notice An event emitted when a proposal has been executed in the Timelock
     event ProposalExecuted(uint id);
 
+    // TODO: delete
     /// @notice An event emitted when the voting delay is set
     event VotingDelaySet(uint oldVotingDelay, uint newVotingDelay);
 
+    // TODO: delete
     /// @notice An event emitted when the voting period is set
     event VotingPeriodSet(uint oldVotingPeriod, uint newVotingPeriod);
 
     /// @notice Emitted when implementation is changed
     event NewImplementation(address oldImplementation, address newImplementation);
 
+    // TODO: delete
     /// @notice Emitted when proposal threshold is set
     event ProposalThresholdSet(uint oldProposalThreshold, uint newProposalThreshold);
 
@@ -41,9 +47,11 @@ contract GovernorBravoEvents {
     /// @notice Emitted when pendingAdmin is accepted, which means admin is updated
     event NewAdmin(address oldAdmin, address newAdmin);
 
+    // TODO: delete
     /// @notice Emitted when whitelist account expiration is set
     event WhitelistAccountExpirationSet(address account, uint expiration);
 
+    // TODO: delete
     /// @notice Emitted when the whitelistGuardian is set
     event WhitelistGuardianSet(address oldGuardian, address newGuardian);
 }
@@ -68,12 +76,15 @@ contract GovernorBravoDelegatorStorage {
  */
 contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
 
+    // TODO: delete
     /// @notice The delay before voting on a proposal may take place, once proposed, in blocks
     uint public votingDelay;
 
+    // TODO: delete
     /// @notice The duration of voting on a proposal, in blocks
     uint public votingPeriod;
 
+    // TODO: delete
     /// @notice The number of votes required in order for a voter to become a proposer
     uint public proposalThreshold;
 
@@ -86,6 +97,7 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
     /// @notice The address of the Compound Protocol Timelock
     TimelockInterface public timelock;
 
+    // TODO: need to replace with Canto EIP-20 Interfance
     /// @notice The address of the Compound governance token
     CompInterface public comp;
 
@@ -118,18 +130,23 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
         /// @notice The ordered list of calldata to be passed to each call
         bytes[] calldatas;
 
+        // TODO: delete startBlock
         /// @notice The block at which voting begins: holders must delegate their votes prior to this block
         uint startBlock;
 
+        // TODO: delete endBlock
         /// @notice The block at which voting ends: votes must be cast prior to this block
         uint endBlock;
 
+        // TODO: delete
         /// @notice Current number of votes in favor of this proposal
         uint forVotes;
-
+        
+        // TODO: delete
         /// @notice Current number of votes in opposition to this proposal
         uint againstVotes;
 
+        // TODO: delete
         /// @notice Current number of votes for abstaining for this proposal
         uint abstainVotes;
 
@@ -143,6 +160,7 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
         mapping (address => Receipt) receipts;
     }
 
+    // TODO: delete Receipt
     /// @notice Ballot receipt record for a voter
     struct Receipt {
         /// @notice Whether or not a vote has been cast
@@ -155,6 +173,7 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
         uint96 votes;
     }
 
+    // TODO: delete PENDING, DEFEATED, Canceled, Active, Succeeded
     /// @notice Possible states that a proposal may be in
     enum ProposalState {
         Pending,
@@ -167,7 +186,7 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
         Executed
     }
 }
-
+// TODO: delete GovernorBravoDelegateStorageV2 and replace all extensions with GovernorBravoDelegateStorageV1
 contract GovernorBravoDelegateStorageV2 is GovernorBravoDelegateStorageV1 {
     /// @notice Stores the expiration of account whitelist status as a timestamp
     mapping (address => uint) public whitelistAccountExpirations;
@@ -186,6 +205,7 @@ interface TimelockInterface {
     function executeTransaction(address target, uint value, string calldata signature, bytes calldata data, uint eta) external payable returns (bytes memory);
 }
 
+// TODO: delete this
 interface CompInterface {
     function getPriorVotes(address account, uint blockNumber) external view returns (uint96);
 }
