@@ -1,6 +1,8 @@
 pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
+// TODO: delete this file; may need to create an EIP-20 interface for Canto token
+
 contract Comp {
     /// @notice EIP-20 token name for this token
     string public constant name = "Compound";

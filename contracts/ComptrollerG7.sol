@@ -8,6 +8,8 @@ import "./ComptrollerStorage.sol";
 import "./Unitroller.sol";
 import "./Governance/Comp.sol";
 
+// TODO: need to confirm that g7 is latest comptroller; why are there still commits being made on original Comptroller - https://github.com/compound-finance/compound-protocol/commits/master/contracts/Comptroller.sol
+
 /**
  * @title Compound's Comptroller Contract
  * @author Compound
@@ -551,7 +553,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
 
         // Keep the flywheel moving
         updateCompSupplyIndex(cTokenCollateral);
-        distributeSupplierComp(cTokenCollateral, borrower);
+        distributeSupplierComp(cTokenCollateral, borrower); // TODO: why is suppliercomp distributed to borrower    
         distributeSupplierComp(cTokenCollateral, liquidator);
 
         return uint(Error.NO_ERROR);
@@ -1090,7 +1092,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
             emit CompSpeedUpdated(cToken, compSpeed);
         }
     }
-
+    
+    // TODO: need to understand where the drip tokens are being created; what functions are distributing them?
     /**
      * @notice Accrue COMP to the market by updating the supply index
      * @param cToken The market whose supply index to update
@@ -1247,6 +1250,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         }
     }
 
+    // TODO: need to change this transfer Canto instead of Comp
     /**
      * @notice Transfer COMP to the user
      * @dev Note: If there is not enough COMP, we do not perform the transfer all.
@@ -1323,6 +1327,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         return block.number;
     }
 
+    // TODO: modify this to the Canto Address
     /**
      * @notice Return the address of the COMP token
      * @return The address of COMP

@@ -6,7 +6,8 @@ import "./CErc20.sol";
 contract SimplePriceOracle is PriceOracle {
     mapping(address => uint) prices;
     event PricePosted(address asset, uint previousPriceMantissa, uint requestedPriceMantissa, uint newPriceMantissa);
-
+    
+    // TODO: probably need to modify "cETH" logic below
     function _getUnderlyingAddress(CToken cToken) private view returns (address) {
         address asset;
         if (compareStrings(cToken.symbol(), "cETH")) {

@@ -210,6 +210,7 @@ contract CErc20 is CToken, CErc20Interface {
         require(success, "TOKEN_TRANSFER_OUT_FAILED");
     }
 
+    // TODO: delete
     /**
     * @notice Admin call to delegate the votes of the COMP-like underlying
     * @param compLikeDelegatee The address to delegate votes to
