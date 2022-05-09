@@ -1,0 +1,7 @@
+{
+    "projectName": "CantoCompoundProtocol",
+    "namespace": "CantoCompoundProtocol.Contracts",
+    "lang": 0,
+    "autoCodeGen": true,
+    "projectPath": "../"
+}
