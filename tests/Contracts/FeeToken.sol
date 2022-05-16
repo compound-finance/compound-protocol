@@ -24,22 +24,22 @@ contract FeeToken is FaucetToken {
     }
 
     function transfer(address dst, uint amount) public returns (bool) {
-        uint fee = amount.mul(basisPointFee).div(10000);
-        uint net = amount.sub(fee);
-        balanceOf[owner] = balanceOf[owner].add(fee);
-        balanceOf[msg.sender] = balanceOf[msg.sender].sub(amount);
-        balanceOf[dst] = balanceOf[dst].add(net);
+        uint fee = amount*(basisPointFee)/(10000);
+        uint net = amount-(fee);
+        balanceOf[owner] = balanceOf[owner]+(fee);
+        balanceOf[msg.sender] = balanceOf[msg.sender]-(amount);
+        balanceOf[dst] = balanceOf[dst]+(net);
         emit Transfer(msg.sender, dst, amount);
         return true;
     }
 
     function transferFrom(address src, address dst, uint amount) public returns (bool) {
-        uint fee = amount.mul(basisPointFee).div(10000);
-        uint net = amount.sub(fee);
-        balanceOf[owner] = balanceOf[owner].add(fee);
-        balanceOf[src] = balanceOf[src].sub(amount);
-        balanceOf[dst] = balanceOf[dst].add(net);
-        allowance[src][msg.sender] = allowance[src][msg.sender].sub(amount);
+        uint fee = amount*(basisPointFee)/(10000);
+        uint net = amount-(fee);
+        balanceOf[owner] = balanceOf[owner]+(fee);
+        balanceOf[src] = balanceOf[src]-(amount);
+        balanceOf[dst] = balanceOf[dst]+(net);
+        allowance[src][msg.sender] = allowance[src][msg.sender]-(amount);
         emit Transfer(src, dst, amount);
         return true;
     }

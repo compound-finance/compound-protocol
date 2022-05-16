@@ -48,7 +48,7 @@ function daiSupplyRate(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves, 
   if (underlying == 0) {
     return lendingSupplyRate;
   }
-  const cashSupplyRate = (new BigNum(cash)).times(new BigNum(dsrPerBlock)).div(underlying);
+  const cashSupplyRate = (new BigNum(cash)).times(new BigNum(dsrPerBlock))/(underlying);
   return cashSupplyRate.plus(lendingSupplyRate).toNumber();
 }
 

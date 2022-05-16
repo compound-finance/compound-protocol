@@ -99,8 +99,8 @@ contract BasicToken is ERC20Basic {
     require(_value <= balances[msg.sender]);
     require(_to != address(0));
 
-    balances[msg.sender] = balances[msg.sender].sub(_value);
-    balances[_to] = balances[_to].add(_value);
+    balances[msg.sender] = balances[msg.sender]-(_value);
+    balances[_to] = balances[_to]+(_value);
     emit Transfer(msg.sender, _to, _value);
     return true;
   }
@@ -169,9 +169,9 @@ contract StandardToken is ERC20, BasicToken {
     require(_value <= allowed[_from][msg.sender]);
     require(_to != address(0));
 
-    balances[_from] = balances[_from].sub(_value);
-    balances[_to] = balances[_to].add(_value);
-    allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
+    balances[_from] = balances[_from]-(_value);
+    balances[_to] = balances[_to]+(_value);
+    allowed[_from][msg.sender] = allowed[_from][msg.sender]-(_value);
     emit Transfer(_from, _to, _value);
     return true;
   }
@@ -225,7 +225,7 @@ contract StandardToken is ERC20, BasicToken {
     returns (bool)
   {
     allowed[msg.sender][_spender] = (
-      allowed[msg.sender][_spender].add(_addedValue));
+      allowed[msg.sender][_spender]+(_addedValue));
     emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
   }
@@ -250,7 +250,7 @@ contract StandardToken is ERC20, BasicToken {
     if (_subtractedValue >= oldValue) {
       allowed[msg.sender][_spender] = 0;
     } else {
-      allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
+      allowed[msg.sender][_spender] = oldValue-(_subtractedValue);
     }
     emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
@@ -381,8 +381,8 @@ contract MintableToken is StandardToken, Ownable {
     canMint
     returns (bool)
   {
-    totalSupply_ = totalSupply_.add(_amount);
-    balances[_to] = balances[_to].add(_amount);
+    totalSupply_ = totalSupply_+(_amount);
+    balances[_to] = balances[_to]+(_amount);
     emit Mint(_to, _amount);
     emit Transfer(address(0), _to, _amount);
     return true;
@@ -422,8 +422,8 @@ contract BurnableToken is BasicToken {
     // no need to require value <= totalSupply, since that would imply the
     // sender's balance is greater than the totalSupply, which *should* be an assertion failure
 
-    balances[_who] = balances[_who].sub(_value);
-    totalSupply_ = totalSupply_.sub(_value);
+    balances[_who] = balances[_who]-(_value);
+    totalSupply_ = totalSupply_-(_value);
     emit Burn(_who, _value);
     emit Transfer(_who, address(0), _value);
   }

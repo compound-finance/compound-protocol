@@ -73,7 +73,7 @@ contract Dai is LibNote {
         public returns (bool)
     {
         require(balanceOf[src] >= wad, "Dai/insufficient-balance");
-        if (src != msg.sender && allowance[src][msg.sender] != uint(-1)) {
+        if (src != msg.sender && allowance[src][msg.sender] != type(uint).max) {
             require(allowance[src][msg.sender] >= wad, "Dai/insufficient-allowance");
             allowance[src][msg.sender] = sub(allowance[src][msg.sender], wad);
         }
@@ -89,7 +89,7 @@ contract Dai is LibNote {
     }
     function burn(address usr, uint wad) external {
         require(balanceOf[usr] >= wad, "Dai/insufficient-balance");
-        if (usr != msg.sender && allowance[usr][msg.sender] != uint(-1)) {
+        if (usr != msg.sender && allowance[usr][msg.sender] != type(uint).max) {
             require(allowance[usr][msg.sender] >= wad, "Dai/insufficient-allowance");
             allowance[usr][msg.sender] = sub(allowance[usr][msg.sender], wad);
         }
@@ -134,7 +134,7 @@ contract Dai is LibNote {
         require(holder == ecrecover(digest, v, r, s), "Dai/invalid-permit");
         require(expiry == 0 || now <= expiry, "Dai/permit-expired");
         require(nonce == nonces[holder]++, "Dai/invalid-nonce");
-        uint wad = allowed ? uint(-1) : 0;
+        uint wad = allowed ? type(uint).max : 0;
         allowance[holder][spender] = wad;
         emit Approval(holder, spender, wad);
     }

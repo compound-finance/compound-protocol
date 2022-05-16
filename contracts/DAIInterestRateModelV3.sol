@@ -11,7 +11,7 @@ import "./SafeMath.sol";
   * Version 3 modifies the interest rate model in Version 2 by increasing the initial "gap" or slope of
   * the model prior to the "kink" from 2% to 4%, and enabling updateable parameters.
   */
-contract DAIInterestRateModelV3 is JumpRateModelV2 {
+abstract contract DAIInterestRateModelV3 is JumpRateModelV2 {
     using SafeMath for uint;
 
     /**
@@ -35,7 +35,7 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      * @param jug_ The address of the Dai jug (where SF is kept)
      * @param owner_ The address of the owner, i.e. the Timelock contract (which has the ability to update parameters directly)
      */
-    constructor(uint jumpMultiplierPerYear, uint kink_, address pot_, address jug_, address owner_) JumpRateModelV2(0, 0, jumpMultiplierPerYear, kink_, owner_) public {
+    constructor(uint jumpMultiplierPerYear, uint kink_, address pot_, address jug_, address owner_) JumpRateModelV2(0, 0, jumpMultiplierPerYear, kink_, owner_) {
         gapPerBlock = 4e16 / blocksPerYear;
         pot = PotLike(pot_);
         jug = JugLike(jug_);
@@ -49,7 +49,7 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      * @param jumpMultiplierPerYear The jumpMultiplierPerYear after hitting a specified utilization point
      * @param kink_ The utilization point at which the jump multiplier is applied
      */
-    function updateJumpRateModel(uint baseRatePerYear, uint gapPerYear, uint jumpMultiplierPerYear, uint kink_) external {
+    function updateJumpRateModel(uint baseRatePerYear, uint gapPerYear, uint jumpMultiplierPerYear, uint kink_) external override {
         require(msg.sender == owner, "only the owner may call this function.");
         gapPerBlock = gapPerYear / blocksPerYear;
         updateJumpRateModelInternal(0, 0, jumpMultiplierPerYear, kink_);
@@ -62,17 +62,17 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      * @param borrows The total amount of borrows the market has outstanding
      * @param reserves The total amnount of reserves the market has
      * @param reserveFactorMantissa The current reserve factor the market has
-     * @return The supply rate per block (as a percentage, and scaled by 1e18)
+     * @return The supply rate per block (as a percentage, and scaled by 1e18) "BaseJumpRateModelV2" and "InterestRateModel"
      */
-    function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) public view returns (uint) {
+    function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) public view override(BaseJumpRateModelV2,InterestRateModel) returns (uint) {
         uint protocolRate = super.getSupplyRate(cash, borrows, reserves, reserveFactorMantissa);
 
-        uint underlying = cash.add(borrows).sub(reserves);
+        uint underlying = cash+(borrows)-(reserves);
         if (underlying == 0) {
             return protocolRate;
         } else {
-            uint cashRate = cash.mul(dsrPerBlock()).div(underlying);
-            return cashRate.add(protocolRate);
+            uint cashRate = cash*(dsrPerBlock())/(underlying);
+            return cashRate+(protocolRate);
         }
     }
 
@@ -82,9 +82,9 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      */
     function dsrPerBlock() public view returns (uint) {
         return pot
-            .dsr().sub(1e27)  // scaled 1e27 aka RAY, and includes an extra "ONE" before subraction
-            .div(1e9) // descale to 1e18
-            .mul(15); // 15 seconds per block
+            .dsr()-(1e27)  // scaled 1e27 aka RAY, and includes an extra "ONE" before subraction
+            /(1e9) // descale to 1e18
+            *(15); // 15 seconds per block
     }
 
     /**
@@ -92,16 +92,16 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      */
     function poke() public {
         (uint duty, ) = jug.ilks("ETH-A");
-        uint stabilityFeePerBlock = duty.add(jug.base()).sub(1e27).mul(1e18).div(1e27).mul(15);
+        uint stabilityFeePerBlock = duty+(jug.base())-(1e27)*(1e18)/(1e27)*(15);
 
         // We ensure the minimum borrow rate >= DSR / (1 - reserve factor)
-        baseRatePerBlock = dsrPerBlock().mul(1e18).div(assumedOneMinusReserveFactorMantissa);
+        baseRatePerBlock = dsrPerBlock()*(1e18)/(assumedOneMinusReserveFactorMantissa);
 
         // The roof borrow rate is max(base rate, stability fee) + gap, from which we derive the slope
         if (baseRatePerBlock < stabilityFeePerBlock) {
-            multiplierPerBlock = stabilityFeePerBlock.sub(baseRatePerBlock).add(gapPerBlock).mul(1e18).div(kink);
+            multiplierPerBlock = stabilityFeePerBlock-(baseRatePerBlock)+(gapPerBlock)*(1e18)/(kink);
         } else {
-            multiplierPerBlock = gapPerBlock.mul(1e18).div(kink);
+            multiplierPerBlock = gapPerBlock*(1e18)/(kink);
         }
 
         emit NewInterestParams(baseRatePerBlock, multiplierPerBlock, jumpMultiplierPerBlock, kink);
@@ -111,14 +111,14 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
 
 /*** Maker Interfaces ***/
 
-contract PotLike {
-    function chi() external view returns (uint);
-    function dsr() external view returns (uint);
-    function rho() external view returns (uint);
-    function pie(address) external view returns (uint);
-    function drip() external returns (uint);
-    function join(uint) external;
-    function exit(uint) external;
+abstract contract PotLike {
+    function chi() external view virtual returns (uint);
+    function dsr() external view virtual returns (uint);
+    function rho() external view virtual returns (uint);
+    function pie(address) external view virtual returns (uint);
+    function drip() external virtual returns (uint);
+    function join(uint) external virtual;
+    function exit(uint) external virtual;
 }
 
 contract JugLike {

@@ -57,7 +57,7 @@ contract ComptrollerV1Storage is UnitrollerAdminStorage {
 
 contract ComptrollerV2Storage is ComptrollerV1Storage {
     struct Market {
-        /// @notice Whether or not this market is listed
+        /// @notice Whether or not this market is listed // ******* change to 3 LINES 
         bool isListed;
 
         /**

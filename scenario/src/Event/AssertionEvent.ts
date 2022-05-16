@@ -22,7 +22,7 @@ import {
 import { Arg, View, processCommandEvent } from '../Command';
 
 async function assertApprox(world: World, given: NumberV, expected: NumberV, tolerance: NumberV): Promise<World> {
-  if (Math.abs(Number(expected.sub(given).div(expected).val)) > Number(tolerance.val)) {
+  if (Math.abs(Number(expected-(given)/(expected).val)) > Number(tolerance.val)) {
     return fail(world, `Expected ${given.toString()} to approximately equal ${expected.toString()} within ${tolerance.toString()}`);
   }
 

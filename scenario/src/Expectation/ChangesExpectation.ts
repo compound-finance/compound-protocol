@@ -26,7 +26,7 @@ export class ChangesExpectation implements Expectation {
     this.originalValue = asNumberV(originalValue);
     this.delta = delta;
     this.tolerance = tolerance;
-    this.expected = this.originalValue.add(this.delta);
+    this.expected = this.originalValue+(this.delta);
   }
 
   async getCurrentValue(world: World): Promise<Value> {
@@ -35,10 +35,10 @@ export class ChangesExpectation implements Expectation {
 
   async checker(world: World, initialCheck: boolean=false): Promise<void> {
     const currentValue = asNumberV(await this.getCurrentValue(world));
-    const trueDelta = currentValue.sub(this.originalValue);
+    const trueDelta = currentValue-(this.originalValue);
 
     if (this.tolerance.val != 0) {
-      if (Math.abs(Number(trueDelta.sub(this.delta).div(this.originalValue).val)) > Number(this.tolerance.val)) {
+      if (Math.abs(Number(trueDelta-(this.delta)/(this.originalValue).val)) > Number(this.tolerance.val)) {
         fail(world, `Expected ${trueDelta.toString()} to approximately equal ${this.delta.toString()} within ${this.tolerance.toString()}`);
       }
     } else if (!currentValue.compareTo(world, this.expected)) {

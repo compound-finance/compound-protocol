@@ -8,7 +8,7 @@ import "./CToken.sol";
  * @notice CToken which wraps Ether
  * @author Compound
  */
-contract CEther is CToken {
+abstract contract CEther is CToken {
     /**
      * @notice Construct a new CEther money market
      * @param comptroller_ The address of the Comptroller
@@ -25,9 +25,9 @@ contract CEther is CToken {
                 string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
-                address payable admin_) public {
+                address payable admin_) {
         // Creator of the contract is admin during initialization
-        admin = msg.sender;
+        admin = payable(msg.sender);
 
         initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
@@ -130,7 +130,7 @@ contract CEther is CToken {
      * @dev This excludes the value of the current message, if any
      * @return The quantity of Ether owned by this contract
      */
-    function getCashPrior() internal view returns (uint) {
+    function getCashPrior() internal view override returns (uint) {
         (MathError err, uint startingBalance) = subUInt(address(this).balance, msg.value);
         require(err == MathError.NO_ERROR);
         return startingBalance;
@@ -142,14 +142,14 @@ contract CEther is CToken {
      * @param amount Amount of Ether being sent
      * @return The actual amount of Ether transferred
      */
-    function doTransferIn(address from, uint amount) internal returns (uint) {
+    function doTransferIn(address from, uint amount) internal override returns (uint) {
         // Sanity checks
         require(msg.sender == from, "sender mismatch");
         require(msg.value == amount, "value mismatch");
         return amount;
     }
 
-    function doTransferOut(address payable to, uint amount) internal {
+    function doTransferOut(address payable to, uint amount) internal override {
         /* Send the Ether, with minimal gas and revert on failure */
         to.transfer(amount);
     }

@@ -219,33 +219,33 @@ abstract contract CTokenInterface is CTokenStorage {
 
     /*** User Interface ***/
 
-    function transfer(address dst, uint amount) external returns (bool);
-    function transferFrom(address src, address dst, uint amount) external returns (bool);
-    function approve(address spender, uint amount) external returns (bool);
-    function allowance(address owner, address spender) external view returns (uint);
-    function balanceOf(address owner) external view returns (uint);
-    function balanceOfUnderlying(address owner) external returns (uint);
-    function getAccountSnapshot(address account) external view returns (uint, uint, uint, uint);
-    function borrowRatePerBlock() external view returns (uint);
-    function supplyRatePerBlock() external view returns (uint);
-    function totalBorrowsCurrent() external returns (uint);
-    function borrowBalanceCurrent(address account) external returns (uint);
-    function borrowBalanceStored(address account) public view returns (uint);
-    function exchangeRateCurrent() public returns (uint);
-    function exchangeRateStored() public view returns (uint);
-    function getCash() external view returns (uint);
-    function accrueInterest() public returns (uint);
-    function seize(address liquidator, address borrower, uint seizeTokens) external returns (uint);
+    function transfer(address dst, uint amount) external virtual returns (bool);
+    function transferFrom(address src, address dst, uint amount) external virtual returns (bool);
+    function approve(address spender, uint amount) external virtual returns (bool);
+    function allowance(address owner, address spender) external view virtual returns (uint);
+    function balanceOf(address owner) external view virtual returns (uint);
+    function balanceOfUnderlying(address owner) external virtual returns (uint);
+    function getAccountSnapshot(address account) external view virtual returns (uint, uint, uint, uint);
+    function borrowRatePerBlock() external view virtual returns (uint);
+    function supplyRatePerBlock() external view virtual returns (uint);
+    function totalBorrowsCurrent() external virtual returns (uint);
+    function borrowBalanceCurrent(address account) external virtual returns (uint);
+    function borrowBalanceStored(address account) public view virtual returns (uint);
+    function exchangeRateCurrent() public virtual returns (uint);
+    function exchangeRateStored() public view virtual returns (uint);
+    function getCash() external view virtual returns (uint);
+    function accrueInterest() public virtual returns (uint);
+    function seize(address liquidator, address borrower, uint seizeTokens) external virtual returns (uint);
 
 
     /*** Admin Functions ***/
 
-    function _setPendingAdmin(address payable newPendingAdmin) external returns (uint);
-    function _acceptAdmin() external returns (uint);
-    function _setComptroller(ComptrollerInterface newComptroller) public returns (uint);
-    function _setReserveFactor(uint newReserveFactorMantissa) external returns (uint);
-    function _reduceReserves(uint reduceAmount) external returns (uint);
-    function _setInterestRateModel(InterestRateModel newInterestRateModel) public returns (uint);
+    function _setPendingAdmin(address payable newPendingAdmin) external virtual returns (uint);
+    function _acceptAdmin() external virtual returns (uint);
+    function _setComptroller(ComptrollerInterface newComptroller) public virtual returns (uint);
+    function _setReserveFactor(uint newReserveFactorMantissa) external virtual returns (uint);
+    function _reduceReserves(uint reduceAmount) external virtual returns (uint);
+    function _setInterestRateModel(InterestRateModel newInterestRateModel) public virtual returns (uint);
 }
 
 contract CErc20Storage {
@@ -259,19 +259,19 @@ abstract contract CErc20Interface is CErc20Storage {
 
     /*** User Interface ***/
 
-    function mint(uint mintAmount) external returns (uint);
-    function redeem(uint redeemTokens) external returns (uint);
-    function redeemUnderlying(uint redeemAmount) external returns (uint);
-    function borrow(uint borrowAmount) external returns (uint);
-    function repayBorrow(uint repayAmount) external returns (uint);
-    function repayBorrowBehalf(address borrower, uint repayAmount) external returns (uint);
-    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) external returns (uint);
-    function sweepToken(EIP20NonStandardInterface token) external;
+    function mint(uint mintAmount) external virtual returns (uint);
+    function redeem(uint redeemTokens) external virtual returns (uint);
+    function redeemUnderlying(uint redeemAmount) external virtual returns (uint);
+    function borrow(uint borrowAmount) external virtual returns (uint);
+    function repayBorrow(uint repayAmount) external virtual returns (uint);
+    function repayBorrowBehalf(address borrower, uint repayAmount) external virtual returns (uint);
+    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) external virtual returns (uint);
+    function sweepToken(EIP20NonStandardInterface token) external virtual;
 
 
     /*** Admin Functions ***/
 
-    function _addReserves(uint addAmount) external returns (uint);
+    function _addReserves(uint addAmount) external virtual returns (uint);
 }
 
 contract CDelegationStorage {
@@ -281,7 +281,7 @@ contract CDelegationStorage {
     address public implementation;
 }
 
-contract CDelegatorInterface is CDelegationStorage {
+abstract contract CDelegatorInterface is CDelegationStorage {
     /**
      * @notice Emitted when implementation is changed
      */
@@ -293,7 +293,7 @@ contract CDelegatorInterface is CDelegationStorage {
      * @param allowResign Flag to indicate whether to call _resignImplementation on the old implementation
      * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
      */
-    function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public;
+    function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public virtual;
 }
 
 abstract contract CDelegateInterface is CDelegationStorage {
@@ -302,10 +302,10 @@ abstract contract CDelegateInterface is CDelegationStorage {
      * @dev Should revert if any issues arise which make it unfit for delegation
      * @param data The encoded bytes data for any initialization
      */
-    function _becomeImplementation(bytes memory data) public;
+    function _becomeImplementation(bytes memory data) public virtual;
 
     /**
      * @notice Called by the delegator on a delegate to forfeit its responsibility
      */
-    function _resignImplementation() public;
+    function _resignImplementation() public virtual;
 }

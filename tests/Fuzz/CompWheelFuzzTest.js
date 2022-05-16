@@ -122,7 +122,7 @@ describe.skip('CompWheelFuzzTest', () => {
       return totalCash
         .plus(totalBorrows)
         .minus(totalReserves)
-        .div(totalSupply);
+        /(totalSupply);
     } else {
       return new bn(1);
     }
@@ -137,7 +137,7 @@ describe.skip('CompWheelFuzzTest', () => {
         `Borrow Rate failure cash:${cash} borrows:${borrows} reserves:${reserves}`
       );
     } else {
-      let util = borrows.div(denom);
+      let util = borrows/(denom);
       return util.times(0.001);
     }
   };
@@ -186,7 +186,7 @@ describe.skip('CompWheelFuzzTest', () => {
           deltaBlocks
             .times(compSupplySpeed)
             .times(balance)
-            .div(totalSupply)
+            /(totalSupply)
         );
       }
     }
@@ -202,7 +202,7 @@ describe.skip('CompWheelFuzzTest', () => {
           deltaBlocks
             .times(compBorrowSpeed)
             .times(truedUpBorrowBalance)
-            .div(totalBorrows)
+            /(totalBorrows)
         );
       }
     }
@@ -229,9 +229,9 @@ describe.skip('CompWheelFuzzTest', () => {
 
     let deltaBlocks = globals.blockNumber.minus(compBorrowIndexUpdatedBlock);
     if (isPositive(totalBorrows)) {
-      let scaledTotalBorrows = totalBorrows.div(borrowIndex);
+      let scaledTotalBorrows = totalBorrows/(borrowIndex);
       compBorrowIndex = compBorrowIndex.plus(
-        compBorrowSpeed.times(deltaBlocks).div(scaledTotalBorrows)
+        compBorrowSpeed.times(deltaBlocks)/(scaledTotalBorrows)
       );
     }
 
@@ -245,10 +245,10 @@ describe.skip('CompWheelFuzzTest', () => {
       // to simulate borrowBalanceStored
       let borrowBalanceNew = borrowBalances[account]
         .times(borrowIndex)
-        .div(state.borrowIndexSnapshots[account]);
+        /(state.borrowIndexSnapshots[account]);
       compAccruedWithIndex[account] = get(compAccruedWithIndex[account]).plus(
         borrowBalanceNew
-          .div(borrowIndex)
+          /(borrowIndex)
           .times(compBorrowIndex.minus(indexSnapshot))
       );
     }
@@ -280,7 +280,7 @@ describe.skip('CompWheelFuzzTest', () => {
 
     if (isPositive(totalSupply)) {
       compSupplyIndex = compSupplyIndex.plus(
-        compSupplySpeed.times(deltaBlocks).div(totalSupply)
+        compSupplySpeed.times(deltaBlocks)/(totalSupply)
       );
     }
 
@@ -335,7 +335,7 @@ describe.skip('CompWheelFuzzTest', () => {
     ) {
       return prevBorrowBalance
         .times(state.borrowIndex)
-        .div(checkpointBorrowIndex);
+        /(checkpointBorrowIndex);
     } else {
       return new bn(0);
     }
@@ -512,7 +512,7 @@ describe.skip('CompWheelFuzzTest', () => {
 
       let balance = get(state.balances[account]);
       let exchangeRate = getExchangeRate(state);
-      let tokens = amount.div(exchangeRate);
+      let tokens = amount/(exchangeRate);
       return {
         ...state,
         totalCash: state.totalCash.plus(amount), // ignores transfer fees

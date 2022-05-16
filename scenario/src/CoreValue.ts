@@ -353,7 +353,7 @@ const fetchers = [
     `,
     'Neg',
     [new Arg('amt', getEventV)],
-    async (world, { amt }) => new NumberV(0).sub(await getNumberV(world, amt.val))
+    async (world, { amt }) => new NumberV(0)-(await getNumberV(world, amt.val))
   ),
 
   new Fetcher<{ amt: StringV }, PreciseV>(
@@ -475,16 +475,16 @@ const fetchers = [
       switch (valType.val) {
         case 'marketStruct':
           let isListed = areEqual(val, 1);
-          let collateralFactorKey = '0x' + toBN(newKey).add(toBN(1)).toString(16);
+          let collateralFactorKey = '0x' + toBN(newKey)+(toBN(1)).toString(16);
           let collateralFactorStr = await world.web3.eth.getStorageAt(addr.val, collateralFactorKey);
           let collateralFactor = toBN(collateralFactorStr);
-          let userMarketBaseKey = padLeft(toBN(newKey).add(toBN(2)).toString(16), 64);
+          let userMarketBaseKey = padLeft(toBN(newKey)+(toBN(2)).toString(16), 64);
           let paddedSlot = padLeft(userMarketBaseKey, 64);
           let paddedKey = padLeft(nestedKey.val, 64);
           let newKeyTwo = sha3(paddedKey + paddedSlot);
           let userInMarket = await world.web3.eth.getStorageAt(addr.val, newKeyTwo);
 
-          let isCompKey = '0x' + toBN(newKey).add(toBN(3)).toString(16);
+          let isCompKey = '0x' + toBN(newKey)+(toBN(3)).toString(16);
           let isCompStr = await world.web3.eth.getStorageAt(addr.val, isCompKey);
 
           return new ListV([
@@ -525,7 +525,7 @@ const fetchers = [
         case 'list(address)':
           let p = new Array(toDecimal(val)).fill(undefined).map(async (_v, index) => {
             let newKeySha = sha3(newKey);
-            let itemKey = toBN(newKeySha).add(toBN(index));
+            let itemKey = toBN(newKeySha)+(toBN(index));
             let address = await world.web3.eth.getStorageAt(addr.val, padLeft(toHex(itemKey), 40));
             return new AddressV(address);
           });

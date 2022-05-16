@@ -15,7 +15,7 @@ import "./Unitroller.sol";
  * @dev This was the first version of the Comptroller brains.
  *  We keep it so our tests can continue to do the real-life behavior of upgrading from this logic forward.
  */
-contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, ComptrollerErrorReporter, Exponential {
+abstract contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, ComptrollerErrorReporter, Exponential {
     struct Market {
         /**
          * @notice Whether or not this market is listed
@@ -82,21 +82,21 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
     event NewPriceOracle(PriceOracle oldPriceOracle, PriceOracle newPriceOracle);
 
     // closeFactorMantissa must be strictly greater than this value
-    uint constant closeFactorMinMantissa = 5e16; // 0.05
+    uint private constant closeFactorMinMantissa = 5e16; // 0.05
 
     // closeFactorMantissa must not exceed this value
-    uint constant closeFactorMaxMantissa = 9e17; // 0.9
+    uint private constant closeFactorMaxMantissa = 9e17; // 0.9
 
     // No collateralFactorMantissa may exceed this value
-    uint constant collateralFactorMaxMantissa = 9e17; // 0.9
+    uint private constant collateralFactorMaxMantissa = 9e17; // 0.9
 
     // liquidationIncentiveMantissa must be no less than this value
-    uint constant liquidationIncentiveMinMantissa = mantissaOne;
+    uint private constant liquidationIncentiveMinMantissa = mantissaOne;
 
     // liquidationIncentiveMantissa must be no greater than this value
-    uint constant liquidationIncentiveMaxMantissa = 15e17; // 1.5
+    uint private constant liquidationIncentiveMaxMantissa = 15e17; // 1.5
 
-    constructor() public {
+    constructor() {
         admin = msg.sender;
     }
 
@@ -128,7 +128,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      * @param cTokens The list of addresses of the cToken markets to be enabled
      * @return Success indicator for whether each corresponding market was entered
      */
-    function enterMarkets(address[] memory cTokens) public returns (uint[] memory) {
+    function enterMarkets(address[] memory cTokens) public override returns (uint[] memory) {
         uint len = cTokens.length;
 
         uint[] memory results = new uint[](len);
@@ -177,7 +177,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      * @param cTokenAddress The address of the asset to be removed
      * @return Whether or not the account successfully exited the market
      */
-    function exitMarket(address cTokenAddress) external returns (uint) {
+    function exitMarket(address cTokenAddress) external override returns (uint) {
         CToken cToken = CToken(cTokenAddress);
         /* Get sender tokensHeld and amountOwed underlying from the cToken */
         (uint oErr, uint tokensHeld, uint amountOwed, ) = cToken.getAccountSnapshot(msg.sender);
@@ -238,7 +238,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      * @param mintAmount The amount of underlying being supplied to the market in exchange for tokens
      * @return 0 if the mint is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
-    function mintAllowed(address cToken, address minter, uint mintAmount) external returns (uint) {
+    function mintAllowed(address cToken, address minter, uint mintAmount) external override returns (uint) {
         minter;       // currently unused
         mintAmount;   // currently unused
 
@@ -258,7 +258,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      * @param mintAmount The amount of the underlying asset being minted
      * @param mintTokens The number of tokens being minted
      */
-    function mintVerify(address cToken, address minter, uint mintAmount, uint mintTokens) external {
+    function mintVerify(address cToken, address minter, uint mintAmount, uint mintTokens) external override {
         cToken;       // currently unused
         minter;       // currently unused
         mintAmount;   // currently unused
@@ -276,7 +276,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      * @param redeemTokens The number of cTokens to exchange for the underlying asset in the market
      * @return 0 if the redeem is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
-    function redeemAllowed(address cToken, address redeemer, uint redeemTokens) external returns (uint) {
+    function redeemAllowed(address cToken, address redeemer, uint redeemTokens) external override returns (uint) {
         return redeemAllowedInternal(cToken, redeemer, redeemTokens);
     }
 
@@ -311,7 +311,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      * @param redeemAmount The amount of the underlying asset being redeemed
      * @param redeemTokens The number of tokens being redeemed
      */
-    function redeemVerify(address cToken, address redeemer, uint redeemAmount, uint redeemTokens) external {
+    function redeemVerify(address cToken, address redeemer, uint redeemAmount, uint redeemTokens) external override {
         cToken;         // currently unused
         redeemer;       // currently unused
         redeemAmount;   // currently unused
@@ -330,7 +330,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      * @param borrowAmount The amount of underlying the account would borrow
      * @return 0 if the borrow is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
-    function borrowAllowed(address cToken, address borrower, uint borrowAmount) external returns (uint) {
+    function borrowAllowed(address cToken, address borrower, uint borrowAmount) external override returns (uint) {
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
@@ -362,7 +362,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      * @param borrower The address borrowing the underlying
      * @param borrowAmount The amount of the underlying asset requested to borrow
      */
-    function borrowVerify(address cToken, address borrower, uint borrowAmount) external {
+    function borrowVerify(address cToken, address borrower, uint borrowAmount) external override {
         cToken;         // currently unused
         borrower;       // currently unused
         borrowAmount;   // currently unused
@@ -384,7 +384,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         address cToken,
         address payer,
         address borrower,
-        uint repayAmount) external returns (uint) {
+        uint repayAmount) external override returns (uint) {
         payer;         // currently unused
         borrower;      // currently unused
         repayAmount;   // currently unused
@@ -410,7 +410,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         address payer,
         address borrower,
         uint repayAmount,
-        uint borrowerIndex) external {
+        uint borrowerIndex) external override {
         cToken;        // currently unused
         payer;         // currently unused
         borrower;      // currently unused
@@ -435,7 +435,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         address cTokenCollateral,
         address liquidator,
         address borrower,
-        uint repayAmount) external returns (uint) {
+        uint repayAmount) external override returns (uint) {
         liquidator;   // currently unused
         borrower;     // currently unused
         repayAmount;  // currently unused
@@ -482,7 +482,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         address liquidator,
         address borrower,
         uint repayAmount,
-        uint seizeTokens) external {
+        uint seizeTokens) external override {
         cTokenBorrowed;   // currently unused
         cTokenCollateral; // currently unused
         liquidator;       // currently unused
@@ -508,7 +508,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         address cTokenBorrowed,
         address liquidator,
         address borrower,
-        uint seizeTokens) external returns (uint) {
+        uint seizeTokens) external override returns (uint) {
         liquidator;       // currently unused
         borrower;         // currently unused
         seizeTokens;      // currently unused
@@ -539,7 +539,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         address cTokenBorrowed,
         address liquidator,
         address borrower,
-        uint seizeTokens) external {
+        uint seizeTokens) external override {
         cTokenCollateral; // currently unused
         cTokenBorrowed;   // currently unused
         liquidator;       // currently unused
@@ -559,7 +559,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      * @param transferTokens The number of cTokens to transfer
      * @return 0 if the transfer is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
-    function transferAllowed(address cToken, address src, address dst, uint transferTokens) external returns (uint) {
+    function transferAllowed(address cToken, address src, address dst, uint transferTokens) external override returns (uint) {
         cToken;         // currently unused
         src;            // currently unused
         dst;            // currently unused
@@ -579,7 +579,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      * @param dst The account which receives the tokens
      * @param transferTokens The number of cTokens to transfer
      */
-    function transferVerify(address cToken, address src, address dst, uint transferTokens) external {
+    function transferVerify(address cToken, address src, address dst, uint transferTokens) external override {
         cToken;         // currently unused
         src;            // currently unused
         dst;            // currently unused
@@ -617,7 +617,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      *          account shortfall below collateral requirements)
      */
     function getAccountLiquidity(address account) public view returns (uint, uint, uint) {
-        (Error err, uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(account, CToken(0), 0, 0);
+        (Error err, uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(account, CToken(address(0)), 0, 0);
 
         return (uint(err), liquidity, shortfall);
     }
@@ -629,7 +629,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      *          account shortfall below collateral requirements)
      */
     function getAccountLiquidityInternal(address account) internal view returns (Error, uint, uint) {
-        return getHypotheticalAccountLiquidityInternal(account, CToken(0), 0, 0);
+        return getHypotheticalAccountLiquidityInternal(account, CToken(address(0)), 0, 0);
     }
 
     /**
@@ -726,7 +726,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      * @param repayAmount The amount of cTokenBorrowed underlying to convert into cTokenCollateral tokens
      * @return (errorCode, number of cTokenCollateral tokens to be seized in a liquidation)
      */
-    function liquidateCalculateSeizeTokens(address cTokenBorrowed, address cTokenCollateral, uint repayAmount) external view returns (uint, uint) {
+    function liquidateCalculateSeizeTokens(address cTokenBorrowed, address cTokenCollateral, uint repayAmount) external view override returns (uint, uint) {
         /* Read oracle prices for borrowed and collateral markets */
         uint priceBorrowedMantissa = oracle.getUnderlyingPrice(CToken(cTokenBorrowed));
         uint priceCollateralMantissa = oracle.getUnderlyingPrice(CToken(cTokenCollateral));

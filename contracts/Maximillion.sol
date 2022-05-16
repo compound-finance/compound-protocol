@@ -7,7 +7,7 @@ import "./CEther.sol";
  * @title Compound's Maximillion Contract
  * @author Compound
  */
-contract Maximillion {
+abstract contract Maximillion {
     /**
      * @notice The default cEther market to repay in
      */
@@ -16,7 +16,7 @@ contract Maximillion {
     /**
      * @notice Construct a Maximillion to repay max in a CEther market
      */
-    constructor(CEther cEther_) public {
+    constructor(CEther cEther_) {
         cEther = cEther_;
     }
 
@@ -39,10 +39,10 @@ contract Maximillion {
         uint received = msg.value;
         uint borrows = cEther_.borrowBalanceCurrent(borrower);
         if (received > borrows) {
-            cEther_.repayBorrowBehalf.value(borrows)(borrower);
-            msg.sender.transfer(received - borrows);
+            cEther_.repayBorrowBehalf{value: borrows}(borrower);
+            payable(msg.sender).transfer(received - borrows);
         } else {
-            cEther_.repayBorrowBehalf.value(received)(borrower);
+            cEther_.repayBorrowBehalf{value:received}(borrower);
         }
     }
 }

@@ -10,7 +10,7 @@ import "./InterestRateModel.sol";
   * @author Arr00
   * @notice Supports only for V2 cTokens
   */
-contract JumpRateModelV2 is InterestRateModel, BaseJumpRateModelV2  {
+abstract contract JumpRateModelV2 is InterestRateModel, BaseJumpRateModelV2 {
 
 	/**
      * @notice Calculates the current borrow rate per block
@@ -19,10 +19,14 @@ contract JumpRateModelV2 is InterestRateModel, BaseJumpRateModelV2  {
      * @param reserves The amount of reserves in the market
      * @return The borrow rate percentage per block as a mantissa (scaled by 1e18)
      */
-    function getBorrowRate(uint cash, uint borrows, uint reserves) external view returns (uint) {
+    function getBorrowRate(uint cash, uint borrows, uint reserves) external view override returns (uint) {
         return getBorrowRateInternal(cash, borrows, reserves);
     }
 
-    constructor(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_, address owner_) 
-    	BaseJumpRateModelV2(baseRatePerYear,multiplierPerYear,jumpMultiplierPerYear,kink_,owner_) public {}
+    function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) public view override(BaseJumpRateModelV2, InterestRateModel) returns (uint) {
+        return BaseJumpRateModelV2.getSupplyRate(cash, borrows, reserves, reserveFactorMantissa);
+    }
+
+    constructor(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_, address owner_)
+    	BaseJumpRateModelV2(baseRatePerYear,multiplierPerYear,jumpMultiplierPerYear,kink_,owner_) {}
 }

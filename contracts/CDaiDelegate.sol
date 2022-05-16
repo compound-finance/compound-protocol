@@ -28,7 +28,7 @@ contract CDaiDelegate is CErc20Delegate {
      * @notice Delegate interface to become the implementation
      * @param data The encoded arguments for becoming
      */
-    function _becomeImplementation(bytes memory data) public {
+    function _becomeImplementation(bytes memory data) public override {
         require(msg.sender == admin, "only the admin may initialize the implementation");
 
         (address daiJoinAddress_, address potAddress_) = abi.decode(data, (address, address));
@@ -54,7 +54,7 @@ contract CDaiDelegate is CErc20Delegate {
         vatAddress = address(vat);
 
         // Approve moving our DAI into the vat through daiJoin
-        dai.approve(daiJoinAddress, uint(-1));
+        dai.approve(daiJoinAddress, type(uint256).max);
 
         // Approve the pot to transfer our funds within the vat
         vat.hope(potAddress);
@@ -70,7 +70,7 @@ contract CDaiDelegate is CErc20Delegate {
     /**
      * @notice Delegate interface to resign the implementation
      */
-    function _resignImplementation() public {
+    function _resignImplementation() public override {
         require(msg.sender == admin, "only the admin may abandon the implementation");
 
         // Transfer all cash out of the DSR - note that this relies on self-transfer
@@ -99,7 +99,7 @@ contract CDaiDelegate is CErc20Delegate {
       * @dev This calculates interest accrued from the last checkpointed block
       *      up to the current block and writes new checkpoint to storage.
       */
-    function accrueInterest() public returns (uint) {
+    function accrueInterest() public override returns (uint) {
         // Accumulate DSR interest
         PotLike(potAddress).drip();
 
@@ -114,7 +114,7 @@ contract CDaiDelegate is CErc20Delegate {
      * @dev This excludes the value of the current message, if any
      * @return The quantity of underlying tokens owned by this contract
      */
-    function getCashPrior() internal view returns (uint) {
+    function getCashPrior() internal view override returns (uint) {
         PotLike pot = PotLike(potAddress);
         uint pie = pot.pie(address(this));
         return mul(pot.chi(), pie) / RAY;
@@ -126,7 +126,7 @@ contract CDaiDelegate is CErc20Delegate {
      * @param amount Amount of underlying to transfer
      * @return The actual amount that is transferred
      */
-    function doTransferIn(address from, uint amount) internal returns (uint) {
+    function doTransferIn(address from, uint amount) internal override returns (uint) {
         // Perform the EIP-20 transfer in
         EIP20Interface token = EIP20Interface(underlying);
         require(token.transferFrom(from, address(this), amount), "unexpected EIP-20 transfer in return");
@@ -155,7 +155,7 @@ contract CDaiDelegate is CErc20Delegate {
      * @param to Address to transfer funds to
      * @param amount Amount of underlying to transfer
      */
-    function doTransferOut(address payable to, uint amount) internal {
+    function doTransferOut(address payable to, uint amount) internal override {
         DaiJoinLike daiJoin = DaiJoinLike(daiJoinAddress);
         PotLike pot = PotLike(potAddress);
 
@@ -169,7 +169,7 @@ contract CDaiDelegate is CErc20Delegate {
 
     /*** Maker Internals ***/
 
-    uint256 constant RAY = 10 ** 27;
+    uint256 private constant RAY = 10 ** 27;
 
     function add(uint x, uint y) internal pure returns (uint z) {
         require((z = x + y) >= x, "add-overflow");

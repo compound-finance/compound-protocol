@@ -5,7 +5,7 @@ pragma solidity ^0.8.13;
   * @title Compound's Legacy InterestRateModel Interface
   * @author Compound (modified by Arr00)
   */
-contract LegacyInterestRateModel {
+abstract contract LegacyInterestRateModel {
     /// @notice Indicator that this is an InterestRateModel contract (for inspection)
     bool public constant isInterestRateModel = true;
 
@@ -16,7 +16,7 @@ contract LegacyInterestRateModel {
       * @param reserves The total amount of reserves the market has
       * @return error code (0 = no error), The borrow rate per block (as a percentage, and scaled by 1e18)
       */
-    function getBorrowRate(uint cash, uint borrows, uint reserves) external view returns (uint,uint);
+    function getBorrowRate(uint cash, uint borrows, uint reserves) external view virtual returns (uint,uint);
 
     /**
       * @notice Calculates the current supply interest rate per block
@@ -26,6 +26,6 @@ contract LegacyInterestRateModel {
       * @param reserveFactorMantissa The current reserve factor the market has
       * @return The supply rate per block (as a percentage, and scaled by 1e18)
       */
-    function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) external view returns (uint);
+    function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) external view virtual returns (uint);
 
 }

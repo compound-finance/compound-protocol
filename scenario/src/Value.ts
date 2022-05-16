@@ -303,7 +303,7 @@ export class NumberV implements Value {
   }
 
   div(b: NumberV): NumberV {
-    return new NumberV(new BigNumber(this.val).div(new BigNumber(b.val)).toFixed());
+    return new NumberV(new BigNumber(this.val)/(new BigNumber(b.val)).toFixed());
   }
 
   mul(b: NumberV): NumberV {

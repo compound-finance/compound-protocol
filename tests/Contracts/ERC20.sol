@@ -45,16 +45,16 @@ contract StandardToken is ERC20 {
     }
 
     function transfer(address dst, uint256 amount) external returns (bool) {
-        balanceOf[msg.sender] = balanceOf[msg.sender].sub(amount, "Insufficient balance");
-        balanceOf[dst] = balanceOf[dst].add(amount, "Balance overflow");
+        balanceOf[msg.sender] = balanceOf[msg.sender]-(amount, "Insufficient balance");
+        balanceOf[dst] = balanceOf[dst]+(amount, "Balance overflow");
         emit Transfer(msg.sender, dst, amount);
         return true;
     }
 
     function transferFrom(address src, address dst, uint256 amount) external returns (bool) {
-        allowance[src][msg.sender] = allowance[src][msg.sender].sub(amount, "Insufficient allowance");
-        balanceOf[src] = balanceOf[src].sub(amount, "Insufficient balance");
-        balanceOf[dst] = balanceOf[dst].add(amount, "Balance overflow");
+        allowance[src][msg.sender] = allowance[src][msg.sender]-(amount, "Insufficient allowance");
+        balanceOf[src] = balanceOf[src]-(amount, "Insufficient balance");
+        balanceOf[dst] = balanceOf[dst]+(amount, "Balance overflow");
         emit Transfer(src, dst, amount);
         return true;
     }
@@ -90,15 +90,15 @@ contract NonStandardToken is ERC20NS {
     }
 
     function transfer(address dst, uint256 amount) external {
-        balanceOf[msg.sender] = balanceOf[msg.sender].sub(amount, "Insufficient balance");
-        balanceOf[dst] = balanceOf[dst].add(amount, "Balance overflow");
+        balanceOf[msg.sender] = balanceOf[msg.sender]-(amount, "Insufficient balance");
+        balanceOf[dst] = balanceOf[dst]+(amount, "Balance overflow");
         emit Transfer(msg.sender, dst, amount);
     }
 
     function transferFrom(address src, address dst, uint256 amount) external {
-        allowance[src][msg.sender] = allowance[src][msg.sender].sub(amount, "Insufficient allowance");
-        balanceOf[src] = balanceOf[src].sub(amount, "Insufficient balance");
-        balanceOf[dst] = balanceOf[dst].add(amount, "Balance overflow");
+        allowance[src][msg.sender] = allowance[src][msg.sender]-(amount, "Insufficient allowance");
+        balanceOf[src] = balanceOf[src]-(amount, "Insufficient balance");
+        balanceOf[dst] = balanceOf[dst]+(amount, "Balance overflow");
         emit Transfer(src, dst, amount);
     }
 
@@ -136,8 +136,8 @@ contract ERC20Harness is StandardToken {
         if (failTransferToAddresses[dst]) {
             return false;
         }
-        balanceOf[msg.sender] = balanceOf[msg.sender].sub(amount, "Insufficient balance");
-        balanceOf[dst] = balanceOf[dst].add(amount, "Balance overflow");
+        balanceOf[msg.sender] = balanceOf[msg.sender]-(amount, "Insufficient balance");
+        balanceOf[dst] = balanceOf[dst]+(amount, "Balance overflow");
         emit Transfer(msg.sender, dst, amount);
         return true;
     }
@@ -147,9 +147,9 @@ contract ERC20Harness is StandardToken {
         if (failTransferFromAddresses[src]) {
             return false;
         }
-        allowance[src][msg.sender] = allowance[src][msg.sender].sub(amount, "Insufficient allowance");
-        balanceOf[src] = balanceOf[src].sub(amount, "Insufficient balance");
-        balanceOf[dst] = balanceOf[dst].add(amount, "Balance overflow");
+        allowance[src][msg.sender] = allowance[src][msg.sender]-(amount, "Insufficient allowance");
+        balanceOf[src] = balanceOf[src]-(amount, "Insufficient balance");
+        balanceOf[dst] = balanceOf[dst]+(amount, "Balance overflow");
         emit Transfer(src, dst, amount);
         return true;
     }

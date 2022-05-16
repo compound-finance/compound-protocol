@@ -116,7 +116,7 @@ contract FaucetTokenReEntrantHarness {
 
     function transferFrom(address src, address dst, uint256 amount) public reEnter("transferFrom") returns (bool success) {
         _transfer(src, dst, amount);
-        _approve(src, msg.sender, allowance_[src][msg.sender].sub(amount));
+        _approve(src, msg.sender, allowance_[src][msg.sender]-(amount));
         return true;
     }
 
@@ -129,8 +129,8 @@ contract FaucetTokenReEntrantHarness {
 
     function _transfer(address src, address dst, uint256 amount) internal {
         require(dst != address(0));
-        balanceOf_[src] = balanceOf_[src].sub(amount);
-        balanceOf_[dst] = balanceOf_[dst].add(amount);
+        balanceOf_[src] = balanceOf_[src]-(amount);
+        balanceOf_[dst] = balanceOf_[dst]+(amount);
         emit Transfer(src, dst, amount);
     }
 }
