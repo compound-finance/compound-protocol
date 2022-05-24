@@ -93,7 +93,7 @@ contract UnitrollerFactory is Ownable {
         return comptrollerInstance;
     }
 
-     // set and accept new implementation
+    // set and accept new implementation
     function _setAndAcceptNewImplementation(address _unitroller, address _implementation) internal {
         IUnitroller(_unitroller)._setPendingImplementation(_implementation);
         IComptroller(_implementation)._become(unitrollerInstance);
@@ -101,5 +101,6 @@ contract UnitrollerFactory is Ownable {
 
     modifier isValidUnitroller(address _unitroller) {
         require(unitrollerComptrollerPair[_unitroller] != address(0), "not valid unitroller");
+        _;
     }
 }
