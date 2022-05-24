@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
 
 import "./SafeMath.sol";
 
@@ -31,7 +32,7 @@ contract Timelock {
         delay = delay_;
     }
 
-    function() external payable { }
+    receive() external payable {}
 
     function setDelay(uint delay_) public {
         require(msg.sender == address(this), "Timelock::setDelay: Call must come from Timelock.");

@@ -1,5 +1,5 @@
-pragma solidity ^0.5.16;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
 
 contract Comp {
     /// @notice EIP-20 token name for this token

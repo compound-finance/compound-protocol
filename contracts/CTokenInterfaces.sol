@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
 
 import "./ComptrollerInterface.sol";
 import "./InterestRateModel.sol";
@@ -123,7 +124,7 @@ contract CTokenStorage {
 
 }
 
-contract CTokenInterface is CTokenStorage {
+abstract contract CTokenInterface is CTokenStorage {
     /**
      * @notice Indicator that this is a CToken contract (for inspection)
      */
@@ -254,7 +255,7 @@ contract CErc20Storage {
     address public underlying;
 }
 
-contract CErc20Interface is CErc20Storage {
+abstract contract CErc20Interface is CErc20Storage {
 
     /*** User Interface ***/
 
@@ -295,7 +296,7 @@ contract CDelegatorInterface is CDelegationStorage {
     function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public;
 }
 
-contract CDelegateInterface is CDelegationStorage {
+abstract contract CDelegateInterface is CDelegationStorage {
     /**
      * @notice Called by the delegator on a delegate to initialize it for duty
      * @dev Should revert if any issues arise which make it unfit for delegation

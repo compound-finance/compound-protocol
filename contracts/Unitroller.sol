@@ -1,13 +1,20 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
 
 import "./ErrorReporter.sol";
 import "./ComptrollerStorage.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+
+
 /**
  * @title ComptrollerCore
  * @dev Storage for the comptroller is at this address, while execution is delegated to the `comptrollerImplementation`.
  * CTokens should reference this contract as their comptroller.
  */
-contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
+contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter, Initializable {
+
+    // the factory that created this contract
+    address public factory;
 
     /**
       * @notice Emitted when pendingComptrollerImplementation is changed
@@ -29,15 +36,16 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
       */
     event NewAdmin(address oldAdmin, address newAdmin);
 
-    constructor() public {
-        // Set admin to caller
-        admin = msg.sender;
+
+    function initialize(address _admin) external initializer {
+      admin = _admin;
+      factory = msg.sender;
     }
 
     /*** Admin Functions ***/
     function _setPendingImplementation(address newPendingImplementation) public returns (uint) {
 
-        if (msg.sender != admin) {
+        if (msg.sender != admin || msg.sender != factory) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PENDING_IMPLEMENTATION_OWNER_CHECK);
         }
 
@@ -132,17 +140,17 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
      * It returns to the external caller whatever the implementation returns
      * or forwards reverts.
      */
-    function () payable external {
+    fallback() payable external {
         // delegate all other functions to current implementation
         (bool success, ) = comptrollerImplementation.delegatecall(msg.data);
 
         assembly {
               let free_mem_ptr := mload(0x40)
-              returndatacopy(free_mem_ptr, 0, returndatasize)
+              returndatacopy(free_mem_ptr, 0, returndatasize())
 
               switch success
-              case 0 { revert(free_mem_ptr, returndatasize) }
-              default { return(free_mem_ptr, returndatasize) }
+              case 0 { revert(free_mem_ptr, returndatasize()) }
+              default { return(free_mem_ptr, returndatasize()) }
         }
     }
 }

@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
 
 import "./CToken.sol";
 
@@ -117,7 +118,7 @@ contract CEther is CToken {
     /**
      * @notice Send Ether to CEther to mint
      */
-    function () external payable {
+    receive() external payable {
         (uint err,) = mintInternal(msg.value);
         requireNoError(err, "mint failed");
     }
@@ -165,11 +166,11 @@ contract CEther is CToken {
             fullMessage[i] = bytes(message)[i];
         }
 
-        fullMessage[i+0] = byte(uint8(32));
-        fullMessage[i+1] = byte(uint8(40));
-        fullMessage[i+2] = byte(uint8(48 + ( errCode / 10 )));
-        fullMessage[i+3] = byte(uint8(48 + ( errCode % 10 )));
-        fullMessage[i+4] = byte(uint8(41));
+        fullMessage[i+0] = bytes1(uint8(32));
+        fullMessage[i+1] = bytes1(uint8(40));
+        fullMessage[i+2] = bytes1(uint8(48 + ( errCode / 10 )));
+        fullMessage[i+3] = bytes1(uint8(48 + ( errCode % 10 )));
+        fullMessage[i+4] = bytes1(uint8(41));
 
         require(errCode == uint(Error.NO_ERROR), string(fullMessage));
     }
