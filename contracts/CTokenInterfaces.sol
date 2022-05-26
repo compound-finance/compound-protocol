@@ -222,10 +222,10 @@ abstract contract CTokenInterface is CTokenStorage {
 
     /*** Admin Functions ***/
 
-    function _setPendingAdmin(address payable newPendingAdmin) virtual external returns (uint);
-    function _acceptAdmin() virtual external returns (uint);
-    function _setComptroller(ComptrollerInterface newComptroller) virtual external returns (uint);
-    function _setReserveFactor(uint newReserveFactorMantissa) virtual external returns (uint);
+    function _setPendingAdmin(address payable newPendingAdmin) virtual external; // returns (uint);
+    function _acceptAdmin() virtual external; // returns (uint);
+    function _setComptroller(ComptrollerInterface newComptroller) virtual external;// returns (uint);
+    function _setReserveFactor(uint newReserveFactorMantissa) virtual external;// returns (uint);
     function _reduceReserves(uint reduceAmount) virtual external returns (uint);
     function _setInterestRateModel(InterestRateModel newInterestRateModel) virtual external returns (uint);
 }

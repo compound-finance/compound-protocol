@@ -29,24 +29,33 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
                         string memory name_,
                         string memory symbol_,
                         uint8 decimals_) public {
-        require(msg.sender == admin, "only admin may initialize the market");
-        require(accrualBlockNumber == 0 && borrowIndex == 0, "market may only be initialized once");
+        // require(msg.sender == admin, "only admin may initialize the market");
+        if (msg.sender != admin) {
+            revert AddressUnauthorized();
+        }
+        // require(accrualBlockNumber == 0 && borrowIndex == 0, "market may only be initialized once");
+        if (accrualBlockNumber != 0 && borrowIndex != 0) {
+            revert PreviouslyInitialized();
+        }
 
         // Set initial exchange rate
         initialExchangeRateMantissa = initialExchangeRateMantissa_;
-        require(initialExchangeRateMantissa > 0, "initial exchange rate must be greater than zero.");
+        // require(initialExchangeRateMantissa > 0, "initial exchange rate must be greater than zero.");
+        if (initialExchangeRateMantissa == 0) {
+            revert CannotEqualZero();
+        }
 
         // Set the comptroller
-        uint err = _setComptroller(comptroller_);
-        require(err == NO_ERROR, "setting comptroller failed");
+        _setComptroller(comptroller_);
+        // require(err == NO_ERROR, "setting comptroller failed"); /// Removed the return (uint) from fxn
 
         // Initialize block number and borrow index (block number mocks depend on comptroller being set)
         accrualBlockNumber = getBlockNumber();
         borrowIndex = mantissaOne;
 
         // Set the interest rate model (depends on block number / borrow index)
-        err = _setInterestRateModelFresh(interestRateModel_);
-        require(err == NO_ERROR, "setting interest rate model failed");
+        _setInterestRateModelFresh(interestRateModel_);
+        // require(err == NO_ERROR, "setting interest rate model failed");
 
         name = name_;
         symbol = symbol_;
@@ -342,7 +351,10 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
 
         /* Calculate the current borrow interest rate */
         uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
-        require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
+        // require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
+        if (borrowRateMaxMantissa >= borrowRateMantissa) {
+            revert ExcessiveRate();
+        }
 
         /* Calculate the number of blocks elapsed since the last accrual */
         uint blockDelta = currentBlockNumber - accrualBlockNumberPrior;
@@ -846,9 +858,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
       * @notice Begins transfer of admin rights. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
       * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
       * @param newPendingAdmin New pending admin.
-      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      * return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _setPendingAdmin(address payable newPendingAdmin) override external returns (uint) {
+    function _setPendingAdmin(address payable newPendingAdmin) override external { // returns (uint) {
         // Check caller = admin
         if (msg.sender != admin) {
             revert SetPendingAdminOwnerCheck();
@@ -863,15 +875,15 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // Emit NewPendingAdmin(oldPendingAdmin, newPendingAdmin)
         emit NewPendingAdmin(oldPendingAdmin, newPendingAdmin);
 
-        return NO_ERROR;
+        // return NO_ERROR;
     }
 
     /**
       * @notice Accepts transfer of admin rights. msg.sender must be pendingAdmin
       * @dev Admin function for pending admin to accept role and update admin
-      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      * return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _acceptAdmin() override external returns (uint) {
+    function _acceptAdmin() override external {
         // Check caller is pendingAdmin and pendingAdmin ≠ address(0)
         if (msg.sender != pendingAdmin || msg.sender == address(0)) {
             revert AcceptAdminPendingAdminCheck();
@@ -890,15 +902,15 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         emit NewAdmin(oldAdmin, admin);
         emit NewPendingAdmin(oldPendingAdmin, pendingAdmin);
 
-        return NO_ERROR;
+        // return NO_ERROR;
     }
 
     /**
       * @notice Sets a new comptroller for the market
       * @dev Admin function to set a new comptroller
-      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      * return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _setComptroller(ComptrollerInterface newComptroller) override public returns (uint) {
+    function _setComptroller(ComptrollerInterface newComptroller) override public {
         // Check caller is admin
         if (msg.sender != admin) {
             revert SetComptrollerOwnerCheck();
@@ -906,7 +918,10 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
 
         ComptrollerInterface oldComptroller = comptroller;
         // Ensure invoke comptroller.isComptroller() returns true
-        require(newComptroller.isComptroller(), "marker method returned false");
+        // require(newComptroller.isComptroller(), "marker method returned false");
+        if (!newComptroller.isComptroller()) {
+            revert ReturnedFalse();
+        }
 
         // Set market's comptroller to newComptroller
         comptroller = newComptroller;
@@ -914,26 +929,26 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // Emit NewComptroller(oldComptroller, newComptroller)
         emit NewComptroller(oldComptroller, newComptroller);
 
-        return NO_ERROR;
+        // return NO_ERROR;
     }
 
     /**
       * @notice accrues interest and sets a new reserve factor for the protocol using _setReserveFactorFresh
       * @dev Admin function to accrue interest and set a new reserve factor
-      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      * return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _setReserveFactor(uint newReserveFactorMantissa) override external nonReentrant returns (uint) {
+    function _setReserveFactor(uint newReserveFactorMantissa) override external nonReentrant {// returns (uint) {
         accrueInterest();
         // _setReserveFactorFresh emits reserve-factor-specific logs on errors, so we don't need to.
-        return _setReserveFactorFresh(newReserveFactorMantissa);
+        _setReserveFactorFresh(newReserveFactorMantissa);
     }
 
     /**
       * @notice Sets a new reserve factor for the protocol (*requires fresh interest accrual)
       * @dev Admin function to set a new reserve factor
-      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      * return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _setReserveFactorFresh(uint newReserveFactorMantissa) internal returns (uint) {
+    function _setReserveFactorFresh(uint newReserveFactorMantissa) internal {// returns (uint) {
         // Check caller is admin
         if (msg.sender != admin) {
             revert SetReserveFactorAdminCheck();
@@ -954,7 +969,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
 
         emit NewReserveFactor(oldReserveFactorMantissa, newReserveFactorMantissa);
 
-        return NO_ERROR;
+        //return NO_ERROR;
     }
 
     /**
@@ -1075,21 +1090,22 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @notice accrues interest and updates the interest rate model using _setInterestRateModelFresh
      * @dev Admin function to accrue interest and update the interest rate model
      * @param newInterestRateModel the new interest rate model to use
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     * @return NO_ERROR if successful
      */
     function _setInterestRateModel(InterestRateModel newInterestRateModel) override public returns (uint) {
         accrueInterest();
         // _setInterestRateModelFresh emits interest-rate-model-update-specific logs on errors, so we don't need to.
-        return _setInterestRateModelFresh(newInterestRateModel);
+        _setInterestRateModelFresh(newInterestRateModel);
+
+        return NO_ERROR;
     }
 
     /**
      * @notice updates the interest rate model (*requires fresh interest accrual)
      * @dev Admin function to update the interest rate model
      * @param newInterestRateModel the new interest rate model to use
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setInterestRateModelFresh(InterestRateModel newInterestRateModel) internal returns (uint) {
+    function _setInterestRateModelFresh(InterestRateModel newInterestRateModel) internal {
 
         // Used to store old model for use in the event that is emitted on success
         InterestRateModel oldInterestRateModel;
@@ -1108,7 +1124,10 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         oldInterestRateModel = interestRateModel;
 
         // Ensure invoke newInterestRateModel.isInterestRateModel() returns true
-        require(newInterestRateModel.isInterestRateModel(), "marker method returned false");
+        // require(newInterestRateModel.isInterestRateModel(), "marker method returned false");
+        if (!newInterestRateModel.isInterestRateModel()) {
+            revert ReturnedFalse();
+        }
 
         // Set the interest rate model to newInterestRateModel
         interestRateModel = newInterestRateModel;
@@ -1116,7 +1135,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // Emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel)
         emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel);
 
-        return NO_ERROR;
+        // return NO_ERROR;
     }
 
     /*** Safe Token ***/

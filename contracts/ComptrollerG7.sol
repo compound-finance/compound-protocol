@@ -77,7 +77,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
     // No collateralFactorMantissa may exceed this value
     uint internal constant collateralFactorMaxMantissa = 0.9e18; // 0.9
 
-    constructor() public {
+    constructor() {
         admin = msg.sender;
     }
 
@@ -317,7 +317,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
 
         // Require tokens is zero or amount is also zero
         if (redeemTokens == 0 && redeemAmount > 0) {
-            revert("redeemTokens zero");
+            revert CannotEqualZero();
         }
     }
 

@@ -127,7 +127,7 @@ contract GovernorAlpha {
     /// @notice An event emitted when a proposal has been executed in the Timelock
     event ProposalExecuted(uint id);
 
-    constructor(address timelock_, address comp_, address guardian_) public {
+    constructor(address timelock_, address comp_, address guardian_) {
         timelock = TimelockInterface(timelock_);
         comp = CompInterface(comp_);
         guardian = guardian_;

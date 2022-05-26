@@ -124,4 +124,12 @@ contract TokenErrorReporter {
 
     error SetInterestRateModelOwnerCheck();
     error SetInterestRateModelFreshCheck();
+
+
+    // Generalized Errors
+    error AddressUnauthorized();
+    error PreviouslyInitialized();
+    error CannotEqualZero();
+    error ReturnedFalse();
+    error ExcessiveRate();
 }
