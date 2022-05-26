@@ -858,9 +858,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
       * @notice Begins transfer of admin rights. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
       * @dev Admin function to begin change of admin. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
       * @param newPendingAdmin New pending admin.
-      * return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _setPendingAdmin(address payable newPendingAdmin) override external { // returns (uint) {
+    function _setPendingAdmin(address payable newPendingAdmin) override external returns (uint) {
         // Check caller = admin
         if (msg.sender != admin) {
             revert SetPendingAdminOwnerCheck();
@@ -875,15 +875,15 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // Emit NewPendingAdmin(oldPendingAdmin, newPendingAdmin)
         emit NewPendingAdmin(oldPendingAdmin, newPendingAdmin);
 
-        // return NO_ERROR;
+        return NO_ERROR;
     }
 
     /**
       * @notice Accepts transfer of admin rights. msg.sender must be pendingAdmin
       * @dev Admin function for pending admin to accept role and update admin
-      * return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _acceptAdmin() override external {
+    function _acceptAdmin() override external returns (uint) {
         // Check caller is pendingAdmin and pendingAdmin ≠ address(0)
         if (msg.sender != pendingAdmin || msg.sender == address(0)) {
             revert AcceptAdminPendingAdminCheck();
@@ -902,15 +902,15 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         emit NewAdmin(oldAdmin, admin);
         emit NewPendingAdmin(oldPendingAdmin, pendingAdmin);
 
-        // return NO_ERROR;
+        return NO_ERROR;
     }
 
     /**
       * @notice Sets a new comptroller for the market
       * @dev Admin function to set a new comptroller
-      * return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _setComptroller(ComptrollerInterface newComptroller) override public {
+    function _setComptroller(ComptrollerInterface newComptroller) override public returns (uint) {
         // Check caller is admin
         if (msg.sender != admin) {
             revert SetComptrollerOwnerCheck();
@@ -929,26 +929,28 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // Emit NewComptroller(oldComptroller, newComptroller)
         emit NewComptroller(oldComptroller, newComptroller);
 
-        // return NO_ERROR;
+        return NO_ERROR;
     }
 
     /**
       * @notice accrues interest and sets a new reserve factor for the protocol using _setReserveFactorFresh
       * @dev Admin function to accrue interest and set a new reserve factor
-      * return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _setReserveFactor(uint newReserveFactorMantissa) override external nonReentrant {// returns (uint) {
+    function _setReserveFactor(uint newReserveFactorMantissa) override external nonReentrant returns (uint) {
         accrueInterest();
         // _setReserveFactorFresh emits reserve-factor-specific logs on errors, so we don't need to.
         _setReserveFactorFresh(newReserveFactorMantissa);
+
+        return NO_ERROR;
     }
 
     /**
       * @notice Sets a new reserve factor for the protocol (*requires fresh interest accrual)
       * @dev Admin function to set a new reserve factor
-      * return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function _setReserveFactorFresh(uint newReserveFactorMantissa) internal {// returns (uint) {
+    function _setReserveFactorFresh(uint newReserveFactorMantissa) internal returns (uint) {
         // Check caller is admin
         if (msg.sender != admin) {
             revert SetReserveFactorAdminCheck();
@@ -969,7 +971,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
 
         emit NewReserveFactor(oldReserveFactorMantissa, newReserveFactorMantissa);
 
-        //return NO_ERROR;
+        return NO_ERROR;
     }
 
     /**
@@ -1090,7 +1092,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @notice accrues interest and updates the interest rate model using _setInterestRateModelFresh
      * @dev Admin function to accrue interest and update the interest rate model
      * @param newInterestRateModel the new interest rate model to use
-     * @return NO_ERROR if successful
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _setInterestRateModel(InterestRateModel newInterestRateModel) override public returns (uint) {
         accrueInterest();
@@ -1104,8 +1106,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @notice updates the interest rate model (*requires fresh interest accrual)
      * @dev Admin function to update the interest rate model
      * @param newInterestRateModel the new interest rate model to use
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setInterestRateModelFresh(InterestRateModel newInterestRateModel) internal {
+    function _setInterestRateModelFresh(InterestRateModel newInterestRateModel) internal returns (uint) {
 
         // Used to store old model for use in the event that is emitted on success
         InterestRateModel oldInterestRateModel;
@@ -1135,7 +1138,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // Emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel)
         emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel);
 
-        // return NO_ERROR;
+        return NO_ERROR;
     }
 
     /*** Safe Token ***/

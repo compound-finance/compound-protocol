@@ -13,7 +13,7 @@ import "./Governance/Comp.sol";
  * @title Compound's Comptroller Contract
  * @author Compound
  */
-contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError {
+contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError, TokenErrorReporter {
     /// @notice Emitted when an admin supports a market
     event MarketListed(CToken cToken);
 
