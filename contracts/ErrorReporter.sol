@@ -105,6 +105,8 @@ contract TokenErrorReporter {
 
     error LiquidateSeizeComptrollerRejection(uint256 errorCode);
     error LiquidateSeizeLiquidatorIsBorrower();
+    error LiquidateComptrollerCalculateAmountSeizeFailed();
+    error LiquidateSeizeTooMuch();
 
     error AcceptAdminPendingAdminCheck();
 
@@ -132,4 +134,6 @@ contract TokenErrorReporter {
     error CannotEqualZero();
     error ReturnedFalse();
     error ExcessiveRate();
+    error NonReentrant();
+    error InMustContainZero();
 }
