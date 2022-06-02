@@ -23,6 +23,7 @@
     "bignumber.js": "9.0.0",
     "jest-diff": "^26.4.2",
     "jest-junit": "^11.1.0",
+    "prettier": "^1.19.0",
     "solhint": "^3.3.7",
     "solparse": "^2.2.8"
   },
