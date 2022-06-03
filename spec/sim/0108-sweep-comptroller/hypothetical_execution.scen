@@ -3,11 +3,11 @@
 PrintTransactionLogs
 
 Alias Arr00 "0x2B384212EDc04Ae8bB41738D05BA20E33277bf33"
-Alias CompHolder "0x7587cAefc8096f5F40ACB83A09Df031a018C66ec"
+Alias CompHolder "0xF977814e90dA44bFA03b6295A0616a897441aceC"
 Alias CompHolder2 "0xfa9b5f7fdc8ab34aaf3099889475d47febf830d7"
 Alias CurrentImpl "0xBafE01ff935C7305907c33BF824352eE5979B526"
 
-Web3Fork "https://mainnet-eth.compound.finance/@14472083" (CompHolder CompHolder2 Arr00)
+Web3Fork "https://mainnet-eth.compound.finance/@14875905" (CompHolder CompHolder2 Arr00)
 UseConfigs mainnet
 
 ComptrollerImpl Deploy Sweeper ComptrollerSweeper
@@ -15,7 +15,7 @@ Assert Equal (Address CurrentImpl) (Unitroller Implementation)
 
 From CompHolder (Comp Delegate CompHolder)
 From CompHolder2 (Comp Delegate CompHolder)
-From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Sweep Comptroller" [(Address Comptroller) (Address ComptrollerSweeper) (Address Unitroller) (Address Comptroller) (Address CurrentImpl)] [0 0 0 0 0] ["_setPendingImplementation(address)" "_become(address)" "sweep(address)" "_setPendingImplementation(address)" "_become(address)"] [[(Address ComptrollerSweeper)] [(Address Unitroller)] [(Address WBTC)] [(Address CurrentImpl)] [(Address Unitroller)]])
+From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Sweep Comptroller" [(Address Unitroller) (Address ComptrollerSweeper) (Address Unitroller) (Address Unitroller) (Address Unitroller) (Address CurrentImpl)] [0 0 0 0 0 0] ["_setPendingImplementation(address)" "_become(address)" "_sweep(address)" "_sweep(address)" "_setPendingImplementation(address)" "_become(address)"] [[(Address ComptrollerSweeper)] [(Address Unitroller)] [(Address WBTC)] [(Address UNI)] [(Address CurrentImpl)] [(Address Unitroller)]])
 
 -- Vote for, queue, and execute the proposal
 MineBlock
@@ -27,6 +27,7 @@ IncreaseTime 604910
 GovernorBravo GovernorBravoDelegator Proposal LastProposal Execute
 
 Assert Equal (33497707) (Erc20 WBTC TokenBalance (Address Timelock))
+Assert Equal (400000000000000000000) (Erc20 UNI TokenBalance (Address Timelock))
 Assert Equal (Address CurrentImpl) (Unitroller Implementation)
 
-Print "Setup whitelisted accounts ok!"
+Print "Sweep comptroller sucessfully!"
