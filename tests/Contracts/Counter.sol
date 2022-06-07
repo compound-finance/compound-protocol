@@ -1,9 +1,10 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.10;
 
 contract Counter {
   uint public count;
   uint public count2;
-  
+
   function increment(uint amount) public payable {
     count += amount;
   }

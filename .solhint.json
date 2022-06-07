@@ -1,0 +1,15 @@
+{
+  "extends": "solhint:recommended",
+  "rules": {
+    "quotes": ["error", "double"],
+    "max-line-length": ["error", 200],
+    "compiler-version": ["error", "^0.8.0"],
+    "reason-string": ["warn", { "maxLength": 128 }],
+    "not-rely-on-block-hash": "off",
+    "not-rely-on-time": "off",
+    "no-inline-assembly": "off",
+    "avoid-low-level-calls": "off",
+    "avoid-tx-origin": "off",
+    "imports-on-top": "off"
+  }
+}

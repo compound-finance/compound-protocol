@@ -11,7 +11,7 @@ jobs:
     steps:
       - run:
         |
-          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.8.10/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
       - checkout
       - restore_cache:
@@ -43,7 +43,7 @@ jobs:
       - run:
           shell: /bin/bash -eox pipefail -O globstar
           name: yarn test
-          command: JEST_JUNIT_OUTPUT_DIR=~/junit JEST_JUNIT_OUTPUT_NAME=test-results.xml yarn test $(circleci tests glob 'tests/**/**Test.js' | circleci tests split --split-by=timings)
+          command: NODE_OPTIONS="--max-old-space-size=12228" JEST_JUNIT_OUTPUT_DIR=~/junit JEST_JUNIT_OUTPUT_NAME=test-results.xml yarn test $(circleci tests glob 'tests/**/**Test.js' | circleci tests split --split-by=timings)
       - save_cache:
           paths:
             - .build
@@ -79,7 +79,7 @@ jobs:
     steps:
       - run:
         |
-          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.8.10/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
       - checkout
       - restore_cache:
@@ -112,7 +112,7 @@ jobs:
           shell: /bin/bash -eox pipefail -O globstar
           name: yarn test
           no_output_timeout: 30m
-          command: JEST_JUNIT_OUTPUT_DIR=~/junit JEST_JUNIT_OUTPUT_NAME=test-results.xml script/coverage $(circleci tests glob 'tests/**/**Test.js' | circleci tests split --split-by=timings) -- --maxWorkers=4
+          command: NODE_OPTIONS="--max-old-space-size=12228" JEST_JUNIT_OUTPUT_DIR=~/junit JEST_JUNIT_OUTPUT_NAME=test-results.xml script/coverage $(circleci tests glob 'tests/**/**Test.js' | circleci tests split --split-by=timings) -- --maxWorkers=4
       - save_cache:
           paths:
             - .build

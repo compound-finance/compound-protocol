@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.10;
 
 import "../../contracts/Timelock.sol";
 
@@ -8,7 +9,7 @@ interface Administered {
 
 contract TimelockHarness is Timelock {
     constructor(address admin_, uint delay_)
-        Timelock(admin_, delay_) public {
+        Timelock(admin_, delay_) {
     }
 
     function harnessSetPendingAdmin(address pendingAdmin_) public {
@@ -21,7 +22,7 @@ contract TimelockHarness is Timelock {
 }
 
 contract TimelockTest is Timelock {
-    constructor(address admin_, uint delay_) Timelock(admin_, 2 days) public {
+    constructor(address admin_, uint delay_) Timelock(admin_, 2 days) {
         delay = delay_;
     }
 

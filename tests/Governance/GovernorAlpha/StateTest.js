@@ -9,18 +9,16 @@ const {
   increaseTime
 } = require('../../Utils/Ethereum');
 
-const path = require('path');
-const solparse = require('solparse');
-
-const governorAlphaPath = path.join(__dirname, '../../..', 'contracts', 'Governance/GovernorAlpha.sol');
-
-const statesInverted = solparse
-  .parseFile(governorAlphaPath)
-  .body
-  .find(k => k.type === 'ContractStatement')
-  .body
-  .find(k => k.name == 'ProposalState')
-  .members
+const statesInverted = {
+  0: 'Pending',
+  1: 'Active',
+  2: 'Canceled',
+  3: 'Defeated',
+  4: 'Succeeded',
+  5: 'Queued',
+  6: 'Expired',
+  7: 'Executed',
+}
 
 const states = Object.entries(statesInverted).reduce((obj, [key, value]) => ({ ...obj, [value]: key }), {});
 

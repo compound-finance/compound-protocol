@@ -1,11 +1,11 @@
-pragma solidity ^0.5.16;
-
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.10;
 
 contract MockPot {
 
     uint public dsr;  // the Dai Savings Rate
 
-    constructor(uint dsr_) public {
+    constructor(uint dsr_) {
         setDsr(dsr_);
     }
 
@@ -24,7 +24,7 @@ contract MockJug {
     mapping (bytes32 => Ilk) public ilks;
     uint public base;
 
-    constructor(uint duty_, uint base_) public {
+    constructor(uint duty_, uint base_) {
         setETHDuty(duty_);
         setBase(base_);
     }

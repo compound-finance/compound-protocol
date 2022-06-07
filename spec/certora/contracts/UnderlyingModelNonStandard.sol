@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity ^0.8.10;
 
 import "../../../contracts/EIP20NonStandardInterface.sol";
 
@@ -9,15 +9,15 @@ contract UnderlyingModelNonStandard is EIP20NonStandardInterface, SimulationInte
     mapping (address => uint256) balances;
     mapping (address => mapping (address => uint256)) allowances;
 
-    function totalSupply() external view returns (uint256) {
+    function totalSupply() override external view returns (uint256) {
         return _totalSupply;
     }
 
-    function balanceOf(address owner) external view returns (uint256 balance) {
+    function balanceOf(address owner) override external view returns (uint256 balance) {
         balance = balances[owner];
     }
 
-    function transfer(address dst, uint256 amount) external {
+    function transfer(address dst, uint256 amount) override external {
         address src = msg.sender;
         require(balances[src] >= amount);
         require(balances[dst] + amount >= balances[dst]);
@@ -26,7 +26,7 @@ contract UnderlyingModelNonStandard is EIP20NonStandardInterface, SimulationInte
         balances[dst] += amount;
     }
 
-    function transferFrom(address src, address dst, uint256 amount) external {
+    function transferFrom(address src, address dst, uint256 amount) override external {
         require(allowances[src][msg.sender] >= amount);
         require(balances[src] >= amount);
         require(balances[dst] + amount >= balances[dst]);
@@ -36,15 +36,15 @@ contract UnderlyingModelNonStandard is EIP20NonStandardInterface, SimulationInte
         balances[dst] += amount;
     }
 
-    function approve(address spender, uint256 amount) external returns (bool success) {
+    function approve(address spender, uint256 amount) override external returns (bool success) {
         allowances[msg.sender][spender] = amount;
     }
 
-    function allowance(address owner, address spender) external view returns (uint256 remaining) {
+    function allowance(address owner, address spender) override external view returns (uint256 remaining) {
         remaining = allowances[owner][spender];
     }
 
-    function dummy() external {
+    function dummy() override external {
         return;
     }
 }

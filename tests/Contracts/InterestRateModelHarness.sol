@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.10;
 
 import "../../contracts/InterestRateModel.sol";
 
@@ -11,7 +12,7 @@ contract InterestRateModelHarness is InterestRateModel {
     bool public failBorrowRate;
     uint public borrowRate;
 
-    constructor(uint borrowRate_) public {
+    constructor(uint borrowRate_) {
         borrowRate = borrowRate_;
     }
 
@@ -23,7 +24,7 @@ contract InterestRateModelHarness is InterestRateModel {
         borrowRate = borrowRate_;
     }
 
-    function getBorrowRate(uint _cash, uint _borrows, uint _reserves) public view returns (uint) {
+    function getBorrowRate(uint _cash, uint _borrows, uint _reserves) override public view returns (uint) {
         _cash;     // unused
         _borrows;  // unused
         _reserves; // unused
@@ -31,7 +32,7 @@ contract InterestRateModelHarness is InterestRateModel {
         return borrowRate;
     }
 
-    function getSupplyRate(uint _cash, uint _borrows, uint _reserves, uint _reserveFactor) external view returns (uint) {
+    function getSupplyRate(uint _cash, uint _borrows, uint _reserves, uint _reserveFactor) override external view returns (uint) {
         _cash;     // unused
         _borrows;  // unused
         _reserves; // unused

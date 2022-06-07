@@ -31,7 +31,7 @@ Test "Fail to set pending admin"
     Invariant Remains (CToken cZRX PendingAdmin) (Address Zero)
     AllowFailures
     From Geoff (CToken cZRX SetPendingAdmin Geoff)
-    Assert Failure UNAUTHORIZED SET_PENDING_ADMIN_OWNER_CHECK
+    Assert RevertCustomError SetPendingAdminOwnerCheck
 
 Test "Fail to accept admin"
     NewComptroller
@@ -40,4 +40,4 @@ Test "Fail to accept admin"
     Invariant Remains (CToken cZRX PendingAdmin) (Address Zero)
     AllowFailures
     From Geoff (CToken cZRX AcceptAdmin)
-    Assert Failure UNAUTHORIZED ACCEPT_ADMIN_PENDING_ADMIN_CHECK
+    Assert RevertCustomError AcceptAdminPendingAdminCheck

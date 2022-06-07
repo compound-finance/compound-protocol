@@ -1,10 +1,10 @@
-pragma solidity ^0.5.16;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.10;
 
 import "../../contracts/Governance/Comp.sol";
 
 contract CompScenario is Comp {
-    constructor(address account) Comp(account) public {}
+    constructor(address account) Comp(account) {}
 
     function transferScenario(address[] calldata destinations, uint256 amount) external returns (bool) {
         for (uint i = 0; i < destinations.length; i++) {

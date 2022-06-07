@@ -2,7 +2,7 @@ const {
   etherGasCost,
   etherUnsigned,
   etherMantissa,
-  UInt256Max, 
+  UInt256Max,
   etherExp
 } = require('../Utils/Ethereum');
 
@@ -74,7 +74,7 @@ describe('CToken', function () {
     cTokenCollateral = await makeCToken({comptroller: cToken.comptroller});
     expect(await send(cTokenCollateral, 'harnessSetExchangeRate', [exchangeRate])).toSucceed();
   });
-  
+
   beforeEach(async () => {
     await preLiquidate(cToken, liquidator, borrower, repayAmount, cTokenCollateral);
   });
@@ -82,9 +82,8 @@ describe('CToken', function () {
   describe('liquidateBorrowFresh', () => {
     it("fails if comptroller tells it to", async () => {
       await send(cToken.comptroller, 'setLiquidateBorrowAllowed', [false]);
-      expect(
-        await liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral)
-      ).toHaveTrollReject('LIQUIDATE_COMPTROLLER_REJECTION', 'MATH_ERROR');
+      await expect(liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral))
+        .rejects.toRevertWithCustomError('LiquidateComptrollerRejection', [11]);
     });
 
     it("proceeds if comptroller tells it to", async () => {
@@ -95,28 +94,26 @@ describe('CToken', function () {
 
     it("fails if market not fresh", async () => {
       await fastForward(cToken);
-      expect(
-        await liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral)
-      ).toHaveTokenFailure('MARKET_NOT_FRESH', 'LIQUIDATE_FRESHNESS_CHECK');
+      await expect(liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral))
+        .rejects.toRevertWithCustomError('LiquidateFreshnessCheck');
     });
 
     it("fails if collateral market not fresh", async () => {
       await fastForward(cToken);
       await fastForward(cTokenCollateral);
       await send(cToken, 'accrueInterest');
-      expect(
-        await liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral)
-      ).toHaveTokenFailure('MARKET_NOT_FRESH', 'LIQUIDATE_COLLATERAL_FRESHNESS_CHECK');
+      await expect(liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral))
+        .rejects.toRevertWithCustomError('LiquidateCollateralFreshnessCheck');
     });
 
     it("fails if borrower is equal to liquidator", async () => {
-      expect(
-        await liquidateFresh(cToken, borrower, borrower, repayAmount, cTokenCollateral)
-      ).toHaveTokenFailure('INVALID_ACCOUNT_PAIR', 'LIQUIDATE_LIQUIDATOR_IS_BORROWER');
+      await expect(liquidateFresh(cToken, borrower, borrower, repayAmount, cTokenCollateral))
+        .rejects.toRevertWithCustomError('LiquidateLiquidatorIsBorrower');
     });
 
     it("fails if repayAmount = 0", async () => {
-      expect(await liquidateFresh(cToken, liquidator, borrower, 0, cTokenCollateral)).toHaveTokenFailure('INVALID_CLOSE_AMOUNT_REQUESTED', 'LIQUIDATE_CLOSE_AMOUNT_IS_ZERO');
+      await expect(liquidateFresh(cToken, liquidator, borrower, 0, cTokenCollateral))
+        .rejects.toRevertWithCustomError('LiquidateCloseAmountIsZero');
     });
 
     it("fails if calculating seize tokens fails and does not adjust balances", async () => {
@@ -131,16 +128,15 @@ describe('CToken', function () {
 
     it("fails if repay fails", async () => {
       await send(cToken.comptroller, 'setRepayBorrowAllowed', [false]);
-      expect(
-        await liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral)
-      ).toHaveTrollReject('LIQUIDATE_REPAY_BORROW_FRESH_FAILED');
+      await expect(liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral))
+        .rejects.toRevertWithCustomError('RepayBorrowComptrollerRejection', [11]);
     });
 
     it("reverts if seize fails", async () => {
       await send(cToken.comptroller, 'setSeizeAllowed', [false]);
       await expect(
         liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral)
-      ).rejects.toRevert("revert token seizure failed");
+      ).rejects.toRevertWithCustomError('LiquidateSeizeComptrollerRejection', [11]);
     });
 
     xit("reverts if liquidateBorrowVerify fails", async() => {
@@ -202,7 +198,7 @@ describe('CToken', function () {
     });
 
     it("returns error from liquidateBorrowFresh without emitting any extra logs", async () => {
-      expect(await liquidate(cToken, liquidator, borrower, 0, cTokenCollateral)).toHaveTokenFailure('INVALID_CLOSE_AMOUNT_REQUESTED', 'LIQUIDATE_CLOSE_AMOUNT_IS_ZERO');
+      await expect(liquidate(cToken, liquidator, borrower, 0, cTokenCollateral)).rejects.toRevertWithCustomError('LiquidateCloseAmountIsZero');
     });
 
     it("returns success from liquidateBorrowFresh and transfers the correct amounts", async () => {
@@ -231,17 +227,17 @@ describe('CToken', function () {
 
     it("fails if seize is not allowed", async () => {
       await send(cToken.comptroller, 'setSeizeAllowed', [false]);
-      expect(await seize(cTokenCollateral, liquidator, borrower, seizeTokens)).toHaveTrollReject('LIQUIDATE_SEIZE_COMPTROLLER_REJECTION', 'MATH_ERROR');
+      await expect(seize(cTokenCollateral, liquidator, borrower, seizeTokens)).rejects.toRevertWithCustomError('LiquidateSeizeComptrollerRejection', [11]);
     });
 
     it("fails if cTokenBalances[borrower] < amount", async () => {
       await setBalance(cTokenCollateral, borrower, 1);
-      expect(await seize(cTokenCollateral, liquidator, borrower, seizeTokens)).toHaveTokenMathFailure('LIQUIDATE_SEIZE_BALANCE_DECREMENT_FAILED', 'INTEGER_UNDERFLOW');
+      await expect(seize(cTokenCollateral, liquidator, borrower, seizeTokens)).rejects.toRevert();
     });
 
     it("fails if cTokenBalances[liquidator] overflows", async () => {
       await setBalance(cTokenCollateral, liquidator, UInt256Max());
-      expect(await seize(cTokenCollateral, liquidator, borrower, seizeTokens)).toHaveTokenMathFailure('LIQUIDATE_SEIZE_BALANCE_INCREMENT_FAILED', 'INTEGER_OVERFLOW');
+      await expect(seize(cTokenCollateral, liquidator, borrower, seizeTokens)).rejects.toRevert();
     });
 
     it("succeeds, updates balances, adds to reserves, and emits Transfer and ReservesAdded events", async () => {
@@ -307,7 +303,7 @@ describe('Comptroller', () => {
 
     // show deprecated markets can be liquidated even if healthy
     expect(await send(comptroller, 'liquidateBorrowAllowed', [cTokenBorrow._address, cTokenCollat._address, liquidator, borrower, borrowAmount])).toSucceed();
-    
+
     // even if deprecated, cant over repay
     await expect(send(comptroller, 'liquidateBorrowAllowed', [cTokenBorrow._address, cTokenCollat._address, liquidator, borrower, borrowAmount * 2])).rejects.toRevert('revert Can not repay more than the total borrow');
   });

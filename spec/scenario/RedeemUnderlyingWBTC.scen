@@ -45,7 +45,7 @@ Test "Mint then Redeem Too Much"
     FastForward 2 Blocks
     AllowFailures
     RedeemUnderlying Geoff 50.1e8 cWBTC
-    Assert Failure MATH_ERROR REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED "3"
+    Assert Revert
 
 Test "Mint then Redeem Zero"
     NewComptroller

@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.10;
 
 import "./CEther.sol";
 
@@ -38,10 +39,10 @@ contract Maximillion {
         uint received = msg.value;
         uint borrows = cEther_.borrowBalanceCurrent(borrower);
         if (received > borrows) {
-            cEther_.repayBorrowBehalf.value(borrows)(borrower);
-            msg.sender.transfer(received - borrows);
+            cEther_.repayBorrowBehalf{value: borrows}(borrower);
+            payable(msg.sender).transfer(received - borrows);
         } else {
-            cEther_.repayBorrowBehalf.value(received)(borrower);
+            cEther_.repayBorrowBehalf{value: received}(borrower);
         }
     }
 }

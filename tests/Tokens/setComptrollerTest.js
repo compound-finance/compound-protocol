@@ -16,21 +16,22 @@ describe('CToken', function () {
 
   describe('_setComptroller', () => {
     it("should fail if called by non-admin", async () => {
-      expect(
-        await send(cToken, '_setComptroller', [newComptroller._address], { from: accounts[0] })
-      ).toHaveTokenFailure('UNAUTHORIZED', 'SET_COMPTROLLER_OWNER_CHECK');
+      await expect(send(cToken, '_setComptroller', [newComptroller._address], { from: accounts[0] }))
+        .rejects.toRevertWithCustomError('SetComptrollerOwnerCheck');
       expect(await call(cToken, 'comptroller')).toEqual(oldComptroller._address);
     });
 
     it("reverts if passed a contract that doesn't implement isComptroller", async () => {
-      await expect(send(cToken, '_setComptroller', [cToken.underlying._address])).rejects.toRevert("revert");
+      await expect(send(cToken, '_setComptroller', [cToken.underlying._address]))
+        .rejects.toRevert("revert");
       expect(await call(cToken, 'comptroller')).toEqual(oldComptroller._address);
     });
 
     it("reverts if passed a contract that implements isComptroller as false", async () => {
       // extremely unlikely to occur, of course, but let's be exhaustive
       const badComptroller = await makeComptroller({ kind: 'false-marker' });
-      await expect(send(cToken, '_setComptroller', [badComptroller._address])).rejects.toRevert("revert marker method returned false");
+      await expect(send(cToken, '_setComptroller', [badComptroller._address]))
+        .rejects.toRevert("revert marker method returned false");
       expect(await call(cToken, 'comptroller')).toEqual(oldComptroller._address);
     });
 

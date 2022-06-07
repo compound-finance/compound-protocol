@@ -44,7 +44,7 @@ Test "Mint then Redeem Too Much"
     RedeemUnderlyingEth Geoff 0.0055e18 cETH
     -- TODO: This should really be REDEEM_NEW_ACCOUNT_BALANCE_CALCULATION_FAILED, but based on
     -- the order of subtractions, total supply comes before account supply.
-    Assert Failure MATH_ERROR REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED "3" -- TODO: This error is wrong
+    Assert Revert
 
 Test "Mint then Redeem Zero"
     NewComptroller

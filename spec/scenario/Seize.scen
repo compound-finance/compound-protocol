@@ -9,7 +9,7 @@ Test "Fail to seize calling directly"
     AllowFailures
     Seize 1e9 cZRX caller:Geoff liquidator:Geoff borrower:Torrey
     -- The caller must be from another cToken market, thus this fails
-    Assert Failure COMPTROLLER_REJECTION LIQUIDATE_SEIZE_COMPTROLLER_REJECTION MARKET_NOT_LISTED
+    Assert RevertCustomError LiquidateSeizeComptrollerRejection 9
 
 Test "Seize tokens with a paused WBTC cToken-- like normal"
     NewComptroller
@@ -22,7 +22,7 @@ Test "Seize tokens with a paused WBTC cToken-- like normal"
     AllowFailures
     Seize 1e9 cWBTC caller:Geoff liquidator:Geoff borrower:Torrey
     -- The caller must be from another cToken market, thus this fails
-    Assert Failure COMPTROLLER_REJECTION LIQUIDATE_SEIZE_COMPTROLLER_REJECTION MARKET_NOT_LISTED
+    Assert RevertCustomError LiquidateSeizeComptrollerRejection 9
 
 Test "Not able to seize tokens with a malicious unlisted cToken"
     NewComptroller
@@ -36,7 +36,7 @@ Test "Not able to seize tokens with a malicious unlisted cToken"
     AllowFailures
     EvilSeize cEVL 1e9 cZRX seizer:Geoff seizee:Torrey
     -- The caller must be from another cToken market, thus this fails
-    Assert Failure COMPTROLLER_REJECTION LIQUIDATE_SEIZE_COMPTROLLER_REJECTION MARKET_NOT_LISTED
+    Assert RevertCustomError LiquidateSeizeComptrollerRejection 9
 
 Test "Able to seize tokens with a malicious listed cToken"
     NewComptroller

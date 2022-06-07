@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.10;
 
 import "./CErc20.sol";
 
@@ -26,9 +27,9 @@ contract CErc20Immutable is CErc20 {
                 string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
-                address payable admin_) public {
+                address payable admin_) {
         // Creator of the contract is admin during initialization
-        admin = msg.sender;
+        admin = payable(msg.sender);
 
         // Initialize the market
         initialize(underlying_, comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);

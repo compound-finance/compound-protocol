@@ -90,4 +90,4 @@ Test "Denied by comptroller because WBTC unlisted"
     Invariant Static (Erc20 WBTC TotalSupply)
     AllowFailures
     Mint Geoff 2e8 cWBTC
-    Assert Failure COMPTROLLER_REJECTION MINT_COMPTROLLER_REJECTION MARKET_NOT_LISTED
+    Assert RevertCustomError MintComptrollerRejection 9

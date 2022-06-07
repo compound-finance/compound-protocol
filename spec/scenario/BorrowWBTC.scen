@@ -27,7 +27,7 @@ Test "Borrow some WBTC fails when no WBTC available"
     Invariant Static (CToken cZRX ExchangeRateStored)
     AllowFailures
     Borrow Geoff 1e8 cWBTC
-    Assert Failure TOKEN_INSUFFICIENT_CASH BORROW_CASH_NOT_AVAILABLE
+    Assert RevertCustomError BorrowCashNotAvailable
 
 Test "Borrow some WBTC fails when WBTC paused"
     NewComptroller price:1.0

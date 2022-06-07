@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.10;
 
 import "./ERC20.sol";
 
@@ -8,7 +9,7 @@ import "./ERC20.sol";
  * @notice A simple test token that lets anyone get more of it.
  */
 contract FaucetToken is StandardToken {
-    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol) public
+    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol)
         StandardToken(_initialAmount, _tokenName, _decimalUnits, _tokenSymbol) {
     }
 
@@ -25,7 +26,7 @@ contract FaucetToken is StandardToken {
  * @notice A simple test token that lets anyone get more of it.
  */
 contract FaucetNonStandardToken is NonStandardToken {
-    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol) public
+    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol)
         NonStandardToken(_initialAmount, _tokenName, _decimalUnits, _tokenSymbol) {
     }
 
@@ -57,7 +58,7 @@ contract FaucetTokenReEntrantHarness {
     bytes public reEntryCallData;
     string public reEntryFun;
 
-    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol, bytes memory _reEntryCallData, string memory _reEntryFun) public {
+    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol, bytes memory _reEntryCallData, string memory _reEntryFun) {
         totalSupply_ = _initialAmount;
         balanceOf_[msg.sender] = _initialAmount;
         name = _tokenName;

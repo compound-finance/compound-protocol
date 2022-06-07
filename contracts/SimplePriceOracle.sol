@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.10;
 
 import "./PriceOracle.sol";
 import "./CErc20.sol";
@@ -17,7 +18,7 @@ contract SimplePriceOracle is PriceOracle {
         return asset;
     }
 
-    function getUnderlyingPrice(CToken cToken) public view returns (uint) {
+    function getUnderlyingPrice(CToken cToken) public override view returns (uint) {
         return prices[_getUnderlyingAddress(cToken)];
     }
 

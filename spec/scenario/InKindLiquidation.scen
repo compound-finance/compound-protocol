@@ -38,7 +38,7 @@ Test "Insufficient in-kind shortfall"
     Prep Torrey 10e18 BAT cBAT
     AllowFailures
     Liquidate Torrey "->" Geoff 10e18 cBAT "Seizing" cBAT
-    Assert Failure COMPTROLLER_REJECTION LIQUIDATE_COMPTROLLER_REJECTION INSUFFICIENT_SHORTFALL
+    Assert RevertCustomError LiquidateComptrollerRejection 3
 
 Test "Cannot self-in-kind-liquidate"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
@@ -67,7 +67,7 @@ Test "Cannot self-in-kind-liquidate"
     Prep Geoff 10e18 BAT cBAT
     AllowFailures
     Liquidate Geoff "->" Geoff 2e18 cBAT "Seizing" cBAT
-    Assert Failure INVALID_ACCOUNT_PAIR LIQUIDATE_LIQUIDATOR_IS_BORROWER
+    Assert RevertCustomError LiquidateLiquidatorIsBorrower
 
 Test "Liqidate in-kind beyond max close"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
@@ -96,7 +96,7 @@ Test "Liqidate in-kind beyond max close"
     Prep Torrey 20e18 BAT cBAT
     AllowFailures
     Liquidate Torrey "->" Geoff 20e18 cBAT "Seizing" cBAT
-    Assert Failure COMPTROLLER_REJECTION LIQUIDATE_COMPTROLLER_REJECTION TOO_MUCH_REPAY
+    Assert RevertCustomError LiquidateComptrollerRejection 17
 
 Test "Proper In-Kind Liquidation"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
@@ -181,7 +181,7 @@ Test "Liquidate exactly zero"
     Prep Torrey 10e18 BAT cBAT
     AllowFailures
     Liquidate Torrey "->" Geoff 0e18 cBAT "Seizing" cBAT
-    Assert Failure INVALID_CLOSE_AMOUNT_REQUESTED LIQUIDATE_CLOSE_AMOUNT_IS_ZERO
+    Assert RevertCustomError LiquidateCloseAmountIsZero
 
 Test "When price oracle for collateral token is zero"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
@@ -211,7 +211,7 @@ Test "When price oracle for collateral token is zero"
     PriceOracle SetPrice cBAT 0
     AllowFailures
     Liquidate Torrey "->" Geoff 2e18 cBAT "Seizing" cBAT
-    Assert Failure COMPTROLLER_REJECTION LIQUIDATE_COMPTROLLER_REJECTION PRICE_ERROR
+    Assert RevertCustomError LiquidateComptrollerRejection 13
 
 Test "When price oracle for collateral token is whack"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
@@ -241,7 +241,7 @@ Test "When price oracle for collateral token is whack"
     PriceOracle SetPrice cBAT 1.15792e59
     AllowFailures
     Liquidate Torrey "->" Geoff 2e18 cBAT "Seizing" cBAT
-    Assert Revert "revert multiplication overflow"
+    Assert Revert -- Multiplication Overflow
 
 Test "When repay borrow fails"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
@@ -343,7 +343,7 @@ Test "When seize not allowed due to unlisted collateral"
     Comptroller UnList cBAT -- Mock unlist collateral
     AllowFailures
     Liquidate Torrey "->" Geoff 2e18 cBAT "Seizing" cBAT
-    Assert Failure COMPTROLLER_REJECTION LIQUIDATE_COMPTROLLER_REJECTION MARKET_NOT_LISTED
+    Assert RevertCustomError LiquidateComptrollerRejection 9
 
 Test "When seize not allowed due to unlisted borrow"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
@@ -371,7 +371,7 @@ Test "When seize not allowed due to unlisted borrow"
     Comptroller UnList cBAT -- Mock unlist borrow
     AllowFailures
     Liquidate Torrey "->" Geoff 2e18 cBAT "Seizing" cBAT
-    Assert Failure COMPTROLLER_REJECTION LIQUIDATE_COMPTROLLER_REJECTION MARKET_NOT_LISTED
+    Assert RevertCustomError LiquidateComptrollerRejection 9
 
 Test "When there's insufficient collateral"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005

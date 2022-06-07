@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.10;
 
 import "../../contracts/CEther.sol";
 import "./ComptrollerScenario.sol";
@@ -23,21 +24,21 @@ contract CEtherHarness is CEther {
     name_,
     symbol_,
     decimals_,
-    admin_) public {}
+    admin_) {}
 
-    function doTransferOut(address payable to, uint amount) internal {
+    function doTransferOut(address payable to, uint amount) override internal {
         require(failTransferToAddresses[to] == false, "TOKEN_TRANSFER_OUT_FAILED");
         return super.doTransferOut(to, amount);
     }
 
-    function exchangeRateStoredInternal() internal view returns (MathError, uint) {
+    function exchangeRateStoredInternal() override internal view returns (uint) {
         if (harnessExchangeRate != 0) {
-            return (MathError.NO_ERROR, harnessExchangeRate);
+            return harnessExchangeRate;
         }
         return super.exchangeRateStoredInternal();
     }
 
-    function getBlockNumber() internal view returns (uint) {
+    function getBlockNumber() override internal view returns (uint) {
         return blockNumber;
     }
 
@@ -84,12 +85,13 @@ contract CEtherHarness is CEther {
     }
 
     function harnessMintFresh(address account, uint mintAmount) public returns (uint) {
-        (uint err,) = super.mintFresh(account, mintAmount);
-        return err;
+        super.mintFresh(account, mintAmount);
+        return NO_ERROR;
     }
 
     function harnessRedeemFresh(address payable account, uint cTokenAmount, uint underlyingAmount) public returns (uint) {
-        return super.redeemFresh(account, cTokenAmount, underlyingAmount);
+        super.redeemFresh(account, cTokenAmount, underlyingAmount);
+        return NO_ERROR;
     }
 
     function harnessAccountBorrows(address account) public view returns (uint principal, uint interestIndex) {
@@ -106,17 +108,18 @@ contract CEtherHarness is CEther {
     }
 
     function harnessBorrowFresh(address payable account, uint borrowAmount) public returns (uint) {
-        return borrowFresh(account, borrowAmount);
+        borrowFresh(account, borrowAmount);
+        return NO_ERROR;
     }
 
     function harnessRepayBorrowFresh(address payer, address account, uint repayBorrowAmount) public payable returns (uint) {
-        (uint err,) = repayBorrowFresh(payer, account, repayBorrowAmount);
-        return err;
+        repayBorrowFresh(payer, account, repayBorrowAmount);
+        return NO_ERROR;
     }
 
     function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CToken cTokenCollateral) public returns (uint) {
-        (uint err,) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
-        return err;
+        liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
+        return NO_ERROR;
     }
 
     function harnessReduceReservesFresh(uint amount) public returns (uint) {
@@ -150,10 +153,6 @@ contract CEtherHarness is CEther {
     function harnessDoTransferOut(address payable to, uint amount) public payable {
         return doTransferOut(to, amount);
     }
-
-    function harnessRequireNoError(uint error, string calldata message) external pure {
-        requireNoError(error, message);
-    }
 }
 
 contract CEtherScenario is CEther {
@@ -172,7 +171,7 @@ contract CEtherScenario is CEther {
                name_,
                symbol_,
                decimals_,
-               admin_) public {
+               admin_) {
     }
 
     function setTotalBorrows(uint totalBorrows_) public {
@@ -187,7 +186,7 @@ contract CEtherScenario is CEther {
         // no-op
     }
 
-    function getBlockNumber() internal view returns (uint) {
+    function getBlockNumber() override internal view returns (uint) {
         ComptrollerScenario comptrollerScenario = ComptrollerScenario(address(comptroller));
         return comptrollerScenario.blockNumber();
     }

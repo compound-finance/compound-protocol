@@ -1,5 +1,5 @@
-pragma solidity ^0.5.16;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.10;
 
 import "../../contracts/Governance/GovernorBravoDelegate.sol";
 
@@ -11,11 +11,11 @@ contract GovernorBravoDelegateHarness is GovernorBravoDelegate {
         proposalCount = 1;
         initialProposalId = 1;
     }
-    
-    function initialize(address timelock_, address comp_, uint votingPeriod_, uint votingDelay_, uint proposalThreshold_) public {
+
+    function initialize(address timelock_, address comp_, uint votingPeriod_, uint votingDelay_, uint proposalThreshold_) override public {
         require(msg.sender == admin, "GovernorBravo::initialize: admin only");
         require(address(timelock) == address(0), "GovernorBravo::initialize: can only initialize once");
-        
+
         timelock = TimelockInterface(timelock_);
         comp = CompInterface(comp_);
         votingPeriod = votingPeriod_;

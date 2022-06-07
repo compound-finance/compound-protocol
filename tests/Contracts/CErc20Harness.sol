@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.10;
 
 import "../../contracts/CErc20Immutable.sol";
 import "../../contracts/CErc20Delegator.sol";
@@ -29,21 +30,21 @@ contract CErc20Harness is CErc20Immutable {
     name_,
     symbol_,
     decimals_,
-    admin_) public {}
+    admin_) {}
 
-    function doTransferOut(address payable to, uint amount) internal {
+    function doTransferOut(address payable to, uint amount) override internal {
         require(failTransferToAddresses[to] == false, "TOKEN_TRANSFER_OUT_FAILED");
         return super.doTransferOut(to, amount);
     }
 
-    function exchangeRateStoredInternal() internal view returns (MathError, uint) {
+    function exchangeRateStoredInternal() override internal view returns (uint) {
         if (harnessExchangeRateStored) {
-            return (MathError.NO_ERROR, harnessExchangeRate);
+            return harnessExchangeRate;
         }
         return super.exchangeRateStoredInternal();
     }
 
-    function getBlockNumber() internal view returns (uint) {
+    function getBlockNumber() override internal view returns (uint) {
         return blockNumber;
     }
 
@@ -95,12 +96,13 @@ contract CErc20Harness is CErc20Immutable {
     }
 
     function harnessMintFresh(address account, uint mintAmount) public returns (uint) {
-        (uint err,) = super.mintFresh(account, mintAmount);
-        return err;
+        super.mintFresh(account, mintAmount);
+        return NO_ERROR;
     }
 
     function harnessRedeemFresh(address payable account, uint cTokenAmount, uint underlyingAmount) public returns (uint) {
-        return super.redeemFresh(account, cTokenAmount, underlyingAmount);
+        super.redeemFresh(account, cTokenAmount, underlyingAmount);
+        return NO_ERROR;
     }
 
     function harnessAccountBorrows(address account) public view returns (uint principal, uint interestIndex) {
@@ -117,17 +119,18 @@ contract CErc20Harness is CErc20Immutable {
     }
 
     function harnessBorrowFresh(address payable account, uint borrowAmount) public returns (uint) {
-        return borrowFresh(account, borrowAmount);
+        borrowFresh(account, borrowAmount);
+        return NO_ERROR;
     }
 
     function harnessRepayBorrowFresh(address payer, address account, uint repayAmount) public returns (uint) {
-        (uint err,) = repayBorrowFresh(payer, account, repayAmount);
-        return err;
+        repayBorrowFresh(payer, account, repayAmount);
+        return NO_ERROR;
     }
 
     function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CToken cTokenCollateral) public returns (uint) {
-        (uint err,) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
-        return err;
+        liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
+        return NO_ERROR;
     }
 
     function harnessReduceReservesFresh(uint amount) public returns (uint) {
@@ -168,7 +171,7 @@ contract CErc20Scenario is CErc20Immutable {
     name_,
     symbol_,
     decimals_,
-    admin_) public {}
+    admin_) {}
 
     function setTotalBorrows(uint totalBorrows_) public {
         totalBorrows = totalBorrows_;
@@ -178,7 +181,7 @@ contract CErc20Scenario is CErc20Immutable {
         totalReserves = totalReserves_;
     }
 
-    function getBlockNumber() internal view returns (uint) {
+    function getBlockNumber() override internal view returns (uint) {
         ComptrollerScenario comptrollerScenario = ComptrollerScenario(address(comptroller));
         return comptrollerScenario.blockNumber();
     }
@@ -201,7 +204,7 @@ contract CEvil is CErc20Scenario {
     name_,
     symbol_,
     decimals_,
-    admin_) public {}
+    admin_) {}
 
     function evilSeize(CToken treasure, address liquidator, address borrower, uint seizeTokens) public returns (uint) {
         return treasure.seize(liquidator, borrower, seizeTokens);
@@ -229,7 +232,7 @@ contract CErc20DelegatorScenario is CErc20Delegator {
     decimals_,
     admin_,
     implementation_,
-    becomeImplementationData) public {}
+    becomeImplementationData) {}
 
     function setTotalBorrows(uint totalBorrows_) public {
         totalBorrows = totalBorrows_;
@@ -250,19 +253,19 @@ contract CErc20DelegateHarness is CErc20Delegate {
 
     mapping (address => bool) public failTransferToAddresses;
 
-    function exchangeRateStoredInternal() internal view returns (MathError, uint) {
+    function exchangeRateStoredInternal() override internal view returns (uint) {
         if (harnessExchangeRateStored) {
-            return (MathError.NO_ERROR, harnessExchangeRate);
+            return harnessExchangeRate;
         }
         return super.exchangeRateStoredInternal();
     }
 
-    function doTransferOut(address payable to, uint amount) internal {
+    function doTransferOut(address payable to, uint amount) override internal {
         require(failTransferToAddresses[to] == false, "TOKEN_TRANSFER_OUT_FAILED");
         return super.doTransferOut(to, amount);
     }
 
-    function getBlockNumber() internal view returns (uint) {
+    function getBlockNumber() override internal view returns (uint) {
         return blockNumber;
     }
 
@@ -318,12 +321,13 @@ contract CErc20DelegateHarness is CErc20Delegate {
     }
 
     function harnessMintFresh(address account, uint mintAmount) public returns (uint) {
-        (uint err,) = super.mintFresh(account, mintAmount);
-        return err;
+        super.mintFresh(account, mintAmount);
+        return NO_ERROR;
     }
 
     function harnessRedeemFresh(address payable account, uint cTokenAmount, uint underlyingAmount) public returns (uint) {
-        return super.redeemFresh(account, cTokenAmount, underlyingAmount);
+        super.redeemFresh(account, cTokenAmount, underlyingAmount);
+        return NO_ERROR;
     }
 
     function harnessAccountBorrows(address account) public view returns (uint principal, uint interestIndex) {
@@ -340,17 +344,18 @@ contract CErc20DelegateHarness is CErc20Delegate {
     }
 
     function harnessBorrowFresh(address payable account, uint borrowAmount) public returns (uint) {
-        return borrowFresh(account, borrowAmount);
+        borrowFresh(account, borrowAmount);
+        return NO_ERROR;
     }
 
     function harnessRepayBorrowFresh(address payer, address account, uint repayAmount) public returns (uint) {
-        (uint err,) = repayBorrowFresh(payer, account, repayAmount);
-        return err;
+        repayBorrowFresh(payer, account, repayAmount);
+        return NO_ERROR;
     }
 
     function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CToken cTokenCollateral) public returns (uint) {
-        (uint err,) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
-        return err;
+        liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
+        return NO_ERROR;
     }
 
     function harnessReduceReservesFresh(uint amount) public returns (uint) {
@@ -375,7 +380,7 @@ contract CErc20DelegateHarness is CErc20Delegate {
 }
 
 contract CErc20DelegateScenario is CErc20Delegate {
-    constructor() public {}
+    constructor() {}
 
     function setTotalBorrows(uint totalBorrows_) public {
         totalBorrows = totalBorrows_;
@@ -385,7 +390,7 @@ contract CErc20DelegateScenario is CErc20Delegate {
         totalReserves = totalReserves_;
     }
 
-    function getBlockNumber() internal view returns (uint) {
+    function getBlockNumber() override internal view returns (uint) {
         ComptrollerScenario comptrollerScenario = ComptrollerScenario(address(comptroller));
         return comptrollerScenario.blockNumber();
     }
@@ -397,7 +402,7 @@ contract CErc20DelegateScenarioExtra is CErc20DelegateScenario {
     }
 
     function itIsTheWay() public {
-      admin = address(1); // make a change to test effect
+      admin = payable(address(1)); // make a change to test effect
     }
 
     function babyYoda() public pure {
@@ -435,7 +440,7 @@ contract CDaiDelegateHarness is CDaiDelegate {
         totalSupply = totalSupply_;
     }
 
-    function getBlockNumber() internal view returns (uint) {
+    function getBlockNumber() override internal view returns (uint) {
         return blockNumber;
     }
 }
@@ -449,7 +454,7 @@ contract CDaiDelegateScenario is CDaiDelegate {
         totalReserves = totalReserves_;
     }
 
-    function getBlockNumber() internal view returns (uint) {
+    function getBlockNumber() override internal view returns (uint) {
         ComptrollerScenario comptrollerScenario = ComptrollerScenario(address(comptroller));
         return comptrollerScenario.blockNumber();
     }
@@ -459,35 +464,35 @@ contract CDaiDelegateMakerHarness is PotLike, VatLike, GemLike, DaiJoinLike {
     /* Pot */
 
     // exchangeRate
-    function chi() external view returns (uint) { return 1; }
+    function chi() override external view returns (uint) { return 1; }
 
     // totalSupply
-    function pie(address) external view returns (uint) { return 0; }
+    function pie(address) override external view returns (uint) { return 0; }
 
     // accrueInterest -> new exchangeRate
-    function drip() external returns (uint) { return 0; }
+    function drip() override external returns (uint) { return 0; }
 
     // mint
-    function join(uint) external {}
+    function join(uint) override external {}
 
     // redeem
-    function exit(uint) external {}
+    function exit(uint) override external {}
 
     /* Vat */
 
     // internal dai balance
-    function dai(address) external view returns (uint) { return 0; }
+    function dai(address) override external view returns (uint) { return 0; }
 
     // approve pot transfer
-    function hope(address) external {}
+    function hope(address) override external {}
 
     /* Gem (Dai) */
 
     uint public totalSupply;
     mapping (address => mapping (address => uint)) public allowance;
-    mapping (address => uint) public balanceOf;
-    function approve(address, uint) external {}
-    function transferFrom(address src, address dst, uint amount) external returns (bool) {
+    mapping (address => uint) override public balanceOf;
+    function approve(address, uint) override external {}
+    function transferFrom(address src, address dst, uint amount) override external returns (bool) {
         balanceOf[src] -= amount;
         balanceOf[dst] += amount;
         return true;
@@ -500,14 +505,14 @@ contract CDaiDelegateMakerHarness is PotLike, VatLike, GemLike, DaiJoinLike {
     /* DaiJoin */
 
     // vat contract
-    function vat() external returns (VatLike) { return this; }
+    function vat() override external returns (VatLike) { return this; }
 
     // dai contract
-    function dai() external returns (GemLike) { return this; }
+    function dai() override external returns (GemLike) { return this; }
 
     // dai -> internal dai
-    function join(address, uint) external payable {}
+    function join(address, uint) override external payable {}
 
     // internal dai transfer out
-    function exit(address, uint) external {}
+    function exit(address, uint) override external {}
 }

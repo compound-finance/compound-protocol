@@ -36,8 +36,10 @@ scenario/build/webpack.js
 scenario/.tscache
 script/certora
 tests/scenarios/
+tests/Scenarios/
 junit.xml
 .build
 .last_confs
 .saddle_history
 node_modules_tmp
+.idea

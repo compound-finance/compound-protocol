@@ -62,7 +62,7 @@ Test "Mint WBTC then Redeem Too Much"
     FastForward 2 Blocks
     AllowFailures
     Redeem Geoff 501e8 cWBTC
-    Assert Failure MATH_ERROR REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED "3"
+    Assert Revert
 
 Test "Mint WBTC then Redeem Zero"
     NewComptroller
@@ -206,7 +206,7 @@ Test "Mint WBTC, Enter, then Redeem Too Much (collateral factor: 0)"
     EnterMarkets Geoff cWBTC
     AllowFailures
     Redeem Geoff 501e8 cWBTC
-    Assert Failure MATH_ERROR REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED "3"
+    Assert Revert
 
 Test "Mint WBTC, Enter, then Redeem Too Much (collateral factor: 0.1)"
     NewComptroller
@@ -223,4 +223,4 @@ Test "Mint WBTC, Enter, then Redeem Too Much (collateral factor: 0.1)"
     EnterMarkets Geoff cWBTC
     AllowFailures
     Redeem Geoff 501e8 cWBTC
-    Assert Failure COMPTROLLER_REJECTION REDEEM_COMPTROLLER_REJECTION INSUFFICIENT_LIQUIDITY
+    Assert RevertCustomError RedeemComptrollerRejection 4

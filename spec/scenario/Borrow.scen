@@ -17,7 +17,8 @@ Test "Borrow some BAT and enters BAT if BAT not entered"
     Assert True (Comptroller CheckMembership Geoff cZRX)
     Assert True (Comptroller CheckMembership Geoff cBAT)
 
-Test "Borrow some BAT fails, but user still entered"
+-- Now that we revert instead of returning failures, the user does not get marked as entered
+Test "Borrow some BAT fails, user not entered"
     NewComptroller price:1.0
     NewCToken ZRX cZRX
     NewCToken BAT cBAT
@@ -30,10 +31,10 @@ Test "Borrow some BAT fails, but user still entered"
     Invariant Static (Erc20 BAT TokenBalance cBAT)
     AllowFailures
     Borrow Geoff 1e18 cBAT
-    Assert Failure TOKEN_INSUFFICIENT_CASH BORROW_CASH_NOT_AVAILABLE
-    Assert Equal (Comptroller MembershipLength Geoff) (Exactly 2)
+    Assert RevertCustomError BorrowCashNotAvailable
+    Assert Equal (Comptroller MembershipLength Geoff) (Exactly 1)
     Assert True (Comptroller CheckMembership Geoff cZRX)
-    Assert True (Comptroller CheckMembership Geoff cBAT)
+    Assert False (Comptroller CheckMembership Geoff cBAT)
 
 Test "Borrow some BAT fails when no BAT available"
     NewComptroller price:1.0
@@ -47,7 +48,7 @@ Test "Borrow some BAT fails when no BAT available"
     Invariant Static (CToken cZRX ExchangeRateStored)
     AllowFailures
     Borrow Geoff 1e18 cBAT
-    Assert Failure TOKEN_INSUFFICIENT_CASH BORROW_CASH_NOT_AVAILABLE
+    Assert RevertCustomError BorrowCashNotAvailable
 
 Test "Borrow fails if market not listed"
     NewComptroller price:1.0
@@ -60,7 +61,7 @@ Test "Borrow fails if market not listed"
     EnterMarkets Geoff cZRX
     AllowFailures
     Borrow Geoff 1e18 cBAT
-    Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION MARKET_NOT_LISTED
+    Assert RevertCustomError BorrowComptrollerRejection 9
 
 Test "Borrow some BAT from Excess Cash"
     Invariant Success

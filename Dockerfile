@@ -1,7 +1,7 @@
 FROM mhart/alpine-node:13.8.0
 
 RUN apk update && apk add --no-cache --virtual build-dependencies git python g++ make
-RUN wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /bin/solc && chmod +x /bin/solc
+RUN wget https://github.com/ethereum/solidity/releases/download/v0.8.10/solc-static-linux -O /bin/solc && chmod +x /bin/solc
 
 RUN mkdir -p /compound-protocol
 WORKDIR /compound-protocol

@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.10;
 
 import "./FaucetToken.sol";
 
@@ -8,6 +9,8 @@ import "./FaucetToken.sol";
   * @notice A simple test token that charges fees on transfer. Used to mock USDT.
   */
 contract FeeToken is FaucetToken {
+    using SafeMath for uint256;
+
     uint public basisPointFee;
     address public owner;
 
@@ -18,12 +21,12 @@ contract FeeToken is FaucetToken {
         string memory _tokenSymbol,
         uint _basisPointFee,
         address _owner
-    ) FaucetToken(_initialAmount, _tokenName, _decimalUnits, _tokenSymbol) public {
+    ) FaucetToken(_initialAmount, _tokenName, _decimalUnits, _tokenSymbol) {
         basisPointFee = _basisPointFee;
         owner = _owner;
     }
 
-    function transfer(address dst, uint amount) public returns (bool) {
+    function transfer(address dst, uint amount) override public returns (bool) {
         uint fee = amount.mul(basisPointFee).div(10000);
         uint net = amount.sub(fee);
         balanceOf[owner] = balanceOf[owner].add(fee);
@@ -33,7 +36,7 @@ contract FeeToken is FaucetToken {
         return true;
     }
 
-    function transferFrom(address src, address dst, uint amount) public returns (bool) {
+    function transferFrom(address src, address dst, uint amount) override public returns (bool) {
         uint fee = amount.mul(basisPointFee).div(10000);
         uint net = amount.sub(fee);
         balanceOf[owner] = balanceOf[owner].add(fee);

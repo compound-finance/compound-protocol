@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity ^0.8.10;
 
 import "../../../contracts/Maximillion.sol";
 
@@ -13,7 +13,7 @@ contract MaximillionCertora is Maximillion {
         return account.balance;
     }
 
-    function repayBehalf(address borrower) public payable {
+    function repayBehalf(address borrower) override public payable {
         return super.repayBehalf(borrower);
     }
 }

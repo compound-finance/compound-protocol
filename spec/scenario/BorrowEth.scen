@@ -31,7 +31,7 @@ Test "Borrow some ETH fails when no ETH available"
     Invariant Static (Comptroller Liquidity Geoff)
     Invariant Static (EtherBalance Geoff)
     BorrowEth Geoff 1e18 cETH
-    Assert Failure TOKEN_INSUFFICIENT_CASH BORROW_CASH_NOT_AVAILABLE
+    Assert RevertCustomError BorrowCashNotAvailable
 
 Test "Borrow some ETH from excess cash"
     NewComptroller price:1.0

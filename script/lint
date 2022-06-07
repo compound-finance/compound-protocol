@@ -5,5 +5,4 @@ set -eo pipefail
 DIR=`dirname $0`
 PROJ_ROOT="$DIR/.."
 
-"$PROJ_ROOT/node_modules/.bin/solium" -d "$PROJ_ROOT/tests"
-"$PROJ_ROOT/node_modules/.bin/solium" -d "$PROJ_ROOT/contracts"
+"$PROJ_ROOT/node_modules/.bin/solhint" "$PROJ_ROOT/{tests,contracts}/**/*.sol"

@@ -62,7 +62,7 @@ Test "Mint then Redeem Too Much"
     FastForward 2 Blocks
     AllowFailures
     Redeem Geoff 501e8 cZRX
-    Assert Failure MATH_ERROR REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED "3"
+    Assert Revert
 
 Test "Mint then Redeem Zero"
     NewComptroller
@@ -207,7 +207,7 @@ Test "Mint, Enter, then Redeem Too Much (collateral factor: 0)"
     EnterMarkets Geoff cZRX
     AllowFailures
     Redeem Geoff 501e8 cZRX
-    Assert Failure MATH_ERROR REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED "3"
+    Assert Revert
 
 Test "Mint, Enter, then Redeem Too Much (collateral factor: 0.1)"
     NewComptroller
@@ -224,4 +224,4 @@ Test "Mint, Enter, then Redeem Too Much (collateral factor: 0.1)"
     EnterMarkets Geoff cZRX
     AllowFailures
     Redeem Geoff 501e8 cZRX
-    Assert Failure COMPTROLLER_REJECTION REDEEM_COMPTROLLER_REJECTION INSUFFICIENT_LIQUIDITY
+    Assert RevertCustomError RedeemComptrollerRejection 4

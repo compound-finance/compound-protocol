@@ -1,7 +1,7 @@
 import { Event } from '../Event';
 import { fail, World } from '../World';
 import { getCoreValue } from '../CoreValue';
-import { Failure, InvokationRevertFailure } from '../Invokation';
+import { Failure, InvokationRevertCustomError, InvokationRevertFailure } from '../Invokation';
 import {
   getEventV,
   getMapV,
@@ -20,6 +20,7 @@ import {
   Value
 } from '../Value';
 import { Arg, View, processCommandEvent } from '../Command';
+import { rawValues } from '../Utils';
 
 async function assertApprox(world: World, given: NumberV, expected: NumberV, tolerance: NumberV): Promise<World> {
   if (Math.abs(Number(expected.sub(given).div(expected).val)) > Number(tolerance.val)) {
@@ -115,6 +116,44 @@ async function assertRevertFailure(world: World, err: string, message: string): 
 
   if (world.lastInvokation.error.error !== err || world.lastInvokation.error.errMessage !== expectedMessage) {
     throw new Error(`Invokation error mismatch, expected revert failure: err=${err}, message="${expectedMessage}", got: "${world.lastInvokation.error.toString()}"`);
+  }
+
+  return world;
+}
+
+async function assertRevertCustomError(world: World, err: string, args: unknown[]): Promise<World> {
+  if (world.network === 'coverage') { // coverage doesn't have detailed message, thus no revert failures
+    return await assertRevert(world, "revert");
+  }
+
+  if (!world.lastInvokation) {
+    return fail(world, `Expected revert failure, but missing any invokations.`);
+  }
+
+  if (world.lastInvokation.success()) {
+    return fail(world, `Expected revert failure, but last invokation was successful with result ${JSON.stringify(world.lastInvokation.value)}.`);
+  }
+
+  if (world.lastInvokation.failures.length > 0) {
+    return fail(world, `Expected revert failure, but got ${world.lastInvokation.failures.toString()}.`);
+  }
+
+  if (!world.lastInvokation.error) {
+    throw new Error(`Invokation requires success, failure or error, got: ${world.lastInvokation.toString()}`);
+  }
+
+  if (!(world.lastInvokation.error instanceof InvokationRevertCustomError)) {
+    throw new Error(`Invokation error mismatch, expected revert custom error: "${err}", got: "${world.lastInvokation.error.toString()}"`);
+  }
+
+  const expectedResult = world.lastInvokation.errorReporter.getEncodedCustomError(err, args);
+
+  if (!expectedResult) {
+    throw new Error(`Expected revert with custom error, but custom error ${err} not found`)
+  }
+
+  if (Object.values(world.lastInvokation.error.errorResults).findIndex(v => v.error === 'revert' && v.return === expectedResult) < 0) {
+    throw new Error(`Invokation error mismatch, expected revert custom error: err=${err}, args="${args.join(',')}", got: "${world.lastInvokation.error.toString()}"`);
   }
 
   return world;
@@ -399,6 +438,20 @@ export function assertionCommands() {
         new Arg("message", getStringV),
       ],
       (world, { error, message }) => assertRevertFailure(world, error.val, message.val)
+    ),
+
+    new View<{ error: StringV, args: StringV[] }>(`
+        #### RevertCustomError
+
+        * "RevertCustomError error:<String> args:<[]Value>" - Assert last transaction reverted with a message beginning with an error code
+          * E.g. "Assert RevertFailure UNAUTHORIZED \"set reserves failed\""
+      `,
+      "RevertCustomError",
+      [
+        new Arg("error", getStringV),
+        new Arg("args", getCoreValue, {variadic: true, mapped: true, default: []}),
+      ],
+      (world, { error, args }) => assertRevertCustomError(world, error.val, rawValues(args))
     ),
 
     new View<{ message: StringV }>(`

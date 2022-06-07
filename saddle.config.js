@@ -10,7 +10,7 @@ module.exports = {
     shell: process.env['SADDLE_SHELL'] || '/bin/bash'
   },
   // build_dir: ".build",                                  // Directory to place built contracts
-  extra_build_files: [process.env['EXTRA_BUILD_FILES'] || 'remote/*.json'], // Additional build files to deep merge
+  extra_build_files: [process.env['EXTRA_BUILD_FILES'] || 'remote/*.json', 'tests/LegacyBuilds/*.json'], // Additional build files to deep merge
   // coverage_dir: "coverage",                              // Directory to place coverage files
   // coverage_ignore: [],                                   // List of files to ignore for coverage
   contracts: process.env['SADDLE_CONTRACTS'] || "{contracts,contracts/**,tests/Contracts}/*.sol",

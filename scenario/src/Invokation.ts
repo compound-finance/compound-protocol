@@ -55,6 +55,26 @@ export class InvokationRevertFailure extends InvokationError {
   }
 }
 
+interface CustomErrorResult {
+  return: string
+  error: string
+}
+
+export class InvokationRevertCustomError extends InvokationError {
+  errCode: number
+  errorResults: {[address: string]: CustomErrorResult}
+
+  constructor(err: Error, errorResults: {[address: string]: CustomErrorResult}) {
+    super(err);
+
+    this.errorResults = errorResults;
+  }
+
+  toString() {
+    return `InvokationRevertCustomError<errorResults=${JSON.stringify(this.errorResults)}error=${this.err.toString()}>`;
+  }
+}
+
 interface Argument {
   name: string
   type: string
@@ -289,6 +309,9 @@ export async function invoke<T>(world: World, fn: Sendable<T>, from: string, err
         let [errMessage, errCode] = decoded;
 
         return new Invokation<T>(value, result, new InvokationRevertFailure(err, errMessage, errCode, errorReporter.getError(errCode)), fn, errorReporter);
+      }
+      if (err.results) {
+        return new Invokation<T>(value, result, new InvokationRevertCustomError(err, err.results), fn, errorReporter);
       }
     }
 
