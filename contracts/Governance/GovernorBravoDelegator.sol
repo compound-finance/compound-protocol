@@ -4,6 +4,10 @@ pragma solidity ^0.8.10;
 import "./GovernorBravoInterfaces.sol";
 
 contract GovernorBravoDelegator is GovernorBravoDelegatorStorage, GovernorBravoEvents {
+
+    error AddressUnauthorized();
+    error InvalidAddress();
+
 	constructor(
 			address timelock_,
 			address comp_,
@@ -34,9 +38,11 @@ contract GovernorBravoDelegator is GovernorBravoDelegatorStorage, GovernorBravoE
      * @param implementation_ The address of the new implementation for delegation
      */
     function _setImplementation(address implementation_) public {
-        require(msg.sender == admin, "GovernorBravoDelegator::_setImplementation: admin only");
-        require(implementation_ != address(0), "GovernorBravoDelegator::_setImplementation: invalid implementation address");
-
+        // require(msg.sender == admin, "GovernorBravoDelegator::_setImplementation: admin only");
+        // require(implementation_ != address(0), "GovernorBravoDelegator::_setImplementation: invalid implementation address");
+        if (msg.sender != admin) { revert AddressUnauthorized(); }
+        if (implementation_ != address(0)) { revert InvalidAddress(); }
+        
         address oldImplementation = implementation;
         implementation = implementation_;
 

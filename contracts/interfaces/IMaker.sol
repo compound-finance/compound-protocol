@@ -12,14 +12,3 @@ interface PotLike {
     function join(uint) external;
     function exit(uint) external;
 }
-
-contract JugLike {
-    // --- Data ---
-    struct Ilk {
-        uint256 duty;
-        uint256  rho;
-    }
-
-    mapping (bytes32 => Ilk) public ilks;
-    uint256 public base;
-}

@@ -2,6 +2,15 @@
 pragma solidity ^0.8.10;
 
 contract Comp {
+
+    error NumberTooLarge();
+    error MathOverflow();
+    error MathUnderflow();
+    error CannotBeZeroAddress();
+    error InvalidSignature();
+    error BlocknumberNotReached();
+
+
     /// @notice EIP-20 token name for this token
     string public constant name = "Compound";
 
@@ -88,7 +97,7 @@ contract Comp {
         if (rawAmount == type(uint).max) {
             amount = type(uint96).max;
         } else {
-            amount = safe96(rawAmount, "Comp::approve: amount exceeds 96 bits");
+            amount = safe96(rawAmount); // , "Comp::approve: amount exceeds 96 bits");
         }
 
         allowances[msg.sender][spender] = amount;
@@ -113,7 +122,7 @@ contract Comp {
      * @return Whether or not the transfer succeeded
      */
     function transfer(address dst, uint rawAmount) external returns (bool) {
-        uint96 amount = safe96(rawAmount, "Comp::transfer: amount exceeds 96 bits");
+        uint96 amount = safe96(rawAmount); //, "Comp::transfer: amount exceeds 96 bits");
         _transferTokens(msg.sender, dst, amount);
         return true;
     }
@@ -128,10 +137,10 @@ contract Comp {
     function transferFrom(address src, address dst, uint rawAmount) external returns (bool) {
         address spender = msg.sender;
         uint96 spenderAllowance = allowances[src][spender];
-        uint96 amount = safe96(rawAmount, "Comp::approve: amount exceeds 96 bits");
+        uint96 amount = safe96(rawAmount); //, "Comp::approve: amount exceeds 96 bits");
 
         if (spender != src && spenderAllowance != type(uint96).max) {
-            uint96 newAllowance = sub96(spenderAllowance, amount, "Comp::transferFrom: transfer amount exceeds spender allowance");
+            uint96 newAllowance = sub96(spenderAllowance, amount); //, "Comp::transferFrom: transfer amount exceeds spender allowance");
             allowances[src][spender] = newAllowance;
 
             emit Approval(src, spender, newAllowance);
@@ -163,9 +172,13 @@ contract Comp {
         bytes32 structHash = keccak256(abi.encode(DELEGATION_TYPEHASH, delegatee, nonce, expiry));
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signatory = ecrecover(digest, v, r, s);
-        require(signatory != address(0), "Comp::delegateBySig: invalid signature");
-        require(nonce == nonces[signatory]++, "Comp::delegateBySig: invalid nonce");
-        require(block.timestamp <= expiry, "Comp::delegateBySig: signature expired");
+        // require(signatory != address(0), "Comp::delegateBySig: invalid signature");
+        // require(nonce == nonces[signatory]++, "Comp::delegateBySig: invalid nonce");
+        // require(block.timestamp <= expiry, "Comp::delegateBySig: signature expired");
+        if (signatory == address(0) || nonce != nonces[signatory]++ || block.timestamp > expiry) {
+            revert InvalidSignature();
+        }
+
         return _delegate(signatory, delegatee);
     }
 
@@ -187,7 +200,10 @@ contract Comp {
      * @return The number of votes the account had as of the given block
      */
     function getPriorVotes(address account, uint blockNumber) public view returns (uint96) {
-        require(blockNumber < block.number, "Comp::getPriorVotes: not yet determined");
+        // require(blockNumber < block.number, "Comp::getPriorVotes: not yet determined");
+        if (blockNumber >= block.number) {
+            revert BlocknumberNotReached();
+        }
 
         uint32 nCheckpoints = numCheckpoints[account];
         if (nCheckpoints == 0) {
@@ -231,11 +247,14 @@ contract Comp {
     }
 
     function _transferTokens(address src, address dst, uint96 amount) internal {
-        require(src != address(0), "Comp::_transferTokens: cannot transfer from the zero address");
-        require(dst != address(0), "Comp::_transferTokens: cannot transfer to the zero address");
+        // require(src != address(0), "Comp::_transferTokens: cannot transfer from the zero address");
+        // require(dst != address(0), "Comp::_transferTokens: cannot transfer to the zero address");
+        if (src == address(0) || dst == address(0)) {
+            revert CannotBeZeroAddress();
+        }
 
-        balances[src] = sub96(balances[src], amount, "Comp::_transferTokens: transfer amount exceeds balance");
-        balances[dst] = add96(balances[dst], amount, "Comp::_transferTokens: transfer amount overflows");
+        balances[src] = sub96(balances[src], amount); //, "Comp::_transferTokens: transfer amount exceeds balance");
+        balances[dst] = add96(balances[dst], amount); //, "Comp::_transferTokens: transfer amount overflows");
         emit Transfer(src, dst, amount);
 
         _moveDelegates(delegates[src], delegates[dst], amount);
@@ -246,21 +265,21 @@ contract Comp {
             if (srcRep != address(0)) {
                 uint32 srcRepNum = numCheckpoints[srcRep];
                 uint96 srcRepOld = srcRepNum > 0 ? checkpoints[srcRep][srcRepNum - 1].votes : 0;
-                uint96 srcRepNew = sub96(srcRepOld, amount, "Comp::_moveVotes: vote amount underflows");
+                uint96 srcRepNew = sub96(srcRepOld, amount); //, "Comp::_moveVotes: vote amount underflows");
                 _writeCheckpoint(srcRep, srcRepNum, srcRepOld, srcRepNew);
             }
 
             if (dstRep != address(0)) {
                 uint32 dstRepNum = numCheckpoints[dstRep];
                 uint96 dstRepOld = dstRepNum > 0 ? checkpoints[dstRep][dstRepNum - 1].votes : 0;
-                uint96 dstRepNew = add96(dstRepOld, amount, "Comp::_moveVotes: vote amount overflows");
+                uint96 dstRepNew = add96(dstRepOld, amount); //, "Comp::_moveVotes: vote amount overflows");
                 _writeCheckpoint(dstRep, dstRepNum, dstRepOld, dstRepNew);
             }
         }
     }
 
     function _writeCheckpoint(address delegatee, uint32 nCheckpoints, uint96 oldVotes, uint96 newVotes) internal {
-      uint32 blockNumber = safe32(block.number, "Comp::_writeCheckpoint: block number exceeds 32 bits");
+      uint32 blockNumber = safe32(block.number); //, "Comp::_writeCheckpoint: block number exceeds 32 bits");
 
       if (nCheckpoints > 0 && checkpoints[delegatee][nCheckpoints - 1].fromBlock == blockNumber) {
           checkpoints[delegatee][nCheckpoints - 1].votes = newVotes;
@@ -272,24 +291,36 @@ contract Comp {
       emit DelegateVotesChanged(delegatee, oldVotes, newVotes);
     }
 
-    function safe32(uint n, string memory errorMessage) internal pure returns (uint32) {
-        require(n < 2**32, errorMessage);
+    function safe32(uint n) internal pure returns (uint32) { /// , string memory errorMessage
+        // require(n < 2**32, errorMessage);
+        if (n >= 2**32) {
+            revert NumberTooLarge();
+        }
         return uint32(n);
     }
 
-    function safe96(uint n, string memory errorMessage) internal pure returns (uint96) {
-        require(n < 2**96, errorMessage);
+    function safe96(uint n) internal pure returns (uint96) { /// , string memory errorMessage
+        // require(n < 2**96, errorMessage);
+        if (n >= 2**96) {
+            revert NumberTooLarge();
+        }
         return uint96(n);
     }
 
-    function add96(uint96 a, uint96 b, string memory errorMessage) internal pure returns (uint96) {
+    function add96(uint96 a, uint96 b) internal pure returns (uint96) { /// , string memory errorMessage
         uint96 c = a + b;
-        require(c >= a, errorMessage);
+        // require(c >= a, errorMessage);
+        if (c < a) {
+            revert MathOverflow();
+        }
         return c;
     }
 
-    function sub96(uint96 a, uint96 b, string memory errorMessage) internal pure returns (uint96) {
-        require(b <= a, errorMessage);
+    function sub96(uint96 a, uint96 b) internal pure returns (uint96) { /// , string memory errorMessage
+        // require(b <= a, errorMessage);
+        if (b > a) {
+            revert MathUnderflow();
+        }
         return a - b;
     }
 

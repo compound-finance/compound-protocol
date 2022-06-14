@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "./InterestRateModel.sol";
+import "./interfaces/InterestRateModel.sol";
 
 /**
   * @title Logic for Compound's JumpRateModel Contract V2.

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "./interfaces/EIP20Interface.sol";
+import "./interfaces/IEip20.sol";
 
 /**
  * @title Reservoir Contract
@@ -70,6 +70,8 @@ contract Reservoir {
     return toDrip_;
   }
 
+
+/// TODO Consolidate all these from all contracts into SafeMath.sol
   /* Internal helper functions for safe math */
 
   function add(uint a, uint b) internal pure returns (uint) { /// removed param: , string memory errorMessage

@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 contract ComptrollerErrorReporter {
     enum Error {
         NO_ERROR,
-        UNAUTHORIZED,
+        // UNAUTHORIZED,
         // COMPTROLLER_MISMATCH,
         // INSUFFICIENT_SHORTFALL,
         // INSUFFICIENT_LIQUIDITY,
