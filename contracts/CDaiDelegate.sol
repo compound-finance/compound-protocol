@@ -9,6 +9,10 @@ import "./CErc20Delegate.sol";
  * @author Compound
  */
 contract CDaiDelegate is CErc20Delegate {
+
+    error AddressUnauthorized();
+    error MustUseDai();
+
     /**
      * @notice DAI adapter address
      */
@@ -29,7 +33,10 @@ contract CDaiDelegate is CErc20Delegate {
      * @param data The encoded arguments for becoming
      */
     function _becomeImplementation(bytes memory data) override public {
-        require(msg.sender == admin, "only the admin may initialize the implementation");
+        // require(msg.sender == admin, "only the admin may initialize the implementation");
+        if (msg.sender != admin) {
+            revert AddressUnauthorized();
+        }
 
         (address daiJoinAddress_, address potAddress_) = abi.decode(data, (address, address));
         return _becomeImplementation(daiJoinAddress_, potAddress_);
@@ -46,7 +53,10 @@ contract CDaiDelegate is CErc20Delegate {
         PotLike pot = PotLike(potAddress_);
         GemLike dai = daiJoin.dai();
         VatLike vat = daiJoin.vat();
-        require(address(dai) == underlying, "DAI must be the same as underlying");
+        // require(address(dai) == underlying, "DAI must be the same as underlying");
+        if (address(dai) != underlying) {
+            revert MustUseDai();
+        }
 
         // Remember the relevant addresses
         daiJoinAddress = daiJoinAddress_;
@@ -71,7 +81,10 @@ contract CDaiDelegate is CErc20Delegate {
      * @notice Delegate interface to resign the implementation
      */
     function _resignImplementation() override public {
-        require(msg.sender == admin, "only the admin may abandon the implementation");
+        // require(msg.sender == admin, "only the admin may abandon the implementation");
+        if (msg.sender != admin) {
+            revert AddressUnauthorized();
+        }
 
         // Transfer all cash out of the DSR - note that this relies on self-transfer
         DaiJoinLike daiJoin = DaiJoinLike(daiJoinAddress);
@@ -131,7 +144,10 @@ contract CDaiDelegate is CErc20Delegate {
         address underlying_ = underlying;
         // Perform the EIP-20 transfer in
         EIP20Interface token = EIP20Interface(underlying_);
+
+        /// TODO update transferTokens function in CToken.sol perhaps?
         require(token.transferFrom(from, address(this), amount), "unexpected EIP-20 transfer in return");
+
 
         DaiJoinLike daiJoin = DaiJoinLike(daiJoinAddress);
         GemLike dai = GemLike(underlying_);

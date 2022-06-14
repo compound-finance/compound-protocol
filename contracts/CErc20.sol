@@ -122,8 +122,14 @@ contract CErc20 is CToken, CErc20Interface {
      * @param token The address of the ERC-20 token to sweep
      */
     function sweepToken(EIP20NonStandardInterface token) override external {
-        require(msg.sender == admin, "CErc20::sweepToken: only admin can sweep tokens");
-        require(address(token) != underlying, "CErc20::sweepToken: can not sweep underlying token");
+        // require(msg.sender == admin, "CErc20::sweepToken: only admin can sweep tokens");
+        if (msg.sender != admin) {
+            revert AddressUnauthorized();
+        }
+        // require(address(token) != underlying, "CErc20::sweepToken: can not sweep underlying token");
+        if (address(token) == underlying) {
+            revert InvalidUnderlying();
+        }
         uint256 balance = token.balanceOf(address(this));
         token.transfer(admin, balance);
     }
@@ -179,7 +185,10 @@ contract CErc20 is CToken, CErc20Interface {
                     revert(0, 0)
                 }
         }
-        require(success, "TOKEN_TRANSFER_IN_FAILED");
+            // require(success, "TOKEN_TRANSFER_IN_FAILED");
+        if (!success) {
+            revert TransferFailure();
+        }
 
         // Calculate the amount that was *actually* transferred
         uint balanceAfter = EIP20Interface(underlying_).balanceOf(address(this));
@@ -213,7 +222,10 @@ contract CErc20 is CToken, CErc20Interface {
                     revert(0, 0)
                 }
         }
-        require(success, "TOKEN_TRANSFER_OUT_FAILED");
+        // require(success, "TOKEN_TRANSFER_OUT_FAILED");
+        if (!success) {
+            revert TransferFailure();
+        }
     }
 
     /**
@@ -222,7 +234,11 @@ contract CErc20 is CToken, CErc20Interface {
     * @dev CTokens whose underlying are not CompLike should revert here
     */
     function _delegateCompLikeTo(address compLikeDelegatee) external {
-        require(msg.sender == admin, "only the admin may set the comp-like delegate");
+        // require(msg.sender == admin, "only the admin may set the comp-like delegate");
+        if (msg.sender != admin) {
+            revert AddressUnauthorized();
+        }
+        
         CompLike(underlying).delegate(compLikeDelegatee);
     }
 }

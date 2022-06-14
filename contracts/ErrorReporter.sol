@@ -152,4 +152,8 @@ contract TokenErrorReporter {
     error ChangeNotAuthorized();
     error ComptrollerMismatch();
     error TooMuchRepay();
+
+    // CErc20
+    error InvalidUnderlying();
+    error TransferFailure();
 } 
