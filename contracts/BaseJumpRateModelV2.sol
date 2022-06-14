@@ -9,6 +9,9 @@ import "./InterestRateModel.sol";
   * @notice Version 2 modifies Version 1 by enabling updateable parameters.
   */
 abstract contract BaseJumpRateModelV2 is InterestRateModel {
+
+    error AddressUnauthorized();
+
     event NewInterestParams(uint baseRatePerBlock, uint multiplierPerBlock, uint jumpMultiplierPerBlock, uint kink);
 
     uint256 private constant BASE = 1e18;
@@ -51,7 +54,7 @@ abstract contract BaseJumpRateModelV2 is InterestRateModel {
      * @param kink_ The utilization point at which the jump multiplier is applied
      * @param owner_ The address of the owner, i.e. the Timelock contract (which has the ability to update parameters directly)
      */
-    constructor(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_, address owner_) internal {
+    constructor(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_, address owner_) {
         owner = owner_;
 
         updateJumpRateModelInternal(baseRatePerYear,  multiplierPerYear, jumpMultiplierPerYear, kink_);
@@ -65,7 +68,10 @@ abstract contract BaseJumpRateModelV2 is InterestRateModel {
      * @param kink_ The utilization point at which the jump multiplier is applied
      */
     function updateJumpRateModel(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) virtual external {
-        require(msg.sender == owner, "only the owner may call this function.");
+        // require(msg.sender == owner, "only the owner may call this function.");
+        if (msg.sender != owner) {
+            revert AddressUnauthorized();
+        }
 
         updateJumpRateModelInternal(baseRatePerYear, multiplierPerYear, jumpMultiplierPerYear, kink_);
     }
