@@ -194,7 +194,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      */
     function getAccountSnapshot(address account) override external view returns (uint, uint, uint, uint) {
         return (
-            NO_ERROR,
+            0,
             accountTokens[account],
             borrowBalanceStoredInternal(account),
             exchangeRateStoredInternal()
@@ -773,11 +773,13 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // (No safe failures beyond this point)
 
         /* We calculate the number of collateral tokens that will be seized */
-        (uint amountSeizeError, uint seizeTokens) = comptroller.liquidateCalculateSeizeTokens(address(this), address(cTokenCollateral), actualRepayAmount);
+        // (uint amountSeizeError, uint seizeTokens) = comptroller.liquidateCalculateSeizeTokens(address(this), address(cTokenCollateral), actualRepayAmount);
+        uint seizeTokens = comptroller.liquidateCalculateSeizeTokens(address(this), address(cTokenCollateral), actualRepayAmount);
+        /// Errors changed to reverts in called functions. No need to error check here now...
         // require(amountSeizeError == NO_ERROR, "LIQUIDATE_COMPTROLLER_CALCULATE_AMOUNT_SEIZE_FAILED");
-        if (amountSeizeError != NO_ERROR) {
-            revert LiquidateComptrollerCalculateAmountSeizeFailed();
-        }
+        // if (amountSeizeError != NO_ERROR) {
+        //     revert LiquidateComptrollerCalculateAmountSeizeFailed();
+        // }
 
         /* Revert if borrower collateral token balance < seizeTokens */
         // require(cTokenCollateral.balanceOf(borrower) >= seizeTokens, "LIQUIDATE_SEIZE_TOO_MUCH");
@@ -1004,7 +1006,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      */
     function _addReservesFresh(uint addAmount) internal returns (uint, uint) {
         // totalReserves + actualAddAmount
-        uint totalReservesNew;
+        //uint totalReservesNew; // not needed if bypassing the extra step below
         uint actualAddAmount;
 
         // We fail gracefully unless market's block number equals current block number
@@ -1026,13 +1028,13 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
 
         actualAddAmount = doTransferIn(msg.sender, addAmount);
 
-        totalReservesNew = totalReserves + actualAddAmount;
+        totalReserves = totalReserves + actualAddAmount;
 
         // Store reserves[n+1] = reserves[n] + actualAddAmount
-        totalReserves = totalReservesNew;
+        //totalReserves = totalReservesNew;
 
         /* Emit NewReserves(admin, actualAddAmount, reserves[n+1]) */
-        emit ReservesAdded(msg.sender, actualAddAmount, totalReservesNew);
+        emit ReservesAdded(msg.sender, actualAddAmount, totalReserves);
 
         /* Return (NO_ERROR, actualAddAmount) */
         return (NO_ERROR, actualAddAmount);

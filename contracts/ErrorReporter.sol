@@ -5,29 +5,29 @@ contract ComptrollerErrorReporter {
     enum Error {
         NO_ERROR,
         UNAUTHORIZED,
-        COMPTROLLER_MISMATCH,
-        INSUFFICIENT_SHORTFALL,
-        INSUFFICIENT_LIQUIDITY,
+        // COMPTROLLER_MISMATCH,
+        // INSUFFICIENT_SHORTFALL,
+        // INSUFFICIENT_LIQUIDITY,
         INVALID_CLOSE_FACTOR,
-        INVALID_COLLATERAL_FACTOR,
+        // INVALID_COLLATERAL_FACTOR,
         INVALID_LIQUIDATION_INCENTIVE,
         MARKET_NOT_ENTERED, // no longer possible
-        MARKET_NOT_LISTED,
-        MARKET_ALREADY_LISTED,
-        MATH_ERROR,
-        NONZERO_BORROW_BALANCE,
-        PRICE_ERROR,
-        REJECTION,
-        SNAPSHOT_ERROR,
-        TOO_MANY_ASSETS,
-        TOO_MUCH_REPAY
+        // MARKET_NOT_LISTED,
+        // MARKET_ALREADY_LISTED,
+        // MATH_ERROR,
+        // NONZERO_BORROW_BALANCE,
+        // PRICE_ERROR,
+        // REJECTION,
+        // SNAPSHOT_ERROR,
+        TOO_MANY_ASSETS
+        // TOO_MUCH_REPAY
     }
 
     enum FailureInfo {
         ACCEPT_ADMIN_PENDING_ADMIN_CHECK,
         ACCEPT_PENDING_IMPLEMENTATION_ADDRESS_CHECK,
-        EXIT_MARKET_BALANCE_OWED,
-        EXIT_MARKET_REJECTION,
+        // EXIT_MARKET_BALANCE_OWED,
+        // EXIT_MARKET_REJECTION,
         SET_CLOSE_FACTOR_OWNER_CHECK,
         SET_CLOSE_FACTOR_VALIDATION,
         SET_COLLATERAL_FACTOR_OWNER_CHECK,
@@ -130,10 +130,26 @@ contract TokenErrorReporter {
 
     // Generalized Errors
     error AddressUnauthorized();
+    error AddressNotListed();
     error PreviouslyInitialized();
     error CannotEqualZero();
     error ReturnedFalse();
     error ExcessiveRate();
     error NonReentrant();
     error InMustContainZero();
-}
+
+    // ComptrollerG7
+    error AccountSnapshotFailed();
+    error NonZeroBorrowBalance();
+    error ExitMarketRejection();
+    error MintPaused();
+    error MarketNotListed();
+    error MarketAlreadyListed();
+    error InsufficientLiquidity();
+    error InsufficientShortfall();
+    error PriceError();
+    error InvalidValue();
+    error ChangeNotAuthorized();
+    error ComptrollerMismatch();
+    error TooMuchRepay();
+} 

@@ -8,11 +8,14 @@ pragma solidity ^0.8.10;
  *         Thus, if we wanted to store the 5.1, mantissa would store 5.1e18. That is:
  *         `Exp({mantissa: 5100000000000000000})`.
  */
+
+
 contract ExponentialNoError {
     uint constant expScale = 1e18;
     uint constant doubleScale = 1e36;
     uint constant halfExpScale = expScale/2;
     uint constant mantissaOne = expScale;
+    error ValueTooLarge();
 
     struct Exp {
         uint mantissa;
@@ -75,13 +78,19 @@ contract ExponentialNoError {
         return value.mantissa == 0;
     }
 
-    function safe224(uint n, string memory errorMessage) pure internal returns (uint224) {
-        require(n < 2**224, errorMessage);
+    function safe224(uint n) pure internal returns (uint224) { /// removed param: `, string memory errorMessage`
+        // require(n < 2**224, errorMessage);
+        if (n >= 2**224) {
+            revert ValueTooLarge();
+        }
         return uint224(n);
     }
 
-    function safe32(uint n, string memory errorMessage) pure internal returns (uint32) {
-        require(n < 2**32, errorMessage);
+    function safe32(uint n) pure internal returns (uint32) { /// removed param: `, string memory errorMessage`
+        // require(n < 2**32, errorMessage);
+        if (n >= 2**32) {
+            revert ValueTooLarge();
+        }
         return uint32(n);
     }
 
