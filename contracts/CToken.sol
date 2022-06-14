@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "./ComptrollerInterface.sol";
-import "./CTokenInterfaces.sol";
+import "./interfaces/ComptrollerInterface.sol";
+import "./interfaces/CTokenInterfaces.sol";
 import "./ErrorReporter.sol";
-import "./EIP20Interface.sol";
+import "./interfaces/EIP20Interface.sol";
 import "./InterestRateModel.sol";
 import "./ExponentialNoError.sol";
 

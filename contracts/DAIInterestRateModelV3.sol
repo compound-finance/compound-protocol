@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "./JumpRateModelV2.sol";
+import "./interfaces/MakerInterface.sol";
 
 /**
   * @title Compound's DAIInterestRateModel Contract (version 3)
@@ -37,12 +38,24 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      * @param jug_ The address of the Dai jug (where SF is kept)
      * @param owner_ The address of the owner, i.e. the Timelock contract (which has the ability to update parameters directly)
      */
-    constructor(uint jumpMultiplierPerYear, uint kink_, address pot_, address jug_, address owner_) JumpRateModelV2(0, 0, jumpMultiplierPerYear, kink_, owner_) public {
-        gapPerBlock = 4e16 / blocksPerYear;
-        pot = PotLike(pot_);
-        jug = JugLike(jug_);
-        poke();
-    }
+    constructor(
+        uint jumpMultiplierPerYear, 
+        uint kink_, 
+        address pot_, 
+        address jug_, 
+        address owner_
+        ) JumpRateModelV2(
+            0, 
+            0, 
+            jumpMultiplierPerYear, 
+            kink_, 
+            owner_
+            ) {
+                gapPerBlock = 4e16 / blocksPerYear;
+                pot = PotLike(pot_);
+                jug = JugLike(jug_);
+                poke();
+            }
 
     /**
      * @notice External function to update the parameters of the interest rate model
@@ -52,7 +65,10 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      * @param kink_ The utilization point at which the jump multiplier is applied
      */
     function updateJumpRateModel(uint baseRatePerYear, uint gapPerYear, uint jumpMultiplierPerYear, uint kink_) override external {
-        require(msg.sender == owner, "only the owner may call this function.");
+        // require(msg.sender == owner, "only the owner may call this function.");
+        if (msg.sender != owner) {
+            revert AddressUnauthorized();
+        }
         gapPerBlock = gapPerYear / blocksPerYear;
         updateJumpRateModelInternal(0, 0, jumpMultiplierPerYear, kink_);
         poke();
@@ -66,17 +82,25 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      * @param reserveFactorMantissa The current reserve factor the market has
      * @return The supply rate per block (as a percentage, and scaled by BASE)
      */
-    function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) override public view returns (uint) {
-        uint protocolRate = super.getSupplyRate(cash, borrows, reserves, reserveFactorMantissa);
+    function getSupplyRate( /// TODO are the overriden contracts correct?
+        uint cash, 
+        uint borrows, 
+        uint reserves, 
+        uint reserveFactorMantissa
+        ) override (
+            BaseJumpRateModelV2, 
+            InterestRateModel
+            ) public view returns (uint) {
+                uint protocolRate = super.getSupplyRate(cash, borrows, reserves, reserveFactorMantissa);
 
-        uint underlying = cash + borrows - reserves;
-        if (underlying == 0) {
-            return protocolRate;
-        } else {
-            uint cashRate = cash * dsrPerBlock() / underlying;
-            return cashRate + protocolRate;
-        }
-    }
+                uint underlying = cash + borrows - reserves;
+                if (underlying == 0) {
+                    return protocolRate;
+                } else {
+                    uint cashRate = cash * dsrPerBlock() / underlying;
+                    return cashRate + protocolRate;
+                }
+            }
 
     /**
      * @notice Calculates the Dai savings rate per block
@@ -107,28 +131,4 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
 
         emit NewInterestParams(baseRatePerBlock, multiplierPerBlock, jumpMultiplierPerBlock, kink);
     }
-}
-
-
-/*** Maker Interfaces ***/
-
-interface PotLike {
-    function chi() external view returns (uint);
-    function dsr() external view returns (uint);
-    function rho() external view returns (uint);
-    function pie(address) external view returns (uint);
-    function drip() external returns (uint);
-    function join(uint) external;
-    function exit(uint) external;
-}
-
-contract JugLike {
-    // --- Data ---
-    struct Ilk {
-        uint256 duty;
-        uint256  rho;
-    }
-
-    mapping (bytes32 => Ilk) public ilks;
-    uint256 public base;
 }

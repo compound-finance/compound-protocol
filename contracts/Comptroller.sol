@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import "./CToken.sol";
 import "./ErrorReporter.sol";
 import "./PriceOracle.sol";
-import "./ComptrollerInterface.sol";
+import "./interfaces/ComptrollerInterface.sol";
 import "./ComptrollerStorage.sol";
 import "./Unitroller.sol";
 import "./Governance/Comp.sol";
@@ -14,6 +14,10 @@ import "./Governance/Comp.sol";
  * @author Compound
  */
 contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError {
+
+    error MarketNotListed();
+    error NonZeroBorrowBalance();
+
     /// @notice Emitted when an admin supports a market
     event MarketListed(CToken cToken);
 
@@ -142,7 +146,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
         if (!marketToJoin.isListed) {
             // market is not listed, cannot join
-            return Error.MARKET_NOT_LISTED;
+            revert MarketNotListed();
         }
 
         if (marketToJoin.accountMembership[borrower] == true) {
@@ -173,19 +177,21 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
     function exitMarket(address cTokenAddress) override external returns (uint) {
         CToken cToken = CToken(cTokenAddress);
         /* Get sender tokensHeld and amountOwed underlying from the cToken */
-        (uint oErr, uint tokensHeld, uint amountOwed, ) = cToken.getAccountSnapshot(msg.sender);
-        require(oErr == 0, "exitMarket: getAccountSnapshot failed"); // semi-opaque error code
+        (, uint tokensHeld, uint amountOwed, ) = cToken.getAccountSnapshot(msg.sender);
+        // require(oErr == 0, "exitMarket: getAccountSnapshot failed"); // semi-opaque error code
 
         /* Fail if the sender has a borrow balance */
         if (amountOwed != 0) {
-            return fail(Error.NONZERO_BORROW_BALANCE, FailureInfo.EXIT_MARKET_BALANCE_OWED);
+            // return fail(Error.NONZERO_BORROW_BALANCE, FailureInfo.EXIT_MARKET_BALANCE_OWED);
+            revert NonZeroBorrowBalance();
         }
 
         /* Fail if the sender is not permitted to redeem all of their tokens */
-        uint allowed = redeemAllowedInternal(cTokenAddress, msg.sender, tokensHeld);
-        if (allowed != 0) {
-            return failOpaque(Error.REJECTION, FailureInfo.EXIT_MARKET_REJECTION, allowed);
-        }
+        // uint allowed = redeemAllowedInternal(cTokenAddress, msg.sender, tokensHeld);
+        // if (allowed != 0) {
+        //     return failOpaque(Error.REJECTION, FailureInfo.EXIT_MARKET_REJECTION, allowed);
+        // }
+        redeemAllowedInternal(cTokenAddress, msg.sender, tokensHeld);
 
         Market storage marketToExit = markets[address(cToken)];
 
@@ -233,14 +239,17 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
      */
     function mintAllowed(address cToken, address minter, uint mintAmount) override external returns (uint) {
         // Pausing is a very serious situation - we revert to sound the alarms
-        require(!mintGuardianPaused[cToken], "mint is paused");
-
+        // require(!mintGuardianPaused[cToken], "mint is paused");
+        if (mintGuardianPaused[cToken]) {
+            revert MintPaused();
+        }
         // Shh - currently unused
         minter;
         mintAmount;
 
         if (!markets[cToken].isListed) {
-            return uint(Error.MARKET_NOT_LISTED);
+            // return uint(Error.MARKET_NOT_LISTED);
+            revert MarketNotListed();
         }
 
         // Keep the flywheel moving
@@ -292,7 +301,8 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
     function redeemAllowedInternal(address cToken, address redeemer, uint redeemTokens) internal view returns (uint) {
         if (!markets[cToken].isListed) {
-            return uint(Error.MARKET_NOT_LISTED);
+            // return uint(Error.MARKET_NOT_LISTED);
+            revert MarketNotListed();
         }
 
         /* If the redeemer is not 'in' the market, then we can bypass the liquidity check */

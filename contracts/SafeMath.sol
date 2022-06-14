@@ -18,6 +18,13 @@ pragma solidity ^0.8.10;
  * class of bugs, so it's recommended to use it always.
  */
 library SafeMath {
+
+    error AdditionOverflow();
+    error SubtractionUnderflow();
+    error MultiplicationOverflow();
+    error DivisionByZero();
+    error ModuloByZero();
+
     /**
      * @dev Returns the addition of two unsigned integers, reverting on overflow.
      *
@@ -29,12 +36,15 @@ library SafeMath {
     function add(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c;
         unchecked { c = a + b; }
-        require(c >= a, "SafeMath: addition overflow");
+        // require(c >= a, "SafeMath: addition overflow");
+        if (c < a) {
+            revert AdditionOverflow();
+        }
 
         return c;
     }
 
-    /**
+    /** TODO This shouldn't be needed with errors written directly in to the failures.
      * @dev Returns the addition of two unsigned integers, reverting with custom message on overflow.
      *
      * Counterpart to Solidity's `+` operator.
@@ -42,13 +52,16 @@ library SafeMath {
      * Requirements:
      * - Addition cannot overflow.
      */
-    function add(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        uint256 c;
-        unchecked { c = a + b; }
-        require(c >= a, errorMessage);
+    // function add(uint256 a, uint256 b) internal pure returns (uint256) { /// removed param: , string memory errorMessage
+    //     uint256 c;
+    //     unchecked { c = a + b; }
+    //     // require(c >= a, errorMessage);
+    //     if (c < a) {
+    //         revert MathError();
+    //     }
 
-        return c;
-    }
+    //     return c;
+    // }
 
     /**
      * @dev Returns the subtraction of two unsigned integers, reverting on underflow (when the result is negative).
@@ -58,9 +71,9 @@ library SafeMath {
      * Requirements:
      * - Subtraction cannot underflow.
      */
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        return sub(a, b, "SafeMath: subtraction underflow");
-    }
+    // function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+    //     return sub(a, b, "SafeMath: subtraction underflow");
+    // }
 
     /**
      * @dev Returns the subtraction of two unsigned integers, reverting with custom message on underflow (when the result is negative).
@@ -70,8 +83,11 @@ library SafeMath {
      * Requirements:
      * - Subtraction cannot underflow.
      */
-    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        require(b <= a, errorMessage);
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) { /// removed param: , string memory errorMessage
+        // require(b <= a, errorMessage);
+        if (b > a) {
+            revert SubtractionUnderflow();
+        }
         uint256 c = a - b;
 
         return c;
@@ -95,7 +111,10 @@ library SafeMath {
 
         uint256 c;
         unchecked { c = a * b; }
-        require(c / a == b, "SafeMath: multiplication overflow");
+        // require(c / a == b, "SafeMath: multiplication overflow");
+        if (c / a != b) {
+            revert MultiplicationOverflow();
+        }
 
         return c;
     }
@@ -108,20 +127,20 @@ library SafeMath {
      * Requirements:
      * - Multiplication cannot overflow.
      */
-    function mul(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
-        // benefit is lost if 'b' is also tested.
-        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
-        if (a == 0) {
-            return 0;
-        }
+    // function mul(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+    //     // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
+    //     // benefit is lost if 'b' is also tested.
+    //     // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
+    //     if (a == 0) {
+    //         return 0;
+    //     }
 
-        uint256 c;
-        unchecked { c = a * b; }
-        require(c / a == b, errorMessage);
+    //     uint256 c;
+    //     unchecked { c = a * b; }
+    //     require(c / a == b, errorMessage);
 
-        return c;
-    }
+    //     return c;
+    // }
 
     /**
      * @dev Returns the integer division of two unsigned integers.
@@ -134,9 +153,9 @@ library SafeMath {
      * Requirements:
      * - The divisor cannot be zero.
      */
-    function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        return div(a, b, "SafeMath: division by zero");
-    }
+    // function div(uint256 a, uint256 b) internal pure returns (uint256) {
+    //     return div(a, b, "SafeMath: division by zero");
+    // }
 
     /**
      * @dev Returns the integer division of two unsigned integers.
@@ -149,9 +168,12 @@ library SafeMath {
      * Requirements:
      * - The divisor cannot be zero.
      */
-    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+    function div(uint256 a, uint256 b) internal pure returns (uint256) { /// removed param: , string memory errorMessage
         // Solidity only automatically asserts when dividing by 0
-        require(b > 0, errorMessage);
+        // require(b > 0, errorMessage);
+        if (b <= 0) {
+            revert DivisionByZero();
+        }
         uint256 c = a / b;
         // assert(a == b * c + a % b); // There is no case in which this doesn't hold
 
@@ -169,9 +191,9 @@ library SafeMath {
      * Requirements:
      * - The divisor cannot be zero.
      */
-    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
-        return mod(a, b, "SafeMath: modulo by zero");
-    }
+        // function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+        //     return mod(a, b, "SafeMath: modulo by zero");
+        // }
 
     /**
      * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
@@ -184,8 +206,11 @@ library SafeMath {
      * Requirements:
      * - The divisor cannot be zero.
      */
-    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        require(b != 0, errorMessage);
+    function mod(uint256 a, uint256 b) internal pure returns (uint256) { /// removed param: , string memory errorMessage
+        // require(b != 0, errorMessage);
+        if (b == 0) {
+            revert ModuloByZero();
+        }
         return a % b;
     }
 }

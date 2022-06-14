@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
+import "./interfaces/EIP20Interface.sol";
+
 /**
  * @title Reservoir Contract
  * @notice Distributes a token to a different contract at a fixed rate.
@@ -8,6 +10,8 @@ pragma solidity ^0.8.10;
  * @author Compound
  */
 contract Reservoir {
+
+  error MathError();
 
   /// @notice The block number when the Reservoir started (immutable)
   uint public dripStart;
@@ -30,7 +34,7 @@ contract Reservoir {
     * @param token_ The token to drip
     * @param target_ The recipient of dripped tokens
     */
-  constructor(uint dripRate_, EIP20Interface token_, address target_) public {
+  constructor(uint dripRate_, EIP20Interface token_, address target_) {
     dripStart = block.number;
     dripRate = dripRate_;
     token = token_;
@@ -54,10 +58,10 @@ contract Reservoir {
     uint blockNumber_ = block.number;
 
     // Next, calculate intermediate values
-    uint dripTotal_ = mul(dripRate_, blockNumber_ - dripStart_, "dripTotal overflow");
-    uint deltaDrip_ = sub(dripTotal_, dripped_, "deltaDrip underflow");
+    uint dripTotal_ = mul(dripRate_, blockNumber_ - dripStart_); // , "dripTotal overflow");
+    uint deltaDrip_ = sub(dripTotal_, dripped_); // , "deltaDrip underflow");
     uint toDrip_ = min(reservoirBalance_, deltaDrip_);
-    uint drippedNext_ = add(dripped_, toDrip_, "tautological");
+    uint drippedNext_ = add(dripped_, toDrip_); // , "tautological");
 
     // Finally, write new `dripped` value and transfer tokens to target
     dripped = drippedNext_;
@@ -68,26 +72,35 @@ contract Reservoir {
 
   /* Internal helper functions for safe math */
 
-  function add(uint a, uint b, string memory errorMessage) internal pure returns (uint) {
+  function add(uint a, uint b) internal pure returns (uint) { /// removed param: , string memory errorMessage
     uint c;
     unchecked { c = a + b; }
-    require(c >= a, errorMessage);
+    // require(c >= a, errorMessage);
+    if (c < a) {
+      revert MathError();
+    }
     return c;
   }
 
-  function sub(uint a, uint b, string memory errorMessage) internal pure returns (uint) {
-    require(b <= a, errorMessage);
+  function sub(uint a, uint b) internal pure returns (uint) { /// removed param: , string memory errorMessage
+    // require(b <= a, errorMessage);
+    if (b > a) {
+      revert MathError();
+    }
     uint c = a - b;
     return c;
   }
 
-  function mul(uint a, uint b, string memory errorMessage) internal pure returns (uint) {
+  function mul(uint a, uint b) internal pure returns (uint) { /// removed param: , string memory errorMessage
     if (a == 0) {
       return 0;
     }
     uint c;
     unchecked { c = a * b; }
-    require(c / a == b, errorMessage);
+    // require(c / a == b, errorMessage);
+    if (c / a != b) {
+      revert MathError();
+    }
     return c;
   }
 
@@ -99,5 +112,3 @@ contract Reservoir {
     }
   }
 }
-
-import "./EIP20Interface.sol";
