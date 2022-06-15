@@ -78,7 +78,7 @@ pragma solidity ^0.8.10;
 
     //     return uint(err);
     // }
-}
+// }
 
 contract TokenErrorReporter {
     uint public constant NO_ERROR = 0; // support legacy return codes
@@ -161,6 +161,7 @@ contract TokenErrorReporter {
     error ChangeNotAuthorized();
     error ComptrollerMismatch();
     error TooMuchRepay();
+    error BorrowCapReached();
 
     // CErc20
     error InvalidUnderlying();

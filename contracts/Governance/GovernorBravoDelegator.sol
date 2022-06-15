@@ -9,23 +9,26 @@ contract GovernorBravoDelegator is GovernorBravoDelegatorStorage, GovernorBravoE
     error InvalidAddress();
 
 	constructor(
-			address timelock_,
-			address comp_,
-			address admin_,
-	        address implementation_,
-	        uint votingPeriod_,
-	        uint votingDelay_,
-            uint proposalThreshold_) {
+        address timelock_,
+        address comp_,
+        address admin_,
+        address implementation_,
+        uint votingPeriod_,
+        uint votingDelay_,
+        uint proposalThreshold_
+    ) {
 
         // Admin set to msg.sender for initialization
         admin = msg.sender;
 
-        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,uint256,uint256,uint256)",
-                                                            timelock_,
-                                                            comp_,
-                                                            votingPeriod_,
-                                                            votingDelay_,
-                                                            proposalThreshold_));
+        delegateTo(implementation_, abi.encodeWithSignature(
+            "initialize(address,address,uint256,uint256,uint256)",
+            timelock_,
+            comp_,
+            votingPeriod_,
+            votingDelay_,
+            proposalThreshold_
+        ));
 
         _setImplementation(implementation_);
 

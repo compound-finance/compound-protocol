@@ -6,6 +6,11 @@ import "../interfaces/IComp.sol";
 
 contract GovernorAlpha {
 
+    error ProposalThresholdNotMet();
+    error ProposalInfoMismatch();
+    error ExcessiveProposalActions();
+    error ExcessiveUserProposals();
+    error ProposalIdCollision();
     error ProposalNotSucceeded();
     error ProposalAlreadyQueued();
     error ProposalNotQueued();
@@ -129,7 +134,17 @@ contract GovernorAlpha {
     bytes32 public constant BALLOT_TYPEHASH = keccak256("Ballot(uint256 proposalId,bool support)");
 
     /// @notice An event emitted when a new proposal is created
-    event ProposalCreated(uint id, address proposer, address[] targets, uint[] values, string[] signatures, bytes[] calldatas, uint startBlock, uint endBlock, string description);
+    event ProposalCreated(
+        uint id, 
+        address proposer, 
+        address[] targets, 
+        uint[] values, 
+        string[] signatures, 
+        bytes[] calldatas, 
+        uint startBlock, 
+        uint endBlock, 
+        string description
+    );
 
     /// @notice An event emitted when a vote has been cast on a proposal
     event VoteCast(address voter, uint proposalId, bool support, uint votes);
@@ -150,16 +165,20 @@ contract GovernorAlpha {
     }
 
     function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint) {
-        require(comp.getPriorVotes(msg.sender, sub256(block.number, 1)) > proposalThreshold(), "GovernorAlpha::propose: proposer votes below proposal threshold");
-        require(targets.length == values.length && targets.length == signatures.length && targets.length == calldatas.length, "GovernorAlpha::propose: proposal function information arity mismatch");
-        require(targets.length != 0, "GovernorAlpha::propose: must provide actions");
-        require(targets.length <= proposalMaxOperations(), "GovernorAlpha::propose: too many actions");
+        // require(comp.getPriorVotes(msg.sender, sub256(block.number, 1)) > proposalThreshold(), "GovernorAlpha::propose: proposer votes below proposal threshold"); /// TODO shouldn't it be `>=`?
+        // require(targets.length == values.length && targets.length == signatures.length && targets.length == calldatas.length, "GovernorAlpha::propose: proposal function information mismatch");
+        // require(targets.length != 0, "GovernorAlpha::propose: must provide actions");
+        // require(targets.length <= proposalMaxOperations(), "GovernorAlpha::propose: too many actions");
+        if (comp.getPriorVotes(msg.sender, sub256(block.number, 1)) < proposalThreshold()) { revert ProposalThresholdNotMet(); } /// TODO should it be `<=` ?? based on the old logic, yes...
+        if (targets.length != values.length || targets.length != signatures.length || targets.length != calldatas.length) { revert ProposalInfoMismatch(); }
+        if (targets.length != 0 || targets.length <= proposalMaxOperations()) { revert ExcessiveProposalActions(); }
 
         uint latestProposalId = latestProposalIds[msg.sender];
         if (latestProposalId != 0) {
           ProposalState proposersLatestProposalState = state(latestProposalId);
-          require(proposersLatestProposalState != ProposalState.Active, "GovernorAlpha::propose: one live proposal per proposer, found an already active proposal");
-          require(proposersLatestProposalState != ProposalState.Pending, "GovernorAlpha::propose: one live proposal per proposer, found an already pending proposal");
+        //   require(proposersLatestProposalState != ProposalState.Active, "GovernorAlpha::propose: one live proposal per proposer, found an already active proposal");
+        //   require(proposersLatestProposalState != ProposalState.Pending, "GovernorAlpha::propose: one live proposal per proposer, found an already pending proposal");
+        if (proposersLatestProposalState == ProposalState.Active || proposersLatestProposalState == ProposalState.Pending) { revert ExcessiveUserProposals(); }
         }
 
         uint startBlock = add256(block.number, votingDelay());
@@ -169,7 +188,9 @@ contract GovernorAlpha {
         uint proposalId = proposalCount;
         Proposal storage newProposal = proposals[proposalId];
         // This should never happen but add a check in case.
-        require(newProposal.id == 0, "GovernorAlpha::propose: ProposalID collsion");
+        // require(newProposal.id == 0, "GovernorAlpha::propose: ProposalID collsion");
+        if (newProposal.id != 0) { revert ProposalIdCollision(); }
+
         newProposal.id = proposalId;
         newProposal.proposer = msg.sender;
         newProposal.eta = 0;

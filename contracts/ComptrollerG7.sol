@@ -13,7 +13,7 @@ import "./Governance/Comp.sol";
  * @title Compound's Comptroller Contract
  * @author Compound
  */
-contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError, TokenErrorReporter {
+contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, ExponentialNoError, TokenErrorReporter {
     /// @notice Emitted when an admin supports a market
     event MarketListed(CToken cToken);
 
@@ -384,7 +384,10 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         if (borrowCap != 0) {
             uint totalBorrows = CToken(cToken).totalBorrows();
             uint nextTotalBorrows = add_(totalBorrows, borrowAmount);
-            require(nextTotalBorrows < borrowCap, "market borrow cap reached");
+            // require(nextTotalBorrows < borrowCap, "market borrow cap reached");
+            if (nextTotalBorrows >= borrowCap) { /// TODO should this be just > ?
+                revert BorrowCapReached();
+            }
         }
 
         // (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(borrower, CToken(cToken), 0, borrowAmount);
@@ -401,7 +404,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         updateCompBorrowIndex(cToken, borrowIndex);
         distributeBorrowerComp(cToken, borrower, borrowIndex);
 
-        return uint(Error.NO_ERROR);
+        // return uint(Error.NO_ERROR);
+        return NO_ERROR;
     }
 
     /**
@@ -434,7 +438,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         address cToken,
         address payer,
         address borrower,
-        uint repayAmount) override external returns (uint) {
+        uint repayAmount
+    ) override external returns (uint) {
         // Shh - currently unused
         payer;
         borrower;
@@ -466,7 +471,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         address payer,
         address borrower,
         uint actualRepayAmount,
-        uint borrowerIndex) override external {
+        uint borrowerIndex
+    ) override external {
         // Shh - currently unused
         cToken;
         payer;
@@ -493,7 +499,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         address cTokenCollateral,
         address liquidator,
         address borrower,
-        uint repayAmount) override view external returns (uint) {
+        uint repayAmount
+    ) override view external returns (uint) {
         // Shh - currently unused
         liquidator;
 
@@ -539,7 +546,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         address liquidator,
         address borrower,
         uint actualRepayAmount,
-        uint seizeTokens) override external {
+        uint seizeTokens
+    ) override external {
         // Shh - currently unused
         cTokenBorrowed;
         cTokenCollateral;
@@ -851,7 +859,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         address cTokenBorrowed, 
         address cTokenCollateral, 
         uint actualRepayAmount
-        ) override external view returns (uint, uint) {
+    ) override external view returns (uint, uint) {
         /* Read oracle prices for borrowed and collateral markets */
         uint priceBorrowedMantissa = oracle.getUnderlyingPrice(CToken(cTokenBorrowed));
         uint priceCollateralMantissa = oracle.getUnderlyingPrice(CToken(cTokenCollateral));
@@ -1388,30 +1396,30 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         CToken[] memory cTokens, 
         bool borrowers, 
         bool suppliers
-        ) public {
-            for (uint i = 0; i < cTokens.length; i++) {
-                CToken cToken = cTokens[i];
-                // require(markets[address(cToken)].isListed, "market must be listed");
-                if (!markets[address(cToken)].isListed) {
-                    revert MarketNotListed();
+    ) public {
+        for (uint i = 0; i < cTokens.length; i++) {
+            CToken cToken = cTokens[i];
+            // require(markets[address(cToken)].isListed, "market must be listed");
+            if (!markets[address(cToken)].isListed) {
+                revert MarketNotListed();
+            }
+            if (borrowers == true) {
+                Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
+                updateCompBorrowIndex(address(cToken), borrowIndex);
+                for (uint j = 0; j < holders.length; j++) {
+                    distributeBorrowerComp(address(cToken), holders[j], borrowIndex);
+                    compAccrued[holders[j]] = grantCompInternal(holders[j], compAccrued[holders[j]]);
                 }
-                if (borrowers == true) {
-                    Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
-                    updateCompBorrowIndex(address(cToken), borrowIndex);
-                    for (uint j = 0; j < holders.length; j++) {
-                        distributeBorrowerComp(address(cToken), holders[j], borrowIndex);
-                        compAccrued[holders[j]] = grantCompInternal(holders[j], compAccrued[holders[j]]);
-                    }
-                }
-                if (suppliers == true) {
-                    updateCompSupplyIndex(address(cToken));
-                    for (uint j = 0; j < holders.length; j++) {
-                        distributeSupplierComp(address(cToken), holders[j]);
-                        compAccrued[holders[j]] = grantCompInternal(holders[j], compAccrued[holders[j]]);
-                    }
+            }
+            if (suppliers == true) {
+                updateCompSupplyIndex(address(cToken));
+                for (uint j = 0; j < holders.length; j++) {
+                    distributeSupplierComp(address(cToken), holders[j]);
+                    compAccrued[holders[j]] = grantCompInternal(holders[j], compAccrued[holders[j]]);
                 }
             }
         }
+    }
 
     /**
      * @notice Transfer COMP to the user

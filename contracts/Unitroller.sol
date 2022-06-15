@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "./ErrorReporter.sol";
+// import "./ErrorReporter.sol";
 import "./ComptrollerStorage.sol";
 /**
  * @title ComptrollerCore
  * @dev Storage for the comptroller is at this address, while execution is delegated to the `comptrollerImplementation`.
  * CTokens should reference this contract as their comptroller.
  */
-contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
+contract Unitroller is UnitrollerAdminStorage { //, ComptrollerErrorReporter {
 
     error AddressUnauthorized();
+    uint public constant NO_ERROR = 0; // support legacy return codes
 
     /**
       * @notice Emitted when pendingComptrollerImplementation is changed
