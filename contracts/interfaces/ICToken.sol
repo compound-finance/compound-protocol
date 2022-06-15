@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "./IComptroller.sol";
-import "../InterestRateModel.sol";
+import "./InterestRateModel.sol";
 import "./IEip20NonStandard.sol";
 //import "../ErrorReporter.sol";
 

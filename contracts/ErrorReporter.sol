@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-contract ComptrollerErrorReporter {
-    enum Error {
+// contract ComptrollerErrorReporter {
+//     enum Error {
+//         NO_ERROR
+//     }
+    /** 
+    REMOVED FROM `enum ERROR`
         NO_ERROR,
         // UNAUTHORIZED,
         // COMPTROLLER_MISMATCH,
@@ -21,8 +25,11 @@ contract ComptrollerErrorReporter {
         // SNAPSHOT_ERROR,
         TOO_MANY_ASSETS
         // TOO_MUCH_REPAY
-    }
+     */
 
+
+    /** 
+    REMOVED FROM `enum FailureInfo`
     enum FailureInfo {
         ACCEPT_ADMIN_PENDING_ADMIN_CHECK,
         ACCEPT_PENDING_IMPLEMENTATION_ADDRESS_CHECK,
@@ -45,30 +52,32 @@ contract ComptrollerErrorReporter {
         SUPPORT_MARKET_OWNER_CHECK,
         SET_PAUSE_GUARDIAN_OWNER_CHECK
     }
+     */
+
 
     /**
       * @dev `error` corresponds to enum Error; `info` corresponds to enum FailureInfo, and `detail` is an arbitrary
       * contract-specific code that enables us to report opaque error codes from upgradeable contracts.
       **/
-    event Failure(uint error, uint info, uint detail);
+    // event Failure(uint error, uint info, uint detail);
 
     /**
       * @dev use this when reporting a known error from the money market or a non-upgradeable collaborator
       */
-    function fail(Error err, FailureInfo info) internal returns (uint) {
-        emit Failure(uint(err), uint(info), 0);
+    // function fail(Error err, FailureInfo info) internal returns (uint) {
+    //     emit Failure(uint(err), uint(info), 0);
 
-        return uint(err);
-    }
+    //     return uint(err);
+    // }
 
     /**
       * @dev use this when reporting an opaque error from an upgradeable collaborator contract
       */
-    function failOpaque(Error err, FailureInfo info, uint opaqueError) internal returns (uint) {
-        emit Failure(uint(err), uint(info), opaqueError);
+    // function failOpaque(Error err, FailureInfo info, uint opaqueError) internal returns (uint) {
+    //     emit Failure(uint(err), uint(info), opaqueError);
 
-        return uint(err);
-    }
+    //     return uint(err);
+    // }
 }
 
 contract TokenErrorReporter {
@@ -142,7 +151,7 @@ contract TokenErrorReporter {
     error AccountSnapshotFailed();
     error NonZeroBorrowBalance();
     error ExitMarketRejection();
-    error MintPaused();
+    error Paused();
     error MarketNotListed();
     error MarketAlreadyListed();
     error InsufficientLiquidity();

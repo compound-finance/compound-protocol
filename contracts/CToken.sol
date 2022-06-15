@@ -713,13 +713,16 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param repayAmount The amount of the underlying borrowed asset to repay
      */
     function liquidateBorrowInternal(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) internal nonReentrant {
+        
+        /// TODO Should this be called here and then with the cTokenCollateral again?
         accrueInterest();
 
-        uint error = cTokenCollateral.accrueInterest();
-        if (error != NO_ERROR) {
-            // accrueInterest emits logs on errors, but we still want to log the fact that an attempted liquidation failed
-            revert LiquidateAccrueCollateralInterestFailed(error);
-        }
+        // uint error = cTokenCollateral.accrueInterest();
+        // if (error != NO_ERROR) {
+        //     // accrueInterest emits logs on errors, but we still want to log the fact that an attempted liquidation failed
+        //     revert LiquidateAccrueCollateralInterestFailed(error);
+        // }
+        cTokenCollateral.accrueInterest();
 
         // liquidateBorrowFresh emits borrow-specific logs on errors, so we don't need to
         liquidateBorrowFresh(msg.sender, borrower, repayAmount, cTokenCollateral);
@@ -735,10 +738,11 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      */
     function liquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CTokenInterface cTokenCollateral) internal {
         /* Fail if liquidate not allowed */
-        uint allowed = comptroller.liquidateBorrowAllowed(address(this), address(cTokenCollateral), liquidator, borrower, repayAmount);
-        if (allowed != 0) {
-            revert LiquidateComptrollerRejection(allowed);
-        }
+        // uint allowed = comptroller.liquidateBorrowAllowed(address(this), address(cTokenCollateral), liquidator, borrower, repayAmount);
+        // if (allowed != 0) {
+        //     revert LiquidateComptrollerRejection(allowed);
+        // }
+        comptroller.liquidateBorrowAllowed(address(this), address(cTokenCollateral), liquidator, borrower, repayAmount);
 
         /* Verify market's block number equals current block number */
         if (accrualBlockNumber != getBlockNumber()) {
@@ -824,10 +828,11 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      */
     function seizeInternal(address seizerToken, address liquidator, address borrower, uint seizeTokens) internal {
         /* Fail if seize not allowed */
-        uint allowed = comptroller.seizeAllowed(address(this), seizerToken, liquidator, borrower, seizeTokens);
-        if (allowed != 0) {
-            revert LiquidateSeizeComptrollerRejection(allowed);
-        }
+        // uint allowed = comptroller.seizeAllowed(address(this), seizerToken, liquidator, borrower, seizeTokens);
+        // if (allowed != 0) {
+        //     revert LiquidateSeizeComptrollerRejection(allowed);
+        // }
+        comptroller.seizeAllowed(address(this), seizerToken, liquidator, borrower, seizeTokens);
 
         /* Fail if borrower = liquidator */
         if (borrower == liquidator) {
@@ -1004,7 +1009,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param addAmount Amount of addition to reserves
      * @return (uint, uint) An error code (0=success, otherwise a failure (see ErrorReporter.sol for details)) and the actual amount added, net token fees
      */
-    function _addReservesFresh(uint addAmount) internal returns (uint, uint) {
+    function _addReservesFresh(uint addAmount) internal returns (uint) { // , uint) {
         // totalReserves + actualAddAmount
         //uint totalReservesNew; // not needed if bypassing the extra step below
         uint actualAddAmount;
@@ -1037,7 +1042,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         emit ReservesAdded(msg.sender, actualAddAmount, totalReserves);
 
         /* Return (NO_ERROR, actualAddAmount) */
-        return (NO_ERROR, actualAddAmount);
+        // return (NO_ERROR, actualAddAmount);
+        return actualAddAmount;
     }
 
 
@@ -1049,16 +1055,19 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     function _reduceReserves(uint reduceAmount) override external nonReentrant returns (uint) {
         accrueInterest();
         // _reduceReservesFresh emits reserve-reduction-specific logs on errors, so we don't need to.
-        return _reduceReservesFresh(reduceAmount);
+        // return _reduceReservesFresh(reduceAmount);
+        _reduceReservesFresh(reduceAmount);
+
+        return NO_ERROR;
     }
 
     /**
      * @notice Reduces reserves by transferring to admin
      * @dev Requires fresh interest accrual
      * @param reduceAmount Amount of reduction to reserves
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     * return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _reduceReservesFresh(uint reduceAmount) internal returns (uint) {
+    function _reduceReservesFresh(uint reduceAmount) internal { // } returns (uint) {
         // totalReserves - reduceAmount
         uint totalReservesNew;
 
@@ -1096,7 +1105,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
 
         emit ReservesReduced(admin, reduceAmount, totalReservesNew);
 
-        return NO_ERROR;
+        // return NO_ERROR;
     }
 
     /**
@@ -1117,9 +1126,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @notice updates the interest rate model (*requires fresh interest accrual)
      * @dev Admin function to update the interest rate model
      * @param newInterestRateModel the new interest rate model to use
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     * return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setInterestRateModelFresh(InterestRateModel newInterestRateModel) internal returns (uint) {
+    function _setInterestRateModelFresh(InterestRateModel newInterestRateModel) internal { // returns (uint) {
 
         // Used to store old model for use in the event that is emitted on success
         InterestRateModel oldInterestRateModel;
@@ -1149,7 +1158,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // Emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel)
         emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel);
 
-        return NO_ERROR;
+        // return NO_ERROR;
     }
 
     /*** Safe Token ***/

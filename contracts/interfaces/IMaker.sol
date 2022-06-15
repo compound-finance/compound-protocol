@@ -12,3 +12,23 @@ interface PotLike {
     function join(uint) external;
     function exit(uint) external;
 }
+
+/*** Maker Interfaces for CDaiDelegate.sol ***/
+
+interface GemLike {
+    function approve(address, uint) external;
+    function balanceOf(address) external view returns (uint);
+    function transferFrom(address, address, uint) external returns (bool);
+}
+
+interface VatLike {
+    function dai(address) external view returns (uint);
+    function hope(address) external;
+}
+
+interface DaiJoinLike {
+    function vat() external returns (VatLike);
+    function dai() external returns (GemLike);
+    function join(address, uint) external payable;
+    function exit(address, uint) external;
+}

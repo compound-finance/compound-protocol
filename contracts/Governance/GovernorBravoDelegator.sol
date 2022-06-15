@@ -15,7 +15,7 @@ contract GovernorBravoDelegator is GovernorBravoDelegatorStorage, GovernorBravoE
 	        address implementation_,
 	        uint votingPeriod_,
 	        uint votingDelay_,
-            uint proposalThreshold_) public {
+            uint proposalThreshold_) {
 
         // Admin set to msg.sender for initialization
         admin = msg.sender;

@@ -191,7 +191,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
 
         /* Return true if the sender is not already ‘in’ the market */
         if (!marketToExit.accountMembership[msg.sender]) {
-            return NO_ERROR; /// TODO Should this be a bool instead?
+            return NO_ERROR;
         }
 
         /* Set cToken account membership to false */
@@ -235,7 +235,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         // Pausing is a very serious situation - we revert to sound the alarms
         // require(!mintGuardianPaused[cToken], "mint is paused");
         if (mintGuardianPaused[cToken]) {
-            revert MintPaused();
+            revert Paused();
         }
 
         // Shh - currently unused
@@ -282,10 +282,11 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
      * @return 0 if the redeem is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function redeemAllowed(address cToken, address redeemer, uint redeemTokens) override external returns (uint) {
-        uint allowed = redeemAllowedInternal(cToken, redeemer, redeemTokens);
-        if (allowed != NO_ERROR) {
-            return allowed;
-        }
+        // uint allowed = redeemAllowedInternal(cToken, redeemer, redeemTokens);
+        // if (allowed != NO_ERROR) {
+        //     return allowed;
+        // }
+        redeemAllowedInternal(cToken, redeemer, redeemTokens);
 
         // Keep the flywheel moving
         updateCompSupplyIndex(cToken);
@@ -346,7 +347,10 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
      */
     function borrowAllowed(address cToken, address borrower, uint borrowAmount) override external returns (uint) {
         // Pausing is a very serious situation - we revert to sound the alarms
-        require(!borrowGuardianPaused[cToken], "borrow is paused");
+        // require(!borrowGuardianPaused[cToken], "borrow is paused");
+        if (borrowGuardianPaused[cToken]) {
+            revert Paused(); 
+        }
 
         if (!markets[cToken].isListed) {
             // return uint(Error.MARKET_NOT_LISTED);
@@ -355,7 +359,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
 
         if (!markets[cToken].accountMembership[borrower]) {
             // only cTokens may call borrowAllowed if borrower not in market
-            require(msg.sender == cToken, "sender must be cToken");
+            // require(msg.sender == cToken, "sender must be cToken");
+            if (msg.sender != cToken) { revert AddressUnauthorized(); }
 
             // attempt to add borrower to the market
             // Error err = addToMarketInternal(CToken(msg.sender), borrower);
@@ -516,7 +521,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
             revert TooMuchRepay();
         }
 
-        return uint(Error.NO_ERROR);
+        // return uint(Error.NO_ERROR);
+        return NO_ERROR;
     }
 
     /**
@@ -563,7 +569,10 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         address borrower,
         uint seizeTokens) override external returns (uint) {
         // Pausing is a very serious situation - we revert to sound the alarms
-        require(!seizeGuardianPaused, "seize is paused");
+        // require(!seizeGuardianPaused, "seize is paused");
+        if (seizeGuardianPaused) { 
+            revert Paused();
+        }
 
         // Shh - currently unused
         seizeTokens;
@@ -583,7 +592,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         distributeSupplierComp(cTokenCollateral, borrower);
         distributeSupplierComp(cTokenCollateral, liquidator);
 
-        return uint(Error.NO_ERROR);
+        // return uint(Error.NO_ERROR);
+        return NO_ERROR;
     }
 
     /**
@@ -623,21 +633,26 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
      */
     function transferAllowed(address cToken, address src, address dst, uint transferTokens) override external returns (uint) {
         // Pausing is a very serious situation - we revert to sound the alarms
-        require(!transferGuardianPaused, "transfer is paused");
+        // require(!transferGuardianPaused, "transfer is paused");
+        if (transferGuardianPaused) {
+            revert Paused();
+        }
 
         // Currently the only consideration is whether or not
         //  the src is allowed to redeem this many tokens
-        uint allowed = redeemAllowedInternal(cToken, src, transferTokens);
-        if (allowed != uint(Error.NO_ERROR)) {
-            return allowed;
-        }
+        // uint allowed = redeemAllowedInternal(cToken, src, transferTokens);
+        // if (allowed != uint(Error.NO_ERROR)) {
+        //     return allowed;
+        // }
+        redeemAllowedInternal(cToken, src, transferTokens);
 
         // Keep the flywheel moving
         updateCompSupplyIndex(cToken);
         distributeSupplierComp(cToken, src);
         distributeSupplierComp(cToken, dst);
 
-        return uint(Error.NO_ERROR);
+        // return uint(Error.NO_ERROR);
+        return NO_ERROR;
     }
 
     /**
@@ -826,7 +841,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         address cTokenBorrowed, 
         address cTokenCollateral, 
         uint actualRepayAmount
-        ) override external view returns (uint) { //, uint) {
+        ) override external view returns (uint, uint) {
         /* Read oracle prices for borrowed and collateral markets */
         uint priceBorrowedMantissa = oracle.getUnderlyingPrice(CToken(cTokenBorrowed));
         uint priceCollateralMantissa = oracle.getUnderlyingPrice(CToken(cTokenCollateral));
@@ -854,7 +869,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         seizeTokens = mul_ScalarTruncate(ratio, actualRepayAmount);
 
         // return (uint(Error.NO_ERROR), seizeTokens);
-        return seizeTokens;
+        return (NO_ERROR, seizeTokens);
     }
 
     /*** Admin Functions ***/
@@ -900,7 +915,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         closeFactorMantissa = newCloseFactorMantissa;
         emit NewCloseFactor(oldCloseFactorMantissa, closeFactorMantissa);
 
-        return uint(Error.NO_ERROR);
+        // return uint(Error.NO_ERROR);
+        return NO_ERROR;
     }
 
     /**
@@ -946,7 +962,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         // Emit event with asset, old collateral factor, and new collateral factor
         emit NewCollateralFactor(cToken, oldCollateralFactorMantissa, newCollateralFactorMantissa);
 
-        return uint(Error.NO_ERROR);
+        // return uint(Error.NO_ERROR);
+        return NO_ERROR;
     }
 
     /**
@@ -971,7 +988,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         // Emit event with old incentive, new incentive
         emit NewLiquidationIncentive(oldLiquidationIncentiveMantissa, newLiquidationIncentiveMantissa);
 
-        return uint(Error.NO_ERROR);
+        // return uint(Error.NO_ERROR);
+        return NO_ERROR;
     }
 
     /**
@@ -1003,7 +1021,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
 
         emit MarketListed(cToken);
 
-        return uint(Error.NO_ERROR);
+        // return uint(Error.NO_ERROR);
+        return NO_ERROR;
     }
 
     function _addMarketInternal(address cToken) internal {
@@ -1082,7 +1101,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         // Emit NewPauseGuardian(OldPauseGuardian, NewPauseGuardian)
         emit NewPauseGuardian(oldPauseGuardian, pauseGuardian);
 
-        return uint(Error.NO_ERROR);
+        // return uint(Error.NO_ERROR);
+        return NO_ERROR;
     }
 
     function _setMintPaused(CToken cToken, bool state) public returns (bool) {

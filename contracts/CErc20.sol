@@ -2,10 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "./CToken.sol";
-
-interface CompLike {
-    function delegate(address delegatee) external;
-}
+import "./interfaces/ICompLike.sol";
 
 /**
  * @title Compound's CErc20 Contract
@@ -112,10 +109,14 @@ contract CErc20 is CToken, CErc20Interface {
      * @param cTokenCollateral The market in which to seize collateral from the borrower
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) override external returns (uint) {
-        liquidateBorrowInternal(borrower, repayAmount, cTokenCollateral);
-        return NO_ERROR;
-    }
+    function liquidateBorrow(
+        address borrower, 
+        uint repayAmount, 
+        CTokenInterface cTokenCollateral
+        ) override external returns (uint) {
+            liquidateBorrowInternal(borrower, repayAmount, cTokenCollateral);
+            return NO_ERROR;
+        }
 
     /**
      * @notice A public function to sweep accidental ERC-20 transfers to this contract. Tokens are sent to admin (timelock)

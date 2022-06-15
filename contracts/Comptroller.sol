@@ -141,7 +141,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
      * @param borrower The address of the account to modify
      * @return Success indicator for whether the market was entered
      */
-    function addToMarketInternal(CToken cToken, address borrower) internal returns (Error) {
+    function addToMarketInternal(CToken cToken, address borrower) internal returns (uint) {
         Market storage marketToJoin = markets[address(cToken)];
 
         if (!marketToJoin.isListed) {
@@ -151,7 +151,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
         if (marketToJoin.accountMembership[borrower] == true) {
             // already joined
-            return Error.NO_ERROR;
+            return NO_ERROR;
         }
 
         // survived the gauntlet, add to list
@@ -164,7 +164,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
         emit MarketEntered(cToken, borrower);
 
-        return Error.NO_ERROR;
+        return NO_ERROR;
     }
 
     /**
@@ -197,7 +197,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
         /* Return true if the sender is not already ‘in’ the market */
         if (!marketToExit.accountMembership[msg.sender]) {
-            return uint(Error.NO_ERROR);
+            return NO_ERROR;
         }
 
         /* Set cToken account membership to false */
@@ -225,7 +225,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
         emit MarketExited(cToken, msg.sender);
 
-        return uint(Error.NO_ERROR);
+        return NO_ERROR;
     }
 
     /*** Policy Hooks ***/
@@ -256,7 +256,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         updateCompSupplyIndex(cToken);
         distributeSupplierComp(cToken, minter);
 
-        return uint(Error.NO_ERROR);
+        return NO_ERROR;
     }
 
     /**
@@ -307,7 +307,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
         /* If the redeemer is not 'in' the market, then we can bypass the liquidity check */
         if (!markets[cToken].accountMembership[redeemer]) {
-            return uint(Error.NO_ERROR);
+            return NO_ERROR;
         }
 
         /* Otherwise, perform a hypothetical liquidity check to guard against shortfall */

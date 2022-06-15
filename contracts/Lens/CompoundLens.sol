@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import "../CErc20.sol";
 import "../CToken.sol";
 import "../PriceOracle.sol";
-import "../EIP20Interface.sol";
+import "../interfaces/IEip20.sol";
 import "../Governance/GovernorAlpha.sol";
 import "../Governance/Comp.sol";
 
@@ -455,8 +455,8 @@ contract CompoundLens {
         comptroller.claimComp(account);
         uint newBalance = comp.balanceOf(account);
         uint accrued = comptroller.compAccrued(account);
-        uint total = add(accrued, newBalance, "sum comp total");
-        uint allocated = sub(total, balance, "sub allocated");
+        uint total = add(accrued, newBalance); //, "sum comp total");
+        uint allocated = sub(total, balance); //, "sub allocated");
 
         return CompBalanceMetadataExt({
             balance: balance,
@@ -486,14 +486,16 @@ contract CompoundLens {
         return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
     }
 
-    function add(uint a, uint b, string memory errorMessage) internal pure returns (uint) {
+    function add(uint a, uint b) internal pure returns (uint) { ///, string memory errorMessage
         uint c = a + b;
-        require(c >= a, errorMessage);
+        // require(c >= a, errorMessage);
+        if (c < a) { revert MathError(); }
         return c;
     }
 
-    function sub(uint a, uint b, string memory errorMessage) internal pure returns (uint) {
-        require(b <= a, errorMessage);
+    function sub(uint a, uint b) internal pure returns (uint) { ///, string memory errorMessage
+        // require(b <= a, errorMessage);
+        if (b > a) { revert MathError(); }
         uint c = a - b;
         return c;
     }
