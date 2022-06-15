@@ -192,12 +192,16 @@ contract CDaiDelegate is CErc20Delegate {
     function add(uint x, uint y) internal pure returns (uint z) {
         // require((z = x + y) >= x, "add-overflow");
         uint z = x + y;
-        if (z >= x) { revert MathError(); }
+        if (z >= x) { 
+            revert MathError(); 
+        }
     }
 
     function mul(uint x, uint y) internal pure returns (uint z) {
         // require(y == 0 || (z = x * y) / y == x, "mul-overflow");
         uint z = x * y;
-        if (y != 0 && z / y != x) { revert MathError(); }
+        if (y != 0 && z / y != x) { 
+            revert MathError(); 
+        }
     }
 }

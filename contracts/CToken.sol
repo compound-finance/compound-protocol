@@ -23,12 +23,14 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param symbol_ EIP-20 symbol of this token
      * @param decimals_ EIP-20 decimal precision of this token
      */
-    function initialize(ComptrollerInterface comptroller_,
-                        InterestRateModel interestRateModel_,
-                        uint initialExchangeRateMantissa_,
-                        string memory name_,
-                        string memory symbol_,
-                        uint8 decimals_) public {
+    function initialize(
+        ComptrollerInterface comptroller_,
+        InterestRateModel interestRateModel_,
+        uint initialExchangeRateMantissa_,
+        string memory name_,
+        string memory symbol_,
+        uint8 decimals_
+    ) public {
         // require(msg.sender == admin, "only admin may initialize the market");
         if (msg.sender != admin) {
             revert AddressUnauthorized();
@@ -222,7 +224,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @return The supply interest rate per block, scaled by 1e18
      */
     function supplyRatePerBlock() override external view returns (uint) {
-        return interestRateModel.getSupplyRate(getCashPrior(), totalBorrows, totalReserves, reserveFactorMantissa);
+        return interestRateModel.getSupplyRate(
+            getCashPrior(), totalBorrows, totalReserves, reserveFactorMantissa
+        );
     }
 
     /**
@@ -657,10 +661,11 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      */
     function repayBorrowFresh(address payer, address borrower, uint repayAmount) internal returns (uint) {
         /* Fail if repayBorrow not allowed */
-        uint allowed = comptroller.repayBorrowAllowed(address(this), payer, borrower, repayAmount);
-        if (allowed != 0) {
-            revert RepayBorrowComptrollerRejection(allowed);
-        }
+        // uint allowed = comptroller.repayBorrowAllowed(address(this), payer, borrower, repayAmount);
+        // if (allowed != 0) {
+        //     revert RepayBorrowComptrollerRejection(allowed);
+        // }
+        comptroller.repayBorrowAllowed(address(this), payer, borrower, repayAmount);
 
         /* Verify market's block number equals current block number */
         if (accrualBlockNumber != getBlockNumber()) {
@@ -742,7 +747,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // if (allowed != 0) {
         //     revert LiquidateComptrollerRejection(allowed);
         // }
-        comptroller.liquidateBorrowAllowed(address(this), address(cTokenCollateral), liquidator, borrower, repayAmount);
+        comptroller.liquidateBorrowAllowed(
+            address(this), address(cTokenCollateral), liquidator, borrower, repayAmount
+        );
 
         /* Verify market's block number equals current block number */
         if (accrualBlockNumber != getBlockNumber()) {
@@ -778,7 +785,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
 
         /* We calculate the number of collateral tokens that will be seized */
         // (uint amountSeizeError, uint seizeTokens) = comptroller.liquidateCalculateSeizeTokens(address(this), address(cTokenCollateral), actualRepayAmount);
-        uint seizeTokens = comptroller.liquidateCalculateSeizeTokens(address(this), address(cTokenCollateral), actualRepayAmount);
+        uint seizeTokens = comptroller.liquidateCalculateSeizeTokens(
+            address(this), address(cTokenCollateral), actualRepayAmount
+        );
         /// Errors changed to reverts in called functions. No need to error check here now...
         // require(amountSeizeError == NO_ERROR, "LIQUIDATE_COMPTROLLER_CALCULATE_AMOUNT_SEIZE_FAILED");
         // if (amountSeizeError != NO_ERROR) {
@@ -811,7 +820,11 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param seizeTokens The number of cTokens to seize
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function seize(address liquidator, address borrower, uint seizeTokens) override external nonReentrant returns (uint) {
+    function seize(
+        address liquidator, 
+        address borrower, 
+        uint seizeTokens
+    ) override external nonReentrant returns (uint) {
         seizeInternal(msg.sender, liquidator, borrower, seizeTokens);
 
         return NO_ERROR;
@@ -826,7 +839,12 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param borrower The account having collateral seized
      * @param seizeTokens The number of cTokens to seize
      */
-    function seizeInternal(address seizerToken, address liquidator, address borrower, uint seizeTokens) internal {
+    function seizeInternal(
+        address seizerToken, 
+        address liquidator, 
+        address borrower, 
+        uint seizeTokens
+    ) internal {
         /* Fail if seize not allowed */
         // uint allowed = comptroller.seizeAllowed(address(this), seizerToken, liquidator, borrower, seizeTokens);
         // if (allowed != 0) {
@@ -1030,9 +1048,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
          *  doTransferIn reverts if anything goes wrong, since we can't be sure if side effects occurred.
          *  it returns the amount actually transferred, in case of a fee.
          */
-
         actualAddAmount = doTransferIn(msg.sender, addAmount);
-
         totalReserves = totalReserves + actualAddAmount;
 
         // Store reserves[n+1] = reserves[n] + actualAddAmount

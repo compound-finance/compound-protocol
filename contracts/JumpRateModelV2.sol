@@ -29,11 +29,11 @@ contract JumpRateModelV2 is InterestRateModel, BaseJumpRateModelV2  {
       uint jumpMultiplierPerYear, 
       uint kink_, 
       address owner_
-      ) BaseJumpRateModelV2 (
-        baseRatePerYear,
-        multiplierPerYear,
-        jumpMultiplierPerYear,
-        kink_,
-        owner_
-        ) public {}
+    ) BaseJumpRateModelV2 (
+      baseRatePerYear,
+      multiplierPerYear,
+      jumpMultiplierPerYear,
+      kink_,
+      owner_
+    ) {}
 }

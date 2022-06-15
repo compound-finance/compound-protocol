@@ -20,16 +20,24 @@ contract CErc20 is CToken, CErc20Interface {
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
      */
-    function initialize(address underlying_,
-                        ComptrollerInterface comptroller_,
-                        InterestRateModel interestRateModel_,
-                        uint initialExchangeRateMantissa_,
-                        string memory name_,
-                        string memory symbol_,
-                        uint8 decimals_) public {
+    function initialize(
+        address underlying_,
+        ComptrollerInterface comptroller_,
+        InterestRateModel interestRateModel_,
+        uint initialExchangeRateMantissa_,
+        string memory name_,
+        string memory symbol_,
+        uint8 decimals_
+    ) public {
         // CToken initialize does the bulk of the work
-        super.initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
-
+        super.initialize(
+            comptroller_, 
+            interestRateModel_, 
+            initialExchangeRateMantissa_, 
+            name_, 
+            symbol_, 
+            decimals_
+        );
         // Set underlying and sanity check it
         underlying = underlying_;
         EIP20Interface(underlying).totalSupply();

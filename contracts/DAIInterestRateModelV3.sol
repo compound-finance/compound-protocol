@@ -45,18 +45,18 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
         address pot_, 
         address jug_, 
         address owner_
-        ) JumpRateModelV2(
-            0, 
-            0, 
-            jumpMultiplierPerYear, 
-            kink_, 
-            owner_
-            ) {
-                gapPerBlock = 4e16 / blocksPerYear;
-                pot = PotLike(pot_);
-                jug = JugLike(jug_);
-                poke();
-            }
+    ) JumpRateModelV2 (
+        0, 
+        0, 
+        jumpMultiplierPerYear, 
+        kink_, 
+        owner_
+    ) {
+        gapPerBlock = 4e16 / blocksPerYear;
+        pot = PotLike(pot_);
+        jug = JugLike(jug_);
+        poke();
+    }
 
     /** 
      * @notice External function to update the parameters of the interest rate model
@@ -66,7 +66,12 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      * @param kink_ The utilization point at which the jump multiplier is applied
      */
     /// TODO Can we remove the unused input `baseRatePerYear`?
-    function updateJumpRateModel(uint baseRatePerYear, uint gapPerYear, uint jumpMultiplierPerYear, uint kink_) override external {
+    function updateJumpRateModel(
+        uint baseRatePerYear, 
+        uint gapPerYear, 
+        uint jumpMultiplierPerYear, 
+        uint kink_
+    ) override external {
         // require(msg.sender == owner, "only the owner may call this function.");
         if (msg.sender != owner) {
             revert AddressUnauthorized();
@@ -89,20 +94,20 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
         uint borrows, 
         uint reserves, 
         uint reserveFactorMantissa
-        ) override (
-            BaseJumpRateModelV2, 
-            InterestRateModel
-            ) public view returns (uint) {
-                uint protocolRate = super.getSupplyRate(cash, borrows, reserves, reserveFactorMantissa);
+    ) override (
+        BaseJumpRateModelV2, 
+        InterestRateModel
+    ) public view returns (uint) {
+        uint protocolRate = super.getSupplyRate(cash, borrows, reserves, reserveFactorMantissa);
 
-                uint underlying = cash + borrows - reserves;
-                if (underlying == 0) {
-                    return protocolRate;
-                } else {
-                    uint cashRate = cash * dsrPerBlock() / underlying;
-                    return cashRate + protocolRate;
-                }
-            }
+        uint underlying = cash + borrows - reserves;
+        if (underlying == 0) {
+            return protocolRate;
+        } else {
+            uint cashRate = cash * dsrPerBlock() / underlying;
+            return cashRate + protocolRate;
+        }
+    }
 
     /**
      * @notice Calculates the Dai savings rate per block

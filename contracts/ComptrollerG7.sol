@@ -567,7 +567,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         address cTokenBorrowed,
         address liquidator,
         address borrower,
-        uint seizeTokens) override external returns (uint) {
+        uint seizeTokens
+    ) override external returns (uint) {
         // Pausing is a very serious situation - we revert to sound the alarms
         // require(!seizeGuardianPaused, "seize is paused");
         if (seizeGuardianPaused) { 
@@ -609,7 +610,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         address cTokenBorrowed,
         address liquidator,
         address borrower,
-        uint seizeTokens) override external {
+        uint seizeTokens
+    ) override external {
         // Shh - currently unused
         cTokenCollateral;
         cTokenBorrowed;
@@ -631,7 +633,12 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
      * @param transferTokens The number of cTokens to transfer
      * @return 0 if the transfer is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
-    function transferAllowed(address cToken, address src, address dst, uint transferTokens) override external returns (uint) {
+    function transferAllowed(
+        address cToken, 
+        address src, 
+        address dst, 
+        uint transferTokens
+    ) override external returns (uint) {
         // Pausing is a very serious situation - we revert to sound the alarms
         // require(!transferGuardianPaused, "transfer is paused");
         if (transferGuardianPaused) {
@@ -734,7 +741,10 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         uint borrowAmount) public view returns (uint, uint) { //, uint) {
         // (Error err, uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(account, CToken(cTokenModify), redeemTokens, borrowAmount);
         // return (uint(err), liquidity, shortfall);
-        (uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(account, CToken(cTokenModify), redeemTokens, borrowAmount);
+        (uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(
+            account, CToken(cTokenModify), redeemTokens, borrowAmount
+        );
+        
         return (liquidity, shortfall);
     }
 
@@ -1325,6 +1335,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
             uint borrowerDelta = mul_(borrowerAmount, deltaIndex);
             uint borrowerAccrued = add_(compAccrued[borrower], borrowerDelta);
             compAccrued[borrower] = borrowerAccrued;
+
             emit DistributedBorrowerComp(CToken(cToken), borrower, borrowerDelta, borrowIndex.mantissa);
         }
     }

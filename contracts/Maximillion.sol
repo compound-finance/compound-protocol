@@ -16,7 +16,7 @@ contract Maximillion {
     /**
      * @notice Construct a Maximillion to repay max in a CEther market
      */
-    constructor(CEther cEther_) public {
+    constructor(CEther cEther_) {
         cEther = cEther_;
     }
 
