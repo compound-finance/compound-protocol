@@ -166,4 +166,16 @@ contract TokenErrorReporter {
     // CErc20
     error InvalidUnderlying();
     error TransferFailure();
+    error ActionFailure();
+
+    // Maths
+    error MathError();
+
+    // CDaiDelegate.sol
+    error MustUseDai();
+
+    // CEther
+    error SenderMismatch();
+    error ValueMismatch();
 } 
+

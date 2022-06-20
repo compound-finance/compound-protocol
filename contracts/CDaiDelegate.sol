@@ -11,9 +11,9 @@ import "./interfaces/IMaker.sol";
  */
 contract CDaiDelegate is CErc20Delegate {
 
-    error AddressUnauthorized();
-    error MustUseDai();
-    error MathError();
+    // error AddressUnauthorized();
+    // error MustUseDai();
+    // error MathError();
 
     /**
      * @notice DAI adapter address

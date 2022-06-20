@@ -33,7 +33,7 @@ contract CErc20Harness is CErc20Immutable {
     admin_) {}
 
     function doTransferOut(address payable to, uint amount) override internal {
-        require(failTransferToAddresses[to] == false, "TOKEN_TRANSFER_OUT_FAILED");
+        require(failTransferToAddresses[to] == false);
         return super.doTransferOut(to, amount);
     }
 
@@ -261,7 +261,7 @@ contract CErc20DelegateHarness is CErc20Delegate {
     }
 
     function doTransferOut(address payable to, uint amount) override internal {
-        require(failTransferToAddresses[to] == false, "TOKEN_TRANSFER_OUT_FAILED");
+        require(failTransferToAddresses[to] == false);
         return super.doTransferOut(to, amount);
     }
 

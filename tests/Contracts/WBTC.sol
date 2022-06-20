@@ -498,7 +498,7 @@ contract PausableToken is StandardToken, Pausable {
     uint256 _value
   )
     virtual
-    override
+    override (BasicToken, ERC20Basic)
     public
     whenNotPaused
     returns (bool)

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "../../contracts/EIP20NonStandardInterface.sol";
+import "../../contracts/interfaces/IEip20NonStandard.sol";
 
 /**
   * @title Fauceteer

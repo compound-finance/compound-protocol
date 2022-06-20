@@ -10,8 +10,8 @@ import "./CToken.sol";
  */
 contract CEther is CToken {
 
-    error SenderMismatch();
-    error ValueMismatch();
+    // error SenderMismatch();
+    // error ValueMismatch();
 
     /**
      * @notice Construct a new CEther money market
