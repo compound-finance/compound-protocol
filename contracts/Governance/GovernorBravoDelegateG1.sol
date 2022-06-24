@@ -1,5 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
-pragma experimental ABIEncoderV2;
 
 import "./GovernorBravoInterfaces.sol";
 
@@ -128,6 +128,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         // This should never happen but add a check in case.
         // require(newProposal.id == 0, "GovernorBravo::propose: ProposalID collsion");
         if (newProposal.id != 0) { revert ProposalIdCollision(); }
+
         newProposal.id = proposalCount;
         newProposal.proposer = msg.sender;
         newProposal.eta = 0;

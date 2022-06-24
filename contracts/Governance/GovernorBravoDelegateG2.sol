@@ -68,13 +68,20 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
       * @param proposalThreshold_ The initial proposal threshold
       */
     function initialize(address timelock_, address comp_, uint votingPeriod_, uint votingDelay_, uint proposalThreshold_) public {
-        require(address(timelock) == address(0), "GovernorBravo::initialize: can only initialize once");
-        require(msg.sender == admin, "GovernorBravo::initialize: admin only");
-        require(timelock_ != address(0), "GovernorBravo::initialize: invalid timelock address");
-        require(comp_ != address(0), "GovernorBravo::initialize: invalid comp address");
-        require(votingPeriod_ >= MIN_VOTING_PERIOD && votingPeriod_ <= MAX_VOTING_PERIOD, "GovernorBravo::initialize: invalid voting period");
-        require(votingDelay_ >= MIN_VOTING_DELAY && votingDelay_ <= MAX_VOTING_DELAY, "GovernorBravo::initialize: invalid voting delay");
-        require(proposalThreshold_ >= MIN_PROPOSAL_THRESHOLD && proposalThreshold_ <= MAX_PROPOSAL_THRESHOLD, "GovernorBravo::initialize: invalid proposal threshold");
+        // require(address(timelock) == address(0), "GovernorBravo::initialize: can only initialize once");
+        // require(msg.sender == admin, "GovernorBravo::initialize: admin only");
+        // require(timelock_ != address(0), "GovernorBravo::initialize: invalid timelock address");
+        // require(comp_ != address(0), "GovernorBravo::initialize: invalid comp address");
+        // require(votingPeriod_ >= MIN_VOTING_PERIOD && votingPeriod_ <= MAX_VOTING_PERIOD, "GovernorBravo::initialize: invalid voting period");
+        // require(votingDelay_ >= MIN_VOTING_DELAY && votingDelay_ <= MAX_VOTING_DELAY, "GovernorBravo::initialize: invalid voting delay");
+        // require(proposalThreshold_ >= MIN_PROPOSAL_THRESHOLD && proposalThreshold_ <= MAX_PROPOSAL_THRESHOLD, "GovernorBravo::initialize: invalid proposal threshold");
+        if (address(timelock) != address(0)) { revert AlreadyInitialized(); }
+        if (msg.sender != admin) { revert AddressUnauthorized(); }
+        if (timelock_ == address(0) || comp_ == address(0)) { revert InvalidAddress();}
+        if (votingPeriod_ < MIN_VOTING_PERIOD && votingPeriod_ > MAX_VOTING_PERIOD) { revert InvalidVotingPeriod(); }
+        if (votingDelay_ < MIN_VOTING_DELAY && votingDelay_ > MAX_VOTING_DELAY) { revert InvalidVotingDelay(); }
+        if (proposalThreshold_ < MIN_PROPOSAL_THRESHOLD && proposalThreshold_ > MAX_PROPOSAL_THRESHOLD) { revert InvalidProposalThreshold(); }
+
 
         timelock = TimelockInterface(timelock_);
         comp = CompInterface(comp_);
@@ -120,7 +127,9 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         proposalCount++;
         Proposal storage newProposal = proposals[proposalCount];
         // This should never happen but add a check in case.
-        require(newProposal.id == 0, "GovernorBravo::propose: ProposalID collsion");
+        // require(newProposal.id == 0, "GovernorBravo::propose: ProposalID collsion");
+        if (newProposal.id != 0) { revert ProposalIdCollision(); }
+
         newProposal.id = proposalCount;
         newProposal.proposer = msg.sender;
         newProposal.eta = 0;
@@ -135,9 +144,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         newProposal.abstainVotes = 0;
         newProposal.canceled = false;
         newProposal.executed = false;
-        });
 
-        proposals[newProposal.id] = newProposal;
         latestProposalIds[newProposal.proposer] = newProposal.id;
 
         emit ProposalCreated(newProposal.id, msg.sender, targets, values, signatures, calldatas, startBlock, endBlock, description);
@@ -176,7 +183,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         Proposal storage proposal = proposals[proposalId];
         proposal.executed = true;
         for (uint i = 0; i < proposal.targets.length; i++) {
-            timelock.executeTransaction.value(proposal.values[i])(proposal.targets[i], proposal.values[i], proposal.signatures[i], proposal.calldatas[i], proposal.eta);
+            timelock.executeTransaction{value: proposal.values[i]}(proposal.targets[i], proposal.values[i], proposal.signatures[i], proposal.calldatas[i], proposal.eta);
         }
         emit ProposalExecuted(proposalId);
     }
@@ -340,7 +347,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
      * @return If the account is whitelisted
      */
     function isWhitelisted(address account) public view returns (bool) {
-        return (whitelistAccountExpirations[account] > now);
+        return (whitelistAccountExpirations[account] > block.timestamp);
     }
 
     /**
@@ -492,7 +499,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         return a - b;
     }
 
-    function getChainIdInternal() internal pure returns (uint) {
+    function getChainIdInternal() internal view returns (uint) {
         uint chainId;
         assembly { chainId := chainid() }
         return chainId;
