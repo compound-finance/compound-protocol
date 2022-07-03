@@ -1,0 +1,44 @@
+#!/usr/bin/env yarn repl -s
+
+PrintTransactionLogs
+
+Alias Arr00 "0x2B384212EDc04Ae8bB41738D05BA20E33277bf33"
+Alias CompHolder "0xF977814e90dA44bFA03b6295A0616a897441aceC"
+Alias CompHolder2 "0xfa9b5f7fdc8ab34aaf3099889475d47febf830d7"
+Alias CurrentImpl "0xBafE01ff935C7305907c33BF824352eE5979B526"
+Alias USDCSupplyer "0x41fA28CA6d17AeF97D641AA230e57243b10AFcD4"
+Alias WBTCSender "0x6918fE32bB0CCfba961C554699c1B506eD0Bd458"
+
+Web3Fork "https://mainnet-eth.compound.finance/@15071471" (CompHolder CompHolder2 Arr00 USDCSupplyer)
+UseConfigs mainnet
+
+ComptrollerImpl Deploy Sweeper ComptrollerSweeper
+Assert Equal (Unitroller Implementation) (Address CurrentImpl)
+
+From CompHolder (Comp Delegate CompHolder)
+From CompHolder2 (Comp Delegate CompHolder)
+
+From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Sweep Comptroller" [(Address Unitroller) (Address ComptrollerSweeper) (Address Unitroller) (Address Unitroller) (Address Unitroller) (Address Unitroller) (Address Unitroller) (Address CurrentImpl) (Address WBTC) (Address cUNI)] [0 0 0 0 0 0 0 0 0 0] ["_setPendingImplementation(address)" "_become(address)" "_sweep(address)" "_sweep(address)" "_sweep(address)" "_sweep(address)" "_setPendingImplementation(address)" "_become(address)" "transfer(address,uint256)" "transfer(address,uint256)"] [[(Address ComptrollerSweeper)] [(Address Unitroller)] [(Address WBTC)] [(Address UNI)] [(Address BAT)] [(Address SAI)] [(Address CurrentImpl)] [(Address Unitroller)] [(Address WBTCSender) "30147937"] [(Address Arr00) "8900000000000"]])
+
+-- Vote for, queue, and execute the proposal
+MineBlock
+AdvanceBlocks 13140
+From CompHolder (GovernorBravo GovernorBravoDelegator Proposal LastProposal Vote For)
+AdvanceBlocks 20000
+GovernorBravo GovernorBravoDelegator Proposal LastProposal Queue
+IncreaseTime 604910
+GovernorBravo GovernorBravoDelegator Proposal LastProposal Execute
+
+Assert Equal (Erc20 WBTC TokenBalance (Address WBTCSender)) (30147937) 
+Assert Equal (Unitroller Implementation) (Address CurrentImpl)
+Assert Equal (Erc20 (Address cUNI) TokenBalance (Address Arr00)) (8900000000000)
+
+
+-- Verify normal functionality
+RedeemUnderlying USDCSupplyer 100000 cUSDC 
+Assert Equal (Erc20 USDC TokenBalance (Address USDCSupplyer)) (100000)
+
+Mint USDCSupplyer 100000 cUSDC
+Assert Equal (Erc20 USDC TokenBalance (Address USDCSupplyer)) (0)
+
+Print "Sweep comptroller sucessfully!"
