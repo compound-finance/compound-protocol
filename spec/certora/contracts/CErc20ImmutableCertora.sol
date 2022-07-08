@@ -1,4 +1,4 @@
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.15;
 
 import "../../../contracts/CErc20Immutable.sol";
 import "../../../contracts/EIP20Interface.sol";

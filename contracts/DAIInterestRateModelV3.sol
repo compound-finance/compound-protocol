@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.15;
 
 import "./JumpRateModelV2.sol";
 
@@ -66,7 +66,7 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      * @param reserveFactorMantissa The current reserve factor the market has
      * @return The supply rate per block (as a percentage, and scaled by BASE)
      */
-    function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) override public view returns (uint) {
+    function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) override(InterestRateModel, BaseJumpRateModelV2) public view returns (uint) {
         uint protocolRate = super.getSupplyRate(cash, borrows, reserves, reserveFactorMantissa);
 
         uint underlying = cash + borrows - reserves;

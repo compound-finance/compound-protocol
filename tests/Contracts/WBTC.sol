@@ -3,7 +3,7 @@
 */
 
 // SPDX-License-Identifier: BSD-3-Clause
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.15;
 
 // File: openzeppelin-solidity/contracts/token/ERC20/ERC20Basic.sol
 
@@ -498,7 +498,7 @@ contract PausableToken is StandardToken, Pausable {
     uint256 _value
   )
     virtual
-    override
+    override(BasicToken, ERC20Basic)
     public
     whenNotPaused
     returns (bool)
