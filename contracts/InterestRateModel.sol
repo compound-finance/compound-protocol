@@ -6,8 +6,6 @@ pragma solidity ^0.8.10;
   * @author Compound
   */
 abstract contract InterestRateModel {
-    /// @notice Indicator that this is an InterestRateModel contract (for inspection)
-    bool public constant isInterestRateModel = true;
 
     /**
       * @notice Calculates the current borrow interest rate per block

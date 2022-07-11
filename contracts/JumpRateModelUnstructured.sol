@@ -29,7 +29,7 @@ contract JumpRateModelUnstructured is InterestRateModel {
                         uint multiplierPerYear_,
                         uint jumpMultiplierPerYear_,
                         uint kink_
-                        ) public {
+                        ) internal {
 
         uint baseRatePerBlock = baseRatePerYear_ / blocksPerYear;
         uint multiplierPerBlock = multiplierPerYear_ / blocksPerYear;

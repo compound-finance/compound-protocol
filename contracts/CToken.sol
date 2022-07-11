@@ -6,6 +6,7 @@ import "./CTokenInterfaces.sol";
 import "./ErrorReporter.sol";
 import "./EIP20Interface.sol";
 import "./InterestRateModel.sol";
+import "./JumpRateModelUnstructured.sol";
 import "./ExponentialNoError.sol";
 
 /**
@@ -13,22 +14,21 @@ import "./ExponentialNoError.sol";
  * @notice Abstract base for CTokens
  * @author Compound
  */
-abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorReporter {
+abstract contract CToken is CTokenInterface, JumpRateModelUnstructured, ExponentialNoError, TokenErrorReporter {
     /**
      * @notice Initialize the money market
      * @param comptroller_ The address of the Comptroller
-     * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
      * @param name_ EIP-20 name of this token
      * @param symbol_ EIP-20 symbol of this token
      * @param decimals_ EIP-20 decimal precision of this token
      */
     function initialize(ComptrollerInterface comptroller_,
-                        InterestRateModel interestRateModel_,
                         uint initialExchangeRateMantissa_,
                         string memory name_,
                         string memory symbol_,
-                        uint8 decimals_) public {
+                        uint8 decimals_
+                        ) public {
         require(msg.sender == admin, "only admin may initialize the market");
         require(accrualBlockNumber == 0 && borrowIndex == 0, "market may only be initialized once");
 
@@ -45,9 +45,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         borrowIndex = mantissaOne;
 
         // Set the interest rate model (depends on block number / borrow index)
-        err = _setInterestRateModelFresh(interestRateModel_);
-        require(err == NO_ERROR, "setting interest rate model failed");
-
+        // err = _setInterestRateModelFresh(interestRateModel_);
+        // require(err == NO_ERROR, "setting interest rate model failed");
         name = name_;
         symbol = symbol_;
         decimals = decimals_;
@@ -205,7 +204,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @return The borrow interest rate per block, scaled by 1e18
      */
     function borrowRatePerBlock() override external view returns (uint) {
-        return interestRateModel.getBorrowRate(getCashPrior(), totalBorrows, totalReserves);
+        return getBorrowRate(getCashPrior(), totalBorrows, totalReserves);
     }
 
     /**
@@ -213,7 +212,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @return The supply interest rate per block, scaled by 1e18
      */
     function supplyRatePerBlock() override external view returns (uint) {
-        return interestRateModel.getSupplyRate(getCashPrior(), totalBorrows, totalReserves, reserveFactorMantissa);
+        return getSupplyRate(getCashPrior(), totalBorrows, totalReserves, reserveFactorMantissa);
     }
 
     /**
@@ -341,7 +340,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         uint borrowIndexPrior = borrowIndex;
 
         /* Calculate the current borrow interest rate */
-        uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
+        uint borrowRateMantissa = getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
         require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
 
         /* Calculate the number of blocks elapsed since the last accrual */
@@ -1074,47 +1073,50 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     /**
      * @notice accrues interest and updates the interest rate model using _setInterestRateModelFresh
      * @dev Admin function to accrue interest and update the interest rate model
-     * @param newInterestRateModel the new interest rate model to use
+     * @param baseRatePerYear_ the new interest rate model to use
+     * @param multiplierPerYear_ the new interest rate model to use
+     * @param jumpMultiplierPerYear_ the new interest rate model to use
+     * @param kink_ the new interest rate model to use
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setInterestRateModel(InterestRateModel newInterestRateModel) override public returns (uint) {
+    function _setInterestRateModel(uint baseRatePerYear_, uint multiplierPerYear_, uint jumpMultiplierPerYear_, uint kink_) override public returns (uint) {
         accrueInterest();
         // _setInterestRateModelFresh emits interest-rate-model-update-specific logs on errors, so we don't need to.
-        return _setInterestRateModelFresh(newInterestRateModel);
+        return _setInterestRateModelFresh(baseRatePerYear_, multiplierPerYear_, jumpMultiplierPerYear_, kink_);
     }
 
     /**
      * @notice updates the interest rate model (*requires fresh interest accrual)
      * @dev Admin function to update the interest rate model
-     * @param newInterestRateModel the new interest rate model to use
+     * @param baseRatePerYear_ the new interest rate model to use
+     * @param multiplierPerYear_ the new interest rate model to use
+     * @param jumpMultiplierPerYear_ the new interest rate model to use
+     * @param kink_ the new interest rate model to use
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setInterestRateModelFresh(InterestRateModel newInterestRateModel) internal returns (uint) {
+    function _setInterestRateModelFresh(uint baseRatePerYear_, uint multiplierPerYear_, uint jumpMultiplierPerYear_, uint kink_) internal returns (uint) {
 
-        // Used to store old model for use in the event that is emitted on success
-        InterestRateModel oldInterestRateModel;
 
-        // Check caller is admin
-        if (msg.sender != admin) {
-            revert SetInterestRateModelOwnerCheck();
-        }
+        // // Check caller is admin
+        // if (msg.sender != admin) {
+        //     revert SetInterestRateModelOwnerCheck();
+        // }
 
         // We fail gracefully unless market's block number equals current block number
-        if (accrualBlockNumber != getBlockNumber()) {
-            revert SetInterestRateModelFreshCheck();
-        }
+        // if (accrualBlockNumber != getBlockNumber()) {
+        //     revert SetInterestRateModelFreshCheck();
+        // }
 
-        // Track the market's current interest rate model
-        oldInterestRateModel = interestRateModel;
 
         // Ensure invoke newInterestRateModel.isInterestRateModel() returns true
-        require(newInterestRateModel.isInterestRateModel(), "marker method returned false");
+        // require(newInterestRateModel.isInterestRateModel(), "marker method returned false");
 
         // Set the interest rate model to newInterestRateModel
-        interestRateModel = newInterestRateModel;
+        // interestRateModel = newInterestRateModel;
+        initializeInterestRateModel(baseRatePerYear_, multiplierPerYear_, jumpMultiplierPerYear_, kink_);
 
         // Emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel)
-        emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel);
+        // emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel);
 
         return NO_ERROR;
     }

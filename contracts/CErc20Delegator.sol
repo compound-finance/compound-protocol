@@ -13,7 +13,6 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset
      * @param comptroller_ The address of the Comptroller
-     * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
      * @param name_ ERC-20 name of this token
      * @param symbol_ ERC-20 symbol of this token
@@ -24,7 +23,6 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
      */
     constructor(address underlying_,
                 ComptrollerInterface comptroller_,
-                InterestRateModel interestRateModel_,
                 uint initialExchangeRateMantissa_,
                 string memory name_,
                 string memory symbol_,
@@ -36,10 +34,9 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
         admin = payable(msg.sender);
 
         // First delegate gets to initialize the delegator (i.e. storage contract)
-        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,address,uint256,string,string,uint8)",
+        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,uint256,string,string,uint8)",
                                                             underlying_,
                                                             comptroller_,
-                                                            interestRateModel_,
                                                             initialExchangeRateMantissa_,
                                                             name_,
                                                             symbol_,
@@ -403,11 +400,14 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     /**
      * @notice Accrues interest and updates the interest rate model using _setInterestRateModelFresh
      * @dev Admin function to accrue interest and update the interest rate model
-     * @param newInterestRateModel the new interest rate model to use
+     * @param baseRatePerYear_ the new interest rate model to use
+     * @param multiplierPerYear_ the new interest rate model to use
+     * @param jumpMultiplierPerYear_ the new interest rate model to use
+     * @param kink_ the new interest rate model to use
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setInterestRateModel(InterestRateModel newInterestRateModel) override public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setInterestRateModel(address)", newInterestRateModel));
+    function _setInterestRateModel(uint baseRatePerYear_, uint multiplierPerYear_, uint jumpMultiplierPerYear_, uint kink_) override public returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setInterestRateModel(uint,uint,uint,uint)", baseRatePerYear_, multiplierPerYear_, jumpMultiplierPerYear_, kink_));
         return abi.decode(data, (uint));
     }
 

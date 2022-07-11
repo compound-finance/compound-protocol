@@ -12,7 +12,6 @@ contract CEther is CToken {
     /**
      * @notice Construct a new CEther money market
      * @param comptroller_ The address of the Comptroller
-     * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
      * @param name_ ERC-20 name of this token
      * @param symbol_ ERC-20 symbol of this token
@@ -20,7 +19,6 @@ contract CEther is CToken {
      * @param admin_ Address of the administrator of this token
      */
     constructor(ComptrollerInterface comptroller_,
-                InterestRateModel interestRateModel_,
                 uint initialExchangeRateMantissa_,
                 string memory name_,
                 string memory symbol_,
@@ -29,7 +27,7 @@ contract CEther is CToken {
         // Creator of the contract is admin during initialization
         admin = payable(msg.sender);
 
-        initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
+        initialize(comptroller_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
         // Set the proper admin now that initialization is done
         admin = admin_;
