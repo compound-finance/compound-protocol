@@ -3,18 +3,19 @@
 PrintTransactionLogs
 
 Alias Arr00 "0x2B384212EDc04Ae8bB41738D05BA20E33277bf33"
-Alias CompHolder "0x7587cAefc8096f5F40ACB83A09Df031a018C66ec"
+Alias CompHolder "0xf977814e90da44bfa03b6295a0616a897441acec"
+Alias CompHolder2 "0xfA9b5f7fDc8AB34AAf3099889475d47febF830D7"
+Alias BravoDelegate3 "0x44B68E6f47b4Eb2f3b6D8158b60A5Fa681A5b911"
 
-Web3Fork "https://mainnet-eth.compound.finance/@12559597" (CompHolder Arr00)
+Web3Fork "https://api.archivenode.io/lvdjl6hohbr4x6av05lvdjln3ensbqpy/@15193551" (CompHolder CompHolder2 Arr00)
 UseConfigs mainnet
 
-Assert Equal (EtherBalance Arr00) (28782924473521806)
+Assert Equal (EtherBalance Arr00) (2570934272364095965)
 
 From CompHolder (Send Timelock 0.2e18)
 
-GovernorBravo Deploy BravoDelegate BravoDelegate3
-
 From CompHolder (Comp Delegate CompHolder)
+From CompHolder2 (Comp Delegate CompHolder)
 From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Send ETH from Timelock" [(Address GovernorBravoDelegator)] [0] ["_setImplementation(address)"] [[(Address BravoDelegate3)]])
 
 -- Vote for, queue, and execute the proposal
@@ -27,7 +28,7 @@ IncreaseTime 604910
 GovernorBravo GovernorBravoDelegator Proposal LastProposal Execute
 
 
-From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Send ETH from Timelock" [(Address GovernorBravoDelegator)] [0] ["_setImplementation(address)"] [[(Address GovernorBravoDelegate)]])
+From CompHolder (GovernorBravo GovernorBravoDelegator Propose "Send ETH from Timelock" [(Address Arr00)] [10000000] [""] [[""]])
 
 -- Vote for, queue, and execute the proposal
 MineBlock
@@ -36,10 +37,9 @@ From CompHolder (GovernorBravo GovernorBravoDelegator Proposal LastProposal Vote
 AdvanceBlocks 20000
 GovernorBravo GovernorBravoDelegator Proposal LastProposal Queue
 IncreaseTime 604910
+
+
 GovernorBravo GovernorBravoDelegator Proposal LastProposal Execute
-
-Assert Equal (GovernorBravo GovernorBravoDelegator Implementation) (Address GovernorBravoDelegate)
-
 
 
 Print "ETH transfer from Timelock works"
