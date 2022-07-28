@@ -7,10 +7,8 @@ Alias CompHolder "0xf977814e90da44bfa03b6295a0616a897441acec"
 Alias CompHolder2 "0xfA9b5f7fDc8AB34AAf3099889475d47febF830D7"
 Alias BravoDelegate3 "0x44B68E6f47b4Eb2f3b6D8158b60A5Fa681A5b911"
 
-Web3Fork "https://api.archivenode.io/lvdjl6hohbr4x6av05lvdjln3ensbqpy/@15193551" (CompHolder CompHolder2 Arr00)
+Web3Fork "https://mainnet-eth.compound.finance/@15233899" (CompHolder CompHolder2 Arr00)
 UseConfigs mainnet
-
-Assert Equal (EtherBalance Arr00) (2570934272364095965)
 
 From CompHolder (Send Timelock 0.2e18)
 
