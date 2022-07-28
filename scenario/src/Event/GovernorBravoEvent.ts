@@ -98,15 +98,9 @@ async function propose(
     ),
     from
   );
-  let propId;
-  try {
-    propId = invokation.receipt.events.ProposalCreated.returnValues.id;
-  } catch {
-    propId = -1;
-  }
   return addAction(
     world,
-    `Created new proposal "${description}" with id=${propId} in Governor`,
+    `Created new proposal "${description}" with id=${invokation.value} in Governor`,
     invokation
   );
 }
