@@ -5,12 +5,29 @@ import "./ComptrollerInterface.sol";
 import "./InterestRateModel.sol";
 import "./EIP20NonStandardInterface.sol";
 import "./ErrorReporter.sol";
+import "./IGmxRewardRouter.sol";
+import "./IStakedGlp.sol";
 
 contract CTokenStorage {
     /**
      * @dev Guard variable for re-entrancy checks
      */
     bool internal _notEntered;
+
+    /**
+     * @notice Is the underlying token GLP
+     */
+    bool public isGLP;
+
+    /**
+     * @notice GLP reward router for claiming rewards
+     */
+    IGmxRewardRouter public glpRewardRouter;
+
+    /**
+     * @notice Staked GLP Adress to call transfer on
+     */
+    IStakedGlp public stakedGLP;
 
     /**
      * @notice EIP-20 token name for this token
@@ -228,6 +245,9 @@ abstract contract CTokenInterface is CTokenStorage {
     function _setReserveFactor(uint newReserveFactorMantissa) virtual external returns (uint);
     function _reduceReserves(uint reduceAmount) virtual external returns (uint);
     function _setInterestRateModel(InterestRateModel newInterestRateModel) virtual external returns (uint);
+    function _setStakedGlpAddress(IStakedGlp stakedGLP_) virtual public returns (uint);
+    function _setRewardRouterAddress(IGmxRewardRouter glpRewardRouter_) virtual public returns (uint);
+    function _signalTransfer(address recipient) virtual public returns (uint);
 }
 
 contract CErc20Storage {

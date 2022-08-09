@@ -22,6 +22,7 @@ contract CErc20 is CToken, CErc20Interface {
      * @param name_ ERC-20 name of this token
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
+     * @param isGLP_ Wether or not the market being created is for the GLP token
      */
     function initialize(address underlying_,
                         ComptrollerInterface comptroller_,
@@ -29,9 +30,10 @@ contract CErc20 is CToken, CErc20Interface {
                         uint initialExchangeRateMantissa_,
                         string memory name_,
                         string memory symbol_,
-                        uint8 decimals_) public {
+                        uint8 decimals_,
+                        bool isGLP_) public {
         // CToken initialize does the bulk of the work
-        super.initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
+        super.initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, isGLP_);
 
         // Set underlying and sanity check it
         underlying = underlying_;

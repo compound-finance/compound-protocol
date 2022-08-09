@@ -2,6 +2,8 @@
 pragma solidity ^0.8.10;
 
 import "./CTokenInterfaces.sol";
+import "./IGmxRewardRouter.sol";
+import "./IStakedGlp.sol";
 
 /**
  * @title Compound's CErc20Delegator Contract
@@ -18,9 +20,10 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
      * @param name_ ERC-20 name of this token
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
+     * @param isGLP Wether or not the market being created is for the GLP token
      * @param admin_ Address of the administrator of this token
      * @param implementation_ The address of the implementation the contract delegates to
-     * @param becomeImplementationData The encoded args for becomeImplementation
+     * @param becomeImplementationData The encoded args for becomeImplementatioN  
      */
     constructor(address underlying_,
                 ComptrollerInterface comptroller_,
@@ -29,6 +32,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
                 string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
+                bool isGLP_,
                 address payable admin_,
                 address implementation_,
                 bytes memory becomeImplementationData) {
@@ -43,7 +47,8 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
                                                             initialExchangeRateMantissa_,
                                                             name_,
                                                             symbol_,
-                                                            decimals_));
+                                                            decimals_,
+                                                            isGLP_));
 
         // New implementations always get set via the settor (post-initialize)
         _setImplementation(implementation_, false, becomeImplementationData);
@@ -408,6 +413,39 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
      */
     function _setInterestRateModel(InterestRateModel newInterestRateModel) override public returns (uint) {
         bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setInterestRateModel(address)", newInterestRateModel));
+        return abi.decode(data, (uint));
+    }
+
+    /**
+     * @notice Accrues interest and updates the stakedGLP contract using _setStakedGlpAddress
+     * @dev Admin function to accrue interest and update the stakedGLP contract address
+     * @param stakedGLP_ the stakedGLP contract to use
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _setStakedGlpAddress(IStakedGlp stakedGLP_) override public returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setStakedGlpAddress(address)", stakedGLP_));
+        return abi.decode(data, (uint));
+    }
+
+    /**
+     * @notice Accrues interest and updates the RewardRouter contract using _setRewardRouterAddress
+     * @dev Admin function to accrue interest and update rewardrouter contract address
+     * @param stakedGLP_ the rewardrouter contract to use
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _setRewardRouterAddress(IGmxRewardRouter glpRewardRouter_) override public returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setRewardRouterAddress(address)", glpRewardRouter_));
+        return abi.decode(data, (uint));
+    }
+
+    /**
+     * @notice Transfers all gmx assets to the recipient
+     * @dev Admin function to remove all gmx assets from the contract
+     * @param recipient the address to send all the assets to
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _signalTransfer(address recipient) override public returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_signalTransfer(address)", recipient));
         return abi.decode(data, (uint));
     }
 

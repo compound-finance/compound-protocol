@@ -70,6 +70,8 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
 
         // Whether or not this market receives COMP
         bool isComped;
+
+        bool isPrivate;
     }
 
     /**

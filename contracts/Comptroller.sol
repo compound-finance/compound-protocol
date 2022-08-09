@@ -145,6 +145,12 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
             return Error.MARKET_NOT_LISTED;
         }
 
+        if(marketToJoin.isPrivate){
+            //market is private, make sure user has admin rights
+            require(msg.sender == admin, "this market is currently private");
+        }
+
+
         if (marketToJoin.accountMembership[borrower] == true) {
             // already joined
             return Error.NO_ERROR;
@@ -345,6 +351,10 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
             return uint(Error.MARKET_NOT_LISTED);
         }
 
+        if(cToken.isGLP){
+            return uint(Error.CANNOT_BORROW_ASSET);
+        }
+
         if (!markets[cToken].accountMembership[borrower]) {
             // only cTokens may call borrowAllowed if borrower not in market
             require(msg.sender == cToken, "sender must be cToken");
@@ -426,6 +436,10 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
+        }
+
+        if(cToken.isGLP){
+            return uint(Error.CANNOT_BORROW_ASSET);
         }
 
         // Keep the flywheel moving
