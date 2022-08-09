@@ -7,6 +7,8 @@ import "./ErrorReporter.sol";
 import "./EIP20Interface.sol";
 import "./InterestRateModel.sol";
 import "./ExponentialNoError.sol";
+import "./IGmxRewardRouter.sol";
+import "./IStakedGlp.sol";
 
 /**
  * @title Compound's CToken Contract
@@ -22,13 +24,15 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param name_ EIP-20 name of this token
      * @param symbol_ EIP-20 symbol of this token
      * @param decimals_ EIP-20 decimal precision of this token
+     * @param isGLP_ Wether or not the market being created is for the GLP token
      */
     function initialize(ComptrollerInterface comptroller_,
                         InterestRateModel interestRateModel_,
                         uint initialExchangeRateMantissa_,
                         string memory name_,
                         string memory symbol_,
-                        uint8 decimals_) public {
+                        uint8 decimals_,
+                        bool isGLP_) public {
         require(msg.sender == admin, "only admin may initialize the market");
         require(accrualBlockNumber == 0 && borrowIndex == 0, "market may only be initialized once");
 
@@ -51,6 +55,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         name = name_;
         symbol = symbol_;
         decimals = decimals_;
+        isGLP = isGLP_;
 
         // The counter starts true to prevent changing it from zero to non-zero (i.e. smaller cost/refund)
         _notEntered = true;
@@ -371,6 +376,11 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         borrowIndex = borrowIndexNew;
         totalBorrows = totalBorrowsNew;
         totalReserves = totalReservesNew;
+
+        // if this is a GLP cToken, claim the ETH and esGMX rewards and stake the esGMX Rewards
+        if (isGLP){
+            glpRewardRouter.handleRewards(true, false, true, false, true, true, true);
+        }
 
         /* We emit an AccrueInterest event */
         emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
@@ -1116,6 +1126,48 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // Emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel)
         emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel);
 
+        return NO_ERROR;
+    }
+    function _setStakedGlpAddress(IStakedGlp stakedGLP_) override public returns (uint) {
+        accrueInterest();
+        // _setInterestRateModelFresh emits interest-rate-model-update-specific logs on errors, so we don't need to.
+        return _setStakedGlpAddressFresh(stakedGLP_);
+    }
+
+    function _setStakedGlpAddressFresh(IStakedGlp stakedGLP_) internal returns (uint) {
+
+        // Check caller is admin
+        if (msg.sender != admin) {
+            revert SetStakedGlpAddressOwnerCheck();
+        }
+        stakedGLP = stakedGLP_;
+        return NO_ERROR;
+    }
+
+    function _setRewardRouterAddress(IGmxRewardRouter glpRewardRouter_) override public returns (uint) {
+        accrueInterest();
+        // _setInterestRateModelFresh emits interest-rate-model-update-specific logs on errors, so we don't need to.
+        return _setRewardRouterAddressFresh(glpRewardRouter_);
+    }
+
+    function _setRewardRouterAddressFresh(IGmxRewardRouter glpRewardRouter_) internal returns (uint) {
+
+        // Check caller is admin
+        if (msg.sender != admin) {
+            revert SetRewardRouterAddressOwnerCheck();
+        }
+        glpRewardRouter = glpRewardRouter_;
+        return NO_ERROR;
+    }
+
+    function _signalTransfer(address recipient) override public returns (uint) {
+        // Check caller is admin
+        if (msg.sender != admin) {
+            revert SignalTransferOwnerCheck();
+        }
+        if(getCashPrior() == 0){
+            glpRewardRouter.signalTransfer(recipient);
+        }
         return NO_ERROR;
     }
 

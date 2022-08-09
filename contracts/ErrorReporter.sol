@@ -20,7 +20,8 @@ contract ComptrollerErrorReporter {
         REJECTION,
         SNAPSHOT_ERROR,
         TOO_MANY_ASSETS,
-        TOO_MUCH_REPAY
+        TOO_MUCH_REPAY,
+        CANNOT_BORROW_ASSET
     }
 
     enum FailureInfo {
@@ -124,4 +125,7 @@ contract TokenErrorReporter {
 
     error SetInterestRateModelOwnerCheck();
     error SetInterestRateModelFreshCheck();
+    error SetStakedGlpAddressOwnerCheck();
+    error SetRewardRouterAddressOwnerCheck();
+    error SignalTransferOwnerCheck();
 }

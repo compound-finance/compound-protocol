@@ -18,6 +18,7 @@ contract CErc20Immutable is CErc20 {
      * @param name_ ERC-20 name of this token
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
+     * @param isGLP_ Wether or not the market being created is for the GLP token
      * @param admin_ Address of the administrator of this token
      */
     constructor(address underlying_,
@@ -27,12 +28,13 @@ contract CErc20Immutable is CErc20 {
                 string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
+                bool isGLP_,
                 address payable admin_) {
         // Creator of the contract is admin during initialization
         admin = payable(msg.sender);
 
         // Initialize the market
-        initialize(underlying_, comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
+        initialize(underlying_, comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, isGLP_);
 
         // Set the proper admin now that initialization is done
         admin = admin_;

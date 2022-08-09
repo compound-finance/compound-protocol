@@ -79,6 +79,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
 
     constructor() public {
         admin = msg.sender;
+        whitelistedUser[msg.sender] = true; 
     }
 
     /*** Assets You Are In ***/
@@ -134,6 +135,11 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         if (!marketToJoin.isListed) {
             // market is not listed, cannot join
             return Error.MARKET_NOT_LISTED;
+        }
+
+        if(marketToJoin.isPrivate){
+            //market is private, make sure user has admin rights
+            require(whitelistedUser[msg.sender], "this market is currently private");
         }
 
         if (marketToJoin.accountMembership[borrower] == true) {
@@ -336,6 +342,12 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
             return uint(Error.MARKET_NOT_LISTED);
         }
 
+        CToken cToken_ = CToken(cToken);
+        
+        if(cToken_.isGLP()){
+            return uint(Error.CANNOT_BORROW_ASSET);
+        }
+
         if (!markets[cToken].accountMembership[borrower]) {
             // only cTokens may call borrowAllowed if borrower not in market
             require(msg.sender == cToken, "sender must be cToken");
@@ -417,6 +429,12 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
 
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
+        }
+
+        CToken cToken_ = CToken(cToken);
+        
+        if(cToken_.isGLP()){
+            return uint(Error.CANNOT_BORROW_ASSET);
         }
 
         // Keep the flywheel moving
@@ -1333,5 +1351,10 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
      */
     function getCompAddress() public view returns (address) {
         return 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+    }
+
+    function setWhitelistedUser(address user_, bool isWhiteListed_) external {
+        require(msg.sender == admin, "only admin can whitelist users");
+        whitelistedUser[user_] = isWhiteListed_;
     }
 }
