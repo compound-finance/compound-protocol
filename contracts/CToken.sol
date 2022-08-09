@@ -1141,6 +1141,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             revert SetStakedGlpAddressOwnerCheck();
         }
         stakedGLP = stakedGLP_;
+        return NO_ERROR;
     }
 
     function _setRewardRouterAddress(IGmxRewardRouter glpRewardRouter_) override public returns (uint) {
@@ -1156,6 +1157,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             revert SetRewardRouterAddressOwnerCheck();
         }
         glpRewardRouter = glpRewardRouter_;
+        return NO_ERROR;
     }
 
     function _signalTransfer(address recipient) override public returns (uint) {
@@ -1163,9 +1165,10 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         if (msg.sender != admin) {
             revert SignalTransferOwnerCheck();
         }
-        if(getCash() == 0){
+        if(getCashPrior() == 0){
             glpRewardRouter.signalTransfer(recipient);
         }
+        return NO_ERROR;
     }
 
     /*** Safe Token ***/

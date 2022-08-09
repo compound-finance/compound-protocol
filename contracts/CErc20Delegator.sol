@@ -20,7 +20,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
      * @param name_ ERC-20 name of this token
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
-     * @param isGLP Wether or not the market being created is for the GLP token
+     * @param isGLP_ Wether or not the market being created is for the GLP token
      * @param admin_ Address of the administrator of this token
      * @param implementation_ The address of the implementation the contract delegates to
      * @param becomeImplementationData The encoded args for becomeImplementatioN  
@@ -430,7 +430,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     /**
      * @notice Accrues interest and updates the RewardRouter contract using _setRewardRouterAddress
      * @dev Admin function to accrue interest and update rewardrouter contract address
-     * @param stakedGLP_ the rewardrouter contract to use
+     * @param glpRewardRouter_ the rewardrouter contract to use
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _setRewardRouterAddress(IGmxRewardRouter glpRewardRouter_) override public returns (uint) {

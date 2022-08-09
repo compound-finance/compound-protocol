@@ -88,6 +88,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
     constructor() {
         admin = msg.sender;
+        whitelistedUser[msg.sender] = true; 
     }
 
     /*** Assets You Are In ***/
@@ -147,7 +148,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
         if(marketToJoin.isPrivate){
             //market is private, make sure user has admin rights
-            require(msg.sender == admin, "this market is currently private");
+            require(whitelistedUser[msg.sender], "this market is currently private");
         }
 
 
@@ -351,7 +352,9 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
             return uint(Error.MARKET_NOT_LISTED);
         }
 
-        if(cToken.isGLP){
+        CToken cToken_ = CToken(cToken);
+
+        if(cToken_.isGLP()){
             return uint(Error.CANNOT_BORROW_ASSET);
         }
 
@@ -438,7 +441,9 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
             return uint(Error.MARKET_NOT_LISTED);
         }
 
-        if(cToken.isGLP){
+        CToken cToken_ = CToken(cToken);
+
+        if(cToken_.isGLP()){
             return uint(Error.CANNOT_BORROW_ASSET);
         }
 
@@ -1481,5 +1486,10 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
      */
     function getCompAddress() virtual public view returns (address) {
         return 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+    }
+
+    function setWhitelistedUser(address user_, bool isWhiteListed_) external {
+        require(msg.sender == admin, "only admin can whitelist users");
+        whitelistedUser[user_] = isWhiteListed_;
     }
 }

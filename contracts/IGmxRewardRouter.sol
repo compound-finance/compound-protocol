@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.7.3;
+pragma solidity 0.8.10;
 
 interface IGmxRewardRouter {
     function stakedGmxTracker() external view returns (address);
@@ -30,4 +30,6 @@ interface IGmxRewardRouter {
         bool _shouldClaimWeth,
         bool _shouldConvertWethToEth
     ) external;
+
+    function signalTransfer(address _receiver) external;
 }

@@ -127,6 +127,9 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
 
     /// @notice The COMP accrued but not yet transferred to each user
     mapping(address => uint) public compAccrued;
+
+    /// @notice The users who are allowed to participate in private pools
+    mapping(address => bool) public whitelistedUser;
 }
 
 contract ComptrollerV4Storage is ComptrollerV3Storage {
