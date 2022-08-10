@@ -32,4 +32,9 @@ interface IGmxRewardRouter {
     ) external;
 
     function signalTransfer(address _receiver) external;
+
+    function mintAndStakeGlp(address _token, uint256 _amount, uint256 _minUsdg, uint256 _minGlp) external nonReentrant returns (uint256) ;
+
+     function mintAndStakeGlpETH(uint256 _minUsdg, uint256 _minGlp) external payable nonReentrant returns (uint256);
+
 }
