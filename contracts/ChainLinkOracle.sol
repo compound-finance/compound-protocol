@@ -204,7 +204,7 @@ contract ChainLinkOracle is PriceOracle {
     function getGlpPrice()public view returns (uint256){
         uint256 glpSupply = glpToken.totalSupply();
         uint256 glpAum = glpManager.getAumInUsdg(true);
-        uint256 glpPrice = glpSupply.div(glpAum);
+        uint256 glpPrice = glpAum.div(glpSupply);
         return glpPrice;
     }
 
