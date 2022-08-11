@@ -202,7 +202,7 @@ contract ChainLinkOracle is PriceOracle {
     
     function getUnderlyingPrice(CToken cToken) public override view returns (uint) {
         if(cToken.isGLP()){
-            return glpManager.getAumInUsdg(true).mul(1000).div(glpToken.totalSupply().mul(1000)).mul(1e18);   
+            return glpManager.getAumInUsdg(true).div(glpToken.totalSupply()).mul(1e36);   
         } else {
             return gmxPriceFeed.getPrice(_getUnderlyingAddress(cToken), true, true, false);
         }
