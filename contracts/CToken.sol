@@ -1128,14 +1128,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
 
         return NO_ERROR;
     }
+
     function _setStakedGlpAddress(IStakedGlp stakedGLP_) override public returns (uint) {
-        accrueInterest();
-        // _setInterestRateModelFresh emits interest-rate-model-update-specific logs on errors, so we don't need to.
-        return _setStakedGlpAddressFresh(stakedGLP_);
-    }
-
-    function _setStakedGlpAddressFresh(IStakedGlp stakedGLP_) internal returns (uint) {
-
         // Check caller is admin
         if (msg.sender != admin) {
             revert SetStakedGlpAddressOwnerCheck();
@@ -1145,13 +1139,6 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     }
 
     function _setRewardRouterAddress(IGmxRewardRouter glpRewardRouter_) override public returns (uint) {
-        accrueInterest();
-        // _setInterestRateModelFresh emits interest-rate-model-update-specific logs on errors, so we don't need to.
-        return _setRewardRouterAddressFresh(glpRewardRouter_);
-    }
-
-    function _setRewardRouterAddressFresh(IGmxRewardRouter glpRewardRouter_) internal returns (uint) {
-
         // Check caller is admin
         if (msg.sender != admin) {
             revert SetRewardRouterAddressOwnerCheck();
