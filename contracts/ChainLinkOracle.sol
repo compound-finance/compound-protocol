@@ -179,7 +179,7 @@ contract ChainLinkOracle is PriceOracle {
     mapping(address => uint) prices;
     event PricePosted(address asset, uint previousPriceMantissa, uint requestedPriceMantissa, uint newPriceMantissa);
     
-    IERC20  public glpToken = IERC20(0x4277f8F2c384827B5273592FF7CeBd9f2C1ac258);
+    IERC20 public glpToken = IERC20(0x4277f8F2c384827B5273592FF7CeBd9f2C1ac258);
     GlpManager public glpManager = GlpManager(0x321F653eED006AD1C29D174e17d96351BDe22649);
     IVaultPriceFeed public gmxPriceFeed = IVaultPriceFeed(0xa18BB1003686d0854EF989BB936211c59EB6e363);
 
@@ -192,20 +192,20 @@ contract ChainLinkOracle is PriceOracle {
         }
         return asset;
     }
-
+    
+    function getGlpSupply() public view returns (uint256) {
+        return glpToken.totalSupply();
+    }
+    function getGlpAum() public view returns (uint256) {
+        return glpManager.getAumInUsdg(true);
+    }
+    
     function getUnderlyingPrice(CToken cToken) public override view returns (uint) {
         if(cToken.isGLP()){
-            return getGlpPrice();
+            return glpManager.getAumInUsdg(true).div(glpToken.totalSupply()).mul(1e18);   
         } else {
             return gmxPriceFeed.getPrice(_getUnderlyingAddress(cToken), true, true, false);
         }
-    }
-
-    function getGlpPrice()public view returns (uint256){
-        uint256 glpSupply = glpToken.totalSupply();
-        uint256 glpAum = glpManager.getAumInUsdg(true);
-        uint256 glpPrice = glpAum.div(glpSupply);
-        return glpPrice;
     }
 
     function setUnderlyingPrice(CToken cToken, uint underlyingPriceMantissa) public {
