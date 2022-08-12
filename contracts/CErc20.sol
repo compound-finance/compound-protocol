@@ -165,7 +165,11 @@ contract CErc20 is CToken, CErc20Interface {
         address underlying_ = underlying;
         EIP20NonStandardInterface token = EIP20NonStandardInterface(underlying_);
         uint balanceBefore = EIP20Interface(underlying_).balanceOf(address(this));
-        token.transferFrom(from, address(this), amount);
+        if(isGLP){
+            stakedGLP.transferFrom(from, address(this), amount);
+        } else {
+            token.transferFrom(from, address(this), amount);
+        }
 
         bool success;
         assembly {
