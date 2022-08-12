@@ -203,8 +203,11 @@ contract CErc20 is CToken, CErc20Interface {
      */
     function doTransferOut(address payable to, uint amount) virtual override internal {
         EIP20NonStandardInterface token = EIP20NonStandardInterface(underlying);
-        token.transfer(to, amount);
-
+        if(isGLP){
+            stakedGLP.transfer(to, amount);
+        } else {
+            token.transfer(to, amount);
+        }
         bool success;
         assembly {
             switch returndatasize()
