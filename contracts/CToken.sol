@@ -414,7 +414,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         }
 
         /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber()) {
+        if (accrualBlockNumber != getBlockNumber() && !isGLP) {
             revert MintFreshnessCheck();
         }
 
