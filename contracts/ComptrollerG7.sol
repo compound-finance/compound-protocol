@@ -80,6 +80,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
     constructor() public {
         admin = msg.sender;
         whitelistedUser[msg.sender] = true; 
+        immutableCompAddress = false;
     }
 
     /*** Assets You Are In ***/
