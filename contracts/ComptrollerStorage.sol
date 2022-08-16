@@ -130,6 +130,12 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
 
     /// @notice The users who are allowed to participate in private pools
     mapping(address => bool) public whitelistedUser;
+
+    /// @notice The address of the reward token
+    address public compAddress;
+
+    /// @notice Can the reward token address be modified
+    bool public immutableCompAddress;
 }
 
 contract ComptrollerV4Storage is ComptrollerV3Storage {
