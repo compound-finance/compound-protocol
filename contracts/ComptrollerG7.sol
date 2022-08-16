@@ -932,7 +932,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
       * @param cToken The address of the market (token) to list
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
-    function _supportMarket(CToken cToken) external returns (uint) {
+    function _supportMarket(CToken cToken, bool isComped_, bool isPrivate_) external returns (uint) {
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SUPPORT_MARKET_OWNER_CHECK);
         }
@@ -946,7 +946,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         // Note that isComped is not in active use anymore
         Market storage market = markets[address(cToken)];
         market.isListed = true;
-        market.isComped = false;
+        newMarket.isComped = isComped_;
+        newMarket.isPrivate = isPrivate_;
         market.collateralFactorMantissa = 0;
 
         _addMarketInternal(address(cToken));
@@ -1349,8 +1350,20 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
      * @notice Return the address of the COMP token
      * @return The address of COMP
      */
-    function getCompAddress() public view returns (address) {
-        return 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+    function getCompAddress() virtual public view returns (address) {
+        return compAddress;
+    }
+
+    function setCompAddress(address compAddress_) external {
+        require(msg.sender == admin, "only admin can set compAddress");
+        if(!immutableCompAddress){
+            compAddress = compAddress_;
+        }
+    }
+
+    function setImmutableCompAddress() external {
+        require(msg.sender == admin, "only admin can set compAddress");
+        immutableCompAddress = true;
     }
 
     function setWhitelistedUser(address user_, bool isWhiteListed_) external {

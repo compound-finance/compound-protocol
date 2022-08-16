@@ -89,6 +89,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
     constructor() {
         admin = msg.sender;
         whitelistedUser[msg.sender] = true; 
+        immutableCompAddress = false;
     }
 
     /*** Assets You Are In ***/
@@ -948,7 +949,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
       * @param cToken The address of the market (token) to list
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
-    function _supportMarket(CToken cToken) external returns (uint) {
+    function _supportMarket(CToken cToken, bool isComped_, bool isPrivate_) external returns (uint) {
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SUPPORT_MARKET_OWNER_CHECK);
         }
@@ -962,7 +963,8 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         // Note that isComped is not in active use anymore
         Market storage newMarket = markets[address(cToken)];
         newMarket.isListed = true;
-        newMarket.isComped = false;
+        newMarket.isComped = isComped_;
+        newMarket.isPrivate = isPrivate_;
         newMarket.collateralFactorMantissa = 0;
 
         _addMarketInternal(address(cToken));
@@ -1485,7 +1487,19 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
      * @return The address of COMP
      */
     function getCompAddress() virtual public view returns (address) {
-        return 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+        return compAddress;
+    }
+
+    function setCompAddress(address compAddress_) external {
+        require(msg.sender == admin, "only admin can set compAddress");
+        if(!immutableCompAddress){
+            compAddress = compAddress_;
+        }
+    }
+
+    function setImmutableCompAddress() external {
+        require(msg.sender == admin, "only admin can set compAddress");
+        immutableCompAddress = true;
     }
 
     function setWhitelistedUser(address user_, bool isWhiteListed_) external {
