@@ -1502,6 +1502,16 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         immutableCompAddress = true;
     }
 
+    function setIsPrivateMarket(address cToken_, bool isPrivate_) external {
+        require(msg.sender == admin, "only admin can set market to private");
+        markets[cToken_].isPrivate = isPrivate_;
+    }
+
+    function setIsMarketComped(address cToken_, bool isComped_) external {
+        require(msg.sender == admin, "only admin can set market to comped");
+        markets[cToken_].isComped = isComped_;
+    }
+
     function setWhitelistedUser(address user_, bool isWhiteListed_) external {
         require(msg.sender == admin, "only admin can whitelist users");
         whitelistedUser[user_] = isWhiteListed_;
