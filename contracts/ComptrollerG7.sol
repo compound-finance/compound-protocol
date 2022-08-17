@@ -80,6 +80,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
     constructor() public {
         admin = msg.sender;
         whitelistedUser[msg.sender] = true; 
+        immutableCompAddress = false;
     }
 
     /*** Assets You Are In ***/
@@ -946,8 +947,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         // Note that isComped is not in active use anymore
         Market storage market = markets[address(cToken)];
         market.isListed = true;
-        newMarket.isComped = isComped_;
-        newMarket.isPrivate = isPrivate_;
+        market.isComped = isComped_;
+        market.isPrivate = isPrivate_;
         market.collateralFactorMantissa = 0;
 
         _addMarketInternal(address(cToken));
@@ -1364,6 +1365,16 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
     function setImmutableCompAddress() external {
         require(msg.sender == admin, "only admin can set compAddress");
         immutableCompAddress = true;
+    }
+
+    function setIsPrivateMarket(address cToken_, bool isPrivate_) external {
+        require(msg.sender == admin, "only admin can set market to private");
+        markets[cToken_].isPrivate = isPrivate_;
+    }
+
+    function setIsMarketComped(address cToken_, bool isComped_) external {
+        require(msg.sender == admin, "only admin can set market to comped");
+        markets[cToken_].isComped = isComped_;
     }
 
     function setWhitelistedUser(address user_, bool isWhiteListed_) external {
