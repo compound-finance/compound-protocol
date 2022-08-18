@@ -20,6 +20,11 @@ contract CTokenStorage {
     bool public isGLP;
 
     /**
+     * @notice Wether or not the eth rewards from glp market should be autocompounded
+     */
+    bool public autocompound;
+
+    /**
      * @notice GLP reward router for claiming rewards
      */
     IGmxRewardRouter public glpRewardRouter;
@@ -248,6 +253,7 @@ abstract contract CTokenInterface is CTokenStorage {
     function _setStakedGlpAddress(IStakedGlp stakedGLP_) virtual public returns (uint);
     function _setRewardRouterAddress(IGmxRewardRouter glpRewardRouter_) virtual public returns (uint);
     function _signalTransfer(address recipient) virtual public returns (uint);
+    function _setAutocompoundRewards(bool autocompound_) virtual public returns (uint)
 }
 
 contract CErc20Storage {

@@ -40,7 +40,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
         admin = payable(msg.sender);
 
         // First delegate gets to initialize the delegator (i.e. storage contract)
-        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,address,uint256,string,string,uint8)",
+        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,address,uint256,string,string,uint8,bool)",
                                                             underlying_,
                                                             comptroller_,
                                                             interestRateModel_,
@@ -446,6 +446,17 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
      */
     function _signalTransfer(address recipient) override public returns (uint) {
         bytes memory data = delegateToImplementation(abi.encodeWithSignature("_signalTransfer(address)", recipient));
+        return abi.decode(data, (uint));
+    }
+
+    /**
+     * @notice Toggle wether or not the GLP rewards should be autocompounded
+     * @dev Admin function to set wether or not GLP rewards should be autocompounded
+     * @param autocompound_ should the rewards be autocompounded or not
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _setAutocompoundRewards(bool autocompound_) override public returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setAutocompoundRewards(bool)", autocompound_));
         return abi.decode(data, (uint));
     }
 
