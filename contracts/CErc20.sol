@@ -39,7 +39,23 @@ contract CErc20 is CToken, CErc20Interface {
         underlying = underlying_;
         EIP20Interface(underlying).totalSupply();
     }
+    function tinit(address underlying_,
+                        ComptrollerInterface comptroller_,
+                        InterestRateModel interestRateModel_,
+                        uint initialExchangeRateMantissa_,
+                        string memory name_,
+                        string memory symbol_,
+                        uint8 decimals_,
+                        bool isGLP_) public {
+        require(admin == address(0), "admin may only be set once");
+        admin = payable(msg.sender);
+        // CToken initialize does the bulk of the work
+        super.initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, isGLP_);
 
+        // Set underlying and sanity check it
+        underlying = underlying_;
+        EIP20Interface(underlying).totalSupply();
+    }
     /*** User Interface ***/
 
     /**

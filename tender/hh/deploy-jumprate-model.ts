@@ -8,9 +8,9 @@ const outputFilePath = `./deployments/${hre.network.name}.json`;
 // IR Model Params
 const params = {
   blocksPerYear: "17000000",
-  baseRate: "0",
-  kink: "80",
-  multiplierPreKink: "50",
+  baseRate: "1",
+  kink: "0",
+  multiplierPreKink: "10",
   multiplierPostKink: "1000",
   // admin: "0x51129c8332A220E0bF9546A6Fe07481c17D2B638",
 };
@@ -33,10 +33,11 @@ export async function main(adminWallet: string) {
   const jumpMultiplierWei = numToWei(toBn(jumpMultiplier).div(100), 18);
 
   const JumpRateModelV2 = await hre.ethers.getContractFactory(
+    // "JumpRateModel"
     "JumpRateModelV2"
   );
   const jumpRateModelV2 = await JumpRateModelV2.deploy(
-    params.blocksPerYear,
+    // params.blocksPerYear,
     baseRateWei,
     multiplierWei,
     jumpMultiplierWei,
@@ -46,6 +47,21 @@ export async function main(adminWallet: string) {
   await jumpRateModelV2.deployed();
 
   console.log(`JumpRateModelV2 deployed to: ${jumpRateModelV2.address}.`);
+
+  try {
+    console.log(`Verifying JumpRateModelV2 deployed to: ${jumpRateModelV2.address}.`);
+
+    await verifyContract(jumpRateModelV2.address, [
+      baseRateWei,
+      multiplierWei,
+      jumpMultiplierWei,
+      kinkWei,
+      adminWallet
+    ]);
+  } catch (e) {
+    console.error("Error verifying cErc20Immutable", jumpRateModelV2.address);
+    console.error(e);
+  }
 
   // save data
   if (!deployments["IRModels"]) deployments["IRModels"] = {};
@@ -76,3 +92,14 @@ const getJumpMultiplier = (
 //     console.error(error);
 //     process.exit(1);
 //   });
+
+const verifyContract = async (
+  contractAddress: string,
+  constructorArgs: any
+) => {
+  await hre.run("verify:verify", {
+    contract: "contracts/CErc20Immutable.sol:CErc20Immutable",
+    address: contractAddress,
+    constructorArguments: constructorArgs,
+  });
+};

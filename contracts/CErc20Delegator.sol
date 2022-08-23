@@ -50,7 +50,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
                                                             decimals_,
                                                             isGLP_));
 
-        // New implementations always get set via the settor (post-initialize)
+        // // New implementations always get set via the settor (post-initialize)
         _setImplementation(implementation_, false, becomeImplementationData);
 
         // Set the proper admin now that initialization is done
@@ -76,6 +76,10 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
         delegateToImplementation(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
 
         emit NewImplementation(oldImplementation, implementation);
+    }
+
+    function proxyType() public pure returns (uint256 proxyTypeId) {
+        return 2;
     }
 
     /**
