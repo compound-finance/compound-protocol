@@ -14,13 +14,6 @@ interface IGmxRewardRouter {
 
     function glpManager() external view returns (address);
 
-    function mintAndStakeGlp(
-        address _token,
-        uint256 _amount,
-        uint256 _minUsdg,
-        uint256 _minGlp
-    ) external returns (uint256);
-
     function handleRewards(
         bool _shouldClaimGmx,
         bool _shouldStakeGmx,
@@ -32,6 +25,8 @@ interface IGmxRewardRouter {
     ) external;
 
     function signalTransfer(address _receiver) external;
+
+    function mintAndStakeGlp(address _token, uint256 _amount, uint256 _minUsdg, uint256 _minGlp) external returns (uint256) ;
 
     function mintAndStakeGlpETH(uint256 _minUsdg, uint256 _minGlp) external payable returns (uint256);
 

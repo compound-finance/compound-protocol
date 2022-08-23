@@ -88,7 +88,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
     constructor() {
         admin = msg.sender;
-        whitelistedUser[msg.sender] = true; 
+        whitelistedUser[admin] = true; 
         immutableCompAddress = false;
     }
 
@@ -149,7 +149,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
         if(marketToJoin.isPrivate){
             //market is private, make sure user has admin rights
-            require(whitelistedUser[msg.sender], "this market is currently private");
+            require(whitelistedUser[borrower], "this market is currently private");
         }
 
 
@@ -947,6 +947,8 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
       * @notice Add the market to the markets mapping and set it as listed
       * @dev Admin function to set isListed and add support for the market
       * @param cToken The address of the market (token) to list
+      * @param isComped_ Will this market receive rewards
+      * @param isPrivate_ Is this market open to the public
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
     function _supportMarket(CToken cToken, bool isComped_, bool isPrivate_) external returns (uint) {

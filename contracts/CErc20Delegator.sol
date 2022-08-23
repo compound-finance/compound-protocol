@@ -454,6 +454,17 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     }
 
     /**
+     * @notice Toggle wether or not the GLP rewards should be autocompounded
+     * @dev Admin function to set wether or not GLP rewards should be autocompounded
+     * @param autocompound_ should the rewards be autocompounded or not
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _setAutocompoundRewards(bool autocompound_) override public returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setAutocompoundRewards(bool)", autocompound_));
+        return abi.decode(data, (uint));
+    }
+
+    /**
      * @notice Internal method to delegate execution to another contract
      * @dev It returns to the external caller whatever the implementation returns or forwards reverts
      * @param callee The contract to delegatecall

@@ -2,7 +2,8 @@ import hre from "hardhat";
 import { numToWei } from "../utils/ethUnitParser";
 
 import { readFileSync, writeFileSync } from "fs";
-import { ethers } from "ethers";
+// import { ethers } from "ethers";
+import { ethers, upgrades } from "hardhat";
 
 const outputFilePath = `./deployments/${hre.network.name}.json`;
 
@@ -66,42 +67,42 @@ const MAIN_NET_CTOKENS = [
 // These addresses need to be correct
 // usdt fracx
 const TEST_NET_CTOKENS = [
-  // {
-  //   underlying: "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
-  //   name: "tWBTC",
-  //   symbol: "tWBTC",
-  //   decimals: CTOKEN_DECIMALS,
-  //   collateralFactor: ethers.utils.parseUnits("8", 17),
-  //   priceInUsd: "1",
-  //   isGLP: false
-  // },
-  // {
-  //   underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
-  //   name: "fsGLP",
-  //   symbol: "fsGLP",
-  //   decimals: CTOKEN_DECIMALS,
-  //   collateralFactor: ethers.utils.parseUnits("9", 17),
-  //   priceInUsd: "1",
-  //   isGLP: true
-  // },
-
   {
-    underlying: "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
-    name: "tDAI",
-    symbol: "tDAIC",
+    underlying: "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
+    name: "tWBTC",
+    symbol: "tWBTC",
     decimals: CTOKEN_DECIMALS,
-    collateralFactor: ethers.utils.parseUnits("9", 17),
+    collateralFactor: ethers.utils.parseUnits("8", 17),
     priceInUsd: "1",
-  },
-  {
-    underlying: "0x420000000000000000000000000000000000000a",
-    name: "tETH", // use wrapped ether,
-    symbol: "TEther",
-    decimals: CTOKEN_DECIMALS,
-    collateralFactor: ethers.utils.parseUnits("7", 17),
-    priceInUsd: "1800",
     isGLP: false
   },
+//   {
+//     underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
+//     name: "fsGLP",
+//     symbol: "fsGLP",
+//     decimals: CTOKEN_DECIMALS,
+//     collateralFactor: ethers.utils.parseUnits("9", 17),
+//     priceInUsd: "1",
+//     isGLP: true
+//   },
+
+//   {
+//     underlying: "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
+//     name: "tDAI",
+//     symbol: "tDAIC",
+//     decimals: CTOKEN_DECIMALS,
+//     collateralFactor: ethers.utils.parseUnits("9", 17),
+//     priceInUsd: "1",
+//   },
+//   {
+//     underlying: "0x420000000000000000000000000000000000000a",
+//     name: "tETH", // use wrapped ether,
+//     symbol: "TEther",
+//     decimals: CTOKEN_DECIMALS,
+//     collateralFactor: ethers.utils.parseUnits("7", 17),
+//     priceInUsd: "1800",
+//     isGLP: false
+//   },
 
 ];
 
@@ -112,7 +113,7 @@ export async function main() {
   console.log(`>>>>>>>>>>>> Deployer: ${deployer.address} <<<<<<<<<<<<\n`);
 
   const CErc20Immutable = await hre.ethers.getContractFactory(
-    "CErc20Immutable"
+    "CErc20Delegator"
   );
 
   const deployments = JSON.parse(readFileSync(outputFilePath, "utf-8"));
@@ -124,8 +125,6 @@ export async function main() {
 
   for (let i = 0; i < CTOKENS.length; i++) {
     let token = CTOKENS[i];
-    if (token.symbol === "tETH") continue; // tETh is another script
-    console.log("deplying ctoken for", token.symbol)
 
     const erc20Underlying = await hre.ethers.getContractAt(
       "EIP20Interface",
@@ -135,7 +134,7 @@ export async function main() {
     const totalDecimals = underlyingDecimals + token.decimals;
     const initialExcRateMantissaStr = numToWei("2", totalDecimals);
 
-    const cErc20Immutable = await CErc20Immutable.deploy(
+    const cErc20Immutable = await upgrades.deployProxy(CErc20Immutable, [
       token.underlying,
       unitrollerAddress,
       irModelAddress,
@@ -144,8 +143,12 @@ export async function main() {
       token.symbol,
       token.decimals,
       token.isGLP === true,
-      deployer.address,
-    );
+    ],
+    {
+        initializer: "tinit",
+        // useDeployedImplementation: true,
+        kind: 'transparent',
+    });
     await cErc20Immutable.deployed();
     console.log("CErc20Immutable deployed to:", cErc20Immutable.address);
 
@@ -172,35 +175,35 @@ export async function main() {
     deployments[token.symbol] = cErc20Immutable.address;
     writeFileSync(outputFilePath, JSON.stringify(deployments, null, 2));
 
-    try {
-      await verifyContract(cErc20Immutable.address, [
-        token.underlying,
-        unitrollerAddress,
-        irModelAddress,
-        initialExcRateMantissaStr,
-        token.name,
-        token.symbol,
-        token.decimals,
-        token.isGLP === true,
-        deployer.address,
-      ]);
-    } catch (e) {
-      console.error("Error verifying cErc20Immutable", cErc20Immutable.address);
-      console.error(e);
-    }
+    // try {
+    //   await verifyContract(cErc20Immutable.address, [
+    //     token.underlying,
+    //     unitrollerAddress,
+    //     irModelAddress,
+    //     initialExcRateMantissaStr,
+    //     token.name,
+    //     token.symbol,
+    //     token.decimals,
+    //     token.isGLP === true,
+    //     deployer.address,
+    //   ]);
+    // } catch (e) {
+    //   console.error("Error verifying cErc20Immutable", cErc20Immutable.address);
+    //   console.error(e);
+    // }
   }
 }
 
-const verifyContract = async (
-  contractAddress: string,
-  constructorArgs: any
-) => {
-  await hre.run("verify:verify", {
-    contract: "contracts/CErc20Immutable.sol:CErc20Immutable",
-    address: contractAddress,
-    constructorArguments: constructorArgs,
-  });
-};
+// const verifyContract = async (
+//   contractAddress: string,
+//   constructorArgs: any
+// ) => {
+//   await hre.run("verify:verify", {
+//     contract: "contracts/CErc20Immutable.sol:CErc20Immutable",
+//     address: contractAddress,
+//     constructorArguments: constructorArgs,
+//   });
+// };
 
 main()
   .then(() => process.exit(0))
