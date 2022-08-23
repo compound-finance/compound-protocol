@@ -241,6 +241,11 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
             return uint(Error.MARKET_NOT_LISTED);
         }
 
+        if(marketToJoin.isPrivate){
+            //market is private, make sure user has admin rights
+            require(whitelistedUser[minter], "this market is currently private");
+        }
+
         // Keep the flywheel moving
         updateCompSupplyIndex(cToken);
         distributeSupplierComp(cToken, minter);
