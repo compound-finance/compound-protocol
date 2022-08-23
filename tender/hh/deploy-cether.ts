@@ -26,8 +26,8 @@ export async function main() {
       unitrollerAddress,
       irModelAddress,
       initialExcRateMantissaStr,
-      "TEther",
-      "TEther",
+      "tETH",
+      "tETH",
       CTOKEN_DECIMALS,
       deployer.address,
       false
@@ -50,12 +50,12 @@ export async function main() {
     writeFileSync(outputFilePath, JSON.stringify(deployments, null, 2));
 
     try {
-      await verifyContract( "0x39D3C99F3B8b86C44aAe49EAdaBab3b00f106FED", [// CEther.address, [
+      await verifyContract(CEther.address, [
         unitrollerAddress,
         irModelAddress,
         initialExcRateMantissaStr,
-        "TEther",
-        "TEther",
+        "tETH",
+        "tETH",
         8,
         deployer.address,  
         false

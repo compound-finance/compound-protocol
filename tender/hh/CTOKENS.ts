@@ -13,14 +13,14 @@ export const CTOKENS = [
   //   collateralFactor: ethers.utils.parseUnits("8", 17),
   //   isGLP: false
   // },
-  // {
-  //   underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
-  //   name: "fsGLP",
-  //   symbol: "tfsGLP",
-  //   decimals: CTOKEN_DECIMALS,
-  //   collateralFactor: ethers.utils.parseUnits("95", 17),
-  //   isGLP: true
-  // },
+  {
+    underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
+    name: "fsGLP",
+    symbol: "tfsGLP",
+    decimals: CTOKEN_DECIMALS,
+    collateralFactor: ethers.utils.parseUnits("95", 17),
+    isGLP: true
+  },
 
   // /not deployed
 //   {
@@ -43,7 +43,7 @@ export const CTOKENS = [
   {
     underlying: "0x420000000000000000000000000000000000000a",
     name: "tETH", // use wrapped ether,
-    symbol: "tEther",
+    symbol: "tETH",
     decimals: CTOKEN_DECIMALS,
     collateralFactor: ethers.utils.parseUnits("7", 17),
     isGLP: false

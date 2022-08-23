@@ -9,7 +9,7 @@ export async function main() {
 
   const deployments = JSON.parse(readFileSync(outputFilePath, "utf-8"));
 
-  const Factory = await hre.ethers.getContractFactory("GMXPriceOracle:GMXPriceOracle.sol");
+  const Factory = await hre.ethers.getContractFactory("GMXPriceOracle");
   const GMXPriceOracle = await Factory.deploy();
   console.log("GMXPriceOracle deployed to:", GMXPriceOracle.address);
 
@@ -59,9 +59,9 @@ const verifyContract = async (
   });
 };
 
-// main()
-//   .then(() => process.exit(0))
-//   .catch((error) => {
-//     console.error(error);
-//     process.exit(1);
-//   });
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
