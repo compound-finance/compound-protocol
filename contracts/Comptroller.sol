@@ -84,7 +84,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
     uint internal constant closeFactorMaxMantissa = 0.9e18; // 0.9
 
     // No collateralFactorMantissa may exceed this value
-    uint internal constant collateralFactorMaxMantissa = 0.9e18; // 0.9
+    uint internal constant collateralFactorMaxMantissa = 0.98e18; // 0.98
 
     constructor() {
         admin = msg.sender;
@@ -151,7 +151,6 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
             //market is private, make sure user has admin rights
             require(whitelistedUser[borrower], "this market is currently private");
         }
-
 
         if (marketToJoin.accountMembership[borrower] == true) {
             // already joined
@@ -249,6 +248,11 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
+        }
+
+        if(markets[cToken].isPrivate){
+            //market is private, make sure user has admin rights
+            require(whitelistedUser[minter], "this market is currently private");
         }
 
         // Keep the flywheel moving

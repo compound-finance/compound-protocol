@@ -186,7 +186,7 @@ contract GMXPriceOracle is PriceOracle {
     function _getUnderlyingAddress(CToken cToken) private view returns (address) {
         address asset;
         if (compareStrings(cToken.symbol(), "tETH")) {
-            asset = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+            asset = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
         } else {
             asset = address(CErc20(address(cToken)).underlying());
         }
