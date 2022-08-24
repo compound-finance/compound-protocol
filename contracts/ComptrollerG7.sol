@@ -129,7 +129,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
      * @param cToken The market to enter
      * @param borrower The address of the account to modify
      */
-    function addToMarketExternal(address cToken, address borrower) external {
+    function addToMarketExternal(address cToken, address borrower) override external {
         require(msg.sender == cToken, "not cToken");
         addToMarketInternal(CToken(cToken), borrower);
     }
