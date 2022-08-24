@@ -176,8 +176,6 @@ interface GlpManager{
 }
 contract GMXPriceOracle is PriceOracle {
     using SafeMath for uint256;
-    mapping(address => uint) prices;
-    event PricePosted(address asset, uint previousPriceMantissa, uint requestedPriceMantissa, uint newPriceMantissa);
     
     IERC20 public glpToken = IERC20(0x4277f8F2c384827B5273592FF7CeBd9f2C1ac258);
     GlpManager public glpManager = GlpManager(0x321F653eED006AD1C29D174e17d96351BDe22649);
@@ -202,26 +200,10 @@ contract GMXPriceOracle is PriceOracle {
     
     function getUnderlyingPrice(CToken cToken) public override view returns (uint) {
         if(cToken.isGLP()){
-            return glpManager.getAumInUsdg(true).mul(1e18).div(glpToken.totalSupply());   
+            return glpManager.getAumInUsdg(true).mul(1e28).div(glpToken.totalSupply());   
         } else {
-            return gmxPriceFeed.getPrice(_getUnderlyingAddress(cToken), true, true, false);
+            return gmxPriceFeed.getPrice(_getUnderlyingAddress(cToken), true, true, false).div(100);
         }
-    }
-
-    function setUnderlyingPrice(CToken cToken, uint underlyingPriceMantissa) public {
-        address asset = _getUnderlyingAddress(cToken);
-        emit PricePosted(asset, prices[asset], underlyingPriceMantissa, underlyingPriceMantissa);
-        prices[asset] = underlyingPriceMantissa;
-    }
-
-    function setDirectPrice(address asset, uint price) public {
-        emit PricePosted(asset, prices[asset], price, price);
-        prices[asset] = price;
-    }
-
-    // v1 price oracle interface for use as backing of proxy
-    function assetPrices(address asset) external view returns (uint) {
-        return prices[asset];
     }
 
     function compareStrings(string memory a, string memory b) internal pure returns (bool) {

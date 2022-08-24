@@ -137,6 +137,16 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
      * @notice Add the market to the borrower's "assets in" for liquidity calculations
      * @param cToken The market to enter
      * @param borrower The address of the account to modify
+     */
+    function addToMarketExternal(address cToken, address borrower) external {
+        require(msg.sender == cToken, "not cToken");
+        addToMarketInternal(CToken(cToken), borrower);
+    }
+
+    /**
+     * @notice Add the market to the borrower's "assets in" for liquidity calculations
+     * @param cToken The market to enter
+     * @param borrower The address of the account to modify
      * @return Success indicator for whether the market was entered
      */
     function addToMarketInternal(CToken cToken, address borrower) internal returns (Error) {
@@ -1114,54 +1124,6 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
     function _become(Unitroller unitroller) public {
         require(msg.sender == unitroller.admin(), "only unitroller admin can change brains");
         require(unitroller._acceptImplementation() == 0, "change not authorized");
-    }
-
-    /// @notice Delete this function after proposal 65 is executed
-    function fixBadAccruals(address[] calldata affectedUsers, uint[] calldata amounts) external {
-        require(msg.sender == admin, "Only admin can call this function"); // Only the timelock can call this function
-        require(!proposal65FixExecuted, "Already executed this one-off function"); // Require that this function is only called once
-        require(affectedUsers.length == amounts.length, "Invalid input");
-
-        // Loop variables
-        address user;
-        uint currentAccrual;
-        uint amountToSubtract;
-        uint newAccrual;
-
-        // Iterate through all affected users
-        for (uint i = 0; i < affectedUsers.length; ++i) {
-            user = affectedUsers[i];
-            currentAccrual = compAccrued[user];
-
-            amountToSubtract = amounts[i];
-
-            // The case where the user has claimed and received an incorrect amount of COMP.
-            // The user has less currently accrued than the amount they incorrectly received.
-            if (amountToSubtract > currentAccrual) {
-                // Amount of COMP the user owes the protocol
-                uint accountReceivable = amountToSubtract - currentAccrual; // Underflow safe since amountToSubtract > currentAccrual
-
-                uint oldReceivable = compReceivable[user];
-                uint newReceivable = add_(oldReceivable, accountReceivable);
-
-                // Accounting: record the COMP debt for the user
-                compReceivable[user] = newReceivable;
-
-                emit CompReceivableUpdated(user, oldReceivable, newReceivable);
-
-                amountToSubtract = currentAccrual;
-            }
-
-            if (amountToSubtract > 0) {
-                // Subtract the bad accrual amount from what they have accrued.
-                // Users will keep whatever they have correctly accrued.
-                compAccrued[user] = newAccrual = sub_(currentAccrual, amountToSubtract);
-
-                emit CompAccruedAdjusted(user, currentAccrual, newAccrual);
-            }
-        }
-
-        proposal65FixExecuted = true; // Makes it so that this function cannot be called again
     }
 
     /**

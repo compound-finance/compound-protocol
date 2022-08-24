@@ -128,6 +128,16 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
      * @notice Add the market to the borrower's "assets in" for liquidity calculations
      * @param cToken The market to enter
      * @param borrower The address of the account to modify
+     */
+    function addToMarketExternal(address cToken, address borrower) external {
+        require(msg.sender == cToken, "not cToken");
+        addToMarketInternal(CToken(cToken), borrower);
+    }
+
+    /**
+     * @notice Add the market to the borrower's "assets in" for liquidity calculations
+     * @param cToken The market to enter
+     * @param borrower The address of the account to modify
      * @return Success indicator for whether the market was entered
      */
     function addToMarketInternal(CToken cToken, address borrower) internal returns (Error) {

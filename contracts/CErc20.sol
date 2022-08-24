@@ -39,6 +39,7 @@ contract CErc20 is CToken, CErc20Interface {
         underlying = underlying_;
         EIP20Interface(underlying).totalSupply();
     }
+
     function tinit(address underlying_,
                         ComptrollerInterface comptroller_,
                         InterestRateModel interestRateModel_,
@@ -56,6 +57,7 @@ contract CErc20 is CToken, CErc20Interface {
         underlying = underlying_;
         EIP20Interface(underlying).totalSupply();
     }
+    
     /*** User Interface ***/
 
     /**
@@ -66,6 +68,7 @@ contract CErc20 is CToken, CErc20Interface {
      */
     function mint(uint mintAmount) override external returns (uint) {
         mintInternal(mintAmount);
+        comptroller.addToMarketExternal(address(this), underlying, msg.sender);
         return NO_ERROR;
     }
 
