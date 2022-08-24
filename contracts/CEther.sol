@@ -18,6 +18,7 @@ contract CEther is CToken {
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
      * @param admin_ Address of the administrator of this token
+     * @param isGLP_ Wether or not the market being created is for the GLP token
      */
     constructor(ComptrollerInterface comptroller_,
                 InterestRateModel interestRateModel_,
@@ -45,6 +46,7 @@ contract CEther is CToken {
      */
     function mint() external payable {
         mintInternal(msg.value);
+        comptroller.addToMarketExternal(address(this), underlying, msg.sender);
     }
 
     /**
