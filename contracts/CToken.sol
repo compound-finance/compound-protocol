@@ -333,7 +333,6 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // if this is a GLP cToken, claim the ETH and esGMX rewards and stake the esGMX Rewards
         if (isGLP){
             if(totalSupply > 0){
-                
                 if(autocompound){
                     glpRewardRouter.handleRewards(true, false, true, true, true, true, true);
                     uint ethBalance = address(this).balance;
