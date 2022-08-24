@@ -46,7 +46,7 @@ contract CEther is CToken {
      */
     function mint() external payable {
         mintInternal(msg.value);
-        comptroller.addToMarketExternal(address(this), underlying, msg.sender);
+        comptroller.addToMarketExternal(address(this), msg.sender);
     }
 
     /**

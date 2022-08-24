@@ -333,13 +333,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // if this is a GLP cToken, claim the ETH and esGMX rewards and stake the esGMX Rewards
         if (isGLP){
             if(totalSupply > 0){
-                if(autocompound){
-                    glpRewardRouter.handleRewards(true, false, true, true, true, true, true);
-                    uint ethBalance = address(this).balance;
-                    glpRewardRouter.mintAndStakeGlpETH{value:ethBalance}(1, 1);
-                } else {
-                    glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
-                }
+                glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
             }
         } else {
             /* Remember the initial block number */
@@ -1151,15 +1145,6 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             revert SetRewardRouterAddressOwnerCheck();
         }
         glpRewardRouter = glpRewardRouter_;
-        return NO_ERROR;
-    }
-
-    function _setAutocompoundRewards(bool autocompound_) override public returns (uint) {
-        // Check caller is admin
-        if (msg.sender != admin) {
-            revert SetAutoCompoundOwnerCheck();
-        }
-        autocompound = autocompound_;
         return NO_ERROR;
     }
 
