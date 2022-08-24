@@ -35,6 +35,12 @@ export async function main() {
     await CEther.deployed();
     console.log("TEther deployed to:", CEther.address);
 
+      // Save to output
+      deployments["TEther"] = CEther.address;
+      writeFileSync(outputFilePath, JSON.stringify(deployments, null, 2));
+  
+    
+
     const unitrollerProxy = await hre.ethers.getContractAt(
       "Comptroller",
       unitrollerAddress
@@ -45,9 +51,10 @@ export async function main() {
     await unitrollerProxy._supportMarket(CEther.address, false, false);
     await CEther.deployTransaction.wait(1);
 
-    // Save to output
-    deployments["TEther"] = CEther.address;
-    writeFileSync(outputFilePath, JSON.stringify(deployments, null, 2));
+
+    console.log("calling unitrollerProxy._setCollateralFactor()");
+    await unitrollerProxy._setCollateralFactor(CEther.address, ethers.utils.parseUnits("8e17"));
+    await CEther.deployTransaction.wait(1);
 
     try {
       await verifyContract(CEther.address, [

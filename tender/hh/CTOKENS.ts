@@ -6,21 +6,21 @@ const CTOKEN_DECIMALS = 8;
 export const CTOKENS = [
   // {
   //   //   underlying: "0xaD6D458402F60fD3Bd25163575031ACDce07538D",
-  //   underlying: "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
+  //   underlying: "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
   //   name: "tWBTC",
   //   symbol: "tWBTC",
   //   decimals: CTOKEN_DECIMALS,
   //   collateralFactor: ethers.utils.parseUnits("8", 17),
   //   isGLP: false
   // },
-  {
-    underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
-    name: "fsGLP",
-    symbol: "tfsGLP",
-    decimals: CTOKEN_DECIMALS,
-    collateralFactor: ethers.utils.parseUnits("95", 17),
-    isGLP: true
-  },
+  // {
+  //   underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
+  //   name: "fsGLP",
+  //   symbol: "tfsGLP",
+  //   decimals: CTOKEN_DECIMALS,
+  //   collateralFactor: ethers.utils.parseUnits("95", 16),
+  //   isGLP: true
+  // },
 
   // /not deployed
 //   {

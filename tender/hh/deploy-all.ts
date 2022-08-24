@@ -39,20 +39,21 @@ async function main() {
   // await DeployLens();
 
   // console.log("Deploy Jump Model")
-  await DeployJumpModel(ADMIN_PUBLIC_KEY);
+  // await DeployJumpModel(ADMIN_PUBLIC_KEY);
   // await DeployIrModel();
 
 
   // Depends on previous deployments
   // await DeployCToken();
-  console.log("deploying GLPOracle")
-  await GLPOracle();
+
+  // console.log("deploying GLPOracle")
+  // await GLPOracle();
 
   console.log("deploying CDelegators")
   await DeployCDToken()
 
   // SetCollateralFactor requires the price to be set first
-  await SetCollateralFactor();
+  // await SetCollateralFactor();
 }
 
 main()
