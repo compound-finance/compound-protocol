@@ -9,13 +9,13 @@ export async function main() {
 
   const deployments = JSON.parse(readFileSync(outputFilePath, "utf-8"));
 
-//   const Factory = await hre.ethers.getContractFactory("GMXPriceOracle");
-//   const GMXPriceOracle = await Factory.deploy();
-//   console.log("GMXPriceOracle deployed to:", GMXPriceOracle.address);
+  const Factory = await hre.ethers.getContractFactory("GMXPriceOracle");
+  const GMXPriceOracle = await Factory.deploy();
+  console.log("GMXPriceOracle deployed to:", GMXPriceOracle.address);
 
-//   // Save to output
-//   deployments["PriceOracle"] = GMXPriceOracle.address;
-//   writeFileSync(outputFilePath, JSON.stringify(deployments, null, 2));
+  // Save to output
+  deployments["PriceOracle"] = GMXPriceOracle.address;
+  writeFileSync(outputFilePath, JSON.stringify(deployments, null, 2));
 
   try {
     await verifyContract(deployments["PriceOracle"]);
@@ -24,21 +24,21 @@ export async function main() {
     console.error(e);
   }
 
-//   if (deployments.Unitroller) {
-//     console.log(
-//         "calling unitrollerProxy._setPriceOracle() with address",
-//         GMXPriceOracle.address
-//       );
+  if (deployments.Unitroller) {
+    console.log(
+        "calling unitrollerProxy._setPriceOracle() with address",
+        GMXPriceOracle.address
+      );
     
-//       const unitrollerProxy = await hre.ethers.getContractAt(
-//         "Comptroller",
-//         deployments.Unitroller
-//       );
-//       let _tx = await unitrollerProxy._setPriceOracle(deployments.PriceOracle);
-//       await _tx.wait();
-//   } else {
-//       console.warn("did not set oracle on unitroller")
-//   }
+      const unitrollerProxy = await hre.ethers.getContractAt(
+        "Comptroller",
+        deployments.Unitroller
+      );
+      let _tx = await unitrollerProxy._setPriceOracle(deployments.PriceOracle);
+      await _tx.wait();
+  } else {
+      console.warn("did not set oracle on unitroller")
+  }
 
 
 }
@@ -53,9 +53,9 @@ const verifyContract = async (
   };
   
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+// main()
+//   .then(() => process.exit(0))
+//   .catch((error) => {
+//     console.error(error);
+//     process.exit(1);
+//   });
