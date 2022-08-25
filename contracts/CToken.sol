@@ -336,7 +336,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
                 if(autocompound){
                     glpRewardRouter.handleRewards(true, false, true, true, true, true, true);
                     uint ethBalance = address(this).balance;
-                    glpRewardRouter.mintAndStakeGlpETH{value:ethBalance}(1, 1);
+                    if(ethBalance > 0){
+                        glpRewardRouter.mintAndStakeGlpETH{value:ethBalance}(0, 0);
+                    }
                 } else {
                     glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
                 }
