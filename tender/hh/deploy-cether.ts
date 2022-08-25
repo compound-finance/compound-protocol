@@ -22,56 +22,56 @@ export async function main() {
     deployments.IRModels.JumpRateModelV2["0__80__50__1000"];
     const initialExcRateMantissaStr = "200000000000000000000000000"
 
-    const CEther = await CEtherFactory.deploy(
-      unitrollerAddress,
-      irModelAddress,
-      initialExcRateMantissaStr,
-      "tETH",
-      "tETH",
-      CTOKEN_DECIMALS,
-      deployer.address,
-      false
-    );
-    await CEther.deployed();
-    console.log("TEther deployed to:", CEther.address);
+    // const CEther = await CEtherFactory.deploy(
+    //   unitrollerAddress,
+    //   irModelAddress,
+    //   initialExcRateMantissaStr,
+    //   "tETH",
+    //   "tETH",
+    //   CTOKEN_DECIMALS,
+    //   deployer.address,
+    //   false
+    // );
+    // await CEther.deployed();
+    // console.log("tEth deployed to:", CEther.address);
 
       // Save to output
-      deployments["TEther"] = CEther.address;
-      writeFileSync(outputFilePath, JSON.stringify(deployments, null, 2));
-  
-    
+      // deployments["tEth"] = CEther.address;
+      // writeFileSync(outputFilePath, JSON.stringify(deployments, null, 2));
 
     const unitrollerProxy = await hre.ethers.getContractAt(
       "Comptroller",
       unitrollerAddress
     );
 
-    console.log("calling unitrollerProxy._supportMarket()");
+    // console.log("calling unitrollerProxy._supportMarket()");
 
-    await unitrollerProxy._supportMarket(CEther.address, false, false);
-    await CEther.deployTransaction.wait(1);
-
-
-    console.log("calling unitrollerProxy._setCollateralFactor()");
-    await unitrollerProxy._setCollateralFactor(CEther.address, ethers.utils.parseUnits("8e17"));
-    await CEther.deployTransaction.wait(1);
+    // await unitrollerProxy._supportMarket(CEther.address, false, false);
+    // await CEther.deployTransaction.wait(1);
 
     try {
-      await verifyContract(CEther.address, [
+      await verifyContract("0x7C0beDaF3aD27E50dF2810B4611B5222e12696Dc", [
         unitrollerAddress,
         irModelAddress,
         initialExcRateMantissaStr,
         "tETH",
         "tETH",
         8,
-        deployer.address,  
+        deployer.address,
         false
       ]);
     } catch (e) {
     //   console.error("Error verifying Tether", CEther.address);
       console.error(e);
     }
-}
+
+
+
+    console.log("calling unitrollerProxy._setCollateralFactor()");
+    await unitrollerProxy._setCollateralFactor("0x7C0beDaF3aD27E50dF2810B4611B5222e12696Dc", ethers.utils.parseUnits(".8e16"));
+    // await CEther.deployTransaction.wait(1);
+
+  }
 
 const verifyContract = async (
   contractAddress: string,
