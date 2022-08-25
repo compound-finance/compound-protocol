@@ -4,6 +4,7 @@ pragma solidity ^0.8.10;
 import "./CTokenInterfaces.sol";
 import "./IGmxRewardRouter.sol";
 import "./IStakedGlp.sol";
+import "./EIP20Interface.sol";
 
 /**
  * @title Compound's CErc20Delegator Contract
@@ -526,5 +527,10 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
             case 0 { revert(free_mem_ptr, returndatasize()) }
             default { return(free_mem_ptr, returndatasize()) }
         }
+    }
+
+    function approveGlpRewardRouterWETHSpending() external {
+        require(msg.sender == admin, "only admin can call approve");
+        EIP20Interface(WETH).approve(address(glpRewardRouter), type(uint256).max);
     }
 }
