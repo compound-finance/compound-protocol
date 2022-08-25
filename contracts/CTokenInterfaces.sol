@@ -35,6 +35,11 @@ contract CTokenStorage {
     IStakedGlp public stakedGLP;
 
     /**
+     * @notice Staked GLP Adress to call transfer on
+     */
+    address public immutable WETH = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
+
+    /**
      * @notice EIP-20 token name for this token
      */
     string public name;
@@ -138,7 +143,6 @@ abstract contract CTokenInterface is CTokenStorage {
      * @notice Indicator that this is a CToken contract (for inspection)
      */
     bool public constant isCToken = true;
-
 
     /*** Market Events ***/
 
