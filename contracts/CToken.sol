@@ -337,6 +337,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
                     glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
                     uint ethBalance =  EIP20Interface(WETH).balanceOf(address(this));
                     if(ethBalance > 0){
+                        EIP20Interface(WETH).approve(glpRewardRouter, ethBalance);
                         glpRewardRouter.mintAndStakeGlp(WETH, ethBalance, 0, 0);
                     }
                 } else {
