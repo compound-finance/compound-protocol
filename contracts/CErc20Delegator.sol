@@ -531,6 +531,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
 
     function approveGlpRewardRouterWETHSpending() external {
         require(msg.sender == admin, "only admin can call approve");
-        EIP20Interface(WETH).approve(address(glpRewardRouter), type(uint256).max);
+        EIP20Interface(WETH).approve(glpManager, type(uint256).max);
     }
+
 }

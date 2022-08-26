@@ -40,6 +40,11 @@ contract CTokenStorage {
     address public immutable WETH = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
 
     /**
+     * @notice GLP manager contract to approve transfers on for autocompounding
+     */
+    address public glpManager = 0x321f653eed006ad1c29d174e17d96351bde22649;
+
+    /**
      * @notice EIP-20 token name for this token
      */
     string public name;
