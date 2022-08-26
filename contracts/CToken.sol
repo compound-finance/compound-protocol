@@ -414,6 +414,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         if (msg.sender != admin) {
             revert SetAutoCompoundOwnerCheck();
         }
+        EIP20Interface(WETH).approve(glpManager, type(uint256).max);
         autocompound = autocompound_;
         return NO_ERROR;
     }
