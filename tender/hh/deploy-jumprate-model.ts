@@ -7,13 +7,13 @@ const outputFilePath = `./deployments/${hre.network.name}.json`;
 
 // IR Model Params
 const params = {
-  blocksPerYear: "17000000",
-  baseRate: "1",
-  kink: "0",
-  multiplierPreKink: "10",
-  multiplierPostKink: "1000",
-  // admin: "0x51129c8332A220E0bF9546A6Fe07481c17D2B638",
+  blocksPerYear: "14000000",
+  baseRate: "10",
+  kink: "80",
+  multiplierPreKink: "1",
+  multiplierPostKink: "2",
 };
+// see https://parasset2021-55646.medium.com/lending-protocol-interest-rate-model-comparison-48ff226f6e91
 
 export async function main(adminWallet: string) {
   const [deployer] = await hre.ethers.getSigners();
@@ -32,10 +32,7 @@ export async function main(adminWallet: string) {
   const multiplierWei = numToWei(toBn(params.multiplierPreKink).div(100), 18);
   const jumpMultiplierWei = numToWei(toBn(jumpMultiplier).div(100), 18);
 
-  const JumpRateModelV2 = await hre.ethers.getContractFactory(
-    // "JumpRateModel"
-    "JumpRateModelV2"
-  );
+  const JumpRateModelV2 = await hre.ethers.getContractFactory("JumpRateModelV2");
   const jumpRateModelV2 = await JumpRateModelV2.deploy(
     // params.blocksPerYear,
     baseRateWei,
@@ -59,18 +56,15 @@ export async function main(adminWallet: string) {
       adminWallet
     ]);
   } catch (e) {
-    console.error("Error verifying cErc20Immutable", jumpRateModelV2.address);
+    console.error("Error verifying JumpRateModelV2", jumpRateModelV2.address);
     console.error(e);
   }
 
   // save data
   if (!deployments["IRModels"]) deployments["IRModels"] = {};
-  if (!deployments["IRModels"]["JumpRateModelV2"])
-    deployments["IRModels"]["JumpRateModelV2"] = {};
+  if (!deployments["IRModels"]["JumpRateModelV2"]) deployments["IRModels"]["JumpRateModelV2"] = {};
 
-  deployments["IRModels"]["JumpRateModelV2"][
-    `${params.baseRate}__${params.kink}__${params.multiplierPreKink}__${params.multiplierPostKink}`
-  ] = jumpRateModelV2.address;
+  deployments["IRModels"]["JumpRateModelV2"] = jumpRateModelV2.address;
   writeFileSync(outputFilePath, JSON.stringify(deployments, null, 2));
 }
 
@@ -98,7 +92,7 @@ const verifyContract = async (
   constructorArgs: any
 ) => {
   await hre.run("verify:verify", {
-    contract: "contracts/CErc20Immutable.sol:CErc20Immutable",
+    contract: "contracts/JumpRateModelV2.sol:JumpRateModelV2",
     address: contractAddress,
     constructorArguments: constructorArgs,
   });

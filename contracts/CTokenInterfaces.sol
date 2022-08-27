@@ -42,7 +42,7 @@ contract CTokenStorage {
     /**
      * @notice GLP manager contract to approve transfers on for autocompounding
      */
-    address public glpManager = 0x321f653eed006ad1c29d174e17d96351bde22649;
+    address public glpManager = 0x321F653eED006AD1C29D174e17d96351BDe22649;
 
     /**
      * @notice EIP-20 token name for this token

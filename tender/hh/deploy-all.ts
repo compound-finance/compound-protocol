@@ -2,12 +2,13 @@ import hre from "hardhat";
 import { copyFileSync } from "fs";
 
 import { main as DeployProtocol } from "./deploy-protocol";
-// import { main as DeployJumpModel } from "./deploy-jumprate-model";
+import { main as DeployJumpModel } from "./deploy-jumprate-model";
 import { main as DeployCDelegators } from "./deploy-cdelegator";
+import { main as DeployCDelegate } from "./deploy-cdelegate";
 import { main as GLPOracle } from "./deploy-glp-oracle";
 
 // import { main as DeployMockOracle } from "./deploy-mock-price-oracle";
-// import { main as DeployLens } from "./deploy-lens";
+import { main as DeployCeth } from "./deploy-cether";
 // import { main as DeployIrModel } from "./deploy-ir-model";
 // import { main as DeployCToken } from "./deploy-ctoken";
 // import { main as SetMockOraclePrice } from "./set-mock-oracle-price";
@@ -33,11 +34,11 @@ async function main() {
   // Need oracle deployed first to set on unitroller in DeployProtocol,
   // await DeployMockOracle();
 
-  console.log("deploy protocol")
-  await DeployProtocol();
+  // console.log("deploy protocol")
+  // await DeployProtocol();
 
-  console.log("deploying GLPOracle")
-  await GLPOracle();
+  // console.log("deploying GLPOracle")
+  // await GLPOracle();
 
   // await DeployLens();
 
@@ -46,11 +47,15 @@ async function main() {
   // await DeployIrModel();
 
 
+  
+  // console.log("deploying CETH")
+  // await DeployCeth()
+
   // Depends on previous deployments
-  // await DeployCToken();
+  // await DeployCDelegate();
 
 
-  console.log("deploying CDelegators")
+  // console.log("deploying CDelegators")
   await DeployCDelegators()
 
   // SetCollateralFactor requires the price to be set first

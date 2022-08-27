@@ -2,7 +2,6 @@ import hre from "hardhat";
 import { numToWei } from "../utils/ethUnitParser";
 
 import { readFileSync, writeFileSync } from "fs";
-import '@openzeppelin/hardhat-upgrades';
 import {CTOKENS} from "./CTOKENS"
 
 const outputFilePath = `./deployments/${hre.network.name}.json`;
@@ -14,8 +13,7 @@ export async function main() {
 
   const deployments = JSON.parse(readFileSync(outputFilePath, "utf-8"));
   const unitrollerAddress: string = deployments.Unitroller;
-  // TODO: This is fragile if the parameters change
-  const irModelAddress: string = deployments.IRModels.JumpRateModelV2["0__80__50__1000"];
+  const irModelAddress: string = deployments.IRModels.JumpRateModelV2;
 
   const unitrollerProxy = await hre.ethers.getContractAt(
     "Comptroller",
@@ -41,7 +39,6 @@ for (let i = 0; i < CTOKENS.length; i++) {
 
     const delegateAddress = deployments["delegate"]
     console.log("delegate address", delegateAddress)
-
 
     console.log(
         "Calling delegatorFactory.deploy() with",
@@ -75,24 +72,24 @@ for (let i = 0; i < CTOKENS.length; i++) {
     await delegator.deployed();
     console.log("delegator deployed to:", delegator.address);
 
-    // try {
-    //   verifyContract("contracts/CErc20Delegator.sol:CErc20Delegator", delegator.address, [
-    //     token.underlying,
-    //     unitrollerAddress,
-    //     irModelAddress,
-    //     initialExcRateMantissaStr,
-    //     token.name,
-    //     token.symbol,
-    //     token.decimals,
-    //     token.isGLP === true,
-    //     adminAddress,
-    //     delegateAddress,
-    //     Buffer.from([0x0]),
-    //   ]);
-    // } catch (e) {
-    //   console.error("Error verifying delegator");
-    //   console.error(e);
-    // }
+    try {
+      await verifyContract("contracts/CErc20Delegator.sol:CErc20Delegator", delegator.address, [
+        token.underlying,
+        unitrollerAddress,
+        irModelAddress,
+        initialExcRateMantissaStr,
+        token.name,
+        token.symbol,
+        token.decimals,
+        token.isGLP === true,
+        adminAddress,
+        delegateAddress,
+        Buffer.from([0x0]),
+      ]);
+    } catch (e) {
+      console.error("Error verifying delegator");
+      console.error(e);
+    }
 
     if (token.isGLP) {
         console.log("calling ctoken._setStakedGlpAddress()");

@@ -18,7 +18,7 @@ export async function main() {
   writeFileSync(outputFilePath, JSON.stringify(deployments, null, 2));
 
   try {
-    await verifyContract(deployments["PriceOracle"]);
+    await verifyContract(GMXPriceOracle.address);
   } catch (e) {
     console.error("Error verifying GMXPriceOracle");
     console.error(e);

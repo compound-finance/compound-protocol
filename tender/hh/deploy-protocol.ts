@@ -56,12 +56,16 @@ export async function main() {
   );
   await _tx.wait(confirmations);
 
-  console.log(
-    "calling unitrollerProxy._setPriceOracle() with address",
-    deployments.PriceOracle
-  );
-  _tx = await unitrollerProxy._setPriceOracle(deployments.PriceOracle);
-  await _tx.wait(confirmations);
+  if (deployments.PriceOracle) {
+    console.log(
+      "calling unitrollerProxy._setPriceOracle() with address",
+      deployments.PriceOracle
+    );
+    _tx = await unitrollerProxy._setPriceOracle(deployments.PriceOracle);
+    await _tx.wait(confirmations);  
+  } else {
+    console.log("Price oracle not deployed or set")
+  }
 
   // save data
   deployments["Unitroller"] = unitroller.address;
