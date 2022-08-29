@@ -1149,6 +1149,12 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         return NO_ERROR;
     }
 
+    /**
+     * @notice Updates the stakedGLP contract using _setStakedGlpAddress
+     * @dev Admin function to update the stakedGLP contract address
+     * @param stakedGLP_ the stakedGLP contract to use
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
     function _setStakedGlpAddress(IStakedGlp stakedGLP_) override public returns (uint) {
         // Check caller is admin
         if (msg.sender != admin) {
@@ -1158,6 +1164,12 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         return NO_ERROR;
     }
 
+    /**
+     * @notice Updates the RewardRouter contract using _setRewardRouterAddress
+     * @dev Admin function to update rewardrouter contract address
+     * @param glpRewardRouter_ the rewardrouter contract address to use
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
     function _setRewardRouterAddress(IGmxRewardRouter glpRewardRouter_) override public returns (uint) {
         // Check caller is admin
         if (msg.sender != admin) {
@@ -1167,6 +1179,27 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         return NO_ERROR;
     }
 
+    /**
+     * @notice Updates the RewardRouter contract using _setGlpManagerAddress
+     * @dev Admin function to set the GLP manager address
+     * @param glpManager_ the glpManager contract address to use
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _setGlpManagerAddress(address glpManager_) override public returns (uint) {
+        // Check caller is admin
+        if (msg.sender != admin) {
+            revert SetGlpManagerAddressOwnerCheck();
+        }
+        glpManager = glpManager_;
+        return NO_ERROR;
+    }
+
+    /**
+     * @notice Transfers all esGmx assets to the recipient
+     * @dev Admin function to remove all esGmx assets from the contract
+     * @param recipient the address to send all the assets to
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
     function _signalTransfer(address recipient) override public returns (uint) {
         // Check caller is admin
         if (msg.sender != admin) {

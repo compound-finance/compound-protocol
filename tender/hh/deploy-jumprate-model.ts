@@ -59,7 +59,7 @@ export async function main(adminWallet: string) {
       adminWallet
     ]);
   } catch (e) {
-    console.error("Error verifying cErc20Immutable", jumpRateModelV2.address);
+    console.error("Error verifying jumpRateModelV2", jumpRateModelV2.address);
     console.error(e);
   }
 

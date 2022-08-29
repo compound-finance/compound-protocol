@@ -422,8 +422,8 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     }
 
     /**
-     * @notice Accrues interest and updates the stakedGLP contract using _setStakedGlpAddress
-     * @dev Admin function to accrue interest and update the stakedGLP contract address
+     * @notice Updates the stakedGLP contract using _setStakedGlpAddress
+     * @dev Admin function to update the stakedGLP contract address
      * @param stakedGLP_ the stakedGLP contract to use
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
@@ -433,9 +433,9 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     }
 
     /**
-     * @notice Accrues interest and updates the RewardRouter contract using _setRewardRouterAddress
-     * @dev Admin function to accrue interest and update rewardrouter contract address
-     * @param glpRewardRouter_ the rewardrouter contract to use
+     * @notice Updates the RewardRouter contract using _setRewardRouterAddress
+     * @dev Admin function to update rewardrouter contract address
+     * @param glpRewardRouter_ the rewardrouter contract address to use
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _setRewardRouterAddress(IGmxRewardRouter glpRewardRouter_) override public returns (uint) {
@@ -444,8 +444,20 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     }
 
     /**
-     * @notice Transfers all gmx assets to the recipient
-     * @dev Admin function to remove all gmx assets from the contract
+     * @notice Updates the RewardRouter contract using _setGlpManagerAddress
+     * @dev Admin function to set the GLP manager address
+     * @param glpManager_ the glpManager contract address to use
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _setGlpManagerAddress(address glpManager_) override public returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setGlpManagerAddress(address)", glpManager_));
+        return abi.decode(data, (uint));
+    }
+
+
+    /**
+     * @notice Transfers all esGmx assets to the recipient
+     * @dev Admin function to remove all esGmx assets from the contract
      * @param recipient the address to send all the assets to
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
