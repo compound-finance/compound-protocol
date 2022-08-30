@@ -44,7 +44,20 @@ interface GovernorBravoInterface {
     function getReceipt(uint proposalId, address voter) external view returns (Receipt memory);
 }
 
-contract CompoundLens {
+contract CompoundLens is ComptrollerErrorReporter, ExponentialNoError {
+    struct AccountLiquidityLocalVars {
+        uint sumCollateral;
+        uint sumBorrowPlusEffects;
+        uint cTokenBalance;
+        uint borrowBalance;
+        uint exchangeRateMantissa;
+        uint oraclePriceMantissa;
+        Exp collateralFactor;
+        Exp exchangeRate;
+        Exp oraclePrice;
+        Exp tokensToDenom;
+    }
+
     struct CTokenMetadata {
         address cToken;
         uint exchangeRateCurrent;
@@ -245,7 +258,7 @@ contract CompoundLens {
     }
 
     function getAccountLimits(ComptrollerLensInterface comptroller, address account) public returns (AccountLimits memory) {
-        (uint errorCode, uint liquidity, uint shortfall) = comptroller.getAccountLiquidity(account);
+        (uint errorCode, uint liquidity, uint shortfall) = getAccountLiquidity(comptroller, account);
         require(errorCode == 0);
 
         return AccountLimits({
@@ -496,5 +509,123 @@ contract CompoundLens {
         require(b <= a, errorMessage);
         uint c = a - b;
         return c;
+    }
+
+    /**
+     * @notice Determine the current account liquidity wrt collateral requirements
+     * @return (possible error code (semi-opaque),
+                account liquidity in excess of collateral requirements,
+     *          account shortfall below collateral requirements)
+     */
+    function getAccountLiquidity(ComptrollerLensInterface comptroller, address account) public view returns (uint, uint, uint) {
+        (Error err, uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(comptroller, account, CToken(address(0)), 0, 0);
+
+        return (uint(err), liquidity, shortfall);
+    }
+
+    /**
+     * @notice Determine the current account liquidity wrt collateral requirements
+     * @return (possible error code,
+                account liquidity in excess of collateral requirements,
+     *          account shortfall below collateral requirements)
+     */
+    function getAccountLiquidityInternal(ComptrollerLensInterface comptroller, address account) internal view returns (Error, uint, uint) {
+        return getHypotheticalAccountLiquidityInternal(comptroller, account, CToken(address(0)), 0, 0);
+    }
+
+    /**
+     * @notice Determine what the account liquidity would be if the given amounts were redeemed/borrowed
+     * @param cTokenModify The market to hypothetically redeem/borrow in
+     * @param account The account to determine liquidity for
+     * @param redeemTokens The number of tokens to hypothetically redeem
+     * @param borrowAmount The amount of underlying to hypothetically borrow
+     * @return (possible error code (semi-opaque),
+                hypothetical account liquidity in excess of collateral requirements,
+     *          hypothetical account shortfall below collateral requirements)
+     */
+    function getHypotheticalAccountLiquidity(
+        ComptrollerLensInterface comptroller,
+        address account,
+        address cTokenModify,
+        uint redeemTokens,
+        uint borrowAmount) public view returns (uint, uint, uint) {
+        (Error err, uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(comptroller, account, CToken(cTokenModify), redeemTokens, borrowAmount);
+        return (uint(err), liquidity, shortfall);
+    }
+
+    /**
+     * @notice Determine what the account liquidity would be if the given amounts were redeemed/borrowed
+     * @param cTokenModify The market to hypothetically redeem/borrow in
+     * @param account The account to determine liquidity for
+     * @param redeemTokens The number of tokens to hypothetically redeem
+     * @param borrowAmount The amount of underlying to hypothetically borrow
+     * @dev Note that we calculate the exchangeRateStored for each collateral cToken using stored data,
+     *  without calculating accumulated interest.
+     * @return (possible error code,
+                hypothetical account liquidity in excess of collateral requirements,
+     *          hypothetical account shortfall below collateral requirements)
+     */
+    function getHypotheticalAccountLiquidityInternal(
+        ComptrollerLensInterface comptroller,
+        address account,
+        CToken cTokenModify,
+        uint redeemTokens,
+        uint borrowAmount) internal view returns (Error, uint, uint) {
+
+        AccountLiquidityLocalVars memory vars; // Holds all our calculation results
+        uint oErr;
+
+        // For each asset the account is in
+        CToken[] memory assets = comptroller.getAssetsIn(account);
+        for (uint i = 0; i < assets.length; i++) {
+            CToken asset = assets[i];
+
+            // Read the balances and exchange rate from the cToken
+            (oErr, vars.cTokenBalance, vars.borrowBalance, vars.exchangeRateMantissa) = asset.getAccountSnapshot(account);
+            if (oErr != 0) { // semi-opaque error code, we assume NO_ERROR == 0 is invariant between upgrades
+                return (Error.SNAPSHOT_ERROR, 0, 0);
+            }
+            (bool isListed, uint collateralFactorMantissa) = comptroller.markets(address(asset));
+            vars.collateralFactor = Exp({mantissa: collateralFactorMantissa});
+            vars.exchangeRate = Exp({mantissa: vars.exchangeRateMantissa});
+
+            // Get the normalized price of the asset
+            if (address(asset) == 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5) {
+                vars.oraclePriceMantissa = comptroller.oracle().price("ETH");
+            } else {
+                vars.oraclePriceMantissa = comptroller.oracle().getUnderlyingPrice(asset);
+            }
+            if (vars.oraclePriceMantissa == 0) {
+                return (Error.PRICE_ERROR, 0, 0);
+            }
+            vars.oraclePrice = Exp({mantissa: vars.oraclePriceMantissa});
+
+            // Pre-compute a conversion factor from tokens -> ether (normalized price value)
+            vars.tokensToDenom = mul_(mul_(vars.collateralFactor, vars.exchangeRate), vars.oraclePrice);
+
+            // sumCollateral += tokensToDenom * cTokenBalance
+            vars.sumCollateral = mul_ScalarTruncateAddUInt(vars.tokensToDenom, vars.cTokenBalance, vars.sumCollateral);
+
+            // sumBorrowPlusEffects += oraclePrice * borrowBalance
+            vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(vars.oraclePrice, vars.borrowBalance, vars.sumBorrowPlusEffects);
+
+            // Calculate effects of interacting with cTokenModify
+            if (asset == cTokenModify) {
+                // redeem effect
+                // sumBorrowPlusEffects += tokensToDenom * redeemTokens
+                vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(vars.tokensToDenom, redeemTokens, vars.sumBorrowPlusEffects);
+
+                // borrow effect
+                // sumBorrowPlusEffects += oraclePrice * borrowAmount
+                vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(vars.oraclePrice, borrowAmount, vars.sumBorrowPlusEffects);
+            }
+        }
+
+        // These are safe, as the underflow condition is checked first
+        if (vars.sumCollateral > vars.sumBorrowPlusEffects) {
+            return (Error.NO_ERROR, vars.sumCollateral - vars.sumBorrowPlusEffects, 0);
+        } else {
+            return (Error.NO_ERROR, 0, vars.sumBorrowPlusEffects - vars.sumCollateral);
+        }
     }
 }
