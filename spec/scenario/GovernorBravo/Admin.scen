@@ -82,7 +82,7 @@ Test "Set Proposal Threshold"
 Test "Enforce Proposal Threshold min"
 	DeployGov
 	AllowFailures
-	GovernorBravo LegitGov SetProposalThreshold 5000e18
+	GovernorBravo LegitGov SetProposalThreshold 500e18
 	Assert Revert "revert GovernorBravo::_setProposalThreshold: invalid proposal threshold"
 
 Test "Enforce admin"
