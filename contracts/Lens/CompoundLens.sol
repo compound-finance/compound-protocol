@@ -591,7 +591,7 @@ contract CompoundLens is ComptrollerErrorReporter, ExponentialNoError {
 
             // Get the normalized price of the asset
             if (address(asset) == 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5) {
-                vars.oraclePriceMantissa = comptroller.oracle().price("ETH");
+                vars.oraclePriceMantissa = comptroller.oracle().price("ETH") * 1000000000000;
             } else {
                 vars.oraclePriceMantissa = comptroller.oracle().getUnderlyingPrice(asset);
             }
