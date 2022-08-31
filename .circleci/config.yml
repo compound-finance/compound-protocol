@@ -6,7 +6,7 @@ orbs:
 jobs:
   test:
     docker:
-      - image: circleci/node:12.18.4
+      - image: circleci/node:14.19.3
     working_directory: ~/repo
     steps:
       - run:
@@ -74,7 +74,7 @@ jobs:
 
   coverage:
     docker:
-      - image: circleci/node:12.18.4
+      - image: circleci/node:14.19.3
     working_directory: ~/repo
     steps:
       - run:
@@ -138,7 +138,7 @@ jobs:
 
   lint:
     docker:
-      - image: circleci/node:12.18.4
+      - image: circleci/node:14.19.3
     working_directory: ~/repo
     steps:
       - checkout
