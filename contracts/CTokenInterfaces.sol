@@ -7,6 +7,7 @@ import "./EIP20NonStandardInterface.sol";
 import "./ErrorReporter.sol";
 import "./IGmxRewardRouter.sol";
 import "./IStakedGlp.sol";
+import "./IRewardTracker.sol";
 
 contract CTokenStorage {
     /**
@@ -27,12 +28,27 @@ contract CTokenStorage {
     /**
      * @notice GLP reward router for claiming rewards
      */
-    IGmxRewardRouter public glpRewardRouter;
+    IGmxRewardRouter public glpRewardRouter = IGmxRewardRouter(0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1);
 
     /**
      * @notice Staked GLP Adress to call transfer on
      */
-    IStakedGlp public stakedGLP;
+    IStakedGlp public stakedGLP = IStakedGlp(0x2F546AD4eDD93B956C8999Be404cdCAFde3E89AE);
+
+    /**
+     * @notice address of the GMX token
+     */
+    address public gmxToken = 0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a;
+
+    /**
+     * @notice Address that handles GMX staking
+     */
+    IRewardTracker public stakedGmxTracker = IRewardTracker(0x908C4D94D34924765f1eDc22A1DD098397c59dD4);
+
+    /**
+     * @notice address of the Staked GMX token
+     */
+    address public sbfGMX = 0xd2D1162512F927a7e282Ef43a362659E4F2a728F;
 
     /**
      * @notice Staked GLP Adress to call transfer on
@@ -42,7 +58,7 @@ contract CTokenStorage {
     /**
      * @notice GLP manager contract to approve transfers on for autocompounding
      */
-    address public glpManager = 0x321f653eed006ad1c29d174e17d96351bde22649;
+    address public glpManager = 0x321F653eED006AD1C29D174e17d96351BDe22649;
 
     /**
      * @notice EIP-20 token name for this token
@@ -261,7 +277,7 @@ abstract contract CTokenInterface is CTokenStorage {
     function _setInterestRateModel(InterestRateModel newInterestRateModel) virtual external returns (uint);
     function _setStakedGlpAddress(IStakedGlp stakedGLP_) virtual public returns (uint);
     function _setRewardRouterAddress(IGmxRewardRouter glpRewardRouter_) virtual public returns (uint);
-    function _setGlpManagerAddress(address glpManager_) override public returns (uint);
+    function _setGlpManagerAddress(address glpManager_) virtual public returns (uint);
     function _signalTransfer(address recipient) virtual public returns (uint);
     function _setAutocompoundRewards(bool autocompound_) virtual public returns (uint);
 }
