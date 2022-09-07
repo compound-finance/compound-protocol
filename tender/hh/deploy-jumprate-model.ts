@@ -7,11 +7,11 @@ const outputFilePath = `./deployments/${hre.network.name}.json`;
 
 // IR Model Params
 const params = {
-  blocksPerYear: "17000000",
-  baseRate: "1",
-  kink: "0",
-  multiplierPreKink: "10",
-  multiplierPostKink: "1000",
+  blocksPerYear: "144752795",
+  baseRate: "7",
+  kink: "90",
+  multiplierPreKink: "0",
+  multiplierPostKink: "50",
   // admin: "0x51129c8332A220E0bF9546A6Fe07481c17D2B638",
 };
 
