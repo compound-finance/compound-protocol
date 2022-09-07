@@ -29,6 +29,9 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
     /// @notice Emitted when a collateral factor is changed by admin
     event NewCollateralFactor(CToken cToken, uint oldCollateralFactorMantissa, uint newCollateralFactorMantissa);
 
+    /// @notice Emitted when a liquidation threshold is changed by admin
+    event NewliquidationThreshold(CToken cToken, uint oldliquidationThresholdMantissa, uint newliquidationThresholdMantissa);
+
     /// @notice Emitted when liquidation incentive is changed by admin
     event NewLiquidationIncentive(uint oldLiquidationIncentiveMantissa, uint newLiquidationIncentiveMantissa);
 
@@ -85,6 +88,11 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
     // No collateralFactorMantissa may exceed this value
     uint internal constant collateralFactorMaxMantissa = 0.98e18; // 0.98
+
+    // No liquidationThresholdMantissa may exceed this value
+    uint internal constant liquidationThresholdMaxMantissa = 0.98e18; // 0.98
+
+    
 
     constructor() {
         admin = msg.sender;
@@ -720,7 +728,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
      *          account shortfall below collateral requirements)
      */
     function getAccountLiquidityInternal(address account) internal view returns (Error, uint, uint) {
-        return getHypotheticalAccountLiquidityInternal(account, CToken(address(0)), 0, 0);
+        return getHypotheticalAccountLiquidityInternalForLiquidation(account, CToken(address(0)), 0, 0);
     }
 
     /**
@@ -774,6 +782,76 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
                 return (Error.SNAPSHOT_ERROR, 0, 0);
             }
             vars.collateralFactor = Exp({mantissa: markets[address(asset)].collateralFactorMantissa});
+            vars.exchangeRate = Exp({mantissa: vars.exchangeRateMantissa});
+
+            // Get the normalized price of the asset
+            vars.oraclePriceMantissa = oracle.getUnderlyingPrice(asset);
+            if (vars.oraclePriceMantissa == 0) {
+                return (Error.PRICE_ERROR, 0, 0);
+            }
+            vars.oraclePrice = Exp({mantissa: vars.oraclePriceMantissa});
+
+            // Pre-compute a conversion factor from tokens -> ether (normalized price value)
+            vars.tokensToDenom = mul_(mul_(vars.collateralFactor, vars.exchangeRate), vars.oraclePrice);
+
+            // sumCollateral += tokensToDenom * cTokenBalance
+            vars.sumCollateral = mul_ScalarTruncateAddUInt(vars.tokensToDenom, vars.cTokenBalance, vars.sumCollateral);
+
+            // sumBorrowPlusEffects += oraclePrice * borrowBalance
+            vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(vars.oraclePrice, vars.borrowBalance, vars.sumBorrowPlusEffects);
+
+            // Calculate effects of interacting with cTokenModify
+            if (asset == cTokenModify) {
+                // redeem effect
+                // sumBorrowPlusEffects += tokensToDenom * redeemTokens
+                vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(vars.tokensToDenom, redeemTokens, vars.sumBorrowPlusEffects);
+
+                // borrow effect
+                // sumBorrowPlusEffects += oraclePrice * borrowAmount
+                vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(vars.oraclePrice, borrowAmount, vars.sumBorrowPlusEffects);
+            }
+        }
+
+        // These are safe, as the underflow condition is checked first
+        if (vars.sumCollateral > vars.sumBorrowPlusEffects) {
+            return (Error.NO_ERROR, vars.sumCollateral - vars.sumBorrowPlusEffects, 0);
+        } else {
+            return (Error.NO_ERROR, 0, vars.sumBorrowPlusEffects - vars.sumCollateral);
+        }
+    }
+
+    /**
+     * @notice Determine what the account liquidity would be if the given amounts were redeemed/borrowed
+     * @param cTokenModify The market to hypothetically redeem/borrow in
+     * @param account The account to determine liquidity for
+     * @param redeemTokens The number of tokens to hypothetically redeem
+     * @param borrowAmount The amount of underlying to hypothetically borrow
+     * @dev Note that we calculate the exchangeRateStored for each collateral cToken using stored data,
+     *  without calculating accumulated interest.
+     * @return (possible error code,
+                hypothetical account liquidity in excess of collateral requirements,
+     *          hypothetical account shortfall below collateral requirements)
+     */
+    function getHypotheticalAccountLiquidityInternalForLiquidation(
+        address account,
+        CToken cTokenModify,
+        uint redeemTokens,
+        uint borrowAmount) internal view returns (Error, uint, uint) {
+
+        AccountLiquidityLocalVars memory vars; // Holds all our calculation results
+        uint oErr;
+
+        // For each asset the account is in
+        CToken[] memory assets = accountAssets[account];
+        for (uint i = 0; i < assets.length; i++) {
+            CToken asset = assets[i];
+
+            // Read the balances and exchange rate from the cToken
+            (oErr, vars.cTokenBalance, vars.borrowBalance, vars.exchangeRateMantissa) = asset.getAccountSnapshot(account);
+            if (oErr != 0) { // semi-opaque error code, we assume NO_ERROR == 0 is invariant between upgrades
+                return (Error.SNAPSHOT_ERROR, 0, 0);
+            }
+            vars.collateralFactor = Exp({mantissa: markets[address(asset)].liquidationThresholdMantissa});
             vars.exchangeRate = Exp({mantissa: vars.exchangeRateMantissa});
 
             // Get the normalized price of the asset
@@ -934,6 +1012,48 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
+      * @notice Sets the collateralFactor for a market
+      * @dev Admin function to set per-market collateralFactor
+      * @param cToken The market to set the factor on
+      * @param newLiquidationThresholdMantissa The new liquidation threshold, scaled by 1e18
+      * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
+      */
+    function _setLiquidationThreshol(CToken cToken, uint newLiquidationThresholdMantissa) external returns (uint) {
+        // Check caller is admin
+        if (msg.sender != admin) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_COLLATERAL_FACTOR_OWNER_CHECK);
+        }
+
+        // Verify market is listed
+        Market storage market = markets[address(cToken)];
+        if (!market.isListed) {
+            return fail(Error.MARKET_NOT_LISTED, FailureInfo.SET_COLLATERAL_FACTOR_NO_EXISTS);
+        }
+
+        Exp memory newLiquidationThresholdExp = Exp({mantissa: newLiquidationThresholdMantissa});
+
+        // Check collateral factor <= 0.9
+        Exp memory highLimit = Exp({mantissa: collateralFactorMaxMantissa});
+        if (lessThanExp(highLimit, newLiquidationThresholdExp)) {
+            return fail(Error.INVALID_COLLATERAL_FACTOR, FailureInfo.SET_COLLATERAL_FACTOR_VALIDATION);
+        }
+
+        // If collateral factor != 0, fail if price == 0
+        if (newLiquidationThresholdMantissa != 0 && oracle.getUnderlyingPrice(cToken) == 0) {
+            return fail(Error.PRICE_ERROR, FailureInfo.SET_COLLATERAL_FACTOR_WITHOUT_PRICE);
+        }
+
+        // Set market's collateral factor to new collateral factor, remember old value
+        uint oldLiquidationThresholdMantissa = market.liquidationThresholdMantissa;
+        market.liquidationThresholdMantissa = newLiquidationThresholdMantissa;
+
+        // Emit event with asset, old collateral factor, and new collateral factor
+        emit NewCollateralFactor(cToken, oldLiquidationThresholdMantissa, newLiquidationThresholdMantissa);
+
+        return uint(Error.NO_ERROR);
+    }
+
+    /**
       * @notice Sets liquidationIncentive
       * @dev Admin function to set liquidationIncentive
       * @param newLiquidationIncentiveMantissa New liquidationIncentive scaled by 1e18
@@ -982,6 +1102,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         newMarket.isComped = isComped_;
         newMarket.isPrivate = isPrivate_;
         newMarket.collateralFactorMantissa = 0;
+        newMarket.liquidationThresholdMantissa = 0;
 
         _addMarketInternal(address(cToken));
         _initializeMarket(address(cToken));
