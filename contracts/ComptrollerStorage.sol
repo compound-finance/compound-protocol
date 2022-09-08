@@ -87,6 +87,8 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
         bool isComped;
 
         bool isPrivate;
+
+        bool onlyWhitelistedBorrow;
     }
 
     /**

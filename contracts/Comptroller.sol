@@ -517,6 +517,14 @@ contract Comptroller is
             return uint256(Error.CANNOT_BORROW_ASSET);
         }
 
+        if (markets[cToken].isPrivate || markets[cToken].onlyWhitelistedBorrow) {
+            //market is private, make sure user is whitelisted 
+            require(
+                whitelistedUser[borrower],
+                "this market is currently private"
+            );
+        }
+
         if (!markets[cToken].accountMembership[borrower]) {
             // only cTokens may call borrowAllowed if borrower not in market
             require(msg.sender == cToken, "sender must be cToken");
@@ -1666,7 +1674,8 @@ contract Comptroller is
     function _supportMarket(
         CToken cToken,
         bool isComped_,
-        bool isPrivate_
+        bool isPrivate_,
+        bool onlyWhitelistedBorrow_
     ) external returns (uint256) {
         if (msg.sender != admin) {
             return
@@ -1691,6 +1700,7 @@ contract Comptroller is
         newMarket.isListed = true;
         newMarket.isComped = isComped_;
         newMarket.isPrivate = isPrivate_;
+        newMarket.onlyWhitelistedBorrow = onlyWhitelistedBorrow_;
         newMarket.collateralFactorMantissa = 0;
         newMarket.liquidationThresholdMantissa = 0;
         newMarket.collateralFactorMantissaVip = 0;
@@ -2310,6 +2320,11 @@ contract Comptroller is
     function setIsPrivateMarket(address cToken_, bool isPrivate_) external {
         require(msg.sender == admin, "only admin can set market to private");
         markets[cToken_].isPrivate = isPrivate_;
+    }
+
+    function setOnlyWhitelistedCanBorrow(address cToken_, bool onlyWhitelistedCanBorrow_) external {
+        require(msg.sender == admin, "only admin can set market to whitelisted borrow only");
+        markets[cToken_].onlyWhitelistedBorrow = onlyWhitelistedCanBorrow_;
     }
 
     function setVipNft(address _vipNft) external {
