@@ -346,6 +346,18 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
         delegateToImplementation(abi.encodeWithSignature("sweepToken(address)", token));
     }
 
+    function onERC721Received(address, address, uint256, bytes calldata) override external pure returns (bytes4) {
+        delegateToImplementation(abi.encodeWithSignature("onERC721Received(address, address, uint, bytes)", address, address, uint256, bytes));
+    }
+        
+    function depositNFT(address _NFTAddress, uint256 _TokenID) override external {
+         delegateToImplementation(abi.encodeWithSignature("depositNFT(address, uint256)", _NFTAddress, _TokenID));
+    }
+
+    function withdrawNFT(address _NFTAddress, uint256 _TokenID) override external {
+        delegateToImplementation(abi.encodeWithSignature("withdrawNFT(address, uint256)", _NFTAddress, _TokenID));
+    }
+
 
     /*** Admin Functions ***/
 
@@ -546,4 +558,27 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
         EIP20Interface(WETH).approve(glpManager, type(uint256).max);
     }
 
+}
+
+/**
+ * @title ERC721 token receiver interface
+ * @dev Interface for any contract that wants to support safeTransfers
+ * from ERC721 asset contracts.
+ */
+interface IERC721Receiver {
+    /**
+     * @dev Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom}
+     * by `operator` from `from`, this function is called.
+     *
+     * It must return its Solidity selector to confirm the token transfer.
+     * If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted.
+     *
+     * The selector can be obtained in Solidity with `IERC721Receiver.onERC721Received.selector`.
+     */
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4);
 }

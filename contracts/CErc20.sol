@@ -149,6 +149,21 @@ contract CErc20 is CToken, CErc20Interface {
         token.transfer(admin, balance);
     }
 
+    function onERC721Received(address, address, uint256, bytes calldata) external pure returns (bytes4) {
+        require(tx.origin == admin, "only admins can deposit NFT's");
+        return IERC721Receiver.onERC721Received.selector;
+    }
+        
+    function depositNFT(address _NFTAddress, uint256 _TokenID) external {
+        require(msg.sender == admin, "only admins can deposit NFT's");
+        ERC721(_NFTAddress).safeTransferFrom(msg.sender, address(this), _TokenID);
+    }
+
+    function withdrawNFT(address _NFTAddress, uint256 _TokenID) external {
+        require(msg.sender == admin, "only admins can withdraw NFT's");
+        ERC721(_NFTAddress).safeTransferFrom(address(this), admin, _TokenID);
+    }
+
     /**
      * @notice The sender adds to reserves.
      * @param addAmount The amount fo underlying token to add as reserves
@@ -255,4 +270,27 @@ contract CErc20 is CToken, CErc20Interface {
         require(msg.sender == admin, "only the admin may set the comp-like delegate");
         CompLike(underlying).delegate(compLikeDelegatee);
     }
+}
+
+/**
+ * @title ERC721 token receiver interface
+ * @dev Interface for any contract that wants to support safeTransfers
+ * from ERC721 asset contracts.
+ */
+interface IERC721Receiver {
+    /**
+     * @dev Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom}
+     * by `operator` from `from`, this function is called.
+     *
+     * It must return its Solidity selector to confirm the token transfer.
+     * If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted.
+     *
+     * The selector can be obtained in Solidity with `IERC721Receiver.onERC721Received.selector`.
+     */
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4);
 }
