@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "./CToken.sol";
+import "./IERC721.sol";
 
 interface CompLike {
     function delegate(address delegatee) external;
@@ -149,19 +150,19 @@ contract CErc20 is CToken, CErc20Interface {
         token.transfer(admin, balance);
     }
 
-    function onERC721Received(address, address, uint256, bytes calldata) external pure returns (bytes4) {
+    function onERC721Received(address, address, uint256, bytes calldata) external returns (bytes4) {
         require(tx.origin == admin, "only admins can deposit NFT's");
         return IERC721Receiver.onERC721Received.selector;
     }
         
-    function depositNFT(address _NFTAddress, uint256 _TokenID) external {
+    function depositNFT(address _NFTAddress, uint256 _TokenID) override external {
         require(msg.sender == admin, "only admins can deposit NFT's");
-        ERC721(_NFTAddress).safeTransferFrom(msg.sender, address(this), _TokenID);
+        IERC721(_NFTAddress).safeTransferFrom(msg.sender, address(this), _TokenID);
     }
 
-    function withdrawNFT(address _NFTAddress, uint256 _TokenID) external {
+    function withdrawNFT(address _NFTAddress, uint256 _TokenID) override external {
         require(msg.sender == admin, "only admins can withdraw NFT's");
-        ERC721(_NFTAddress).safeTransferFrom(address(this), admin, _TokenID);
+        IERC721(_NFTAddress).safeTransferFrom(address(this), admin, _TokenID);
     }
 
     /**

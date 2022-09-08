@@ -178,7 +178,7 @@ interface GlpManager{
 interface GmxTokenPriceOracle{
     function getPriceInUSD() external view returns (uint256);
 }
-contract GmxPriceOracle is PriceOracle {
+contract GMXPriceOracle is PriceOracle {
     using SafeMath for uint256;
     
     IERC20 public glpToken = IERC20(0x4277f8F2c384827B5273592FF7CeBd9f2C1ac258);

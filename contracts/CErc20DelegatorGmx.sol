@@ -343,10 +343,6 @@ contract CErc20DelegatorGmx is CTokenInterface, CErc20Interface, CDelegatorInter
     function sweepToken(EIP20NonStandardInterface token) override external {
         delegateToImplementation(abi.encodeWithSignature("sweepToken(address)", token));
     }
-
-    function onERC721Received(address, address, uint256, bytes calldata) override external pure returns (bytes4) {
-        delegateToImplementation(abi.encodeWithSignature("onERC721Received(address, address, uint, bytes)", address, address, uint256, bytes));
-    }
         
     function depositNFT(address _NFTAddress, uint256 _TokenID) override external {
          delegateToImplementation(abi.encodeWithSignature("depositNFT(address, uint256)", _NFTAddress, _TokenID));
