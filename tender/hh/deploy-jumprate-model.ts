@@ -5,6 +5,13 @@ import { toBn } from "../utils/bn";
 
 const outputFilePath = `./deployments/${hre.network.name}.json`;
 
+const ADMIN_PUBLIC_KEY = process.env.PUBLIC_KEY || "";
+
+if (ADMIN_PUBLIC_KEY === "") {
+  console.error("Please define your PUBLIC_KEY in .env");
+  process.exit(1);
+}
+
 // IR Model Params
 const params = {
   blocksPerYear: "144752795",
@@ -15,7 +22,8 @@ const params = {
   // admin: "0x51129c8332A220E0bF9546A6Fe07481c17D2B638",
 };
 
-export async function main(adminWallet: string) {
+export async function main() {
+  const adminWallet = ADMIN_PUBLIC_KEY;
   const [deployer] = await hre.ethers.getSigners();
   console.log(`>>>>>>>>>>>> Deployer: ${deployer.address} <<<<<<<<<<<<\n`);
 
@@ -86,13 +94,6 @@ const getJumpMultiplier = (
     .toFixed();
 };
 
-// main()
-//   .then(() => process.exit(0))
-//   .catch((error) => {
-//     console.error(error);
-//     process.exit(1);
-//   });
-
 const verifyContract = async (
   contractAddress: string,
   constructorArgs: any
@@ -103,3 +104,10 @@ const verifyContract = async (
     constructorArguments: constructorArgs,
   });
 };
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+});

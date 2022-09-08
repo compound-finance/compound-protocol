@@ -70,6 +70,16 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
         //  Must be between 0 and 1, and stored as a mantissa.
         uint liquidationThresholdMantissa;
 
+        //  Multiplier representing the most one can borrow against their collateral in this market.
+        //  For instance, 0.9 to allow borrowing 90% of collateral value.
+        //  Must be between 0 and 1, and stored as a mantissa.
+        uint collateralFactorMantissaVIP;
+
+        //  Multiplier representing the threshold one can hold a borrow position against their collateral in this market.
+        //  For instance, 0.95 to set the liqduidation threshold to borrowing 95% of collateral value.
+        //  Must be between 0 and 1, and stored as a mantissa.
+        uint liquidationThresholdMantissaVIP;
+
         // Per-market mapping of "accounts in this asset"
         mapping(address => bool) accountMembership;
 
