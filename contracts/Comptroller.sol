@@ -115,6 +115,10 @@ contract Comptroller is
     /// @notice Emitted when borrow cap for a cToken is changed
     event NewBorrowCap(CToken indexed cToken, uint256 newBorrowCap);
 
+    /// @notice Emitted when borrow cap for a cToken is changed
+    event NewSupplyCap(CToken indexed cToken, uint256 newSupplyCap);
+
+
     /// @notice Emitted when borrow cap guardian is changed
     event NewBorrowCapGuardian(
         address oldBorrowCapGuardian,
@@ -369,6 +373,15 @@ contract Comptroller is
         if (!markets[cToken].isListed) {
             return uint256(Error.MARKET_NOT_LISTED);
         }
+
+        uint256 supplyCap = supplyCaps[cToken];
+        // Borrow cap of 0 corresponds to unlimited borrowing
+        if (supplyCaps[cToken] != 0) {
+            uint256 totalDeposits = CToken(cToken).totalBorrows() + CToken(cToken).getCash() + CToken(cToken).totalReserves();
+            uint256 nextTotalDeposit = add_(totalDeposits, mintAmount);
+            require(nextTotalDeposit < supplyCap, "market borrow cap reached");
+        }
+
 
         if (markets[cToken].isPrivate) {
             //market is private, make sure user has admin rights
@@ -1777,6 +1790,36 @@ contract Comptroller is
             emit NewBorrowCap(cTokens[i], newBorrowCaps[i]);
         }
     }
+
+        /**
+     * @notice Set the given borrow caps for the given cToken markets. Borrowing that brings total borrows to or above borrow cap will revert.
+     * @dev Admin or borrowCapGuardian function to set the borrow caps. A borrow cap of 0 corresponds to unlimited borrowing.
+     * @param cTokens The addresses of the markets (tokens) to change the borrow caps for
+     * @param newSupplyCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
+     */
+    function _setMarketSupplyCaps(
+        CToken[] calldata cTokens,
+        uint256[] calldata newSupplyCaps
+    ) external {
+        require(
+            msg.sender == admin || msg.sender == borrowCapGuardian,
+            "only admin or borrow cap guardian can set supply caps"
+        );
+
+        uint256 numMarkets = cTokens.length;
+        uint256 numSupplyCap = newSupplyCaps.length;
+
+        require(
+            numMarkets != 0 && numMarkets == numSupplyCap,
+            "invalid input"
+        );
+
+        for (uint256 i = 0; i < numMarkets; i++) {
+            supplyCaps[address(cTokens[i])] = newSupplyCaps[i];
+            emit NewSupplyCap(cTokens[i], newSupplyCaps[i]);
+        }
+    }
+
 
     /**
      * @notice Admin function to change the Borrow Cap Guardian

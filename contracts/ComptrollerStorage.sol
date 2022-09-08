@@ -161,6 +161,9 @@ contract ComptrollerV4Storage is ComptrollerV3Storage {
 
     // @notice Borrow caps enforced by borrowAllowed for each cToken address. Defaults to zero which corresponds to unlimited borrowing.
     mapping(address => uint) public borrowCaps;
+
+    // @notice Supply caps enforced by mintAllowed for each cToken address. Defaults to zero which corresponds to unlimited supplying.
+    mapping(address => uint) public supplyCaps;
 }
 
 contract ComptrollerV5Storage is ComptrollerV4Storage {
