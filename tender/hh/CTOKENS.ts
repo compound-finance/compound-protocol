@@ -14,14 +14,14 @@ export const CTOKENS = [
   //   isGLP: false
   // },
 
-{
-    underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
-    name: "fsGLP",
-    symbol: "tfsGLP",
-    decimals: CTOKEN_DECIMALS,
-    collateralFactor: ethers.utils.parseUnits("95", 16),
-    isGLP: true
-  },
+// {
+//     underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
+//     name: "fsGLP",
+//     symbol: "tfsGLP",
+//     decimals: CTOKEN_DECIMALS,
+//     collateralFactor: ethers.utils.parseUnits("95", 16),
+//     isGLP: true
+//   },
 
 //   {
 //     underlying: "0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F",
@@ -31,7 +31,7 @@ export const CTOKENS = [
 //     collateralFactor: ethers.utils.parseUnits("9", 17),
 //     isGLP: false
 //   },
-  
+
 //   {
 //     underlying: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
 //     name: "USDT",
@@ -53,14 +53,14 @@ export const CTOKENS = [
 
 
 // /not deployed
-//   {
-//     underlying: "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
-//     name: "tDAI",
-//     symbol: "tDAIC",
-//     decimals: CTOKEN_DECIMALS,
-//     collateralFactor: ethers.utils.parseUnits("9", 17),
-//     isGLP: false
-//   },
+  {
+    underlying: "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
+    name: "tDAI",
+    symbol: "tDAI",
+    decimals: CTOKEN_DECIMALS,
+    collateralFactor: ethers.utils.parseUnits("9", 17),
+    isGLP: false
+  },
 
   // {
   //   underlying: "0xf97f4df75117a78c1A5a0DBb814Af92458539FB4",
