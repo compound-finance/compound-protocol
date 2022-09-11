@@ -65,6 +65,21 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
         //  Must be between 0 and 1, and stored as a mantissa.
         uint collateralFactorMantissa;
 
+        //  Multiplier representing the threshold one can hold a borrow position against their collateral in this market.
+        //  For instance, 0.95 to set the liqduidation threshold to borrowing 95% of collateral value.
+        //  Must be between 0 and 1, and stored as a mantissa.
+        uint liquidationThresholdMantissa;
+
+        //  Multiplier representing the most one can borrow against their collateral in this market.
+        //  For instance, 0.9 to allow borrowing 90% of collateral value.
+        //  Must be between 0 and 1, and stored as a mantissa.
+        uint collateralFactorMantissaVip;
+
+        //  Multiplier representing the threshold one can hold a borrow position against their collateral in this market.
+        //  For instance, 0.95 to set the liqduidation threshold to borrowing 95% of collateral value.
+        //  Must be between 0 and 1, and stored as a mantissa.
+        uint liquidationThresholdMantissaVip;
+
         // Per-market mapping of "accounts in this asset"
         mapping(address => bool) accountMembership;
 
@@ -72,6 +87,8 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
         bool isComped;
 
         bool isPrivate;
+
+        bool onlyWhitelistedBorrow;
     }
 
     /**
@@ -144,6 +161,9 @@ contract ComptrollerV4Storage is ComptrollerV3Storage {
 
     // @notice Borrow caps enforced by borrowAllowed for each cToken address. Defaults to zero which corresponds to unlimited borrowing.
     mapping(address => uint) public borrowCaps;
+
+    // @notice Supply caps enforced by mintAllowed for each cToken address. Defaults to zero which corresponds to unlimited supplying.
+    mapping(address => uint) public supplyCaps;
 }
 
 contract ComptrollerV5Storage is ComptrollerV4Storage {
@@ -166,4 +186,8 @@ contract ComptrollerV7Storage is ComptrollerV6Storage {
 
     /// @notice Accounting storage mapping account addresses to how much COMP they owe the protocol.
     mapping(address => uint) public compReceivable;
+
+    address public vipNft;
+
+    uint256 public tokenBalanceVipThreshold;
 }

@@ -34,8 +34,8 @@ async function main() {
   // Need oracle deployed first to set on unitroller in DeployProtocol,
   // await DeployMockOracle();
 
-  // console.log("deploy protocol")
-  // await DeployProtocol();
+  console.log("deploy protocol")
+  await DeployProtocol();
 
   // console.log("deploying GLPOracle")
   // await GLPOracle();
@@ -56,7 +56,7 @@ async function main() {
 
 
   // console.log("deploying CDelegators")
-  await DeployCDelegators()
+  // await DeployCDelegators()
 
   // SetCollateralFactor requires the price to be set first
   // await SetCollateralFactor();

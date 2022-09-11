@@ -11,7 +11,7 @@ import "./EIP20Interface.sol";
  * @notice CTokens which wrap an EIP-20 underlying and delegate to an implementation
  * @author Compound
  */
-contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterface {
+contract CErc20DelegatorGmx is CTokenInterface, CErc20Interface, CDelegatorInterface {
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset
@@ -21,7 +21,6 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
      * @param name_ ERC-20 name of this token
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
-     * @param isGLP_ Wether or not the market being created is for the GLP token
      * @param admin_ Address of the administrator of this token
      * @param implementation_ The address of the implementation the contract delegates to
      * @param becomeImplementationData The encoded args for becomeImplementatioN  
@@ -33,7 +32,6 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
                 string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
-                bool isGLP_,
                 address payable admin_,
                 address implementation_,
                 bytes memory becomeImplementationData) {
@@ -48,8 +46,8 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
                                                             initialExchangeRateMantissa_,
                                                             name_,
                                                             symbol_,
-                                                            decimals_,
-                                                            isGLP_));
+                                                            decimals_
+                                                            ));
 
         // // New implementations always get set via the settor (post-initialize)
         _setImplementation(implementation_, false, becomeImplementationData);

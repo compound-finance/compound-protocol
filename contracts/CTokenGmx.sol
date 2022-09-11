@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
+pragma abicoder v2;
 
 import "./ComptrollerInterface.sol";
 import "./CTokenInterfaces.sol";
@@ -9,13 +10,15 @@ import "./InterestRateModel.sol";
 import "./ExponentialNoError.sol";
 import "./IGmxRewardRouter.sol";
 import "./IStakedGlp.sol";
+import "./TransferHelper.sol";
+import "./ISwapRouter.sol";
 
 /**
  * @title Compound's CToken Contract
  * @notice Abstract base for CTokens
  * @author Compound
  */
-abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorReporter {
+abstract contract CTokenGmx is CTokenInterface, ExponentialNoError, TokenErrorReporter {
     /**
      * @notice Initialize the money market
      * @param comptroller_ The address of the Comptroller
@@ -24,15 +27,14 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param name_ EIP-20 name of this token
      * @param symbol_ EIP-20 symbol of this token
      * @param decimals_ EIP-20 decimal precision of this token
-     * @param isGLP_ Wether or not the market being created is for the GLP token
      */
     function initialize(ComptrollerInterface comptroller_,
                         InterestRateModel interestRateModel_,
                         uint initialExchangeRateMantissa_,
                         string memory name_,
                         string memory symbol_,
-                        uint8 decimals_,
-                        bool isGLP_) public {
+                        uint8 decimals_
+                        ) public {
         require(msg.sender == admin, "only admin may initialize the market");
         require(accrualBlockNumber == 0 && borrowIndex == 0, "market may only be initialized once");
 
@@ -55,10 +57,42 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         name = name_;
         symbol = symbol_;
         decimals = decimals_;
-        isGLP = isGLP_;
 
         // The counter starts true to prevent changing it from zero to non-zero (i.e. smaller cost/refund)
         _notEntered = true;
+    }
+
+    ISwapRouter public immutable swapRouter = ISwapRouter(0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45);
+
+    uint24 public constant poolFee = 3000;
+
+
+    /// @notice swapExactInputSingle swaps a fixed amount of WETH for a maximum possible amount of GMX
+    /// using the GMX/WETH 0.3% pool by calling `exactInputSingle` in the swap router.
+    /// @dev The calling address must approve this contract to spend at least `amountIn` worth of its WETH for this function to succeed.
+    /// @param amountIn The exact amount of WETH that will be swapped for GMX.
+    /// @return amountOut The amount of GMX received.
+    function swapExactInputSingle(uint256 amountIn) internal returns (uint256 amountOut) {
+        
+        // Approve the router to spend WETH.
+        TransferHelper.safeApprove(WETH, address(swapRouter), amountIn);
+
+        // Naively set amountOutMinimum to 0. In production, use an oracle or other data source to choose a safer value for amountOutMinimum.
+        // We also set the sqrtPriceLimitx96 to be 0 to ensure we swap our exact input amount.
+        ISwapRouter.ExactInputSingleParams memory params =
+            ISwapRouter.ExactInputSingleParams({
+                tokenIn: WETH,
+                tokenOut: gmxToken,
+                fee: poolFee,
+                recipient: msg.sender,
+                deadline: block.timestamp,
+                amountIn: amountIn,
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+            });
+
+        // The call to `exactInputSingle` executes the swap.
+        amountOut = swapRouter.exactInputSingle(params);
     }
 
     /**
@@ -330,70 +364,69 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      *   up to the current block and writes new checkpoint to storage.
      */
     function accrueInterest() virtual override public returns (uint) {
-        // if this is a GLP cToken, claim the ETH and esGMX rewards and stake the esGMX Rewards
-        if (isGLP){
-            if(totalSupply > 0){
-                if(autocompound){
-                    glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
-                    uint ethBalance =  EIP20Interface(WETH).balanceOf(address(this));
-                    if(ethBalance > 0){
-                        glpRewardRouter.mintAndStakeGlp(WETH, ethBalance, 0, 0);
-                    }
-                } else {
-                    glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
-                }
-            }
-        } else {
-            /* Remember the initial block number */
-            uint currentBlockNumber = getBlockNumber();
-            uint accrualBlockNumberPrior = accrualBlockNumber;
+        
+        /* Remember the initial block number */
+        uint currentBlockNumber = getBlockNumber();
+        uint accrualBlockNumberPrior = accrualBlockNumber;
 
-            /* Short-circuit accumulating 0 interest */
-            if (accrualBlockNumberPrior == currentBlockNumber) {
-                return NO_ERROR;
-            }
-
-            /* Read the previous values out of storage */
-            uint cashPrior = getCashPrior();
-            uint borrowsPrior = totalBorrows;
-            uint reservesPrior = totalReserves;
-            uint borrowIndexPrior = borrowIndex;
-
-            /* Calculate the current borrow interest rate */
-            uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
-            require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
-
-            /* Calculate the number of blocks elapsed since the last accrual */
-            uint blockDelta = currentBlockNumber - accrualBlockNumberPrior;
-
-            /*
-            * Calculate the interest accumulated into borrows and reserves and the new index:
-            *  simpleInterestFactor = borrowRate * blockDelta
-            *  interestAccumulated = simpleInterestFactor * totalBorrows
-            *  totalBorrowsNew = interestAccumulated + totalBorrows
-            *  totalReservesNew = interestAccumulated * reserveFactor + totalReserves
-            *  borrowIndexNew = simpleInterestFactor * borrowIndex + borrowIndex
-            */
-
-            Exp memory simpleInterestFactor = mul_(Exp({mantissa: borrowRateMantissa}), blockDelta);
-            uint interestAccumulated = mul_ScalarTruncate(simpleInterestFactor, borrowsPrior);
-            uint totalBorrowsNew = interestAccumulated + borrowsPrior;
-            uint totalReservesNew = mul_ScalarTruncateAddUInt(Exp({mantissa: reserveFactorMantissa}), interestAccumulated, reservesPrior);
-            uint borrowIndexNew = mul_ScalarTruncateAddUInt(simpleInterestFactor, borrowIndexPrior, borrowIndexPrior);
-
-            /////////////////////////
-            // EFFECTS & INTERACTIONS
-            // (No safe failures beyond this point)
-
-            /* We write the previously calculated values into storage */
-            accrualBlockNumber = currentBlockNumber;
-            borrowIndex = borrowIndexNew;
-            totalBorrows = totalBorrowsNew;
-            totalReserves = totalReservesNew;
-
-            /* We emit an AccrueInterest event */
-            emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
+        /* Short-circuit accumulating 0 interest */
+        if (accrualBlockNumberPrior == currentBlockNumber) {
+            return NO_ERROR;
         }
+
+        /* Read the previous values out of storage */
+        uint cashPrior = getCashPrior();
+        uint borrowsPrior = totalBorrows;
+        uint reservesPrior = totalReserves;
+        uint borrowIndexPrior = borrowIndex;
+
+        /* Calculate the current borrow interest rate */
+        uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
+        require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
+
+        /* Calculate the number of blocks elapsed since the last accrual */
+        uint blockDelta = currentBlockNumber - accrualBlockNumberPrior;
+
+        /*
+        * Calculate the interest accumulated into borrows and reserves and the new index:
+        *  simpleInterestFactor = borrowRate * blockDelta
+        *  interestAccumulated = simpleInterestFactor * totalBorrows
+        *  totalBorrowsNew = interestAccumulated + totalBorrows
+        *  totalReservesNew = interestAccumulated * reserveFactor + totalReserves
+        *  borrowIndexNew = simpleInterestFactor * borrowIndex + borrowIndex
+        */
+
+        Exp memory simpleInterestFactor = mul_(Exp({mantissa: borrowRateMantissa}), blockDelta);
+        uint interestAccumulated = mul_ScalarTruncate(simpleInterestFactor, borrowsPrior);
+        uint totalBorrowsNew = interestAccumulated + borrowsPrior;
+        uint totalReservesNew = mul_ScalarTruncateAddUInt(Exp({mantissa: reserveFactorMantissa}), interestAccumulated, reservesPrior);
+        uint borrowIndexNew = mul_ScalarTruncateAddUInt(simpleInterestFactor, borrowIndexPrior, borrowIndexPrior);
+
+        /////////////////////////
+        // EFFECTS & INTERACTIONS
+        // (No safe failures beyond this point)
+
+        /* We write the previously calculated values into storage */
+        accrualBlockNumber = currentBlockNumber;
+        borrowIndex = borrowIndexNew;
+        totalBorrows = totalBorrowsNew;
+        totalReserves = totalReservesNew;
+
+        if(totalSupply > 0){
+            glpRewardRouter.handleRewards(true, true, true, true, true, true, false);
+            if(autocompound){
+                uint ethBalance =  EIP20Interface(WETH).balanceOf(address(this));
+                if(ethBalance > 0){
+                    uint256 amountOfGmxReceived;
+                    amountOfGmxReceived = swapExactInputSingle(ethBalance);
+                    glpRewardRouter.stakeGmx(amountOfGmxReceived);
+                }
+            } 
+        }
+
+        /* We emit an AccrueInterest event */
+        emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
+        
         return NO_ERROR;
     }
 
@@ -406,17 +439,6 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         accrueInterest();
         // mintFresh emits the actual Mint event if successful and logs on errors, so we don't need to
         mintFresh(msg.sender, mintAmount);
-    }
-
-
-    function _setAutocompoundRewards(bool autocompound_) override public returns (uint) {
-        // Check caller is admin
-        if (msg.sender != admin) {
-            revert SetAutoCompoundOwnerCheck();
-        }
-        EIP20Interface(WETH).approve(glpManager, type(uint256).max);
-        autocompound = autocompound_;
-        return NO_ERROR;
     }
 
     /**
@@ -433,7 +455,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         }
 
         /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber() && !isGLP) {
+        if (accrualBlockNumber != getBlockNumber()) {
             revert MintFreshnessCheck();
         }
 
@@ -476,6 +498,16 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         /* We call the defense hook */
         // unused function
         // comptroller.mintVerify(address(this), minter, actualMintAmount, mintTokens);
+    }
+
+    function _setAutocompoundRewards(bool autocompound_) override public returns (uint) {
+        // Check caller is admin
+        if (msg.sender != admin) {
+            revert SetAutoCompoundOwnerCheck();
+        }
+        EIP20Interface(WETH).approve(glpManager, type(uint256).max);
+        autocompound = autocompound_;
+        return NO_ERROR;
     }
 
     /**
@@ -541,7 +573,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         }
 
         /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber() && !isGLP) {
+        if (accrualBlockNumber != getBlockNumber()) {
             revert RedeemFreshnessCheck();
         }
 
@@ -1218,7 +1250,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @dev This excludes the value of the current message, if any
      * @return The quantity of underlying owned by this contract
      */
-    function getCashPrior() virtual internal view returns (uint);
+    function getCashPrior() virtual internal view returns (uint256);
 
     /**
      * @dev Performs a transfer in, reverting upon failure. Returns the amount actually transferred to the protocol, in case of a fee.
@@ -1246,3 +1278,6 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         _notEntered = true; // get a gas-refund post-Istanbul
     }
 }
+
+
+

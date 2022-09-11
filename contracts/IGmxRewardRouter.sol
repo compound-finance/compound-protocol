@@ -30,4 +30,8 @@ interface IGmxRewardRouter {
 
     function mintAndStakeGlpETH(uint256 _minUsdg, uint256 _minGlp) external payable returns (uint256);
 
+    function stakeGmx(uint256 amount) external;
+
+    function unstakeGmx(uint256 amount) external;
+
 }

@@ -129,4 +129,5 @@ contract TokenErrorReporter {
     error SetRewardRouterAddressOwnerCheck();
     error SignalTransferOwnerCheck();
     error SetAutoCompoundOwnerCheck();
+    error SetGlpManagerAddressOwnerCheck();
 }
