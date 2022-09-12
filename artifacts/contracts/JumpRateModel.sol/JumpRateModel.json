@@ -1,0 +1,238 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "JumpRateModel",
+  "sourceName": "contracts/JumpRateModel.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "baseRatePerYear",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "multiplierPerYear",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "jumpMultiplierPerYear",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "kink_",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "baseRatePerBlock",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "multiplierPerBlock",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "jumpMultiplierPerBlock",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "kink",
+          "type": "uint256"
+        }
+      ],
+      "name": "NewInterestParams",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "baseRatePerBlock",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "blocksPerYear",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "cash",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "borrows",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "reserves",
+          "type": "uint256"
+        }
+      ],
+      "name": "getBorrowRate",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "cash",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "borrows",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "reserves",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "reserveFactorMantissa",
+          "type": "uint256"
+        }
+      ],
+      "name": "getSupplyRate",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "isInterestRateModel",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "jumpMultiplierPerBlock",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "kink",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "multiplierPerBlock",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "cash",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "borrows",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "reserves",
+          "type": "uint256"
+        }
+      ],
+      "name": "utilizationRate",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b506040516104ff3803806104ff83398101604081905261002f916100c1565b61003d6308a0c09b856100f7565b60015561004e6308a0c09b846100f7565b60005561005f6308a0c09b836100f7565b60028190556003829055600154600054604080519283526020830191909152810191909152606081018290527f6960ab234c7ef4b0c9197100f5393cfcde7c453ac910a27bd2000aa1dd4c068d9060800160405180910390a150505050610119565b600080600080608085870312156100d757600080fd5b505082516020840151604085015160609095015191969095509092509050565b60008261011457634e487b7160e01b600052601260045260246000fd5b500490565b6103d7806101286000396000f3fe608060405234801561001057600080fd5b50600436106100935760003560e01c8063a385fb9611610066578063a385fb96146100f2578063b8168816146100fd578063b9f9850a14610110578063f14039de14610119578063fd2da3391461012257600080fd5b806315f24053146100985780632191f92a146100be5780636e71e2d8146100d65780638726bb89146100e9575b600080fd5b6100ab6100a63660046102bd565b61012b565b6040519081526020015b60405180910390f35b6100c6600181565b60405190151581526020016100b5565b6100ab6100e43660046102bd565b6101f9565b6100ab60005481565b6100ab6308a0c09b81565b6100ab61010b3660046102e9565b610241565b6100ab60025481565b6100ab60015481565b6100ab60035481565b6000806101398585856101f9565b9050600354811161017a57600154670de0b6b3a76400006000548361015e9190610331565b6101689190610350565b6101729190610372565b9150506101f2565b6000600154670de0b6b3a76400006000546003546101989190610331565b6101a29190610350565b6101ac9190610372565b90506000600354836101be919061038a565b905081670de0b6b3a7640000600254836101d89190610331565b6101e29190610350565b6101ec9190610372565b93505050505b9392505050565b600082610208575060006101f2565b816102138486610372565b61021d919061038a565b61022f670de0b6b3a764000085610331565b6102399190610350565b949350505050565b60008061025683670de0b6b3a764000061038a565b9050600061026587878761012b565b90506000670de0b6b3a764000061027c8484610331565b6102869190610350565b9050670de0b6b3a76400008161029d8a8a8a6101f9565b6102a79190610331565b6102b19190610350565b98975050505050505050565b6000806000606084860312156102d257600080fd5b505081359360208301359350604090920135919050565b600080600080608085870312156102ff57600080fd5b5050823594602084013594506040840135936060013592509050565b634e487b7160e01b600052601160045260246000fd5b600081600019048311821515161561034b5761034b61031b565b500290565b60008261036d57634e487b7160e01b600052601260045260246000fd5b500490565b600082198211156103855761038561031b565b500190565b60008282101561039c5761039c61031b565b50039056fea264697066735822122061f364ee1f33e69bc8cf17d00ab889e186382fd6e398b5f746011fb2819f4b3e64736f6c634300080a0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100935760003560e01c8063a385fb9611610066578063a385fb96146100f2578063b8168816146100fd578063b9f9850a14610110578063f14039de14610119578063fd2da3391461012257600080fd5b806315f24053146100985780632191f92a146100be5780636e71e2d8146100d65780638726bb89146100e9575b600080fd5b6100ab6100a63660046102bd565b61012b565b6040519081526020015b60405180910390f35b6100c6600181565b60405190151581526020016100b5565b6100ab6100e43660046102bd565b6101f9565b6100ab60005481565b6100ab6308a0c09b81565b6100ab61010b3660046102e9565b610241565b6100ab60025481565b6100ab60015481565b6100ab60035481565b6000806101398585856101f9565b9050600354811161017a57600154670de0b6b3a76400006000548361015e9190610331565b6101689190610350565b6101729190610372565b9150506101f2565b6000600154670de0b6b3a76400006000546003546101989190610331565b6101a29190610350565b6101ac9190610372565b90506000600354836101be919061038a565b905081670de0b6b3a7640000600254836101d89190610331565b6101e29190610350565b6101ec9190610372565b93505050505b9392505050565b600082610208575060006101f2565b816102138486610372565b61021d919061038a565b61022f670de0b6b3a764000085610331565b6102399190610350565b949350505050565b60008061025683670de0b6b3a764000061038a565b9050600061026587878761012b565b90506000670de0b6b3a764000061027c8484610331565b6102869190610350565b9050670de0b6b3a76400008161029d8a8a8a6101f9565b6102a79190610331565b6102b19190610350565b98975050505050505050565b6000806000606084860312156102d257600080fd5b505081359360208301359350604090920135919050565b600080600080608085870312156102ff57600080fd5b5050823594602084013594506040840135936060013592509050565b634e487b7160e01b600052601160045260246000fd5b600081600019048311821515161561034b5761034b61031b565b500290565b60008261036d57634e487b7160e01b600052601260045260246000fd5b500490565b600082198211156103855761038561031b565b500190565b60008282101561039c5761039c61031b565b50039056fea264697066735822122061f364ee1f33e69bc8cf17d00ab889e186382fd6e398b5f746011fb2819f4b3e64736f6c634300080a0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

@@ -1,0 +1,1970 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\BaseJumpRateModelV2.sol": {
+      "lastModificationDate": 1662980600264,
+      "contentHash": "c4d6d7137fa7bbe1e3c6621c56a8675c",
+      "sourceName": "contracts/BaseJumpRateModelV2.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./InterestRateModel.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "BaseJumpRateModelV2"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\InterestRateModel.sol": {
+      "lastModificationDate": 1662980600569,
+      "contentHash": "7a4e1aca0dcc298faae9884dde2b6d19",
+      "sourceName": "contracts/InterestRateModel.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "InterestRateModel"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\JumpRateModelV2.sol": {
+      "lastModificationDate": 1662980600557,
+      "contentHash": "a26c396fe92ca2ad0964f1eb7656303e",
+      "sourceName": "contracts/JumpRateModelV2.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./BaseJumpRateModelV2.sol",
+        "./InterestRateModel.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "JumpRateModelV2"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\WhitePaperInterestRateModel.sol": {
+      "lastModificationDate": 1662980600566,
+      "contentHash": "6013b06798638a8a57736555311031ff",
+      "sourceName": "contracts/WhitePaperInterestRateModel.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./InterestRateModel.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "WhitePaperInterestRateModel"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\JumpRateModel.sol": {
+      "lastModificationDate": 1662980600484,
+      "contentHash": "d98b93628a5ba82585d7524ab5a2a459",
+      "sourceName": "contracts/JumpRateModel.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./InterestRateModel.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "JumpRateModel"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CTokenInterfaces.sol": {
+      "lastModificationDate": 1662980600814,
+      "contentHash": "e7f7419fefffa0377ba8335c8401c273",
+      "sourceName": "contracts/CTokenInterfaces.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./ComptrollerInterface.sol",
+        "./InterestRateModel.sol",
+        "./EIP20NonStandardInterface.sol",
+        "./ErrorReporter.sol",
+        "./IGmxRewardRouter.sol",
+        "./IStakedGlp.sol",
+        "./IRewardTracker.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "CDelegateInterface",
+        "CDelegationStorage",
+        "CDelegatorInterface",
+        "CErc20Interface",
+        "CErc20Storage",
+        "CTokenInterface",
+        "CTokenStorage"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ComptrollerInterface.sol": {
+      "lastModificationDate": 1662980600342,
+      "contentHash": "aa45539f9a23b5615403ec7de23decd3",
+      "sourceName": "contracts/ComptrollerInterface.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "ComptrollerInterface"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\EIP20NonStandardInterface.sol": {
+      "lastModificationDate": 1662980600415,
+      "contentHash": "e27a903d064172c95703d59e56bef727",
+      "sourceName": "contracts/EIP20NonStandardInterface.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "EIP20NonStandardInterface"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ErrorReporter.sol": {
+      "lastModificationDate": 1662979462990,
+      "contentHash": "05c6caf65b50d88cc51312c7a1477189",
+      "sourceName": "contracts/ErrorReporter.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "ComptrollerErrorReporter",
+        "TokenErrorReporter"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\IGmxRewardRouter.sol": {
+      "lastModificationDate": 1662980600569,
+      "contentHash": "171a8c1091ec248789a4723b7e6473f2",
+      "sourceName": "contracts/IGmxRewardRouter.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.8.10"
+      ],
+      "artifacts": [
+        "IGmxRewardRouter"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\IStakedGlp.sol": {
+      "lastModificationDate": 1662980600568,
+      "contentHash": "dce3154bb17455a92678a6754b072428",
+      "sourceName": "contracts/IStakedGlp.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.8.10"
+      ],
+      "artifacts": [
+        "IStakedGlp"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\IRewardTracker.sol": {
+      "lastModificationDate": 1662980600568,
+      "contentHash": "d8418edaf539f3514a16bc6d91a27f53",
+      "sourceName": "contracts/IRewardTracker.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "IRewardTracker"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20Gmx.sol": {
+      "lastModificationDate": 1662974780427,
+      "contentHash": "a2b562fa9fe015cd3b3ed1991ddfc76a",
+      "sourceName": "contracts/CErc20Gmx.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CTokenGmx.sol",
+        "./IGmxRewardRouter.sol",
+        "./IStakedGlp.sol",
+        "./IRewardTracker.sol",
+        "./IERC721.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "CErc20Gmx",
+        "CompLike",
+        "IERC721Receiver"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CTokenGmx.sol": {
+      "lastModificationDate": 1662980600814,
+      "contentHash": "dfd08cd6481f04e915cb82a564cd0867",
+      "sourceName": "contracts/CTokenGmx.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./ComptrollerInterface.sol",
+        "./CTokenInterfaces.sol",
+        "./ErrorReporter.sol",
+        "./EIP20Interface.sol",
+        "./InterestRateModel.sol",
+        "./ExponentialNoError.sol",
+        "./IGmxRewardRouter.sol",
+        "./IStakedGlp.sol",
+        "./TransferHelper.sol",
+        "./ISwapRouter.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "CTokenGmx"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\IERC721.sol": {
+      "lastModificationDate": 1662974780429,
+      "contentHash": "bcdf5e17cf889346fd72072ad365cf57",
+      "sourceName": "contracts/IERC721.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC165.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "IERC721"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\EIP20Interface.sol": {
+      "lastModificationDate": 1662980600415,
+      "contentHash": "c00d6a06d24b7bbaee081458554a68ac",
+      "sourceName": "contracts/EIP20Interface.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "EIP20Interface"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ExponentialNoError.sol": {
+      "lastModificationDate": 1662979593002,
+      "contentHash": "ce0f7a2fe63f8f029cf97ecff2e48376",
+      "sourceName": "contracts/ExponentialNoError.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "ExponentialNoError"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\TransferHelper.sol": {
+      "lastModificationDate": 1662980600556,
+      "contentHash": "8df5650219cabfc542d894f9401e1e6d",
+      "sourceName": "contracts/TransferHelper.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC20.sol"
+      ],
+      "versionPragmas": [
+        "0.8.10"
+      ],
+      "artifacts": [
+        "TransferHelper"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ISwapRouter.sol": {
+      "lastModificationDate": 1662980600558,
+      "contentHash": "3b2a70ee1c98ffde2382edb4c967a57a",
+      "sourceName": "contracts/ISwapRouter.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IUniswapV3SwapCallback.sol"
+      ],
+      "versionPragmas": [
+        "0.8.10"
+      ],
+      "artifacts": [
+        "ISwapRouter"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\IERC20.sol": {
+      "lastModificationDate": 1662980600569,
+      "contentHash": "af18df68aedd7a3e3e3311eeffa1a1b0",
+      "sourceName": "contracts/IERC20.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "IERC20"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\IUniswapV3SwapCallback.sol": {
+      "lastModificationDate": 1662980600485,
+      "contentHash": "b55c6ff1ca52e45e091cb45d358577c0",
+      "sourceName": "contracts/IUniswapV3SwapCallback.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.8.10"
+      ],
+      "artifacts": [
+        "IUniswapV3SwapCallback"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\IERC165.sol": {
+      "lastModificationDate": 1662982056855,
+      "contentHash": "106cb8f499ed6364f6a9f2b13527b274",
+      "sourceName": "contracts/IERC165.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "IERC165"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ERC165.sol": {
+      "lastModificationDate": 1662982123410,
+      "contentHash": "b22e42ded6127e7e97b8d97129f8da70",
+      "sourceName": "contracts/ERC165.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC165.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "ERC165"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20.sol": {
+      "lastModificationDate": 1662974780425,
+      "contentHash": "86917f6bd67ec61829e97060dec98f96",
+      "sourceName": "contracts/CErc20.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CToken.sol",
+        "./IERC721.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "CErc20",
+        "CompLike",
+        "IERC721Receiver"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CToken.sol": {
+      "lastModificationDate": 1662980652252,
+      "contentHash": "176307c6052b7cbabc9f37ddcfd03ee1",
+      "sourceName": "contracts/CToken.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./ComptrollerInterface.sol",
+        "./CTokenInterfaces.sol",
+        "./ErrorReporter.sol",
+        "./EIP20Interface.sol",
+        "./InterestRateModel.sol",
+        "./ExponentialNoError.sol",
+        "./IGmxRewardRouter.sol",
+        "./IStakedGlp.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "CToken"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\SimplePriceOracle.sol": {
+      "lastModificationDate": 1662980600557,
+      "contentHash": "8713bc1c46da83fba5b6eaba19a69efb",
+      "sourceName": "contracts/SimplePriceOracle.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./PriceOracle.sol",
+        "./CErc20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "SimplePriceOracle"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\PriceOracle.sol": {
+      "lastModificationDate": 1662980600511,
+      "contentHash": "8eb87ff5da7403c82dc2feae4731be58",
+      "sourceName": "contracts/PriceOracle.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CToken.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "PriceOracle"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Lens\\CompoundLens.sol": {
+      "lastModificationDate": 1662980600522,
+      "contentHash": "4655aca7c77620e57edfb52fe36a674a",
+      "sourceName": "contracts/Lens/CompoundLens.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../CErc20.sol",
+        "../CToken.sol",
+        "../PriceOracle.sol",
+        "../EIP20Interface.sol",
+        "../Governance/GovernorAlpha.sol",
+        "../Governance/Comp.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "CompoundLens",
+        "ComptrollerLensInterface",
+        "GovernorBravoInterface"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Governance\\GovernorAlpha.sol": {
+      "lastModificationDate": 1662980600568,
+      "contentHash": "c6626ab1af3d0e65f82b2e013877c768",
+      "sourceName": "contracts/Governance/GovernorAlpha.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "CompInterface",
+        "GovernorAlpha",
+        "TimelockInterface"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Governance\\Comp.sol": {
+      "lastModificationDate": 1662980600569,
+      "contentHash": "40d4f4a6c12f4b82e4ac71c89968cc89",
+      "sourceName": "contracts/Governance/Comp.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "Comp"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ComptrollerG7.sol": {
+      "lastModificationDate": 1662980393077,
+      "contentHash": "9c8befa46e01889d1ae81ec69ea41e30",
+      "sourceName": "contracts/ComptrollerG7.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CToken.sol",
+        "./ErrorReporter.sol",
+        "./PriceOracle.sol",
+        "./ComptrollerInterface.sol",
+        "./ComptrollerStorage.sol",
+        "./Unitroller.sol",
+        "./Governance/Comp.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "ComptrollerG7"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ComptrollerStorage.sol": {
+      "lastModificationDate": 1662980600809,
+      "contentHash": "0e81f48f02f58ef5b31c495f35f27f21",
+      "sourceName": "contracts/ComptrollerStorage.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CToken.sol",
+        "./PriceOracle.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "ComptrollerV1Storage",
+        "ComptrollerV2Storage",
+        "ComptrollerV3Storage",
+        "ComptrollerV4Storage",
+        "ComptrollerV5Storage",
+        "ComptrollerV6Storage",
+        "ComptrollerV7Storage",
+        "UnitrollerAdminStorage"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Unitroller.sol": {
+      "lastModificationDate": 1662980600568,
+      "contentHash": "ed53a0e06478bb07b66b055195b7a52d",
+      "sourceName": "contracts/Unitroller.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./ErrorReporter.sol",
+        "./ComptrollerStorage.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "Unitroller"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Comptroller.sol": {
+      "lastModificationDate": 1662984821636,
+      "contentHash": "725d7903f07d96926465d19929afcd46",
+      "sourceName": "contracts/Comptroller.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CToken.sol",
+        "./ErrorReporter.sol",
+        "./PriceOracle.sol",
+        "./ComptrollerInterface.sol",
+        "./ComptrollerStorage.sol",
+        "./Unitroller.sol",
+        "./Governance/Comp.sol",
+        "./EIP20Interface.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "Comptroller"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Reservoir.sol": {
+      "lastModificationDate": 1662980600557,
+      "contentHash": "fcb89f3a2211b2fdce36350930e7b70a",
+      "sourceName": "contracts/Reservoir.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./EIP20Interface.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "Reservoir"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20DelegatorGmx.sol": {
+      "lastModificationDate": 1662974780426,
+      "contentHash": "4952d95bf22b45916654b2dd213d8de7",
+      "sourceName": "contracts/CErc20DelegatorGmx.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CTokenInterfaces.sol",
+        "./IGmxRewardRouter.sol",
+        "./IStakedGlp.sol",
+        "./EIP20Interface.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "CErc20DelegatorGmx",
+        "IERC721Receiver"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20Delegator.sol": {
+      "lastModificationDate": 1662974780425,
+      "contentHash": "610ef2bc41a331af2132f7a5d907bcf4",
+      "sourceName": "contracts/CErc20Delegator.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CTokenInterfaces.sol",
+        "./IGmxRewardRouter.sol",
+        "./IStakedGlp.sol",
+        "./EIP20Interface.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "CErc20Delegator",
+        "IERC721Receiver"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CEther.sol": {
+      "lastModificationDate": 1662980600311,
+      "contentHash": "6221f86835cfa67d4577f2d1a508a037",
+      "sourceName": "contracts/CEther.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CToken.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "CEther"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Maximillion.sol": {
+      "lastModificationDate": 1662980600511,
+      "contentHash": "a4b76914b3686ae768fa7548f5fcb0cc",
+      "sourceName": "contracts/Maximillion.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CEther.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "Maximillion"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\GMXPriceOracle.sol": {
+      "lastModificationDate": 1662974780428,
+      "contentHash": "c5ea91e443b94655fe6acc1ccc10634c",
+      "sourceName": "contracts/GMXPriceOracle.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./PriceOracle.sol",
+        "./CErc20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "GMXPriceOracle",
+        "GlpManager",
+        "GmxTokenPriceOracle",
+        "IERC20",
+        "IVaultPriceFeed",
+        "SafeMath"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20Immutable.sol": {
+      "lastModificationDate": 1662980600300,
+      "contentHash": "e4abcd8b93245156807ff33d9bbf0010",
+      "sourceName": "contracts/CErc20Immutable.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CErc20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "CErc20Immutable"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20Delegate.sol": {
+      "lastModificationDate": 1662980600290,
+      "contentHash": "b598fb2b737f56639f086b5013f2c157",
+      "sourceName": "contracts/CErc20Delegate.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CErc20.sol"
+      ],
+      "versionPragmas": [
+        "0.8.10"
+      ],
+      "artifacts": [
+        "CErc20Delegate"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CDaiDelegate.sol": {
+      "lastModificationDate": 1662980600275,
+      "contentHash": "4ad17bc8a041018e013534a4aede5e63",
+      "sourceName": "contracts/CDaiDelegate.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CErc20Delegate.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "CDaiDelegate",
+        "DaiJoinLike",
+        "GemLike",
+        "PotLike",
+        "VatLike"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\DAIInterestRateModelV3.sol": {
+      "lastModificationDate": 1662980600416,
+      "contentHash": "7b6cdbd14bba53a1d50f8038488d8bff",
+      "sourceName": "contracts/DAIInterestRateModelV3.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./JumpRateModelV2.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "DAIInterestRateModelV3",
+        "JugLike",
+        "PotLike"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Governance\\GovernorBravoDelegate.sol": {
+      "lastModificationDate": 1662980600568,
+      "contentHash": "45f091c95fd1e745e1e5b5d6345fc18a",
+      "sourceName": "contracts/Governance/GovernorBravoDelegate.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./GovernorBravoInterfaces.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "GovernorBravoDelegate"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Governance\\GovernorBravoInterfaces.sol": {
+      "lastModificationDate": 1662980600483,
+      "contentHash": "9e5147dc4d276e3bd73fbe49628d08b1",
+      "sourceName": "contracts/Governance/GovernorBravoInterfaces.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "CompInterface",
+        "GovernorAlpha",
+        "GovernorBravoDelegateStorageV1",
+        "GovernorBravoDelegateStorageV2",
+        "GovernorBravoDelegatorStorage",
+        "GovernorBravoEvents",
+        "TimelockInterface"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Governance\\GovernorBravoDelegator.sol": {
+      "lastModificationDate": 1662980600485,
+      "contentHash": "137da639e97fbda9d65abf0dc69b9e91",
+      "sourceName": "contracts/Governance/GovernorBravoDelegator.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./GovernorBravoInterfaces.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "GovernorBravoDelegator"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Governance\\GovernorBravoDelegateG1.sol": {
+      "lastModificationDate": 1662980600558,
+      "contentHash": "0a97516a603ebdf197fc7c1de3554ee6",
+      "sourceName": "contracts/Governance/GovernorBravoDelegateG1.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./GovernorBravoInterfaces.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "GovernorBravoDelegate"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\SafeMath.sol": {
+      "lastModificationDate": 1662980600557,
+      "contentHash": "a2aad7ce7d4fa52a7715373836f66d2d",
+      "sourceName": "contracts/SafeMath.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "SafeMath"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Timelock.sol": {
+      "lastModificationDate": 1662980600557,
+      "contentHash": "d7346ce6ca587d4d40df7c97bc6e2754",
+      "sourceName": "contracts/Timelock.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./SafeMath.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "Timelock"
+      ]
+    }
+  }
+}

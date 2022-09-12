@@ -136,9 +136,6 @@ contract Comptroller is
     // closeFactorMantissa must not exceed this value
     uint256 internal constant closeFactorMaxMantissa = 0.9e18; // 0.9
 
-    // No collateralFactorMantissa may exceed this value
-    uint256 internal constant collateralFactorMaxMantissa = 0.98e18; // 0.98
-
     // No liquidationThresholdMantissa may exceed this value
     uint256 internal constant liquidationThresholdMaxMantissa = 0.98e18; // 0.98
 
@@ -898,6 +895,13 @@ contract Comptroller is
         Exp tokensToDenom;
     }
 
+    struct oldFactorsAndThresholds {
+        uint256 oldCollateralFactorMantissa;
+        uint256 oldCollateralFactorMantissaVip;
+        uint256 oldLiquidationThresholdMantissa;
+        uint256 oldLiquidationThresholdMantissaVip;
+    }
+
     /**
      * @notice Determine the current account liquidity wrt collateral requirements
      * @return (possible error code (semi-opaque),
@@ -1345,13 +1349,7 @@ contract Comptroller is
         return uint256(Error.NO_ERROR);
     }
 
-    /**
-     * @notice Sets the collateralFactor for a market
-     * @dev Admin function to set per-market collateralFactor
-     * @param cToken The market to set the factor on
-     * @param newLiquidationThresholdMantissaVip The new liquidation threshold, scaled by 1e18
-     * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
-     */
+    
     function _setFactorsAndThresholds(
         CToken cToken,
         uint256 newCollateralFactorMantissa,
@@ -1366,8 +1364,11 @@ contract Comptroller is
                     Error.UNAUTHORIZED,
                     FailureInfo.SET_COLLATERAL_FACTOR_OWNER_CHECK
                 );
-        }
+        }   
 
+        require(newCollateralFactorMantissa <= newCollateralFactorMantissaVip, "collateral factor cannot be greater than vip");
+        require(newLiquidationThresholdMantissa <= newLiquidationThresholdMantissaVip, "liquidation threshold cannot be greater than vip");
+        require(newCollateralFactorMantissaVip <= newLiquidationThresholdMantissaVip, "Collateral factor must be lower than liquidation threshold");
         // Verify market is listed
         Market storage market = markets[address(cToken)];
         if (!market.isListed) {
@@ -1378,26 +1379,14 @@ contract Comptroller is
                 );
         }
 
-        Exp memory newCollateralFactorExp = Exp({
-            mantissa: newCollateralFactorMantissa
-        });
-        Exp memory newCollateralFactorExpVip = Exp({
-            mantissa: newCollateralFactorMantissaVip
-        });
         Exp memory newLiquidationThresholdExp = Exp({
             mantissa: newLiquidationThresholdMantissa
         });
-        Exp memory newLiquidationThresholdExpVip = Exp({
-            mantissa: newLiquidationThresholdMantissaVip
-        });
 
         // Check collateral factor <= 0.9
-        Exp memory highLimitCF = Exp({mantissa: collateralFactorMaxMantissa});
-        Exp memory highLimitCFV = Exp({mantissa: collateralFactorMaxMantissa});
         Exp memory highLimitLT = Exp({mantissa: liquidationThresholdMaxMantissa});
-        Exp memory highLimitLTV = Exp({mantissa: liquidationThresholdMaxMantissa});
 
-        if (lessThanExp(highLimitCF, newCollateralFactorExp) || lessThanExp(highLimitCFV, newCollateralFactorExpVip) || lessThanExp(highLimitLT, newLiquidationThresholdExp) || lessThanExp(highLimitLTV, newLiquidationThresholdExpVip)) {
+        if (lessThanExp(highLimitLT, newLiquidationThresholdExp)) {
             return
                 fail(
                     Error.INVALID_COLLATERAL_FACTOR,
@@ -1407,10 +1396,6 @@ contract Comptroller is
 
         // If collateral factor != 0, fail if price == 0
         if (
-            newCollateralFactorMantissa != 0 &&
-            newCollateralFactorMantissaVip != 0 &&
-            newLiquidationThresholdMantissa != 0 &&
-            newLiquidationThresholdMantissaVip != 0 &&
             oracle.getUnderlyingPrice(cToken) == 0
         ) {
             return
@@ -1420,35 +1405,36 @@ contract Comptroller is
                 );
         }
 
+        oldFactorsAndThresholds memory oldVars;
+
         // Set market's collateral factor to new collateral factor, remember old value
-        uint256 oldCollateralFactorMantissa = market.collateralFactorMantissa;
+        oldVars.oldCollateralFactorMantissa = market.collateralFactorMantissa;
         market.collateralFactorMantissa = newCollateralFactorMantissa;
 
         // Set market's collateral factor to new collateral factor, remember old value
-        uint256 oldCollateralFactorMantissaVip = market.collateralFactorMantissaVip;
+        oldVars.oldCollateralFactorMantissaVip = market.collateralFactorMantissaVip;
         market.collateralFactorMantissaVip = newCollateralFactorMantissaVip;
 
         // Set market's collateral factor to new collateral factor, remember old value
-        uint256 oldLiquidationThresholdMantissa = market
+        oldVars.oldLiquidationThresholdMantissa = market
             .liquidationThresholdMantissa;
         market.liquidationThresholdMantissa = newLiquidationThresholdMantissa;
 
-
         // Set market's collateral factor to new collateral factor, remember old value
-        uint256 oldLiquidationThresholdMantissaVip = market
+        oldVars.oldLiquidationThresholdMantissaVip = market
             .liquidationThresholdMantissaVip;
         market.liquidationThresholdMantissaVip = newLiquidationThresholdMantissaVip;
 
         // Emit event with asset, old collateral factor, and new collateral factor
         emit NewFactorsAndThresholds(
             cToken,
-            oldCollateralFactorMantissa,
+            oldVars.oldCollateralFactorMantissa,
             newCollateralFactorMantissa,
-            oldCollateralFactorMantissaVip,
+            oldVars.oldCollateralFactorMantissaVip,
             newCollateralFactorMantissaVip,
-            oldLiquidationThresholdMantissa,
+            oldVars.oldLiquidationThresholdMantissa,
             newLiquidationThresholdMantissa,
-            oldLiquidationThresholdMantissaVip,
+            oldVars.oldLiquidationThresholdMantissaVip,
             newLiquidationThresholdMantissaVip
         );
 
