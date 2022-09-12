@@ -35,30 +35,15 @@ contract Comptroller is
         uint256 newCloseFactorMantissa
     );
 
-    /// @notice Emitted when a collateral factor is changed by admin
-    event NewCollateralFactor(
+    /// @notice Emitted when the collateral factors are changed by admin
+    event NewFactorsAndThresholds(
         CToken cToken,
         uint256 oldCollateralFactorMantissa,
-        uint256 newCollateralFactorMantissa
-    );
-
-    /// @notice Emitted when a vip collateral factor is changed by admin
-    event NewCollateralFactorVip(
-        CToken cToken,
+        uint256 newCollateralFactorMantissa,
         uint256 oldCollateralFactorMantissaVip,
-        uint256 newCollateralFactorMantissaVip
-    );
-
-    /// @notice Emitted when a liquidation threshold is changed by admin
-    event NewliquidationThreshold(
-        CToken cToken,
+        uint256 newCollateralFactorMantissaVip,
         uint256 oldliquidationThresholdMantissa,
-        uint256 newliquidationThresholdMantissa
-    );
-
-    /// @notice Emitted when a vip liquidation threshold is changed by admin
-    event NewliquidationThresholdVip(
-        CToken cToken,
+        uint256 newliquidationThresholdMantissa,
         uint256 oldliquidationThresholdMantissaVip,
         uint256 newliquidationThresholdMantissaVip
     );
@@ -1364,12 +1349,15 @@ contract Comptroller is
      * @notice Sets the collateralFactor for a market
      * @dev Admin function to set per-market collateralFactor
      * @param cToken The market to set the factor on
-     * @param newCollateralFactorMantissa The new collateral factor, scaled by 1e18
+     * @param newLiquidationThresholdMantissaVip The new liquidation threshold, scaled by 1e18
      * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
      */
-    function _setCollateralFactor(
+    function _setFactorsAndThresholds(
         CToken cToken,
-        uint256 newCollateralFactorMantissa
+        uint256 newCollateralFactorMantissa,
+        uint256 newCollateralFactorMantissaVip,
+        uint256 newLiquidationThresholdMantissa,
+        uint256 newLiquidationThresholdMantissaVip
     ) external returns (uint256) {
         // Check caller is admin
         if (msg.sender != admin) {
@@ -1393,10 +1381,23 @@ contract Comptroller is
         Exp memory newCollateralFactorExp = Exp({
             mantissa: newCollateralFactorMantissa
         });
+        Exp memory newCollateralFactorExpVip = Exp({
+            mantissa: newCollateralFactorMantissaVip
+        });
+        Exp memory newLiquidationThresholdExp = Exp({
+            mantissa: newLiquidationThresholdMantissa
+        });
+        Exp memory newLiquidationThresholdExpVip = Exp({
+            mantissa: newLiquidationThresholdMantissaVip
+        });
 
         // Check collateral factor <= 0.9
-        Exp memory highLimit = Exp({mantissa: collateralFactorMaxMantissa});
-        if (lessThanExp(highLimit, newCollateralFactorExp)) {
+        Exp memory highLimitCF = Exp({mantissa: collateralFactorMaxMantissa});
+        Exp memory highLimitCFV = Exp({mantissa: collateralFactorMaxMantissa});
+        Exp memory highLimitLT = Exp({mantissa: liquidationThresholdMaxMantissa});
+        Exp memory highLimitLTV = Exp({mantissa: liquidationThresholdMaxMantissa});
+
+        if (lessThanExp(highLimitCF, newCollateralFactorExp) || lessThanExp(highLimitCFV, newCollateralFactorExpVip) || lessThanExp(highLimitLT, newLiquidationThresholdExp) || lessThanExp(highLimitLTV, newLiquidationThresholdExpVip)) {
             return
                 fail(
                     Error.INVALID_COLLATERAL_FACTOR,
@@ -1407,6 +1408,9 @@ contract Comptroller is
         // If collateral factor != 0, fail if price == 0
         if (
             newCollateralFactorMantissa != 0 &&
+            newCollateralFactorMantissaVip != 0 &&
+            newLiquidationThresholdMantissa != 0 &&
+            newLiquidationThresholdMantissaVip != 0 &&
             oracle.getUnderlyingPrice(cToken) == 0
         ) {
             return
@@ -1420,212 +1424,15 @@ contract Comptroller is
         uint256 oldCollateralFactorMantissa = market.collateralFactorMantissa;
         market.collateralFactorMantissa = newCollateralFactorMantissa;
 
-        // Emit event with asset, old collateral factor, and new collateral factor
-        emit NewCollateralFactor(
-            cToken,
-            oldCollateralFactorMantissa,
-            newCollateralFactorMantissa
-        );
-
-        return uint256(Error.NO_ERROR);
-    }
-
-/**
-     * @notice Sets the collateralFactor for a market
-     * @dev Admin function to set per-market collateralFactor
-     * @param cToken The market to set the factor on
-     * @param newCollateralFactorMantissaVip The new collateral factor, scaled by 1e18
-     * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
-     */
-    function _setCollateralFactorVip(
-        CToken cToken,
-        uint256 newCollateralFactorMantissaVip
-    ) external returns (uint256) {
-        // Check caller is admin
-        if (msg.sender != admin) {
-            return
-                fail(
-                    Error.UNAUTHORIZED,
-                    FailureInfo.SET_COLLATERAL_FACTOR_OWNER_CHECK
-                );
-        }
-
-        // Verify market is listed
-        Market storage market = markets[address(cToken)];
-        if (!market.isListed) {
-            return
-                fail(
-                    Error.MARKET_NOT_LISTED,
-                    FailureInfo.SET_COLLATERAL_FACTOR_NO_EXISTS
-                );
-        }
-
-        Exp memory newCollateralFactorExp = Exp({
-            mantissa: newCollateralFactorMantissaVip
-        });
-
-        // Check collateral factor <= 0.9
-        Exp memory highLimit = Exp({mantissa: collateralFactorMaxMantissa});
-        if (lessThanExp(highLimit, newCollateralFactorExp)) {
-            return
-                fail(
-                    Error.INVALID_COLLATERAL_FACTOR,
-                    FailureInfo.SET_COLLATERAL_FACTOR_VALIDATION
-                );
-        }
-
-        // If collateral factor != 0, fail if price == 0
-        if (
-            newCollateralFactorMantissaVip != 0 &&
-            oracle.getUnderlyingPrice(cToken) == 0
-        ) {
-            return
-                fail(
-                    Error.PRICE_ERROR,
-                    FailureInfo.SET_COLLATERAL_FACTOR_WITHOUT_PRICE
-                );
-        }
-
         // Set market's collateral factor to new collateral factor, remember old value
         uint256 oldCollateralFactorMantissaVip = market.collateralFactorMantissaVip;
         market.collateralFactorMantissaVip = newCollateralFactorMantissaVip;
-
-        // Emit event with asset, old collateral factor, and new collateral factor
-        emit NewCollateralFactorVip(
-            cToken,
-            oldCollateralFactorMantissaVip,
-            newCollateralFactorMantissaVip
-        );
-
-        return uint256(Error.NO_ERROR);
-    }
-    
-    /**
-     * @notice Sets the collateralFactor for a market
-     * @dev Admin function to set per-market collateralFactor
-     * @param cToken The market to set the factor on
-     * @param newLiquidationThresholdMantissa The new liquidation threshold, scaled by 1e18
-     * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
-     */
-    function _setLiquidationThreshold(
-        CToken cToken,
-        uint256 newLiquidationThresholdMantissa
-    ) external returns (uint256) {
-        // Check caller is admin
-        if (msg.sender != admin) {
-            return
-                fail(
-                    Error.UNAUTHORIZED,
-                    FailureInfo.SET_COLLATERAL_FACTOR_OWNER_CHECK
-                );
-        }
-
-        // Verify market is listed
-        Market storage market = markets[address(cToken)];
-        if (!market.isListed) {
-            return
-                fail(
-                    Error.MARKET_NOT_LISTED,
-                    FailureInfo.SET_COLLATERAL_FACTOR_NO_EXISTS
-                );
-        }
-
-        Exp memory newLiquidationThresholdExp = Exp({
-            mantissa: newLiquidationThresholdMantissa
-        });
-
-        // Check collateral factor <= 0.9
-        Exp memory highLimit = Exp({mantissa: liquidationThresholdMaxMantissa});
-        if (lessThanExp(highLimit, newLiquidationThresholdExp)) {
-            return
-                fail(
-                    Error.INVALID_COLLATERAL_FACTOR,
-                    FailureInfo.SET_COLLATERAL_FACTOR_VALIDATION
-                );
-        }
-
-        // If collateral factor != 0, fail if price == 0
-        if (
-            newLiquidationThresholdMantissa != 0 &&
-            oracle.getUnderlyingPrice(cToken) == 0
-        ) {
-            return
-                fail(
-                    Error.PRICE_ERROR,
-                    FailureInfo.SET_COLLATERAL_FACTOR_WITHOUT_PRICE
-                );
-        }
 
         // Set market's collateral factor to new collateral factor, remember old value
         uint256 oldLiquidationThresholdMantissa = market
             .liquidationThresholdMantissa;
         market.liquidationThresholdMantissa = newLiquidationThresholdMantissa;
 
-        // Emit event with asset, old collateral factor, and new collateral factor
-        emit NewCollateralFactor(
-            cToken,
-            oldLiquidationThresholdMantissa,
-            newLiquidationThresholdMantissa
-        );
-
-        return uint256(Error.NO_ERROR);
-    }
-
-    /**
-     * @notice Sets the collateralFactor for a market
-     * @dev Admin function to set per-market collateralFactor
-     * @param cToken The market to set the factor on
-     * @param newLiquidationThresholdMantissaVip The new liquidation threshold, scaled by 1e18
-     * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
-     */
-    function _setLiquidationThresholdVip(
-        CToken cToken,
-        uint256 newLiquidationThresholdMantissaVip
-    ) external returns (uint256) {
-        // Check caller is admin
-        if (msg.sender != admin) {
-            return
-                fail(
-                    Error.UNAUTHORIZED,
-                    FailureInfo.SET_COLLATERAL_FACTOR_OWNER_CHECK
-                );
-        }
-
-        // Verify market is listed
-        Market storage market = markets[address(cToken)];
-        if (!market.isListed) {
-            return
-                fail(
-                    Error.MARKET_NOT_LISTED,
-                    FailureInfo.SET_COLLATERAL_FACTOR_NO_EXISTS
-                );
-        }
-
-        Exp memory newLiquidationThresholdExp = Exp({
-            mantissa: newLiquidationThresholdMantissaVip
-        });
-
-        // Check collateral factor <= 0.9
-        Exp memory highLimit = Exp({mantissa: liquidationThresholdMaxMantissa});
-        if (lessThanExp(highLimit, newLiquidationThresholdExp)) {
-            return
-                fail(
-                    Error.INVALID_COLLATERAL_FACTOR,
-                    FailureInfo.SET_COLLATERAL_FACTOR_VALIDATION
-                );
-        }
-
-        // If collateral factor != 0, fail if price == 0
-        if (
-            newLiquidationThresholdMantissaVip != 0 &&
-            oracle.getUnderlyingPrice(cToken) == 0
-        ) {
-            return
-                fail(
-                    Error.PRICE_ERROR,
-                    FailureInfo.SET_COLLATERAL_FACTOR_WITHOUT_PRICE
-                );
-        }
 
         // Set market's collateral factor to new collateral factor, remember old value
         uint256 oldLiquidationThresholdMantissaVip = market
@@ -1633,8 +1440,14 @@ contract Comptroller is
         market.liquidationThresholdMantissaVip = newLiquidationThresholdMantissaVip;
 
         // Emit event with asset, old collateral factor, and new collateral factor
-        emit NewCollateralFactor(
+        emit NewFactorsAndThresholds(
             cToken,
+            oldCollateralFactorMantissa,
+            newCollateralFactorMantissa,
+            oldCollateralFactorMantissaVip,
+            newCollateralFactorMantissaVip,
+            oldLiquidationThresholdMantissa,
+            newLiquidationThresholdMantissa,
             oldLiquidationThresholdMantissaVip,
             newLiquidationThresholdMantissaVip
         );
