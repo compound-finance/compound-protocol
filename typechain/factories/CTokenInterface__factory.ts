@@ -477,12 +477,22 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "contract IStakedGlp",
+        name: "stakedGLP_",
+        type: "address",
+      },
+      {
+        internalType: "contract IGmxRewardRouter",
+        name: "glpRewardRouter_",
+        type: "address",
+      },
+      {
         internalType: "address",
         name: "glpManager_",
         type: "address",
       },
     ],
-    name: "_setGlpManagerAddress",
+    name: "_setGlpAddresses",
     outputs: [
       {
         internalType: "uint256",
@@ -540,44 +550,6 @@ const _abi = [
       },
     ],
     name: "_setReserveFactor",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IGmxRewardRouter",
-        name: "glpRewardRouter_",
-        type: "address",
-      },
-    ],
-    name: "_setRewardRouterAddress",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IStakedGlp",
-        name: "stakedGLP_",
-        type: "address",
-      },
-    ],
-    name: "_setStakedGlpAddress",
     outputs: [
       {
         internalType: "uint256",

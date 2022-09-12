@@ -452,7 +452,8 @@ contract Comptroller is
                 redeemer,
                 CToken(cToken),
                 redeemTokens,
-                0
+                0,
+                false
             );
         if (err != Error.NO_ERROR) {
             return uint256(err);
@@ -554,7 +555,8 @@ contract Comptroller is
                 borrower,
                 CToken(cToken),
                 0,
-                borrowAmount
+                borrowAmount,
+                false
             );
         if (err != Error.NO_ERROR) {
             return uint256(err);
@@ -925,7 +927,8 @@ contract Comptroller is
                 account,
                 CToken(address(0)),
                 0,
-                0
+                0,
+                true
             );
 
         return (uint256(err), liquidity, shortfall);
@@ -967,11 +970,12 @@ contract Comptroller is
         )
     {
         return
-            getHypotheticalAccountLiquidityInternalForLiquidation(
+            getHypotheticalAccountLiquidityInternal(
                 account,
                 CToken(address(0)),
                 0,
-                0
+                0,
+                true
             );
     }
 
@@ -1007,7 +1011,8 @@ contract Comptroller is
                 account,
                 CToken(cTokenModify),
                 redeemTokens,
-                borrowAmount
+                borrowAmount,
+                false
             );
         return (uint256(err), liquidity, shortfall);
     }
@@ -1018,6 +1023,7 @@ contract Comptroller is
      * @param account The account to determine liquidity for
      * @param redeemTokens The number of tokens to hypothetically redeem
      * @param borrowAmount The amount of underlying to hypothetically borrow
+     * @param liquidation Whether the calls is for liquidation or not
      * @dev Note that we calculate the exchangeRateStored for each collateral cToken using stored data,
      *  without calculating accumulated interest.
      * @return (possible error code,
@@ -1028,7 +1034,8 @@ contract Comptroller is
         address account,
         CToken cTokenModify,
         uint256 redeemTokens,
-        uint256 borrowAmount
+        uint256 borrowAmount,
+        bool liquidation
     )
         internal
         view
@@ -1057,124 +1064,17 @@ contract Comptroller is
                 // semi-opaque error code, we assume NO_ERROR == 0 is invariant between upgrades
                 return (Error.SNAPSHOT_ERROR, 0, 0);
             }
-            vars.collateralFactor = getIsAccountVip(account)
-                ? Exp({
-                    mantissa: markets[address(asset)]
-                        .collateralFactorMantissaVip
-                })
-                : Exp({
-                    mantissa: markets[address(asset)].collateralFactorMantissa
-                });
-            vars.exchangeRate = Exp({mantissa: vars.exchangeRateMantissa});
-
-            // Get the normalized price of the asset
-            vars.oraclePriceMantissa = oracle.getUnderlyingPrice(asset);
-            if (vars.oraclePriceMantissa == 0) {
-                return (Error.PRICE_ERROR, 0, 0);
-            }
-            vars.oraclePrice = Exp({mantissa: vars.oraclePriceMantissa});
-
-            // Pre-compute a conversion factor from tokens -> ether (normalized price value)
-            vars.tokensToDenom = mul_(
-                mul_(vars.collateralFactor, vars.exchangeRate),
-                vars.oraclePrice
-            );
-
-            // sumCollateral += tokensToDenom * cTokenBalance
-            vars.sumCollateral = mul_ScalarTruncateAddUInt(
-                vars.tokensToDenom,
-                vars.cTokenBalance,
-                vars.sumCollateral
-            );
-
-            // sumBorrowPlusEffects += oraclePrice * borrowBalance
-            vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(
-                vars.oraclePrice,
-                vars.borrowBalance,
-                vars.sumBorrowPlusEffects
-            );
-
-            // Calculate effects of interacting with cTokenModify
-            if (asset == cTokenModify) {
-                // redeem effect
-                // sumBorrowPlusEffects += tokensToDenom * redeemTokens
-                vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(
-                    vars.tokensToDenom,
-                    redeemTokens,
-                    vars.sumBorrowPlusEffects
-                );
-
-                // borrow effect
-                // sumBorrowPlusEffects += oraclePrice * borrowAmount
-                vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(
-                    vars.oraclePrice,
-                    borrowAmount,
-                    vars.sumBorrowPlusEffects
-                );
-            }
-        }
-
-        // These are safe, as the underflow condition is checked first
-        if (vars.sumCollateral > vars.sumBorrowPlusEffects) {
-            return (
-                Error.NO_ERROR,
-                vars.sumCollateral - vars.sumBorrowPlusEffects,
-                0
-            );
-        } else {
-            return (
-                Error.NO_ERROR,
-                0,
-                vars.sumBorrowPlusEffects - vars.sumCollateral
-            );
-        }
-    }
-
-    /**
-     * @notice Determine what the account liquidity would be if the given amounts were redeemed/borrowed
-     * @param cTokenModify The market to hypothetically redeem/borrow in
-     * @param account The account to determine liquidity for
-     * @param redeemTokens The number of tokens to hypothetically redeem
-     * @param borrowAmount The amount of underlying to hypothetically borrow
-     * @dev Note that we calculate the exchangeRateStored for each collateral cToken using stored data,
-     *  without calculating accumulated interest.
-     * @return (possible error code,
-                hypothetical account liquidity in excess of collateral requirements,
-     *          hypothetical account shortfall below collateral requirements)
-     */
-    function getHypotheticalAccountLiquidityInternalForLiquidation(
-        address account,
-        CToken cTokenModify,
-        uint256 redeemTokens,
-        uint256 borrowAmount
-    )
-        internal
-        view
-        returns (
-            Error,
-            uint256,
-            uint256
-        )
-    {
-        AccountLiquidityLocalVars memory vars; // Holds all our calculation results
-        uint256 oErr;
-
-        // For each asset the account is in
-        CToken[] memory assets = accountAssets[account];
-        for (uint256 i = 0; i < assets.length; i++) {
-            CToken asset = assets[i];
-            // Read the balances and exchange rate from the cToken
-            (
-                oErr,
-                vars.cTokenBalance,
-                vars.borrowBalance,
-                vars.exchangeRateMantissa
-            ) = asset.getAccountSnapshot(account);
-            if (oErr != 0) {
-                // semi-opaque error code, we assume NO_ERROR == 0 is invariant between upgrades
-                return (Error.SNAPSHOT_ERROR, 0, 0);
-            }
-            vars.collateralFactor = getIsAccountVip(account)
+            if(!liquidation){
+                vars.collateralFactor = getIsAccountVip(account)
+                    ? Exp({
+                        mantissa: markets[address(asset)]
+                            .collateralFactorMantissaVip
+                    })
+                    : Exp({
+                        mantissa: markets[address(asset)].collateralFactorMantissa
+                    });
+            } else {
+                vars.collateralFactor = getIsAccountVip(account)
                 ? Exp({
                     mantissa: markets[address(asset)]
                         .liquidationThresholdMantissaVip
@@ -1183,6 +1083,7 @@ contract Comptroller is
                     mantissa: markets[address(asset)]
                         .liquidationThresholdMantissa
                 });
+            }
             vars.exchangeRate = Exp({mantissa: vars.exchangeRateMantissa});
 
             // Get the normalized price of the asset
@@ -1247,7 +1148,7 @@ contract Comptroller is
             );
         }
     }
-
+    
     /**
      * @notice Calculate number of tokens of collateral asset to seize given an underlying amount
      * @dev Used in liquidation (called in cToken.liquidateBorrowFresh)
@@ -1349,7 +1250,6 @@ contract Comptroller is
         return uint256(Error.NO_ERROR);
     }
 
-    
     function _setFactorsAndThresholds(
         CToken cToken,
         uint256 newCollateralFactorMantissa,
@@ -1369,6 +1269,7 @@ contract Comptroller is
         require(newCollateralFactorMantissa <= newCollateralFactorMantissaVip, "collateral factor cannot be greater than vip");
         require(newLiquidationThresholdMantissa <= newLiquidationThresholdMantissaVip, "liquidation threshold cannot be greater than vip");
         require(newCollateralFactorMantissaVip <= newLiquidationThresholdMantissaVip, "Collateral factor must be lower than liquidation threshold");
+
         // Verify market is listed
         Market storage market = markets[address(cToken)];
         if (!market.isListed) {
@@ -1383,7 +1284,7 @@ contract Comptroller is
             mantissa: newLiquidationThresholdMantissa
         });
 
-        // Check collateral factor <= 0.9
+        // Check collateral factor <= max
         Exp memory highLimitLT = Exp({mantissa: liquidationThresholdMaxMantissa});
 
         if (lessThanExp(highLimitLT, newLiquidationThresholdExp)) {
@@ -1407,25 +1308,20 @@ contract Comptroller is
 
         oldFactorsAndThresholds memory oldVars;
 
-        // Set market's collateral factor to new collateral factor, remember old value
         oldVars.oldCollateralFactorMantissa = market.collateralFactorMantissa;
         market.collateralFactorMantissa = newCollateralFactorMantissa;
 
-        // Set market's collateral factor to new collateral factor, remember old value
         oldVars.oldCollateralFactorMantissaVip = market.collateralFactorMantissaVip;
         market.collateralFactorMantissaVip = newCollateralFactorMantissaVip;
 
-        // Set market's collateral factor to new collateral factor, remember old value
         oldVars.oldLiquidationThresholdMantissa = market
             .liquidationThresholdMantissa;
         market.liquidationThresholdMantissa = newLiquidationThresholdMantissa;
 
-        // Set market's collateral factor to new collateral factor, remember old value
         oldVars.oldLiquidationThresholdMantissaVip = market
             .liquidationThresholdMantissaVip;
         market.liquidationThresholdMantissaVip = newLiquidationThresholdMantissaVip;
 
-        // Emit event with asset, old collateral factor, and new collateral factor
         emit NewFactorsAndThresholds(
             cToken,
             oldVars.oldCollateralFactorMantissa,
@@ -2161,3 +2057,6 @@ contract Comptroller is
         whitelistedUser[user_] = isWhiteListed_;
     }
 }
+
+
+

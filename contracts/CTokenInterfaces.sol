@@ -275,9 +275,7 @@ abstract contract CTokenInterface is CTokenStorage {
     function _setReserveFactor(uint newReserveFactorMantissa) virtual external returns (uint);
     function _reduceReserves(uint reduceAmount) virtual external returns (uint);
     function _setInterestRateModel(InterestRateModel newInterestRateModel) virtual external returns (uint);
-    function _setStakedGlpAddress(IStakedGlp stakedGLP_) virtual public returns (uint);
-    function _setRewardRouterAddress(IGmxRewardRouter glpRewardRouter_) virtual public returns (uint);
-    function _setGlpManagerAddress(address glpManager_) virtual public returns (uint);
+    function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_) virtual public returns (uint);
     function _signalTransfer(address recipient) virtual public returns (uint);
     function _setAutocompoundRewards(bool autocompound_) virtual public returns (uint);
 }

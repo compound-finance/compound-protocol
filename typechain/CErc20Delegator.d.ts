@@ -27,13 +27,11 @@ interface CErc20DelegatorInterface extends ethers.utils.Interface {
     "_reduceReserves(uint256)": FunctionFragment;
     "_setAutocompoundRewards(bool)": FunctionFragment;
     "_setComptroller(address)": FunctionFragment;
-    "_setGlpManagerAddress(address)": FunctionFragment;
+    "_setGlpAddresses(address,address,address)": FunctionFragment;
     "_setImplementation(address,bool,bytes)": FunctionFragment;
     "_setInterestRateModel(address)": FunctionFragment;
     "_setPendingAdmin(address)": FunctionFragment;
     "_setReserveFactor(uint256)": FunctionFragment;
-    "_setRewardRouterAddress(address)": FunctionFragment;
-    "_setStakedGlpAddress(address)": FunctionFragment;
     "_signalTransfer(address)": FunctionFragment;
     "accrualBlockNumber()": FunctionFragment;
     "accrueInterest()": FunctionFragment;
@@ -115,8 +113,8 @@ interface CErc20DelegatorInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "_setGlpManagerAddress",
-    values: [string]
+    functionFragment: "_setGlpAddresses",
+    values: [string, string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "_setImplementation",
@@ -133,14 +131,6 @@ interface CErc20DelegatorInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "_setReserveFactor",
     values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "_setRewardRouterAddress",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "_setStakedGlpAddress",
-    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "_signalTransfer",
@@ -351,7 +341,7 @@ interface CErc20DelegatorInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "_setGlpManagerAddress",
+    functionFragment: "_setGlpAddresses",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -368,14 +358,6 @@ interface CErc20DelegatorInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "_setReserveFactor",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "_setRewardRouterAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "_setStakedGlpAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -757,7 +739,9 @@ export class CErc20Delegator extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    _setGlpManagerAddress(
+    _setGlpAddresses(
+      stakedGLP_: string,
+      glpRewardRouter_: string,
       glpManager_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -781,16 +765,6 @@ export class CErc20Delegator extends BaseContract {
 
     _setReserveFactor(
       newReserveFactorMantissa: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    _setRewardRouterAddress(
-      glpRewardRouter_: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    _setStakedGlpAddress(
-      stakedGLP_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -1023,7 +997,9 @@ export class CErc20Delegator extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  _setGlpManagerAddress(
+  _setGlpAddresses(
+    stakedGLP_: string,
+    glpRewardRouter_: string,
     glpManager_: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1047,16 +1023,6 @@ export class CErc20Delegator extends BaseContract {
 
   _setReserveFactor(
     newReserveFactorMantissa: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  _setRewardRouterAddress(
-    glpRewardRouter_: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  _setStakedGlpAddress(
-    stakedGLP_: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1285,7 +1251,9 @@ export class CErc20Delegator extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    _setGlpManagerAddress(
+    _setGlpAddresses(
+      stakedGLP_: string,
+      glpRewardRouter_: string,
       glpManager_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1309,16 +1277,6 @@ export class CErc20Delegator extends BaseContract {
 
     _setReserveFactor(
       newReserveFactorMantissa: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    _setRewardRouterAddress(
-      glpRewardRouter_: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    _setStakedGlpAddress(
-      stakedGLP_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1881,7 +1839,9 @@ export class CErc20Delegator extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    _setGlpManagerAddress(
+    _setGlpAddresses(
+      stakedGLP_: string,
+      glpRewardRouter_: string,
       glpManager_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1905,16 +1865,6 @@ export class CErc20Delegator extends BaseContract {
 
     _setReserveFactor(
       newReserveFactorMantissa: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    _setRewardRouterAddress(
-      glpRewardRouter_: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    _setStakedGlpAddress(
-      stakedGLP_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -2146,7 +2096,9 @@ export class CErc20Delegator extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    _setGlpManagerAddress(
+    _setGlpAddresses(
+      stakedGLP_: string,
+      glpRewardRouter_: string,
       glpManager_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -2170,16 +2122,6 @@ export class CErc20Delegator extends BaseContract {
 
     _setReserveFactor(
       newReserveFactorMantissa: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    _setRewardRouterAddress(
-      glpRewardRouter_: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    _setStakedGlpAddress(
-      stakedGLP_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
