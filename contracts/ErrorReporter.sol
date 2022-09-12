@@ -126,8 +126,6 @@ contract TokenErrorReporter {
     error SetInterestRateModelOwnerCheck();
     error SetInterestRateModelFreshCheck();
     error SetStakedGlpAddressOwnerCheck();
-    error SetRewardRouterAddressOwnerCheck();
     error SignalTransferOwnerCheck();
     error SetAutoCompoundOwnerCheck();
-    error SetGlpManagerAddressOwnerCheck();
 }

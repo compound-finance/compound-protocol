@@ -428,35 +428,15 @@ contract CErc20DelegatorGmx is CTokenInterface, CErc20Interface, CDelegatorInter
     }
 
     /**
-     * @notice Updates the stakedGLP contract using _setStakedGlpAddress
-     * @dev Admin function to update the stakedGLP contract address
+     * @notice Updates the glp contract addresses using _setGlpAddresses
+     * @dev Admin function to set the GLP contract addresses
      * @param stakedGLP_ the stakedGLP contract to use
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function _setStakedGlpAddress(IStakedGlp stakedGLP_) override public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setStakedGlpAddress(address)", stakedGLP_));
-        return abi.decode(data, (uint));
-    }
-
-    /**
-     * @notice Updates the RewardRouter contract using _setRewardRouterAddress
-     * @dev Admin function to update rewardrouter contract address
      * @param glpRewardRouter_ the rewardrouter contract address to use
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function _setRewardRouterAddress(IGmxRewardRouter glpRewardRouter_) override public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setRewardRouterAddress(address)", glpRewardRouter_));
-        return abi.decode(data, (uint));
-    }
-
-    /**
-     * @notice Updates the RewardRouter contract using _setGlpManagerAddress
-     * @dev Admin function to set the GLP manager address
      * @param glpManager_ the glpManager contract address to use
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setGlpManagerAddress(address glpManager_) override public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setGlpManagerAddress(address)", glpManager_));
+    function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_) override public returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setGlpAddresses(address, address, address)", stakedGLP_, glpRewardRouter_, glpManager_));
         return abi.decode(data, (uint));
     }
 

@@ -217,11 +217,6 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "SetGlpManagerAddressOwnerCheck",
-    type: "error",
-  },
-  {
-    inputs: [],
     name: "SetInterestRateModelFreshCheck",
     type: "error",
   },
@@ -248,11 +243,6 @@ const _abi = [
   {
     inputs: [],
     name: "SetReserveFactorFreshCheck",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "SetRewardRouterAddressOwnerCheck",
     type: "error",
   },
   {
@@ -307,7 +297,7 @@ const _abi = [
 ];
 
 const _bytecode =
-  "0x6080604052348015600f57600080fd5b50607c8061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c806369ab325014602d575b600080fd5b6034600081565b60405190815260200160405180910390f3fea264697066735822122054b057b7ceff595d9b981e990d74af9d42523e0fac21be91ad0809a12598a8df64736f6c634300080a0033";
+  "0x6080604052348015600f57600080fd5b50607c8061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c806369ab325014602d575b600080fd5b6034600081565b60405190815260200160405180910390f3fea2646970667358221220bb95d456cad8401f76de34504a4dae4944c6a2541e4d4286578ba89604afe55864736f6c634300080a0033";
 
 export class TokenErrorReporter__factory extends ContractFactory {
   constructor(
