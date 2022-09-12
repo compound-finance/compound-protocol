@@ -2030,7 +2030,7 @@ contract Comptroller is
         immutableCompAddress = true;
     }
 
-    function setIsPrivateMarket(address cToken_, bool isPrivate_,  bool onlyWhitelistedCanBorrow_, bool isComped_) external {
+    function setMarketVariables(address cToken_, bool isPrivate_,  bool onlyWhitelistedCanBorrow_, bool isComped_) external {
         require(msg.sender == admin, "only admin can set market to private");
         markets[cToken_].isPrivate = isPrivate_;
         markets[cToken_].onlyWhitelistedBorrow = onlyWhitelistedCanBorrow_;
