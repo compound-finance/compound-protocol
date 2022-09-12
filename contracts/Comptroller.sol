@@ -1569,7 +1569,8 @@ contract Comptroller is
      */
     function _setMarketBorrowCaps(
         CToken[] calldata cTokens,
-        uint256[] calldata newBorrowCaps
+        uint256[] calldata newBorrowCaps,
+        uint256[] calldata newSupplyCaps
     ) external {
         require(
             msg.sender == admin || msg.sender == borrowCapGuardian,
@@ -1578,43 +1579,17 @@ contract Comptroller is
 
         uint256 numMarkets = cTokens.length;
         uint256 numBorrowCaps = newBorrowCaps.length;
+        uint256 numSupplyCaps = newSupplyCaps.length;
 
         require(
-            numMarkets != 0 && numMarkets == numBorrowCaps,
+            numMarkets != 0 && numMarkets == numBorrowCaps && numBorrowCaps == numSupplyCaps,
             "invalid input"
         );
 
         for (uint256 i = 0; i < numMarkets; i++) {
             borrowCaps[address(cTokens[i])] = newBorrowCaps[i];
-            emit NewBorrowCap(cTokens[i], newBorrowCaps[i]);
-        }
-    }
-
-        /**
-     * @notice Set the given borrow caps for the given cToken markets. Borrowing that brings total borrows to or above borrow cap will revert.
-     * @dev Admin or borrowCapGuardian function to set the borrow caps. A borrow cap of 0 corresponds to unlimited borrowing.
-     * @param cTokens The addresses of the markets (tokens) to change the borrow caps for
-     * @param newSupplyCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
-     */
-    function _setMarketSupplyCaps(
-        CToken[] calldata cTokens,
-        uint256[] calldata newSupplyCaps
-    ) external {
-        require(
-            msg.sender == admin || msg.sender == borrowCapGuardian,
-            "only admin or borrow cap guardian can set supply caps"
-        );
-
-        uint256 numMarkets = cTokens.length;
-        uint256 numSupplyCap = newSupplyCaps.length;
-
-        require(
-            numMarkets != 0 && numMarkets == numSupplyCap,
-            "invalid input"
-        );
-
-        for (uint256 i = 0; i < numMarkets; i++) {
             supplyCaps[address(cTokens[i])] = newSupplyCaps[i];
+            emit NewBorrowCap(cTokens[i], newBorrowCaps[i]);
             emit NewSupplyCap(cTokens[i], newSupplyCaps[i]);
         }
     }
@@ -2159,14 +2134,11 @@ contract Comptroller is
         immutableCompAddress = true;
     }
 
-    function setIsPrivateMarket(address cToken_, bool isPrivate_) external {
+    function setIsPrivateMarket(address cToken_, bool isPrivate_,  bool onlyWhitelistedCanBorrow_, bool isComped_) external {
         require(msg.sender == admin, "only admin can set market to private");
         markets[cToken_].isPrivate = isPrivate_;
-    }
-
-    function setOnlyWhitelistedCanBorrow(address cToken_, bool onlyWhitelistedCanBorrow_) external {
-        require(msg.sender == admin, "only admin can set market to whitelisted borrow only");
         markets[cToken_].onlyWhitelistedBorrow = onlyWhitelistedCanBorrow_;
+        markets[cToken_].isComped = isComped_;
     }
 
     function setVipNft(address _vipNft) external {
@@ -2182,11 +2154,6 @@ contract Comptroller is
             "only admin can set _tokenBalanceVipThreshold"
         );
         tokenBalanceVipThreshold = _tokenBalanceVipThreshold;
-    }
-
-    function setIsMarketComped(address cToken_, bool isComped_) external {
-        require(msg.sender == admin, "only admin can set market to comped");
-        markets[cToken_].isComped = isComped_;
     }
 
     function setWhitelistedUser(address user_, bool isWhiteListed_) external {

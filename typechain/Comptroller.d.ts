@@ -32,8 +32,7 @@ interface ComptrollerInterface extends ethers.utils.Interface {
     "_setContributorCompSpeed(address,uint256)": FunctionFragment;
     "_setFactorsAndThresholds(address,uint256,uint256,uint256,uint256)": FunctionFragment;
     "_setLiquidationIncentive(uint256)": FunctionFragment;
-    "_setMarketBorrowCaps(address[],uint256[])": FunctionFragment;
-    "_setMarketSupplyCaps(address[],uint256[])": FunctionFragment;
+    "_setMarketBorrowCaps(address[],uint256[],uint256[])": FunctionFragment;
     "_setMintPaused(address,bool)": FunctionFragment;
     "_setPauseGuardian(address)": FunctionFragment;
     "_setPriceOracle(address)": FunctionFragment;
@@ -101,9 +100,7 @@ interface ComptrollerInterface extends ethers.utils.Interface {
     "seizeVerify(address,address,address,address,uint256)": FunctionFragment;
     "setCompAddress(address)": FunctionFragment;
     "setImmutableCompAddress()": FunctionFragment;
-    "setIsMarketComped(address,bool)": FunctionFragment;
-    "setIsPrivateMarket(address,bool)": FunctionFragment;
-    "setOnlyWhitelistedCanBorrow(address,bool)": FunctionFragment;
+    "setIsPrivateMarket(address,bool,bool,bool)": FunctionFragment;
     "setTokenBalanceVipThreshold(uint256)": FunctionFragment;
     "setVipNft(address)": FunctionFragment;
     "setWhitelistedUser(address,bool)": FunctionFragment;
@@ -160,11 +157,7 @@ interface ComptrollerInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "_setMarketBorrowCaps",
-    values: [string[], BigNumberish[]]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "_setMarketSupplyCaps",
-    values: [string[], BigNumberish[]]
+    values: [string[], BigNumberish[], BigNumberish[]]
   ): string;
   encodeFunctionData(
     functionFragment: "_setMintPaused",
@@ -405,16 +398,8 @@ interface ComptrollerInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "setIsMarketComped",
-    values: [string, boolean]
-  ): string;
-  encodeFunctionData(
     functionFragment: "setIsPrivateMarket",
-    values: [string, boolean]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setOnlyWhitelistedCanBorrow",
-    values: [string, boolean]
+    values: [string, boolean, boolean, boolean]
   ): string;
   encodeFunctionData(
     functionFragment: "setTokenBalanceVipThreshold",
@@ -492,10 +477,6 @@ interface ComptrollerInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "_setMarketBorrowCaps",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "_setMarketSupplyCaps",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -734,15 +715,7 @@ interface ComptrollerInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setIsMarketComped",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "setIsPrivateMarket",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setOnlyWhitelistedCanBorrow",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -1076,11 +1049,6 @@ export class Comptroller extends BaseContract {
     _setMarketBorrowCaps(
       cTokens: string[],
       newBorrowCaps: BigNumberish[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    _setMarketSupplyCaps(
-      cTokens: string[],
       newSupplyCaps: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -1440,21 +1408,11 @@ export class Comptroller extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setIsMarketComped(
-      cToken_: string,
-      isComped_: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     setIsPrivateMarket(
       cToken_: string,
       isPrivate_: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setOnlyWhitelistedCanBorrow(
-      cToken_: string,
       onlyWhitelistedCanBorrow_: boolean,
+      isComped_: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -1570,11 +1528,6 @@ export class Comptroller extends BaseContract {
   _setMarketBorrowCaps(
     cTokens: string[],
     newBorrowCaps: BigNumberish[],
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  _setMarketSupplyCaps(
-    cTokens: string[],
     newSupplyCaps: BigNumberish[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1912,21 +1865,11 @@ export class Comptroller extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setIsMarketComped(
-    cToken_: string,
-    isComped_: boolean,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   setIsPrivateMarket(
     cToken_: string,
     isPrivate_: boolean,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setOnlyWhitelistedCanBorrow(
-    cToken_: string,
     onlyWhitelistedCanBorrow_: boolean,
+    isComped_: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -2036,11 +1979,6 @@ export class Comptroller extends BaseContract {
     _setMarketBorrowCaps(
       cTokens: string[],
       newBorrowCaps: BigNumberish[],
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    _setMarketSupplyCaps(
-      cTokens: string[],
       newSupplyCaps: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<void>;
@@ -2387,21 +2325,11 @@ export class Comptroller extends BaseContract {
 
     setImmutableCompAddress(overrides?: CallOverrides): Promise<void>;
 
-    setIsMarketComped(
-      cToken_: string,
-      isComped_: boolean,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     setIsPrivateMarket(
       cToken_: string,
       isPrivate_: boolean,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setOnlyWhitelistedCanBorrow(
-      cToken_: string,
       onlyWhitelistedCanBorrow_: boolean,
+      isComped_: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2931,11 +2859,6 @@ export class Comptroller extends BaseContract {
     _setMarketBorrowCaps(
       cTokens: string[],
       newBorrowCaps: BigNumberish[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    _setMarketSupplyCaps(
-      cTokens: string[],
       newSupplyCaps: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -3264,21 +3187,11 @@ export class Comptroller extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setIsMarketComped(
-      cToken_: string,
-      isComped_: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     setIsPrivateMarket(
       cToken_: string,
       isPrivate_: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setOnlyWhitelistedCanBorrow(
-      cToken_: string,
       onlyWhitelistedCanBorrow_: boolean,
+      isComped_: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -3399,11 +3312,6 @@ export class Comptroller extends BaseContract {
     _setMarketBorrowCaps(
       cTokens: string[],
       newBorrowCaps: BigNumberish[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    _setMarketSupplyCaps(
-      cTokens: string[],
       newSupplyCaps: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -3763,21 +3671,11 @@ export class Comptroller extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setIsMarketComped(
-      cToken_: string,
-      isComped_: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     setIsPrivateMarket(
       cToken_: string,
       isPrivate_: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setOnlyWhitelistedCanBorrow(
-      cToken_: string,
       onlyWhitelistedCanBorrow_: boolean,
+      isComped_: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
