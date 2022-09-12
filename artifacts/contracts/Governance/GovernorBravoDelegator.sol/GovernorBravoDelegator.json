@@ -1,0 +1,403 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "GovernorBravoDelegator",
+  "sourceName": "contracts/Governance/GovernorBravoDelegator.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "timelock_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "comp_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "admin_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "implementation_",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "votingPeriod_",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "votingDelay_",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "proposalThreshold_",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "oldAdmin",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "newAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "NewAdmin",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "oldImplementation",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "newImplementation",
+          "type": "address"
+        }
+      ],
+      "name": "NewImplementation",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "oldPendingAdmin",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "newPendingAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "NewPendingAdmin",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        }
+      ],
+      "name": "ProposalCanceled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "proposer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address[]",
+          "name": "targets",
+          "type": "address[]"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256[]",
+          "name": "values",
+          "type": "uint256[]"
+        },
+        {
+          "indexed": false,
+          "internalType": "string[]",
+          "name": "signatures",
+          "type": "string[]"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes[]",
+          "name": "calldatas",
+          "type": "bytes[]"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "startBlock",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "endBlock",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "description",
+          "type": "string"
+        }
+      ],
+      "name": "ProposalCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        }
+      ],
+      "name": "ProposalExecuted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "eta",
+          "type": "uint256"
+        }
+      ],
+      "name": "ProposalQueued",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "oldProposalThreshold",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newProposalThreshold",
+          "type": "uint256"
+        }
+      ],
+      "name": "ProposalThresholdSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "voter",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "proposalId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "support",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "votes",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "name": "VoteCast",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "oldVotingDelay",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newVotingDelay",
+          "type": "uint256"
+        }
+      ],
+      "name": "VotingDelaySet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "oldVotingPeriod",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newVotingPeriod",
+          "type": "uint256"
+        }
+      ],
+      "name": "VotingPeriodSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "expiration",
+          "type": "uint256"
+        }
+      ],
+      "name": "WhitelistAccountExpirationSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "oldGuardian",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "newGuardian",
+          "type": "address"
+        }
+      ],
+      "name": "WhitelistGuardianSet",
+      "type": "event"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "fallback"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "implementation_",
+          "type": "address"
+        }
+      ],
+      "name": "_setImplementation",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "admin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "implementation",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pendingAdmin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b506040516106dc3803806106dc83398101604081905261002f916102c5565b600080546001600160a01b031916331790556040516001600160a01b03888116602483015287166044820152606481018490526084810183905260a481018290526100ac90859060c40160408051601f198184030181529190526020810180516001600160e01b0390811663344fe42d60e21b179091526100e216565b6100b584610158565b5050600080546001600160a01b0319166001600160a01b0394909416939093179092555061037192505050565b600080836001600160a01b0316836040516100fd9190610336565b600060405180830381855af49150503d8060008114610138576040519150601f19603f3d011682016040523d82523d6000602084013e61013d565b606091505b50915091506000821415610152573d60208201fd5b50505050565b6000546001600160a01b031633146101cb5760405162461bcd60e51b815260206004820152603660248201526000805160206106bc83398151915260448201527f656d656e746174696f6e3a2061646d696e206f6e6c790000000000000000000060648201526084015b60405180910390fd5b6001600160a01b0381166102485760405162461bcd60e51b815260206004820152604a60248201526000805160206106bc83398151915260448201527f656d656e746174696f6e3a20696e76616c696420696d706c656d656e746174696064820152696f6e206164647265737360b01b608482015260a4016101c2565b600280546001600160a01b038381166001600160a01b031983168117909355604080519190921680825260208201939093527fd604de94d45953f9138079ec1b82d533cb2160c906d1076d1f7ed54befbca97a910160405180910390a15050565b80516001600160a01b03811681146102c057600080fd5b919050565b600080600080600080600060e0888a0312156102e057600080fd5b6102e9886102a9565b96506102f7602089016102a9565b9550610305604089016102a9565b9450610313606089016102a9565b93506080880151925060a0880151915060c0880151905092959891949750929550565b6000825160005b81811015610357576020818601810151858301520161033d565b81811115610366576000828501525b509190910192915050565b61033c806103806000396000f3fe60806040526004361061003f5760003560e01c806326782247146100ba5780635c60da1b146100f6578063bb913f4114610116578063f851a44014610138575b6002546040516000916001600160a01b03169061005f90839036906102c6565b600060405180830381855af49150503d806000811461009a576040519150601f19603f3d011682016040523d82523d6000602084013e61009f565b606091505b505090506040513d6000823e8180156100b6573d82f35b3d82fd5b3480156100c657600080fd5b506001546100da906001600160a01b031681565b6040516001600160a01b03909116815260200160405180910390f35b34801561010257600080fd5b506002546100da906001600160a01b031681565b34801561012257600080fd5b506101366101313660046102d6565b610158565b005b34801561014457600080fd5b506000546100da906001600160a01b031681565b6000546001600160a01b031633146101d65760405162461bcd60e51b815260206004820152603660248201527f476f7665726e6f72427261766f44656c656761746f723a3a5f736574496d706c604482015275656d656e746174696f6e3a2061646d696e206f6e6c7960501b60648201526084015b60405180910390fd5b6001600160a01b0381166102655760405162461bcd60e51b815260206004820152604a60248201527f476f7665726e6f72427261766f44656c656761746f723a3a5f736574496d706c60448201527f656d656e746174696f6e3a20696e76616c696420696d706c656d656e746174696064820152696f6e206164647265737360b01b608482015260a4016101cd565b600280546001600160a01b038381166001600160a01b031983168117909355604080519190921680825260208201939093527fd604de94d45953f9138079ec1b82d533cb2160c906d1076d1f7ed54befbca97a910160405180910390a15050565b8183823760009101908152919050565b6000602082840312156102e857600080fd5b81356001600160a01b03811681146102ff57600080fd5b939250505056fea26469706673582212208206836b5e3d692480651dcc95eef7aa5670667022f7ff41a3b351c19aeacf5d64736f6c634300080a0033476f7665726e6f72427261766f44656c656761746f723a3a5f736574496d706c",
+  "deployedBytecode": "0x60806040526004361061003f5760003560e01c806326782247146100ba5780635c60da1b146100f6578063bb913f4114610116578063f851a44014610138575b6002546040516000916001600160a01b03169061005f90839036906102c6565b600060405180830381855af49150503d806000811461009a576040519150601f19603f3d011682016040523d82523d6000602084013e61009f565b606091505b505090506040513d6000823e8180156100b6573d82f35b3d82fd5b3480156100c657600080fd5b506001546100da906001600160a01b031681565b6040516001600160a01b03909116815260200160405180910390f35b34801561010257600080fd5b506002546100da906001600160a01b031681565b34801561012257600080fd5b506101366101313660046102d6565b610158565b005b34801561014457600080fd5b506000546100da906001600160a01b031681565b6000546001600160a01b031633146101d65760405162461bcd60e51b815260206004820152603660248201527f476f7665726e6f72427261766f44656c656761746f723a3a5f736574496d706c604482015275656d656e746174696f6e3a2061646d696e206f6e6c7960501b60648201526084015b60405180910390fd5b6001600160a01b0381166102655760405162461bcd60e51b815260206004820152604a60248201527f476f7665726e6f72427261766f44656c656761746f723a3a5f736574496d706c60448201527f656d656e746174696f6e3a20696e76616c696420696d706c656d656e746174696064820152696f6e206164647265737360b01b608482015260a4016101cd565b600280546001600160a01b038381166001600160a01b031983168117909355604080519190921680825260208201939093527fd604de94d45953f9138079ec1b82d533cb2160c906d1076d1f7ed54befbca97a910160405180910390a15050565b8183823760009101908152919050565b6000602082840312156102e857600080fd5b81356001600160a01b03811681146102ff57600080fd5b939250505056fea26469706673582212208206836b5e3d692480651dcc95eef7aa5670667022f7ff41a3b351c19aeacf5d64736f6c634300080a0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
