@@ -928,7 +928,7 @@ contract Comptroller is
                 CToken(address(0)),
                 0,
                 0,
-                false
+                true
             );
 
         return (uint256(err), liquidity, shortfall);
