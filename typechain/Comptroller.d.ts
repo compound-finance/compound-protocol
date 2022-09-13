@@ -100,7 +100,7 @@ interface ComptrollerInterface extends ethers.utils.Interface {
     "seizeVerify(address,address,address,address,uint256)": FunctionFragment;
     "setCompAddress(address)": FunctionFragment;
     "setImmutableCompAddress()": FunctionFragment;
-    "setIsPrivateMarket(address,bool,bool,bool)": FunctionFragment;
+    "setMarketVariables(address,bool,bool,bool)": FunctionFragment;
     "setTokenBalanceVipThreshold(uint256)": FunctionFragment;
     "setVipNft(address)": FunctionFragment;
     "setWhitelistedUser(address,bool)": FunctionFragment;
@@ -398,7 +398,7 @@ interface ComptrollerInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "setIsPrivateMarket",
+    functionFragment: "setMarketVariables",
     values: [string, boolean, boolean, boolean]
   ): string;
   encodeFunctionData(
@@ -715,7 +715,7 @@ interface ComptrollerInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setIsPrivateMarket",
+    functionFragment: "setMarketVariables",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -1408,7 +1408,7 @@ export class Comptroller extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setIsPrivateMarket(
+    setMarketVariables(
       cToken_: string,
       isPrivate_: boolean,
       onlyWhitelistedCanBorrow_: boolean,
@@ -1865,7 +1865,7 @@ export class Comptroller extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setIsPrivateMarket(
+  setMarketVariables(
     cToken_: string,
     isPrivate_: boolean,
     onlyWhitelistedCanBorrow_: boolean,
@@ -2325,7 +2325,7 @@ export class Comptroller extends BaseContract {
 
     setImmutableCompAddress(overrides?: CallOverrides): Promise<void>;
 
-    setIsPrivateMarket(
+    setMarketVariables(
       cToken_: string,
       isPrivate_: boolean,
       onlyWhitelistedCanBorrow_: boolean,
@@ -3187,7 +3187,7 @@ export class Comptroller extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setIsPrivateMarket(
+    setMarketVariables(
       cToken_: string,
       isPrivate_: boolean,
       onlyWhitelistedCanBorrow_: boolean,
@@ -3671,7 +3671,7 @@ export class Comptroller extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setIsPrivateMarket(
+    setMarketVariables(
       cToken_: string,
       isPrivate_: boolean,
       onlyWhitelistedCanBorrow_: boolean,
