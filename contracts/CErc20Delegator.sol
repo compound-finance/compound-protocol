@@ -347,11 +347,11 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     }
         
     function depositNFT(address _NFTAddress, uint256 _TokenID) override external {
-         delegateToImplementation(abi.encodeWithSignature("depositNFT(address, uint256)", _NFTAddress, _TokenID));
+         delegateToImplementation(abi.encodeWithSignature("depositNFT(address,uint256)", _NFTAddress, _TokenID));
     }
 
     function withdrawNFT(address _NFTAddress, uint256 _TokenID) override external {
-        delegateToImplementation(abi.encodeWithSignature("withdrawNFT(address, uint256)", _NFTAddress, _TokenID));
+        delegateToImplementation(abi.encodeWithSignature("withdrawNFT(address,uint256)", _NFTAddress, _TokenID));
     }
 
 
@@ -438,7 +438,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_) override public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setGlpAddresses(address, address, address)", stakedGLP_, glpRewardRouter_, glpManager_));
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setGlpAddresses(address,address,address)", stakedGLP_, glpRewardRouter_, glpManager_));
         return abi.decode(data, (uint));
     }
 

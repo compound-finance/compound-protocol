@@ -1163,7 +1163,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ComptrollerG7.sol": {
-      "lastModificationDate": 1663014709541,
+      "lastModificationDate": 1663032621050,
       "contentHash": "9c8befa46e01889d1ae81ec69ea41e30",
       "sourceName": "contracts/ComptrollerG7.sol",
       "solcConfig": {
@@ -1207,8 +1207,8 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ComptrollerStorage.sol": {
-      "lastModificationDate": 1663014231103,
-      "contentHash": "0e81f48f02f58ef5b31c495f35f27f21",
+      "lastModificationDate": 1663036495558,
+      "contentHash": "5104b75f0f5c9036c009c2ce11267bce",
       "sourceName": "contracts/ComptrollerStorage.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -1253,7 +1253,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Unitroller.sol": {
-      "lastModificationDate": 1663014709544,
+      "lastModificationDate": 1663032621052,
       "contentHash": "ed53a0e06478bb07b66b055195b7a52d",
       "sourceName": "contracts/Unitroller.sol",
       "solcConfig": {
@@ -1292,8 +1292,8 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Comptroller.sol": {
-      "lastModificationDate": 1663034717453,
-      "contentHash": "8cb5fbfcf109573cada5e59d64bae9c5",
+      "lastModificationDate": 1663036228395,
+      "contentHash": "77647855ea26ca9cf3be9f52aeb9ce5c",
       "sourceName": "contracts/Comptroller.sol",
       "solcConfig": {
         "version": "0.8.10",
