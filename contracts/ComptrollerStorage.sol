@@ -190,4 +190,6 @@ contract ComptrollerV7Storage is ComptrollerV6Storage {
     address public vipNft;
 
     uint256 public tokenBalanceVipThreshold;
+
+    
 }

@@ -1292,8 +1292,8 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Comptroller.sol": {
-      "lastModificationDate": 1663014682064,
-      "contentHash": "433621217fa9faaf7e1ea60c3b0baaa0",
+      "lastModificationDate": 1663034717453,
+      "contentHash": "8cb5fbfcf109573cada5e59d64bae9c5",
       "sourceName": "contracts/Comptroller.sol",
       "solcConfig": {
         "version": "0.8.10",
