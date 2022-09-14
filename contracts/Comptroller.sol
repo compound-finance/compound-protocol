@@ -940,7 +940,7 @@ contract Comptroller is
         view
         returns (bool isVip)
     {
-        if (vipNft == address(0)) {
+        if (vipNft != address(0)) {
             if (IERC721(vipNft).balanceOf(_account) > 0) {
                 return true;
             }

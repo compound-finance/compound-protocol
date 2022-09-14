@@ -28,29 +28,29 @@ async function main() {
   deployments["Comptroller"] = comptroller.address;
   writeFileSync(outputFilePath, JSON.stringify(deployments, null, 2));
 
-  const verifyContract = async (
-    contractName: string,
-    contractAddress: string,
-    constructorArgs: any
-  ) => {
-    await hre.run("verify:verify", {
-      contract: contractName,
-      address: contractAddress,
-      constructorArguments: constructorArgs,
-    });
-  };
+  // const verifyContract = async (
+  //   contractName: string,
+  //   contractAddress: string,
+  //   constructorArgs: any
+  // ) => {
+  //   await hre.run("verify:verify", {
+  //     contract: contractName,
+  //     address: contractAddress,
+  //     constructorArguments: constructorArgs,
+  //   });
+  // };
 
-  await verifyContract(
-    "contracts/Comptroller.sol:Comptroller",
-    comptroller.address,
-    []
-  );
+  // await verifyContract(
+  //   "contracts/Comptroller.sol:Comptroller",
+  //   comptroller.address,
+  //   []
+  // );
 
 }
 
-// main()
-//   .then(() => process.exit(0))
-//   .catch(error => {
-//     console.error(error);
-//     process.exit(1);
-  // });
+main()
+  .then(() => process.exit(0))
+  .catch(error => {
+    console.error(error);
+    process.exit(1);
+  });
