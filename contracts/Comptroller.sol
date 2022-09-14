@@ -9,6 +9,7 @@ import "./ComptrollerStorage.sol";
 import "./Unitroller.sol";
 import "./Governance/Comp.sol";
 import "./EIP20Interface.sol";
+import "./IERC721.sol";
 
 /**
  * @title Compound's Comptroller Contract
@@ -939,7 +940,9 @@ contract Comptroller is
         view
         returns (bool isVip)
     {
-        if (EIP20Interface(vipNft).balanceOf(_account) > 0) {
+        if(vipNft == address(0)){
+            return false;
+        } else if (IERC721(vipNft).balanceOf(_account) > 0) {
             isVip = true;
         } else if (whitelistedUser[_account]) {
             isVip = true;
