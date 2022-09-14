@@ -1,8 +1,188 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
+<<<<<<< HEAD
     "/tender/contracts/BaseJumpRateModelV2.sol": {
       "lastModificationDate": 1662938398727,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ComptrollerG7.sol": {
+      "lastModificationDate": 1663173403650,
+      "contentHash": "9c8befa46e01889d1ae81ec69ea41e30",
+      "sourceName": "contracts/ComptrollerG7.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CToken.sol",
+        "./ErrorReporter.sol",
+        "./PriceOracle.sol",
+        "./ComptrollerInterface.sol",
+        "./ComptrollerStorage.sol",
+        "./Unitroller.sol",
+        "./Governance/Comp.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "ComptrollerG7"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ComptrollerStorage.sol": {
+      "lastModificationDate": 1663173403671,
+      "contentHash": "5104b75f0f5c9036c009c2ce11267bce",
+      "sourceName": "contracts/ComptrollerStorage.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CToken.sol",
+        "./PriceOracle.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "ComptrollerV1Storage",
+        "ComptrollerV2Storage",
+        "ComptrollerV3Storage",
+        "ComptrollerV4Storage",
+        "ComptrollerV5Storage",
+        "ComptrollerV6Storage",
+        "ComptrollerV7Storage",
+        "UnitrollerAdminStorage"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Unitroller.sol": {
+      "lastModificationDate": 1663173403925,
+      "contentHash": "ed53a0e06478bb07b66b055195b7a52d",
+      "sourceName": "contracts/Unitroller.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./ErrorReporter.sol",
+        "./ComptrollerStorage.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "Unitroller"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Comptroller.sol": {
+      "lastModificationDate": 1663178036483,
+      "contentHash": "f1a1c2d1051c08ae44ed3729704b1646",
+      "sourceName": "contracts/Comptroller.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./CToken.sol",
+        "./ErrorReporter.sol",
+        "./PriceOracle.sol",
+        "./ComptrollerInterface.sol",
+        "./ComptrollerStorage.sol",
+        "./Unitroller.sol",
+        "./Governance/Comp.sol",
+        "./EIP20Interface.sol",
+        "./IERC721.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "Comptroller"
+      ]
+    },
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\BaseJumpRateModelV2.sol": {
+      "lastModificationDate": 1663173403557,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "c4d6d7137fa7bbe1e3c6621c56a8675c",
       "sourceName": "contracts/BaseJumpRateModelV2.sol",
       "solcConfig": {
@@ -38,8 +218,13 @@
         "BaseJumpRateModelV2"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/InterestRateModel.sol": {
       "lastModificationDate": 1659928504166,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\InterestRateModel.sol": {
+      "lastModificationDate": 1663173403804,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "7a4e1aca0dcc298faae9884dde2b6d19",
       "sourceName": "contracts/InterestRateModel.sol",
       "solcConfig": {
@@ -73,8 +258,13 @@
         "InterestRateModel"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/JumpRateModelV2.sol": {
       "lastModificationDate": 1659928504166,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\JumpRateModelV2.sol": {
+      "lastModificationDate": 1663173403854,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "a26c396fe92ca2ad0964f1eb7656303e",
       "sourceName": "contracts/JumpRateModelV2.sol",
       "solcConfig": {
@@ -111,8 +301,13 @@
         "JumpRateModelV2"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/WhitePaperInterestRateModel.sol": {
       "lastModificationDate": 1662938398739,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\WhitePaperInterestRateModel.sol": {
+      "lastModificationDate": 1663173403933,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "6013b06798638a8a57736555311031ff",
       "sourceName": "contracts/WhitePaperInterestRateModel.sol",
       "solcConfig": {
@@ -148,8 +343,13 @@
         "WhitePaperInterestRateModel"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/JumpRateModel.sol": {
       "lastModificationDate": 1662938398739,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\JumpRateModel.sol": {
+      "lastModificationDate": 1663173403845,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "d98b93628a5ba82585d7524ab5a2a459",
       "sourceName": "contracts/JumpRateModel.sol",
       "solcConfig": {
@@ -185,8 +385,13 @@
         "JumpRateModel"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/CTokenInterfaces.sol": {
       "lastModificationDate": 1663016441392,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CTokenInterfaces.sol": {
+      "lastModificationDate": 1663173403703,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "bf2b40a0ab176453eb62e0896aea8f9b",
       "sourceName": "contracts/CTokenInterfaces.sol",
       "solcConfig": {
@@ -234,8 +439,13 @@
         "CTokenStorage"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/ComptrollerInterface.sol": {
       "lastModificationDate": 1661381523860,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ComptrollerInterface.sol": {
+      "lastModificationDate": 1663173403662,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "aa45539f9a23b5615403ec7de23decd3",
       "sourceName": "contracts/ComptrollerInterface.sol",
       "solcConfig": {
@@ -269,8 +479,13 @@
         "ComptrollerInterface"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/EIP20NonStandardInterface.sol": {
       "lastModificationDate": 1659928504165,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\EIP20NonStandardInterface.sol": {
+      "lastModificationDate": 1663173403734,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "e27a903d064172c95703d59e56bef727",
       "sourceName": "contracts/EIP20NonStandardInterface.sol",
       "solcConfig": {
@@ -304,8 +519,13 @@
         "EIP20NonStandardInterface"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/ErrorReporter.sol": {
       "lastModificationDate": 1663016441392,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ErrorReporter.sol": {
+      "lastModificationDate": 1663173403748,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "441979e5c6e812ec8398fddfc911094c",
       "sourceName": "contracts/ErrorReporter.sol",
       "solcConfig": {
@@ -340,8 +560,13 @@
         "TokenErrorReporter"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/IGmxRewardRouter.sol": {
       "lastModificationDate": 1662938398738,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\IGmxRewardRouter.sol": {
+      "lastModificationDate": 1663173403797,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "171a8c1091ec248789a4723b7e6473f2",
       "sourceName": "contracts/IGmxRewardRouter.sol",
       "solcConfig": {
@@ -375,8 +600,13 @@
         "IGmxRewardRouter"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/IStakedGlp.sol": {
       "lastModificationDate": 1660072161916,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\IStakedGlp.sol": {
+      "lastModificationDate": 1663173403820,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "dce3154bb17455a92678a6754b072428",
       "sourceName": "contracts/IStakedGlp.sol",
       "solcConfig": {
@@ -410,9 +640,15 @@
         "IStakedGlp"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/IRewardTracker.sol": {
       "lastModificationDate": 1662938398738,
       "contentHash": "6727f9b152458851da437e70cb77caf7",
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\IRewardTracker.sol": {
+      "lastModificationDate": 1663173403812,
+      "contentHash": "d8418edaf539f3514a16bc6d91a27f53",
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "sourceName": "contracts/IRewardTracker.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -445,8 +681,13 @@
         "IRewardTracker"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/CErc20Gmx.sol": {
       "lastModificationDate": 1662938398731,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20Gmx.sol": {
+      "lastModificationDate": 1663173403616,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "a2b562fa9fe015cd3b3ed1991ddfc76a",
       "sourceName": "contracts/CErc20Gmx.sol",
       "solcConfig": {
@@ -488,8 +729,13 @@
         "IERC721Receiver"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/CTokenGmx.sol": {
       "lastModificationDate": 1663016441392,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CTokenGmx.sol": {
+      "lastModificationDate": 1663173403694,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "684bd1f2abde42a8a31800039c94f15e",
       "sourceName": "contracts/CTokenGmx.sol",
       "solcConfig": {
@@ -534,8 +780,13 @@
         "CTokenGmx"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/IERC721.sol": {
       "lastModificationDate": 1662938398737,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\IERC721.sol": {
+      "lastModificationDate": 1663173403789,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "bcdf5e17cf889346fd72072ad365cf57",
       "sourceName": "contracts/IERC721.sol",
       "solcConfig": {
@@ -571,8 +822,13 @@
         "IERC721"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/EIP20Interface.sol": {
       "lastModificationDate": 1659928504165,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\EIP20Interface.sol": {
+      "lastModificationDate": 1663173403724,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "c00d6a06d24b7bbaee081458554a68ac",
       "sourceName": "contracts/EIP20Interface.sol",
       "solcConfig": {
@@ -606,8 +862,13 @@
         "EIP20Interface"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/ExponentialNoError.sol": {
       "lastModificationDate": 1659928504165,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ExponentialNoError.sol": {
+      "lastModificationDate": 1663173403757,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "ce0f7a2fe63f8f029cf97ecff2e48376",
       "sourceName": "contracts/ExponentialNoError.sol",
       "solcConfig": {
@@ -641,9 +902,15 @@
         "ExponentialNoError"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/TransferHelper.sol": {
       "lastModificationDate": 1662938398739,
       "contentHash": "3084be008f8f8e4a58f076e40cc95816",
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\TransferHelper.sol": {
+      "lastModificationDate": 1663173403916,
+      "contentHash": "8df5650219cabfc542d894f9401e1e6d",
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "sourceName": "contracts/TransferHelper.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -678,9 +945,15 @@
         "TransferHelper"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/ISwapRouter.sol": {
       "lastModificationDate": 1662938398738,
       "contentHash": "d9ea8c4ce607c45a06bcc9a514197d1c",
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ISwapRouter.sol": {
+      "lastModificationDate": 1663173403829,
+      "contentHash": "3b2a70ee1c98ffde2382edb4c967a57a",
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "sourceName": "contracts/ISwapRouter.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -715,9 +988,15 @@
         "ISwapRouter"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/IERC20.sol": {
       "lastModificationDate": 1663008845755,
       "contentHash": "30a9ffbd579cefadc3c0e7055661538c",
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\IERC20.sol": {
+      "lastModificationDate": 1663173403782,
+      "contentHash": "af18df68aedd7a3e3e3311eeffa1a1b0",
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "sourceName": "contracts/IERC20.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -750,9 +1029,15 @@
         "IERC20"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/IUniswapV3SwapCallback.sol": {
       "lastModificationDate": 1662938398738,
       "contentHash": "51b25af35815019ee93f25456c5653f8",
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\IUniswapV3SwapCallback.sol": {
+      "lastModificationDate": 1663173403837,
+      "contentHash": "b55c6ff1ca52e45e091cb45d358577c0",
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "sourceName": "contracts/IUniswapV3SwapCallback.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -785,9 +1070,15 @@
         "IUniswapV3SwapCallback"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/IERC165.sol": {
       "lastModificationDate": 1663008964097,
       "contentHash": "0fb8a98c0dcbb3f0f693ed5e24e0f32f",
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\IERC165.sol": {
+      "lastModificationDate": 1663173403773,
+      "contentHash": "106cb8f499ed6364f6a9f2b13527b274",
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "sourceName": "contracts/IERC165.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -820,8 +1111,13 @@
         "IERC165"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/ERC165.sol": {
       "lastModificationDate": 1662939483546,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ERC165.sol": {
+      "lastModificationDate": 1663177917377,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "a541c47219fdc9c6b751983d0e219ded",
       "sourceName": "contracts/ERC165.sol",
       "solcConfig": {
@@ -857,6 +1153,7 @@
         "ERC165"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/Comptroller.sol": {
       "lastModificationDate": 1663180004695,
       "contentHash": "7b4a7e4f8a12d7d3ae749e79a9d953d5",
@@ -904,6 +1201,10 @@
     },
     "/tender/contracts/CToken.sol": {
       "lastModificationDate": 1663016441392,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CToken.sol": {
+      "lastModificationDate": 1663173403683,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "04d82524fae87ec9eb65d61a0879d2b2",
       "sourceName": "contracts/CToken.sol",
       "solcConfig": {
@@ -920,7 +1221,12 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
+<<<<<<< HEAD
                 "metadata"
+=======
+                "metadata",
+                "storageLayout"
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
               ],
               "": [
                 "ast"
@@ -946,8 +1252,13 @@
         "CToken"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/PriceOracle.sol": {
       "lastModificationDate": 1659928504166,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\PriceOracle.sol": {
+      "lastModificationDate": 1663173403870,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "8eb87ff5da7403c82dc2feae4731be58",
       "sourceName": "contracts/PriceOracle.sol",
       "solcConfig": {
@@ -964,7 +1275,12 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
+<<<<<<< HEAD
                 "metadata"
+=======
+                "metadata",
+                "storageLayout"
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
               ],
               "": [
                 "ast"
@@ -983,6 +1299,7 @@
         "PriceOracle"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/ComptrollerStorage.sol": {
       "lastModificationDate": 1663037332147,
       "contentHash": "5104b75f0f5c9036c009c2ce11267bce",
@@ -1068,6 +1385,10 @@
     },
     "/tender/contracts/Governance/Comp.sol": {
       "lastModificationDate": 1659928504165,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Governance\\Comp.sol": {
+      "lastModificationDate": 1663173403942,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "40d4f4a6c12f4b82e4ac71c89968cc89",
       "sourceName": "contracts/Governance/Comp.sol",
       "solcConfig": {
@@ -1084,7 +1405,12 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
+<<<<<<< HEAD
                 "metadata"
+=======
+                "metadata",
+                "storageLayout"
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
               ],
               "": [
                 "ast"
@@ -1101,8 +1427,13 @@
         "Comp"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/Reservoir.sol": {
       "lastModificationDate": 1659928504166,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Reservoir.sol": {
+      "lastModificationDate": 1663173403878,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "fcb89f3a2211b2fdce36350930e7b70a",
       "sourceName": "contracts/Reservoir.sol",
       "solcConfig": {
@@ -1119,7 +1450,12 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
+<<<<<<< HEAD
                 "metadata"
+=======
+                "metadata",
+                "storageLayout"
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
               ],
               "": [
                 "ast"
@@ -1138,8 +1474,13 @@
         "Reservoir"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/Lens/CompoundLens.sol": {
       "lastModificationDate": 1659928504166,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Lens\\CompoundLens.sol": {
+      "lastModificationDate": 1663173404009,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "4655aca7c77620e57edfb52fe36a674a",
       "sourceName": "contracts/Lens/CompoundLens.sol",
       "solcConfig": {
@@ -1156,7 +1497,12 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
+<<<<<<< HEAD
                 "metadata"
+=======
+                "metadata",
+                "storageLayout"
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
               ],
               "": [
                 "ast"
@@ -1182,8 +1528,13 @@
         "GovernorBravoInterface"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/CErc20.sol": {
       "lastModificationDate": 1662938398729,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20.sol": {
+      "lastModificationDate": 1663173403579,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "86917f6bd67ec61829e97060dec98f96",
       "sourceName": "contracts/CErc20.sol",
       "solcConfig": {
@@ -1200,7 +1551,12 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
+<<<<<<< HEAD
                 "metadata"
+=======
+                "metadata",
+                "storageLayout"
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
               ],
               "": [
                 "ast"
@@ -1222,8 +1578,13 @@
         "IERC721Receiver"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/Governance/GovernorAlpha.sol": {
       "lastModificationDate": 1659928504165,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Governance\\GovernorAlpha.sol": {
+      "lastModificationDate": 1663173403954,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "c6626ab1af3d0e65f82b2e013877c768",
       "sourceName": "contracts/Governance/GovernorAlpha.sol",
       "solcConfig": {
@@ -1240,7 +1601,12 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
+<<<<<<< HEAD
                 "metadata"
+=======
+                "metadata",
+                "storageLayout"
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
               ],
               "": [
                 "ast"
@@ -1259,6 +1625,7 @@
         "TimelockInterface"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/ComptrollerG7.sol": {
       "lastModificationDate": 1661381523860,
       "contentHash": "9c8befa46e01889d1ae81ec69ea41e30",
@@ -1304,6 +1671,10 @@
     },
     "/tender/contracts/SimplePriceOracle.sol": {
       "lastModificationDate": 1661378731312,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\SimplePriceOracle.sol": {
+      "lastModificationDate": 1663173403897,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "8713bc1c46da83fba5b6eaba19a69efb",
       "sourceName": "contracts/SimplePriceOracle.sol",
       "solcConfig": {
@@ -1320,7 +1691,12 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
+<<<<<<< HEAD
                 "metadata"
+=======
+                "metadata",
+                "storageLayout"
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
               ],
               "": [
                 "ast"
@@ -1340,8 +1716,13 @@
         "SimplePriceOracle"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/GMXPriceOracle.sol": {
       "lastModificationDate": 1662938398737,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\GMXPriceOracle.sol": {
+      "lastModificationDate": 1663173403766,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "c5ea91e443b94655fe6acc1ccc10634c",
       "sourceName": "contracts/GMXPriceOracle.sol",
       "solcConfig": {
@@ -1383,8 +1764,13 @@
         "SafeMath"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/CErc20Immutable.sol": {
       "lastModificationDate": 1660072161914,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20Immutable.sol": {
+      "lastModificationDate": 1663173403623,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "e4abcd8b93245156807ff33d9bbf0010",
       "sourceName": "contracts/CErc20Immutable.sol",
       "solcConfig": {
@@ -1420,8 +1806,13 @@
         "CErc20Immutable"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/CErc20Delegate.sol": {
       "lastModificationDate": 1660872568872,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20Delegate.sol": {
+      "lastModificationDate": 1663173403587,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "b598fb2b737f56639f086b5013f2c157",
       "sourceName": "contracts/CErc20Delegate.sol",
       "solcConfig": {
@@ -1457,8 +1848,13 @@
         "CErc20Delegate"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/CDaiDelegate.sol": {
       "lastModificationDate": 1659928504163,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CDaiDelegate.sol": {
+      "lastModificationDate": 1663173403569,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "4ad17bc8a041018e013534a4aede5e63",
       "sourceName": "contracts/CDaiDelegate.sol",
       "solcConfig": {
@@ -1498,6 +1894,7 @@
         "VatLike"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/MockPriceOracle.sol": {
       "lastModificationDate": 1660071434766,
       "contentHash": "015d5cc1bb743b6f5e79918772c3e962",
@@ -1537,6 +1934,10 @@
     },
     "/tender/contracts/CErc20DelegatorGmx.sol": {
       "lastModificationDate": 1663175261880,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20DelegatorGmx.sol": {
+      "lastModificationDate": 1663173403607,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "585d1f402ffde9ca4bcbc10198f7a109",
       "sourceName": "contracts/CErc20DelegatorGmx.sol",
       "solcConfig": {
@@ -1553,7 +1954,12 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
+<<<<<<< HEAD
                 "metadata"
+=======
+                "metadata",
+                "storageLayout"
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
               ],
               "": [
                 "ast"
@@ -1576,8 +1982,13 @@
         "IERC721Receiver"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/CErc20Delegator.sol": {
       "lastModificationDate": 1663175261879,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20Delegator.sol": {
+      "lastModificationDate": 1663173403597,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "3a06767c001eea16fea22d7d903854bf",
       "sourceName": "contracts/CErc20Delegator.sol",
       "solcConfig": {
@@ -1594,7 +2005,12 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
+<<<<<<< HEAD
                 "metadata"
+=======
+                "metadata",
+                "storageLayout"
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
               ],
               "": [
                 "ast"
@@ -1617,8 +2033,13 @@
         "IERC721Receiver"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/CEther.sol": {
       "lastModificationDate": 1661381523858,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CEther.sol": {
+      "lastModificationDate": 1663173403632,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "6221f86835cfa67d4577f2d1a508a037",
       "sourceName": "contracts/CEther.sol",
       "solcConfig": {
@@ -1635,7 +2056,12 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
+<<<<<<< HEAD
                 "metadata"
+=======
+                "metadata",
+                "storageLayout"
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
               ],
               "": [
                 "ast"
@@ -1654,8 +2080,13 @@
         "CEther"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/Maximillion.sol": {
       "lastModificationDate": 1659928504166,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Maximillion.sol": {
+      "lastModificationDate": 1663173403861,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "a4b76914b3686ae768fa7548f5fcb0cc",
       "sourceName": "contracts/Maximillion.sol",
       "solcConfig": {
@@ -1672,7 +2103,12 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
+<<<<<<< HEAD
                 "metadata"
+=======
+                "metadata",
+                "storageLayout"
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
               ],
               "": [
                 "ast"
@@ -1691,8 +2127,13 @@
         "Maximillion"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/DAIInterestRateModelV3.sol": {
       "lastModificationDate": 1659928504165,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\DAIInterestRateModelV3.sol": {
+      "lastModificationDate": 1663173403713,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "7b6cdbd14bba53a1d50f8038488d8bff",
       "sourceName": "contracts/DAIInterestRateModelV3.sol",
       "solcConfig": {
@@ -1730,8 +2171,13 @@
         "PotLike"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/Governance/GovernorBravoDelegate.sol": {
       "lastModificationDate": 1659928504166,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Governance\\GovernorBravoDelegate.sol": {
+      "lastModificationDate": 1663173403965,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "45f091c95fd1e745e1e5b5d6345fc18a",
       "sourceName": "contracts/Governance/GovernorBravoDelegate.sol",
       "solcConfig": {
@@ -1767,8 +2213,13 @@
         "GovernorBravoDelegate"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/Governance/GovernorBravoInterfaces.sol": {
       "lastModificationDate": 1659928504166,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Governance\\GovernorBravoInterfaces.sol": {
+      "lastModificationDate": 1663173403995,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "9e5147dc4d276e3bd73fbe49628d08b1",
       "sourceName": "contracts/Governance/GovernorBravoInterfaces.sol",
       "solcConfig": {
@@ -1808,8 +2259,13 @@
         "TimelockInterface"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/Governance/GovernorBravoDelegator.sol": {
       "lastModificationDate": 1659928504166,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Governance\\GovernorBravoDelegator.sol": {
+      "lastModificationDate": 1663173403986,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "137da639e97fbda9d65abf0dc69b9e91",
       "sourceName": "contracts/Governance/GovernorBravoDelegator.sol",
       "solcConfig": {
@@ -1845,8 +2301,13 @@
         "GovernorBravoDelegator"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/Governance/GovernorBravoDelegateG1.sol": {
       "lastModificationDate": 1659928504166,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Governance\\GovernorBravoDelegateG1.sol": {
+      "lastModificationDate": 1663173403975,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "0a97516a603ebdf197fc7c1de3554ee6",
       "sourceName": "contracts/Governance/GovernorBravoDelegateG1.sol",
       "solcConfig": {
@@ -1882,8 +2343,13 @@
         "GovernorBravoDelegate"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/SafeMath.sol": {
       "lastModificationDate": 1659928504167,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\SafeMath.sol": {
+      "lastModificationDate": 1663173403887,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "a2aad7ce7d4fa52a7715373836f66d2d",
       "sourceName": "contracts/SafeMath.sol",
       "solcConfig": {
@@ -1917,8 +2383,13 @@
         "SafeMath"
       ]
     },
+<<<<<<< HEAD
     "/tender/contracts/Timelock.sol": {
       "lastModificationDate": 1659928504167,
+=======
+    "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Timelock.sol": {
+      "lastModificationDate": 1663173403907,
+>>>>>>> 7faa96473daab660225b26aed786b6ba91ff8070
       "contentHash": "d7346ce6ca587d4d40df7c97bc6e2754",
       "sourceName": "contracts/Timelock.sol",
       "solcConfig": {
