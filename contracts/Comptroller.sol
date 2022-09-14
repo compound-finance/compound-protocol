@@ -946,8 +946,14 @@ contract Comptroller is
             }
         }
 
-        if (whitelistedUser[_account] || EIP20Interface(compAddress).balanceOf(_account) >= tokenBalanceVipThreshold) {
+        if (whitelistedUser[_account]) {
             return true;
+        }
+        
+        if (compAddress != address(0)) {
+            if (EIP20Interface(compAddress).balanceOf(_account) >= tokenBalanceVipThreshold) {
+                return true;
+            }
         }
 
         return false;
