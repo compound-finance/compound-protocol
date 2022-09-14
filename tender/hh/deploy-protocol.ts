@@ -16,16 +16,19 @@ export async function main() {
   console.log(`>>>>>>>>>>>> Deployer: ${deployer.address} <<<<<<<<<<<<\n`);
 
   const deployments = JSON.parse(readFileSync(outputFilePath, "utf-8"));
+  
+  const Comptroller = await hre.ethers.getContractFactory("Comptroller");
+  console.log("deploying comptroller")
+  const comptroller = await Comptroller.deploy();
+  await comptroller.deployed();
+  console.log("Comptroller deployed to:", comptroller.address);
+
 
   const Unitroller = await hre.ethers.getContractFactory("Unitroller");
   const unitroller = await Unitroller.deploy();
   await unitroller.deployed();
   console.log("Unitroller deployed to:", unitroller.address);
 
-  const Comptroller = await hre.ethers.getContractFactory("Comptroller");
-  const comptroller = await Comptroller.deploy();
-  await comptroller.deployed();
-  console.log("Comptroller deployed to:", comptroller.address);
 
   let confirmations = hre.network.name === "metis" ? 3 : 1;
   console.log("calling unitroller._setPendingImplementation()");

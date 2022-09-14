@@ -12,7 +12,7 @@ import { main as DeployCeth } from "./deploy-cether";
 // import { main as DeployIrModel } from "./deploy-ir-model";
 // import { main as DeployCToken } from "./deploy-ctoken";
 // import { main as SetMockOraclePrice } from "./set-mock-oracle-price";
-// import { main as SetCollateralFactor } from "./set-cf";
+import { main as SetCollateralFactor } from "./set-cf";
 
 
 const outputFilePath = `./deployments/${hre.network.name}.json`;
@@ -35,17 +35,15 @@ async function main() {
   // await DeployMockOracle();
 
   console.log("deploy protocol")
-  await DeployProtocol();
+  // await DeployProtocol();
 
   // console.log("deploying GLPOracle")
-  // await GLPOracle();
+  await GLPOracle();
 
   // await DeployLens();
 
   // console.log("Deploy Jump Model")
-  // await DeployJumpModel(ADMIN_PUBLIC_KEY);
-  // await DeployIrModel();
-
+  // await DeployJumpModel();
 
   
   // console.log("deploying CETH")

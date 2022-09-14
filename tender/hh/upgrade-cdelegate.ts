@@ -13,7 +13,7 @@ export async function main() {
   );
 
   console.log("setting implementation on", address, "to", implementation)
-
+  
   await delegator._setImplementation(implementation, allowResign, data)
 
   console.log("Set implementation")

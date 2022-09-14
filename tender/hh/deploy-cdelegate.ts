@@ -26,20 +26,6 @@ export async function main() {
       console.error(e);
     }
 
-    // upgrade
-    // const address = "0x03FCED65cdde966555dB96bF2A5E9A97564dBe05"
-    // const implementation = deployedCErc20Delegate.address
-    // const allowResign = true
-    // const data = Buffer.from([0x0])  
-    // const delegator = await hre.ethers.getContractAt(
-    //   "CErc20Delegator",
-    //   address
-    // );
-    // console.log("setting implementation on", address, "to", implementation)
-    // await delegator._setImplementation(implementation, allowResign, data)
-    // console.log("Set implementation")
-
-
     // Save to output
     deployments["delegate"]  = deployedCErc20Delegate.address
     writeFileSync(outputFilePath, JSON.stringify(deployments, null, 2));

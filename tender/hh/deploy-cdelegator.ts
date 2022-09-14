@@ -7,6 +7,11 @@ import {CTOKENS} from "./CTOKENS"
 const outputFilePath = `./deployments/${hre.network.name}.json`;
 
 
+const stakedGLPAddress = "0x2F546AD4eDD93B956C8999Be404cdCAFde3E89AE"
+const glpRewardRouterAddress = "0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1"
+const glpManagerAddress = "0x321f653eed006ad1c29d174e17d96351bde22649"
+
+
 export async function main() {
   const [deployer] = await hre.ethers.getSigners();
   console.log(`>>>>>>>>>>>> Deployer: ${deployer.address} <<<<<<<<<<<<\n`);
@@ -92,18 +97,26 @@ for (let i = 0; i < CTOKENS.length; i++) {
     }
 
     if (token.isGLP) {
-        console.log("calling ctoken._setStakedGlpAddress()");
-        await delegator._setStakedGlpAddress("0x2F546AD4eDD93B956C8999Be404cdCAFde3E89AE"),
-        console.log("calling ctoken._setRewardRouterAddress()");
-        await delegator._setRewardRouterAddress("0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1")
+      console.log("calling ctoken._setGlpAddresses()");
+      await delegator._setGlpAddresses(stakedGLPAddress, glpRewardRouterAddress, glpManagerAddress);
     }
 
-
     console.log("calling unitrollerProxy._supportMarket()");
-    await unitrollerProxy._supportMarket(delegator.address, true, token.isGLP === true);
 
-    console.log("calling unitrollerProxy._setCollateralFactor()");
-    await unitrollerProxy._setCollateralFactor(delegator.address, token.collateralFactor);
+    let isPrivate = token.isGLP === true
+    let isComped = true
+    let onlyWhitelistedBorrow = false
+    await unitrollerProxy._supportMarket(delegator.address, isComped, isPrivate, onlyWhitelistedBorrow);
+
+    console.log("calling unitrollerProxy._setCollateralFactor()")
+    // all the same for now
+    let newCollateralFactorMantissa = token.collateralFactor
+    let newCollateralFactorMantissaVip = token.collateralFactor
+    let newLiquidationThresholdMantissa = token.collateralFactor
+    let newLiquidationThresholdMantissaVip = token.collateralFactor
+
+    await unitrollerProxy._setFactorsAndThresholds(
+      delegator.address, newCollateralFactorMantissa, newCollateralFactorMantissaVip, newLiquidationThresholdMantissa, newLiquidationThresholdMantissaVip);
 
     // Save to output
     deployments[token.symbol] = delegator.address;

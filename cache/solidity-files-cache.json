@@ -1163,7 +1163,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ComptrollerG7.sol": {
-      "lastModificationDate": 1663014709541,
+      "lastModificationDate": 1663032621050,
       "contentHash": "9c8befa46e01889d1ae81ec69ea41e30",
       "sourceName": "contracts/ComptrollerG7.sol",
       "solcConfig": {
@@ -1207,8 +1207,8 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ComptrollerStorage.sol": {
-      "lastModificationDate": 1663014231103,
-      "contentHash": "0e81f48f02f58ef5b31c495f35f27f21",
+      "lastModificationDate": 1663036495558,
+      "contentHash": "5104b75f0f5c9036c009c2ce11267bce",
       "sourceName": "contracts/ComptrollerStorage.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -1253,7 +1253,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Unitroller.sol": {
-      "lastModificationDate": 1663014709544,
+      "lastModificationDate": 1663032621052,
       "contentHash": "ed53a0e06478bb07b66b055195b7a52d",
       "sourceName": "contracts/Unitroller.sol",
       "solcConfig": {
@@ -1292,8 +1292,8 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Comptroller.sol": {
-      "lastModificationDate": 1663034717453,
-      "contentHash": "8cb5fbfcf109573cada5e59d64bae9c5",
+      "lastModificationDate": 1663175021708,
+      "contentHash": "4e30fdda3144c4d354f3114ec74c3196",
       "sourceName": "contracts/Comptroller.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -1327,7 +1327,8 @@
         "./ComptrollerStorage.sol",
         "./Unitroller.sol",
         "./Governance/Comp.sol",
-        "./EIP20Interface.sol"
+        "./EIP20Interface.sol",
+        "./IERC721.sol"
       ],
       "versionPragmas": [
         "^0.8.10"
@@ -1375,8 +1376,8 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20DelegatorGmx.sol": {
-      "lastModificationDate": 1663015027618,
-      "contentHash": "eb631c459475dc79f2b2e523bf36f774",
+      "lastModificationDate": 1663109815914,
+      "contentHash": "585d1f402ffde9ca4bcbc10198f7a109",
       "sourceName": "contracts/CErc20DelegatorGmx.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -1417,8 +1418,8 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20Delegator.sol": {
-      "lastModificationDate": 1663014998621,
-      "contentHash": "06cca09825c41323bf8feb8ad8505f3f",
+      "lastModificationDate": 1663110002628,
+      "contentHash": "3a06767c001eea16fea22d7d903854bf",
       "sourceName": "contracts/CErc20Delegator.sol",
       "solcConfig": {
         "version": "0.8.10",

@@ -6,6 +6,7 @@ node_modules
 .env
 .certora*
 certora_*
+
 coverage/
 coverage.json
 coverageEnv/
@@ -43,3 +44,7 @@ junit.xml
 .saddle_history
 node_modules_tmp
 .idea
+
+typechain/
+artifacts/
+cache/

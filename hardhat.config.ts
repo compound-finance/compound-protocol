@@ -3,6 +3,7 @@ import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
 import "@openzeppelin/hardhat-upgrades";
 import * as tdly from "@tenderly/hardhat-tenderly";
+import "hardhat-contract-sizer";
 
 import { HardhatUserConfig } from "hardhat/config";
 

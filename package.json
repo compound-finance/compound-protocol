@@ -35,6 +35,7 @@
     "ethereum-waffle": "^3.0.0",
     "ethers": "^5.0.0",
     "hardhat": "^2.11.1",
+    "hardhat-contract-sizer": "^2.6.1",
     "jest-diff": "^26.4.2",
     "jest-junit": "^11.1.0",
     "prettier": "^1.19.0",
