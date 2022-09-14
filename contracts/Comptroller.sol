@@ -940,21 +940,21 @@ contract Comptroller is
         view
         returns (bool isVip)
     {
-        if(vipNft == address(0)){
-            return false;
-        } else if (IERC721(vipNft).balanceOf(_account) > 0) {
-            isVip = true;
-        } else if (whitelistedUser[_account]) {
-            isVip = true;
-        } else if (
-            EIP20Interface(compAddress).balanceOf(_account) >=
-            tokenBalanceVipThreshold
-        ) {
-            isVip = true;
-        } else {
-            isVip = false;
+        if (vipNft == address(0)) {
+            if (IERC721(vipNft).balanceOf(_account) > 0) {
+                return true;
+            }
         }
-        return isVip;
+        
+        if (whitelistedUser[_account]) {
+            return true;
+        } 
+        
+        if (EIP20Interface(compAddress).balanceOf(_account) >= tokenBalanceVipThreshold) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
