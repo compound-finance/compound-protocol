@@ -2,10 +2,16 @@ import "@typechain/hardhat";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
 import "@openzeppelin/hardhat-upgrades";
+import * as tdly from "@tenderly/hardhat-tenderly";
 
 import { HardhatUserConfig } from "hardhat/config";
 
 import * as dotenv from "dotenv";
+
+tdly.setup({
+  automaticVerifications: true // automatically verifies contracts !!
+});
+
 dotenv.config({ path: __dirname + "/.env" });
 
 const config: HardhatUserConfig = {
