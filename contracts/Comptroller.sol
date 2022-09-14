@@ -938,23 +938,19 @@ contract Comptroller is
     function getIsAccountVip(address _account)
         public
         view
-        returns (bool isVip)
+        returns (bool)
     {
         if (vipNft == address(0)) {
             if (IERC721(vipNft).balanceOf(_account) > 0) {
                 return true;
             }
         }
-        
-        if (whitelistedUser[_account]) {
+
+        if (whitelistedUser[_account] || EIP20Interface(compAddress).balanceOf(_account) >= tokenBalanceVipThreshold) {
             return true;
-        } 
-        
-        if (EIP20Interface(compAddress).balanceOf(_account) >= tokenBalanceVipThreshold) {
-            return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
