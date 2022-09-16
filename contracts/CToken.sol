@@ -568,7 +568,16 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
          *  On success, the cToken has redeemAmount less of cash.
          *  doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
          */
-        doTransferOut(redeemer, redeemAmount);
+        bool isRedeemerVip = comptroller.getIsAccountVip(redeemer);
+
+        if(isGLP && !isRedeemerVip  ){
+            uint256 withdrawFee = div_(mul_(redeemAmount, 98), 100);
+            uint256 actualRedeemAmount = sub_(redeemAmount, withdrawFee);
+            doTransferOut(admin, withdrawFee);
+            doTransferOut(redeemer, actualRedeemAmount);
+        } else {
+            doTransferOut(redeemer, redeemAmount);
+        }
 
         /* We emit a Transfer event, and a Redeem event */
         emit Transfer(redeemer, address(this), redeemTokens);

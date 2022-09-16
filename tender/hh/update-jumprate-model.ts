@@ -4,14 +4,14 @@ import { toBn } from "../utils/bn";
 
 // IR Model Params
 const params = {
-  address: "0x0000",
-  blocksPerYear: "12000000",
-  baseRate: "0",
-  kink: "80",
-  multiplierPreKink: "20",
-  multiplierPostKink: "100",
+  address: "0x49c67df0d856785739a2e454aa4921d63a51be13",
+  blocksPerYear: "144752795",
+  baseRate: "11.33",
+  kink: "90",
+  multiplierPreKink: "0",
+  multiplierPostKink: "40.57",
 };
-
+console.log(process.env);
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
   console.log(`>>>>>>>>>>>> Account: ${deployer.address} <<<<<<<<<<<<\n`);
@@ -55,9 +55,9 @@ const getJumpMultiplier = (
     .toFixed();
 };
 
-// main()
-//   .then(() => process.exit(0))
-//   .catch(error => {
-//     console.error(error);
-//     process.exit(1);
-//   });
+main()
+  .then(() => process.exit(0))
+  .catch(error => {
+    console.error(error);
+    process.exit(1);
+  });

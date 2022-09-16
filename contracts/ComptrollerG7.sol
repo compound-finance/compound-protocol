@@ -1040,6 +1040,16 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         return uint(Error.NO_ERROR);
     }
 
+
+    function getIsAccountVip(address _account)
+        public
+        view
+        override
+        returns (bool)
+    {
+        return false;
+    }
+
     function _setMintPaused(CToken cToken, bool state) public returns (bool) {
         require(markets[address(cToken)].isListed, "cannot pause a market that is not listed");
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");

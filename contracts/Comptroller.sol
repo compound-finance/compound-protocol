@@ -938,6 +938,7 @@ contract Comptroller is
     function getIsAccountVip(address _account)
         public
         view
+        override
         returns (bool)
     {
         if (vipNft != address(0)) {
