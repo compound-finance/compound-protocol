@@ -134,6 +134,16 @@ contract CTokenStorage {
      */
     uint public totalSupply;
 
+    /**
+     * @notice Withdraw fee for strategy vaults
+     */
+    uint256 public withdrawFee;
+
+    /**
+     * @notice Management fee for strategy vaults
+     */
+    uint256 public managementFee;
+
     // Official record of token balances for each account
     mapping (address => uint) internal accountTokens;
 
@@ -278,6 +288,7 @@ abstract contract CTokenInterface is CTokenStorage {
     function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_) virtual public returns (uint);
     function _signalTransfer(address recipient) virtual public returns (uint);
     function _setAutocompoundRewards(bool autocompound_) virtual public returns (uint);
+    function _setVaultFees(uint256 withdrawFee_, uint256 managementFee_) virtual public returns (uint);
 }
 
 contract CErc20Storage {
