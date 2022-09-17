@@ -6,12 +6,12 @@ import { toBn } from "../utils/bn";
 const params = {
   address: "0x49c67df0d856785739a2e454aa4921d63a51be13",
   blocksPerYear: "144752795",
-  baseRate: "11.33",
+  baseRate: "6.77",
   kink: "90",
   multiplierPreKink: "0",
   multiplierPostKink: "40.57",
 };
-console.log(process.env);
+
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
   console.log(`>>>>>>>>>>>> Account: ${deployer.address} <<<<<<<<<<<<\n`);
@@ -32,7 +32,6 @@ async function main() {
     params.address
   );
   const tx = await jumpRateModelV2.updateJumpRateModel(
-    params.blocksPerYear,
     baseRateWei,
     multiplierWei,
     jumpMultiplierWei,

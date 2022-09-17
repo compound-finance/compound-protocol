@@ -3,6 +3,20 @@ pragma solidity ^0.8.10;
 
 import "./InterestRateModel.sol";
 
+interface IRewardDistributor {
+
+    function rewardToken() external view returns (address);
+    function tokensPerInterval() external view returns (uint256);
+    function pendingRewards() external view returns (uint256);
+    function distribute() external returns (uint256);
+
+}
+
+interface GmxTokenPriceOracle{
+    function getPriceInUSD() external view returns (uint256);
+    function getETHPriceInUSD() external view returns (uint256);
+}
+
 /**
   * @title Logic for Compound's JumpRateModel Contract V2.
   * @author Compound (modified by Dharma Labs, refactored by Arr00)
@@ -42,6 +56,10 @@ abstract contract BaseJumpRateModelV2Gmx is InterestRateModel {
      * @notice The utilization point at which the jump multiplier is applied
      */
     uint public kink;
+
+    IRewardDistributor public gmxDistributor = IRewardDistributor(0x1DE098faF30bD74F22753c28DB17A2560D4F5554);
+
+    GmxTokenPriceOracle public gmxTokenPriceOracle = GmxTokenPriceOracle(0x60E07B25Ba79bf8D40831cdbDA60CF49571c7Ee0);
 
     /**
      * @notice Construct an interest rate model
@@ -86,6 +104,16 @@ abstract contract BaseJumpRateModelV2Gmx is InterestRateModel {
         return borrows * BASE / (cash + borrows - reserves);
     }
 
+    function getGmxAmountTokenPerInterval() internal view returns (uint){
+        
+        uint256 ethPerInterval = gmxDistributor.tokensPerInterval();
+        uint256 ethPrice = gmxTokenPriceOracle.getETHPriceInUSD();
+        uint256 gmxPrice = gmxTokenPriceOracle.getPriceInUSD();
+
+        uint256 gmxPerInterval = (ethPerInterval * ethPrice) / gmxPrice;
+
+    }
+
     /**
      * @notice Calculates the current borrow rate per block, with the error code expected by the market
      * @param cash The amount of cash in the market
@@ -101,9 +129,11 @@ abstract contract BaseJumpRateModelV2Gmx is InterestRateModel {
         } else {
             uint normalRate = ((kink * multiplierPerBlock) / BASE) + baseRatePerBlock;
             uint excessUtil = util - kink;
-            return ((excessUtil * jumpMultiplierPerBlock) / BASE) + normalRate;
+            return ((excessUtil * jumpMultiplierPerBlock) / BASE) + normalRate + getGmxAmountTokenPerInterval();
         }
     }
+
+    
 
     /**
      * @notice Calculates the current supply rate per block

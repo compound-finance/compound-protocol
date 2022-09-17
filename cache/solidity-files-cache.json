@@ -1612,8 +1612,8 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\BaseJumpRateModelV2Gmx.sol": {
-      "lastModificationDate": 1663284970006,
-      "contentHash": "b9b9fe894fb85cb114021ad3ebc72489",
+      "lastModificationDate": 1663435195776,
+      "contentHash": "05d68e8b2eb42198670916c8f98c7301",
       "sourceName": "contracts/BaseJumpRateModelV2Gmx.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -1645,7 +1645,9 @@
         "^0.8.10"
       ],
       "artifacts": [
-        "BaseJumpRateModelV2Gmx"
+        "BaseJumpRateModelV2Gmx",
+        "GmxTokenPriceOracle",
+        "IRewardDistributor"
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\DAIInterestRateModelV3.sol": {
