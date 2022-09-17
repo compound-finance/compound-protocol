@@ -336,8 +336,13 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
                 if(autocompound){
                     glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
                     uint ethBalance =  EIP20Interface(WETH).balanceOf(address(this));
+                    
                     if(ethBalance > 0){
-                        glpRewardRouter.mintAndStakeGlp(WETH, ethBalance, 0, 0);
+                        uint ethManagementFee = mul_(ethBalance, div_(managementFee, 100));
+                        uint ethToCompound = sub_(ethBalance, ethManagementFee);
+                        EIP20Interface(WETH).transfer(admin, ethManagementFee);
+                        glpRewardRouter.mintAndStakeGlp(WETH, ethToCompound, 0, 0);
+                        
                     }
                 } else {
                     glpRewardRouter.handleRewards(true, false, true, true, true, true, false);

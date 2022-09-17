@@ -417,8 +417,10 @@ abstract contract CTokenGmx is CTokenInterface, ExponentialNoError, TokenErrorRe
             if(autocompound){
                 uint ethBalance =  EIP20Interface(WETH).balanceOf(address(this));
                 if(ethBalance > 0){
-                    uint256 amountOfGmxReceived;
-                    amountOfGmxReceived = swapExactInputSingle(ethBalance);
+                    uint ethManagementFee = mul_(ethBalance, div_(managementFee, 100));
+                    uint ethToCompound = sub_(ethBalance, ethManagementFee);
+                    EIP20Interface(WETH).transfer(admin, ethManagementFee);
+                    uint256 amountOfGmxReceived = swapExactInputSingle(ethToCompound);
                     glpRewardRouter.stakeGmx(amountOfGmxReceived);
                 }
             } 
