@@ -105,34 +105,37 @@ describe('Comptroller', () => {
     });
   });
 
-  describe('_setCollateralFactor', () => {
+  describe('_setFactorsAndThresholds', () => {
     const half = etherMantissa(0.5);
+    const liq = etherMantissa(0.9);
+    const halfVip = etherMantissa(0.6);
+    const liqVip = etherMantissa(0.95);
     const one = etherMantissa(1);
 
     it("fails if not called by admin", async () => {
       const cToken = await makeCToken();
       expect(
-        await send(cToken.comptroller, '_setCollateralFactor', [cToken._address, half], {from: accounts[0]})
+        await send(cToken.comptroller, '_setFactorsAndThresholds', [cToken._address, half, halfVip, liq, liqVip], {from: accounts[0]})
       ).toHaveTrollFailure('UNAUTHORIZED', 'SET_COLLATERAL_FACTOR_OWNER_CHECK');
     });
 
     it("fails if asset is not listed", async () => {
       const cToken = await makeCToken();
       expect(
-        await send(cToken.comptroller, '_setCollateralFactor', [cToken._address, half])
+        await send(cToken.comptroller, '_setFactorsAndThresholds', [cToken._address, half, halfVip, liq, liqVip])
       ).toHaveTrollFailure('MARKET_NOT_LISTED', 'SET_COLLATERAL_FACTOR_NO_EXISTS');
     });
 
     it("fails if factor is set without an underlying price", async () => {
       const cToken = await makeCToken({supportMarket: true});
       expect(
-        await send(cToken.comptroller, '_setCollateralFactor', [cToken._address, half])
+        await send(cToken.comptroller, '_setFactorsAndThresholds', [cToken._address, half, halfVip, liq, liqVip])
       ).toHaveTrollFailure('PRICE_ERROR', 'SET_COLLATERAL_FACTOR_WITHOUT_PRICE');
     });
 
     it("succeeds and sets market", async () => {
       const cToken = await makeCToken({supportMarket: true, underlyingPrice: 1});
-      const result = await send(cToken.comptroller, '_setCollateralFactor', [cToken._address, half]);
+      const result = await send(cToken.comptroller, '_setFactorsAndThresholds', [cToken._address, half, halfVip, liq, liqVip]);
       expect(result).toHaveLog('NewCollateralFactor', {
         cToken: cToken._address,
         oldCollateralFactorMantissa: '0',
