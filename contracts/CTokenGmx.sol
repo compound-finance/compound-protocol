@@ -417,8 +417,10 @@ abstract contract CTokenGmx is CTokenInterface, ExponentialNoError, TokenErrorRe
             if(autocompound){
                 uint ethBalance =  EIP20Interface(WETH).balanceOf(address(this));
                 if(ethBalance > 0){
-                    uint256 amountOfGmxReceived;
-                    amountOfGmxReceived = swapExactInputSingle(ethBalance);
+                    uint ethManagementFee = mul_(ethBalance, div_(managementFee, 100));
+                    uint ethToCompound = sub_(ethBalance, ethManagementFee);
+                    EIP20Interface(WETH).transfer(admin, ethManagementFee);
+                    uint256 amountOfGmxReceived = swapExactInputSingle(ethToCompound);
                     glpRewardRouter.stakeGmx(amountOfGmxReceived);
                 }
             } 
@@ -594,13 +596,25 @@ abstract contract CTokenGmx is CTokenInterface, ExponentialNoError, TokenErrorRe
         totalSupply = totalSupply - redeemTokens;
         accountTokens[redeemer] = accountTokens[redeemer] - redeemTokens;
 
+
+
         /*
          * We invoke doTransferOut for the redeemer and the redeemAmount.
          *  Note: The cToken must handle variations between ERC-20 and ETH underlying.
          *  On success, the cToken has redeemAmount less of cash.
          *  doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
          */
-        doTransferOut(redeemer, redeemAmount);
+        
+        bool isRedeemerVip = comptroller.getIsAccountVip(redeemer);
+
+        if(!isRedeemerVip){
+            uint256 withdrawFeeAmount = div_(mul_(redeemAmount, sub_(100, withdrawFee)), 100);
+            uint256 actualRedeemAmount = sub_(redeemAmount, withdrawFee);
+            doTransferOut(admin, withdrawFeeAmount);
+            doTransferOut(redeemer, actualRedeemAmount);
+        } else {
+            doTransferOut(redeemer, redeemAmount);
+        }
 
         /* We emit a Transfer event, and a Redeem event */
         emit Transfer(redeemer, address(this), redeemTokens);
@@ -1197,6 +1211,24 @@ abstract contract CTokenGmx is CTokenInterface, ExponentialNoError, TokenErrorRe
         stakedGLP = stakedGLP_;
         glpRewardRouter = glpRewardRouter_;
         glpManager = glpManager_;
+        return NO_ERROR;
+    }
+
+    /**
+     * @notice Updates the fees for the vault strategy markets
+     * @dev Admin function to update the fees
+     * @param withdrawFee_ fee to withdraw funds
+     * @param managementFee_ fee taken from autocompounded rewards
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _setVaultFees(uint256 withdrawFee_, uint256 managementFee_) override public returns (uint) {
+        // Check caller is admin
+        if (msg.sender != admin) {
+            revert SetStakedGlpAddressOwnerCheck();
+        }
+
+        withdrawFee = withdrawFee_;
+        managementFee = managementFee_;
         return NO_ERROR;
     }
 

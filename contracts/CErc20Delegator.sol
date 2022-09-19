@@ -442,6 +442,18 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
         return abi.decode(data, (uint));
     }
 
+    /**
+     * @notice Updates the fees for the vault strategy markets
+     * @dev Admin function to update the fees
+     * @param withdrawFee_ fee to withdraw funds
+     * @param managementFee_ fee taken from autocompounded rewards
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _setVaultFees(uint256 withdrawFee_, uint256 managementFee_) override public returns (uint){
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setVaultFees(uint256,uint256)", withdrawFee_, managementFee_));
+        return abi.decode(data, (uint));
+    }
+
 
     /**
      * @notice Transfers all esGmx assets to the recipient

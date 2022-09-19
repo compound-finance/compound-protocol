@@ -186,8 +186,8 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CTokenInterfaces.sol": {
-      "lastModificationDate": 1663297082007,
-      "contentHash": "bf2b40a0ab176453eb62e0896aea8f9b",
+      "lastModificationDate": 1663441690504,
+      "contentHash": "4cffca406f3f2c691ead7ccddbcec9db",
       "sourceName": "contracts/CTokenInterfaces.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -446,7 +446,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20Gmx.sol": {
-      "lastModificationDate": 1663297082006,
+      "lastModificationDate": 1663450463963,
       "contentHash": "a2b562fa9fe015cd3b3ed1991ddfc76a",
       "sourceName": "contracts/CErc20Gmx.sol",
       "solcConfig": {
@@ -489,8 +489,8 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CTokenGmx.sol": {
-      "lastModificationDate": 1663297082007,
-      "contentHash": "684bd1f2abde42a8a31800039c94f15e",
+      "lastModificationDate": 1663452008480,
+      "contentHash": "a5a65d9aa5d7f0aee32b87dc134141de",
       "sourceName": "contracts/CTokenGmx.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -903,8 +903,8 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CToken.sol": {
-      "lastModificationDate": 1663344798080,
-      "contentHash": "8448ddaa724af0bcb8a819e5d766a6b4",
+      "lastModificationDate": 1663451995264,
+      "contentHash": "9282a0117b8661680dd985673053c58e",
       "sourceName": "contracts/CToken.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -947,7 +947,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\PriceOracle.sol": {
-      "lastModificationDate": 1663344798085,
+      "lastModificationDate": 1663450464024,
       "contentHash": "8eb87ff5da7403c82dc2feae4731be58",
       "sourceName": "contracts/PriceOracle.sol",
       "solcConfig": {
@@ -984,7 +984,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\ComptrollerStorage.sol": {
-      "lastModificationDate": 1663344798080,
+      "lastModificationDate": 1663450463979,
       "contentHash": "5104b75f0f5c9036c009c2ce11267bce",
       "sourceName": "contracts/ComptrollerStorage.sol",
       "solcConfig": {
@@ -1029,7 +1029,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Unitroller.sol": {
-      "lastModificationDate": 1663344798085,
+      "lastModificationDate": 1663450464041,
       "contentHash": "ed53a0e06478bb07b66b055195b7a52d",
       "sourceName": "contracts/Unitroller.sol",
       "solcConfig": {
@@ -1139,7 +1139,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Lens\\CompoundLens.sol": {
-      "lastModificationDate": 1663344798089,
+      "lastModificationDate": 1663450464059,
       "contentHash": "4655aca7c77620e57edfb52fe36a674a",
       "sourceName": "contracts/Lens/CompoundLens.sol",
       "solcConfig": {
@@ -1183,7 +1183,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20.sol": {
-      "lastModificationDate": 1663344798078,
+      "lastModificationDate": 1663450463951,
       "contentHash": "86917f6bd67ec61829e97060dec98f96",
       "sourceName": "contracts/CErc20.sol",
       "solcConfig": {
@@ -1260,7 +1260,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\SimplePriceOracle.sol": {
-      "lastModificationDate": 1663344798085,
+      "lastModificationDate": 1663450464029,
       "contentHash": "8713bc1c46da83fba5b6eaba19a69efb",
       "sourceName": "contracts/SimplePriceOracle.sol",
       "solcConfig": {
@@ -1298,7 +1298,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\GMXPriceOracle.sol": {
-      "lastModificationDate": 1663344798081,
+      "lastModificationDate": 1663450464001,
       "contentHash": "c5ea91e443b94655fe6acc1ccc10634c",
       "sourceName": "contracts/GMXPriceOracle.sol",
       "solcConfig": {
@@ -1341,7 +1341,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20Immutable.sol": {
-      "lastModificationDate": 1663344798079,
+      "lastModificationDate": 1663450463963,
       "contentHash": "e4abcd8b93245156807ff33d9bbf0010",
       "sourceName": "contracts/CErc20Immutable.sol",
       "solcConfig": {
@@ -1378,7 +1378,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20Delegate.sol": {
-      "lastModificationDate": 1663344798079,
+      "lastModificationDate": 1663450463952,
       "contentHash": "b598fb2b737f56639f086b5013f2c157",
       "sourceName": "contracts/CErc20Delegate.sol",
       "solcConfig": {
@@ -1415,7 +1415,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CDaiDelegate.sol": {
-      "lastModificationDate": 1663344798079,
+      "lastModificationDate": 1663450463951,
       "contentHash": "4ad17bc8a041018e013534a4aede5e63",
       "sourceName": "contracts/CDaiDelegate.sol",
       "solcConfig": {
@@ -1456,8 +1456,8 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20DelegatorGmx.sol": {
-      "lastModificationDate": 1663297082006,
-      "contentHash": "585d1f402ffde9ca4bcbc10198f7a109",
+      "lastModificationDate": 1663441760449,
+      "contentHash": "660ca0bc5ca9f9323deaf8857f9b04b8",
       "sourceName": "contracts/CErc20DelegatorGmx.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -1497,8 +1497,8 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CErc20Delegator.sol": {
-      "lastModificationDate": 1663297082005,
-      "contentHash": "3a06767c001eea16fea22d7d903854bf",
+      "lastModificationDate": 1663441752692,
+      "contentHash": "94a9f4046ff923c634232ca640867f20",
       "sourceName": "contracts/CErc20Delegator.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -1538,7 +1538,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\CEther.sol": {
-      "lastModificationDate": 1663344798079,
+      "lastModificationDate": 1663450463969,
       "contentHash": "6221f86835cfa67d4577f2d1a508a037",
       "sourceName": "contracts/CEther.sol",
       "solcConfig": {
@@ -1575,7 +1575,7 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\Maximillion.sol": {
-      "lastModificationDate": 1663344798085,
+      "lastModificationDate": 1663450464027,
       "contentHash": "a4b76914b3686ae768fa7548f5fcb0cc",
       "sourceName": "contracts/Maximillion.sol",
       "solcConfig": {
@@ -1612,8 +1612,8 @@
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\BaseJumpRateModelV2Gmx.sol": {
-      "lastModificationDate": 1663284970006,
-      "contentHash": "b9b9fe894fb85cb114021ad3ebc72489",
+      "lastModificationDate": 1663435195776,
+      "contentHash": "05d68e8b2eb42198670916c8f98c7301",
       "sourceName": "contracts/BaseJumpRateModelV2Gmx.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -1645,7 +1645,9 @@
         "^0.8.10"
       ],
       "artifacts": [
-        "BaseJumpRateModelV2Gmx"
+        "BaseJumpRateModelV2Gmx",
+        "GmxTokenPriceOracle",
+        "IRewardDistributor"
       ]
     },
     "C:\\Users\\bjkan\\OneDrive\\Desktop\\TenderFi v2\\compound-protocol\\contracts\\DAIInterestRateModelV3.sol": {
