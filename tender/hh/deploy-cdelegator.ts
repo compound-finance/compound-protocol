@@ -109,14 +109,9 @@ for (let i = 0; i < CTOKENS.length; i++) {
     await unitrollerProxy._supportMarket(delegator.address, isComped, isPrivate, onlyWhitelistedBorrow);
 
     console.log("calling unitrollerProxy._setCollateralFactor()")
-    // all the same for now
-    let newCollateralFactorMantissa = token.collateralFactor
-    let newCollateralFactorMantissaVip = token.collateralFactor
-    let newLiquidationThresholdMantissa = token.collateralFactor
-    let newLiquidationThresholdMantissaVip = token.collateralFactor
 
     await unitrollerProxy._setFactorsAndThresholds(
-      delegator.address, newCollateralFactorMantissa, newCollateralFactorMantissaVip, newLiquidationThresholdMantissa, newLiquidationThresholdMantissaVip);
+      delegator.address, token.collateralFactor, token.collateralVIP, token.threshold, token.thresholdVIP);
 
     // Save to output
     deployments[token.symbol] = delegator.address;
