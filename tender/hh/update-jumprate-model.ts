@@ -15,7 +15,7 @@ import { toBn } from "../utils/bn";
 const params = {
   address: "0x9dEB4B6fd089eD03ceFB64549EAEB06e60C0c6BE",
   blocksPerYear: "144752795",
-  baseRate: "11.33",
+  baseRate: "11.333",
   kink: "90",
   multiplierPreKink: "0",
   multiplierPostKink: "40.57",
