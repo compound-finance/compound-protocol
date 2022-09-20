@@ -9,7 +9,7 @@ async function main() {
     "CErc20Delegate",
     cTokenAddress
   );
-
+  let tx = await ctoken.underlying.approve(cTokenAddress, 999999999999999999999999999999999999)
   console.log(`calling mint(${amount}) on ${cTokenAddress}` )
   let tx = await ctoken.mint(amount)
   console.log(tx.events)

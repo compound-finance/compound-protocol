@@ -11,7 +11,7 @@ async function main() {
   );
 
   console.log(`calling redeem(${amount}) on ${cTokenAddress}` )
-  let tx = await ctoken.redeem(amount)
+  let tx = await ctoken.redeemUnderlying(amount)
   console.log(tx.events)
 }
 

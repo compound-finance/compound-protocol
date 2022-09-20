@@ -32,27 +32,27 @@ export const CTOKENS = [
 //     isGLP: false
 //   },
 
-//   {
-//     underlying: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
-//     name: "USDT",
-//     symbol: "tUSDT",
-//     decimals: CTOKEN_DECIMALS,
-//     collateralFactor: ethers.utils.parseUnits("9", 17),
-//     isGLP: false
-//   },
-
-  
-{
-    underlying: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
-    name: "tUSDC",
-    symbol: "tUSDC",
+  {
+    underlying: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+    name: "USDT",
+    symbol: "tUSDT",
     decimals: CTOKEN_DECIMALS,
     collateralFactor: ethers.utils.parseUnits("9", 17),
-    collateralVIP: ethers.utils.parseUnits("9", 17),
-    threshold: ethers.utils.parseUnits("9", 17),
-    thresholdVIP: ethers.utils.parseUnits("9", 17),
     isGLP: false
   },
+
+  
+// {
+//     underlying: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
+//     name: "tUSDC",
+//     symbol: "tUSDC",
+//     decimals: CTOKEN_DECIMALS,
+//     collateralFactor: ethers.utils.parseUnits("9", 17),
+//     collateralVIP: ethers.utils.parseUnits("9", 17),
+//     threshold: ethers.utils.parseUnits("9", 17),
+//     thresholdVIP: ethers.utils.parseUnits("9", 17),
+//     isGLP: false
+//   },
 
 
   // /not deployed

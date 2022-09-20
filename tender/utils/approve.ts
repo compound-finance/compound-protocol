@@ -7,10 +7,10 @@ let abi = ["function approve(address _spender, uint256 _value) public returns (b
 // const cTokenAddress = "0x1aDDD80E6039594eE970E5872D247bf0414C8903"
 // const amount = ethers.utils.parseUnits("1", 16);
 
-export async function approve(cTokenAddress: string, underlyingAddress: string, amount: BigNumberish) {
-    const ctoken = await hre.ethers.getContractAt(abi, cTokenAddress);
+export async function approve(underlyingAddress: string, cTokenAddress: string, amount: BigNumberish) {
+    const underlying = await hre.ethers.getContractAt(abi, underlyingAddress);
 
   console.log(`calling approve(${cTokenAddress}, ${amount}) on ${underlyingAddress}` )
-  let tx = await ctoken.approve(underlyingAddress, amount)
+  let tx = await underlying.approve(cTokenAddress, amount)
   console.log(tx.events)
 }

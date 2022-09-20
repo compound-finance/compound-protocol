@@ -2,7 +2,7 @@ import { BigNumberish, ethers } from "ethers";
 import hre from "hardhat";
 
 
-export async function min(cTokenAddress: string, amount: BigNumberish) {
+export async function mint(cTokenAddress: string, amount: BigNumberish) {
     const ctoken = await hre.ethers.getContractAt(
     "CErc20Delegate",
     cTokenAddress
@@ -33,7 +33,7 @@ export async function redeem(cTokenAddress: string, amount: BigNumberish) {
   );
 
   console.log(`calling redeem(${amount}) on ${cTokenAddress}` )
-  let tx = await ctoken.redeem(amount)
+  let tx = await ctoken.redeemUnderlying(amount)
   console.log(tx.events)
 }
 
