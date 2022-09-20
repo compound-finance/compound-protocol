@@ -37,9 +37,12 @@ export const CTOKENS = [
     name: "USDT",
     symbol: "tUSDT",
     decimals: CTOKEN_DECIMALS,
+    isGLP: false,
     collateralFactor: ethers.utils.parseUnits("9", 17),
-    isGLP: false
-  },
+    collateralVIP: ethers.utils.parseUnits("9", 17),
+    threshold: ethers.utils.parseUnits("9", 17),
+    thresholdVIP: ethers.utils.parseUnits("9", 17),
+},
 
   
 // {

@@ -7,6 +7,7 @@ node_modules
 .certora*
 certora_*
 
+cache/
 coverage/
 coverage.json
 coverageEnv/
@@ -45,6 +46,9 @@ junit.xml
 node_modules_tmp
 .idea
 
-typechain/
-artifacts/
-cache/
+typechain/*
+artifacts/*
+cache/*
+
+# hardhat-tenderly plugin
+deployments

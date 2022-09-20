@@ -1,16 +1,13 @@
 import hre from "hardhat";
 
 export async function main() {
-  const address = "0x03FCED65cdde966555dB96bF2A5E9A97564dBe05"
-  const implementation = "0x54541071E5A5760D7E60dDF3c43872C723a4a11f"
+  const address = "0x118C6fE960Ed8Bb50D722a0323BD676f2D1c3F40"
+  const implementation = "0xDF24d795e19f112e39566b73F700939d3346A339"
   const allowResign = true
   const data = Buffer.from([0x0])
 
 
-  const delegator = await hre.ethers.getContractAt(
-    "CErc20Delegator",
-    address
-  );
+  const delegator = await hre.ethers.getContractAt("CErc20Delegator", address);
 
   console.log("setting implementation on", address, "to", implementation)
   

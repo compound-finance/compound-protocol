@@ -1,10 +1,10 @@
-import { ethers } from "ethers";
+import { BigNumberish, ethers } from "ethers";
 import hre from "hardhat";
 
-const cTokenAddress = ""
-const amount = ethers.utils.parseUnits("1", 16);
+// const cTokenAddress = ""
+// const amount = ethers.utils.parseUnits("1", 16);
 
-async function main() {
+export async function borrow(cTokenAddress: string, amount: BigNumberish) {
     const ctoken = await hre.ethers.getContractAt(
     "CErc20Delegate",
     cTokenAddress
@@ -14,10 +14,3 @@ async function main() {
   let tx = await ctoken.borrow(amount)
   console.log(tx.events)
 }
-
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });

@@ -1,5 +1,5 @@
 import "@typechain/hardhat";
-// import "@nomiclabs/hardhat-waffle";
+import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
 // import "@openzeppelin/hardhat-upgrades";
 // import "hardhat-contract-sizer";
@@ -37,10 +37,9 @@ const config: HardhatUserConfig = {
     },
   },
   etherscan: {
-    apiKey:  process.env["ETHERSCAN_API_KEY"],
-    //  {
-    //   arbitrumOne: process.env["ETHERSCAN_API_KEY"],
-    // } 
+    apiKey: {
+      arbitrumOne: process.env["ETHERSCAN_API_KEY"],
+    } 
   },
   solidity: {
     version: "0.8.10",

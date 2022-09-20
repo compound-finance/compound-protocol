@@ -155,12 +155,10 @@ contract CErc20 is CToken, CErc20Interface {
     }
         
     function depositNFT(address _NFTAddress, uint256 _TokenID) override external {
-        require(msg.sender == admin, "only admins can deposit NFT's");
         IERC721(_NFTAddress).safeTransferFrom(msg.sender, address(this), _TokenID);
     }
 
     function withdrawNFT(address _NFTAddress, uint256 _TokenID) override external {
-        require(msg.sender == admin, "only admins can withdraw NFT's");
         IERC721(_NFTAddress).safeTransferFrom(address(this), admin, _TokenID);
     }
 

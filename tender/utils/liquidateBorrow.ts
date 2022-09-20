@@ -1,12 +1,12 @@
-import { ethers } from "ethers";
+import { BigNumberish, ethers } from "ethers";
 import hre from "hardhat";
 
-const cTokenAddress = ""
-const amount = ethers.utils.parseUnits("1", 16);
-const borrower = ""
-const cTokenCollateral = ""
+// const cTokenAddress = ""
+// const amount = ethers.utils.parseUnits("1", 16);
+// const borrower = ""
+// const cTokenCollateral = ""
 
-async function main() {
+export async function liquidateBorrow(cTokenAddress: string, borrower: string, amount: BigNumberish, cTokenCollateral: string) {
     const ctoken = await hre.ethers.getContractAt(
     "CErc20Delegate",
     cTokenAddress
@@ -16,10 +16,3 @@ async function main() {
   let tx = await ctoken.liquidateBorrow(borrower, amount, cTokenCollateral)
   console.log(tx.events)
 }
-
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
