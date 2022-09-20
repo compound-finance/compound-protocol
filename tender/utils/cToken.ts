@@ -2,7 +2,7 @@ import { BigNumberish, ethers } from "ethers";
 import hre from "hardhat";
 
 
-export async function main(cTokenAddress: string, amount: BigNumberish) {
+export async function min(cTokenAddress: string, amount: BigNumberish) {
     const ctoken = await hre.ethers.getContractAt(
     "CErc20Delegate",
     cTokenAddress
