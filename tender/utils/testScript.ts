@@ -36,10 +36,10 @@ async function main(){
     //await mint(deployments.tWBTC, ethers.utils.parseUnits("1", 3));
     //await redeem(deployments.tWBTC, ethers.utils.parseUnits("2", 3));
 
-    //await borrow(deployments.tUSDT, ethers.utils.parseUnits("1", 6));
+    await borrow(deployments.tUSDT, ethers.utils.parseUnits("1", 6));
 
-    await approve(deployments.tUSDTunderlying, deployments.tUSDT, ethers.utils.parseUnits("1", 6));
-    await repayBorrow(deployments.tUSDT, ethers.utils.parseUnits("1", 6));
+    //await approve(deployments.tUSDTunderlying, deployments.tUSDT, ethers.utils.parseUnits("1", 6));
+    //await repayBorrow(deployments.tUSDT, ethers.utils.parseUnits("1", 6));
 
     //await mockUpdatePrice(deployments.tUSDC, 100)
     //await mockUpdatePrice(deployments.tUSDT, 100)

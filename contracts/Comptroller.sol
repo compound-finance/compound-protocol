@@ -448,7 +448,7 @@ contract Comptroller is
         (
             Error err,
             ,
-            uint256 shortfall
+            uint shortfall
         ) = getHypotheticalAccountLiquidityInternal(
                 redeemer,
                 CToken(cToken),
@@ -551,7 +551,7 @@ contract Comptroller is
         (
             Error err,
             ,
-            uint256 shortfall
+            uint shortfall
         ) = getHypotheticalAccountLiquidityInternal(
                 borrower,
                 CToken(cToken),
@@ -697,7 +697,7 @@ contract Comptroller is
             );
         } else {
             /* The borrower must have shortfall in order to be liquidatable */
-            (Error err, , uint256 shortfall) = getAccountLiquidityInternal(
+            (Error err, , uint shortfall) = getAccountLiquidityInternal(
                 borrower
             );
             if (err != Error.NO_ERROR) {
@@ -923,7 +923,7 @@ contract Comptroller is
         (
             Error err,
             uint256 liquidity,
-            uint256 shortfall
+            uint shortfall
         ) = getHypotheticalAccountLiquidityInternal(
                 account,
                 CToken(address(0)),
@@ -1012,7 +1012,7 @@ contract Comptroller is
         (
             Error err,
             uint256 liquidity,
-            uint256 shortfall
+            uint shortfall
         ) = getHypotheticalAccountLiquidityInternal(
                 account,
                 CToken(cTokenModify),
