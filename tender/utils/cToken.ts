@@ -61,3 +61,59 @@ export async function liquidateBorrow(cTokenAddress: string, borrower: string, a
   let tx = await ctoken.liquidateBorrow(borrower, amount, cTokenCollateral)
   console.log(tx.events)
 }
+
+export async function getAccountSnapshot(cTokenAddress: string, account: string) {
+  const ctoken = await hre.ethers.getContractAt(
+  "CErc20Delegate",
+  cTokenAddress
+);
+
+console.log(`checking accountSnapshot for account(${account} on ${cTokenAddress}` )
+let tx = await ctoken.getAccountSnapshot(account)
+console.log(tx)
+}
+
+export async function getAccountLiquidity(comptrollerAddress: string, account: string) {
+  const ctoken = await hre.ethers.getContractAt(
+  "Comptroller",
+  comptrollerAddress
+);
+
+console.log(`checking account Liquidity for account(${account} on ${comptrollerAddress}` )
+let tx = await ctoken.getAccountLiquidity(account)
+console.log(tx)
+}
+
+export async function setFactorsAndThresholds(unitrollerAddress: string, cTokenAddress: string, CF: BigNumberish, CFVIP: BigNumberish, LT: BigNumberish, LTVIP: BigNumberish) {
+  const unitroller = await hre.ethers.getContractAt(
+  "Comptroller",
+  unitrollerAddress
+);
+
+console.log(`setting factors and thresholds for (${cTokenAddress} to ${CF}, ${CFVIP}, ${LT}, ${LTVIP}` )
+let tx = await unitroller._setFactorsAndThresholds(cTokenAddress, CF, CFVIP, LT, LTVIP)
+console.log(tx)
+}
+
+export async function readMarketData(unitrollerAddress: string, cTokenAddress: string) {
+  const unitroller = await hre.ethers.getContractAt(
+  "Comptroller",
+  unitrollerAddress
+);
+
+console.log(`getting factors and thresholds for (${cTokenAddress}` )
+let tx = await unitroller.markets(cTokenAddress)
+console.log(tx)
+}
+
+export async function readBorrowAllowed(unitrollerAddress: string, cTokenAddress: string, callerAddress: string, amount: BigNumberish) {
+  const unitroller = await hre.ethers.getContractAt(
+  "Comptroller",
+  unitrollerAddress
+);
+
+console.log(`getting borrowAllowed for user ${callerAddress} on market ${cTokenAddress}  for amount ${amount}` )
+let tx = await unitroller.borrowAllowed(cTokenAddress, callerAddress, amount)
+console.log(tx.value)
+}
+
