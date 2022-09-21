@@ -30,6 +30,7 @@ export async function main() {
   const delegatorFactory = await hre.ethers.getContractFactory(
     "CErc20Delegator"
   );
+  const CErc20Delegate = await  hre.ethers.getContractFactory("CErc20Delegate");
 
 for (let i = 0; i < CTOKENS.length; i++) {
     let token = CTOKENS[i];
@@ -42,8 +43,11 @@ for (let i = 0; i < CTOKENS.length; i++) {
     const totalDecimals = underlyingDecimals + token.decimals;
     const initialExcRateMantissaStr = numToWei("2", totalDecimals);
 
-    const delegateAddress = deployments["delegate"]
-    console.log("delegate address", delegateAddress)
+    console.log("deploying delegate")
+    const deployedCErc20Delegate = await CErc20Delegate.deploy()
+    const delegateAddress = deployedCErc20Delegate.address
+
+    console.log("deployed CErc20Delegate", delegateAddress)
 
     console.log(
         "Calling delegatorFactory.deploy() with",
@@ -114,6 +118,7 @@ for (let i = 0; i < CTOKENS.length; i++) {
       delegator.address, token.collateralFactor, token.collateralVIP, token.threshold, token.thresholdVIP);
 
     // Save to output
+    deployments[`${token.symbol}_delegate`] = delegateAddress;
     deployments[token.symbol] = delegator.address;
     writeFileSync(outputFilePath, JSON.stringify(deployments, null, 2));
 
@@ -133,9 +138,9 @@ const verifyContract = async (
   });
 };
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+// main()
+//   .then(() => process.exit(0))
+//   .catch((error) => {
+//     console.error(error);
+//     process.exit(1);
+//   });

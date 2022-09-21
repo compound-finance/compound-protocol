@@ -10,18 +10,24 @@ export const CTOKENS = [
   //   name: "tWBTC",
   //   symbol: "tWBTC",
   //   decimals: CTOKEN_DECIMALS,
-  //   collateralFactor: ethers.utils.parseUnits("8", 17),
+  //   collateralFactor: ethers.utils.parseUnits("7", 17),
+  //   collateralVIP: ethers.utils.parseUnits("7", 17),
+  //   threshold: ethers.utils.parseUnits("7", 17),
+  //   thresholdVIP: ethers.utils.parseUnits("7", 17),
   //   isGLP: false
   // },
 
-// {
-//     underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
-//     name: "fsGLP",
-//     symbol: "tfsGLP",
-//     decimals: CTOKEN_DECIMALS,
-//     collateralFactor: ethers.utils.parseUnits("95", 16),
-//     isGLP: true
-  // },
+  // {
+  //     underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
+  //     name: "fsGLP",
+  //     symbol: "tfsGLP",
+  //     decimals: CTOKEN_DECIMALS,
+  //     collateralFactor: ethers.utils.parseUnits("5", 17),
+  //     collateralVIP: ethers.utils.parseUnits("95", 16),
+  //     threshold: ethers.utils.parseUnits("5", 17),
+  //     thresholdVIP: ethers.utils.parseUnits("95", 16),
+  //     isGLP: true
+  //   },
 
 //   {
 //     underlying: "0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F",
@@ -45,17 +51,17 @@ export const CTOKENS = [
 },
 
   
-// {
-//     underlying: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
-//     name: "tUSDC",
-//     symbol: "tUSDC",
-//     decimals: CTOKEN_DECIMALS,
-//     collateralFactor: ethers.utils.parseUnits("9", 17),
-//     collateralVIP: ethers.utils.parseUnits("9", 17),
-//     threshold: ethers.utils.parseUnits("9", 17),
-//     thresholdVIP: ethers.utils.parseUnits("9", 17),
-//     isGLP: false
-//   },
+{
+    underlying: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
+    name: "tUSDC",
+    symbol: "tUSDC",
+    decimals: CTOKEN_DECIMALS,
+    collateralFactor: ethers.utils.parseUnits("9", 17),
+    collateralVIP: ethers.utils.parseUnits("9", 17),
+    threshold: ethers.utils.parseUnits("9", 17),
+    thresholdVIP: ethers.utils.parseUnits("9", 17),
+    isGLP: false
+  },
 
 
   // /not deployed
