@@ -922,7 +922,7 @@ contract Comptroller is
     {
         (
             Error err,
-            uint256 liquidity,
+            uint liquidity,
             uint shortfall
         ) = getHypotheticalAccountLiquidityInternal(
                 account,
@@ -1011,7 +1011,7 @@ contract Comptroller is
     {
         (
             Error err,
-            uint256 liquidity,
+            uint liquidity,
             uint shortfall
         ) = getHypotheticalAccountLiquidityInternal(
                 account,
