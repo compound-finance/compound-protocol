@@ -144,6 +144,9 @@ contract CTokenStorage {
      */
     uint256 public managementFee;
 
+    uint256 public exchangeRateBefore;
+    uint256 public blocksBetweenRateChange;
+
     // Official record of token balances for each account
     mapping (address => uint) internal accountTokens;
 
@@ -167,6 +170,11 @@ contract CTokenStorage {
      * @notice Share of seized collateral that is added to reserves
      */
     uint public constant protocolSeizeShareMantissa = 2.8e16; //2.8%
+
+    // used for calculating interest rate performance of GLP vault market
+    uint public prevExchangeRate;
+    uint public glpBlockDelta;
+
 }
 
 abstract contract CTokenInterface is CTokenStorage {

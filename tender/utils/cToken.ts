@@ -117,3 +117,14 @@ let tx = await unitroller.borrowAllowed(cTokenAddress, callerAddress, amount)
 console.log(tx.value)
 }
 
+
+export async function getHypotheticalAccountLiquidity(comptrollerAddress: string, cTokenAddress: string, account: string, redeemTokens: BigNumberish, borrowAmount: BigNumberish) {
+  const ctoken = await hre.ethers.getContractAt(
+  "Comptroller",
+  comptrollerAddress
+);
+
+console.log(`checking account Liquidity for account(${account} on ${comptrollerAddress}` )
+let tx = await ctoken.getHypotheticalAccountLiquidity(account, cTokenAddress, redeemTokens, borrowAmount,)
+console.log(tx)
+}

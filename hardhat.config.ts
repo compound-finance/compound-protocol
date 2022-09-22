@@ -22,6 +22,10 @@ const config: HardhatUserConfig = {
       url: process.env["ARBITRUM_RPC"] || "",
       accounts: [process.env["PRIVATE_KEY"] || ""],
     },
+    mainnet: {
+      url: process.env["ARBITRUM_RPC"] || "",
+      accounts: [process.env["PRIVATE_KEY"] || ""],
+    },
     ropsten: {
       url: process.env["ROPSTEN_RPC"] || "https://ropsten.infura.io/v3/",
       accounts: [process.env["PRIVATE_KEY"] || ""],

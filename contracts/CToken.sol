@@ -330,13 +330,26 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      *   up to the current block and writes new checkpoint to storage.
      */
     function accrueInterest() virtual override public returns (uint) {
+
+        /* Remember the initial block number */
+        uint currentBlockNumber = getBlockNumber();
+        uint accrualBlockNumberPrior = accrualBlockNumber;
+
+        /* Short-circuit accumulating 0 interest */
+        if (accrualBlockNumberPrior == currentBlockNumber) {
+            return NO_ERROR;
+        }
+
         // if this is a GLP cToken, claim the ETH and esGMX rewards and stake the esGMX Rewards
         if (isGLP){
             if(totalSupply > 0){
                 if(autocompound){
+
+                    prevExchangeRate = exchangeRateStoredInternal();
                     glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
                     uint ethBalance =  EIP20Interface(WETH).balanceOf(address(this));
-                    
+                    glpBlockDelta = currentBlockNumber - accrualBlockNumberPrior;
+
                     if(ethBalance > 0){
                         uint ethManagementFee = mul_(ethBalance, div_(managementFee, 100));
                         uint ethToCompound = sub_(ethBalance, ethManagementFee);
@@ -349,14 +362,6 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
                 }
             }
         } else {
-            /* Remember the initial block number */
-            uint currentBlockNumber = getBlockNumber();
-            uint accrualBlockNumberPrior = accrualBlockNumber;
-
-            /* Short-circuit accumulating 0 interest */
-            if (accrualBlockNumberPrior == currentBlockNumber) {
-                return NO_ERROR;
-            }
 
             /* Read the previous values out of storage */
             uint cashPrior = getCashPrior();
