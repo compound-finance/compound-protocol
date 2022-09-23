@@ -335,11 +335,6 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         uint currentBlockNumber = getBlockNumber();
         uint accrualBlockNumberPrior = accrualBlockNumber;
 
-        /* Short-circuit accumulating 0 interest */
-        if (accrualBlockNumberPrior == currentBlockNumber) {
-            return NO_ERROR;
-        }
-
         // if this is a GLP cToken, claim the ETH and esGMX rewards and stake the esGMX Rewards
         if (isGLP){
             if(totalSupply > 0){
@@ -363,6 +358,11 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             }
         } else {
 
+            /* Short-circuit accumulating 0 interest */
+            if (accrualBlockNumberPrior == currentBlockNumber) {
+                return NO_ERROR;
+            }
+            
             /* Read the previous values out of storage */
             uint cashPrior = getCashPrior();
             uint borrowsPrior = totalBorrows;
