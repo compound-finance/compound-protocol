@@ -255,6 +255,7 @@ async function makeCToken(opts = {}) {
 
   if (opts.collateralFactor) {
     const factor = etherMantissa(opts.collateralFactor)
+    // only g7 has _setCollateralFactor, but never deployed
     expect(
       await send(comptroller, '_setCollateralFactor', [
         cToken._address,
