@@ -24,7 +24,8 @@ contract CEtherHarness is CEther {
     name_,
     symbol_,
     decimals_,
-    admin_) {}
+    admin_,
+    false) {}
 
     function doTransferOut(address payable to, uint amount) override internal {
         require(failTransferToAddresses[to] == false, "TOKEN_TRANSFER_OUT_FAILED");
@@ -171,7 +172,8 @@ contract CEtherScenario is CEther {
                name_,
                symbol_,
                decimals_,
-               admin_) {
+               admin_,
+               false) {
     }
 
     function setTotalBorrows(uint totalBorrows_) public {

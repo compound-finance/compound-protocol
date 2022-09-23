@@ -51,7 +51,8 @@
     "@openzeppelin/hardhat-upgrades": "^1.20.0",
     "@solidity-parser/parser": "^0.13.2",
     "@tenderly/hardhat-tenderly": "^1.1.6",
-    "eth-saddle": "^0.1.25"
+    "eth-saddle": "^0.1.25",
+    "solidity-parser-antlr": "^0.4.11"
   },
   "resolutions": {
     "scrypt.js": "https://registry.npmjs.org/@compound-finance/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz",

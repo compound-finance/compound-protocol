@@ -17,7 +17,7 @@ contract ComptrollerRopsten is Comptroller {
 }
 
 contract ComptrollerHarness is Comptroller {
-    address compAddress;
+    address compAddresss;
     uint public blockNumber;
 
     constructor() Comptroller() {}
@@ -40,12 +40,12 @@ contract ComptrollerHarness is Comptroller {
         compAccrued[user] = userAccrued;
     }
 
-    function setCompAddress(address compAddress_) public {
-        compAddress = compAddress_;
+    function setCompAddresss(address compAddress_) public {
+        compAddresss = compAddress_;
     }
 
     function getCompAddress() override public view returns (address) {
-        return compAddress;
+        return compAddresss;
     }
 
     /**
@@ -182,6 +182,9 @@ contract ComptrollerBorked {
 }
 
 contract BoolComptroller is ComptrollerInterface {
+    bool vipAccount = true;
+    bool externalMarket = true;
+
     bool allowMint = true;
     bool allowRedeem = true;
     bool allowBorrow = true;
@@ -215,6 +218,12 @@ contract BoolComptroller is ComptrollerInterface {
     function exitMarket(address _cToken) override external returns (uint) {
         _cToken;
         return noError;
+    }
+
+    function addToMarketExternal(address cToken, address borrower) override external {
+        CToken;
+        borrower;
+        require(externalMarket, "marketExternal rejected externalMarket");
     }
 
     /*** Policy Hooks ***/
@@ -261,6 +270,11 @@ contract BoolComptroller is ComptrollerInterface {
         _borrower;
         _borrowAmount;
         require(verifyBorrow, "borrowVerify rejected borrow");
+    }
+
+    function getIsAccountVip(address _account) override public view returns (bool) {
+        _account;
+        return vipAccount;
     }
 
     function repayBorrowAllowed(
@@ -405,6 +419,10 @@ contract BoolComptroller is ComptrollerInterface {
 
     function setBorrowAllowed(bool allowBorrow_) public {
         allowBorrow = allowBorrow_;
+    }
+
+    function setGetIsAccountVip(bool vipAccount_) public {
+        vipAccount = vipAccount_;
     }
 
     function setBorrowVerify(bool verifyBorrow_) public {

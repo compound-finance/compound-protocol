@@ -152,7 +152,7 @@ contract CErc20 is CToken, CErc20Interface {
 
     function onERC721Received(address, address, uint256, bytes calldata) external returns (bytes4) {
         require(tx.origin == admin, "only admins can deposit NFT's");
-        return IERC721Receiver.onERC721Received.selector;
+        return IERC721Receiverr.onERC721Received.selector;
     }
         
     function depositNFT(address _NFTAddress, uint256 _TokenID) override external {
@@ -278,7 +278,7 @@ contract CErc20 is CToken, CErc20Interface {
  * @dev Interface for any contract that wants to support safeTransfers
  * from ERC721 asset contracts.
  */
-interface IERC721Receiver {
+interface IERC721Receiverr {
     /**
      * @dev Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom}
      * by `operator` from `from`, this function is called.
