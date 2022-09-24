@@ -448,7 +448,7 @@ contract Comptroller is
         (
             Error err,
             ,
-            uint256 shortfall
+            uint shortfall
         ) = getHypotheticalAccountLiquidityInternal(
                 redeemer,
                 CToken(cToken),
@@ -551,7 +551,7 @@ contract Comptroller is
         (
             Error err,
             ,
-            uint256 shortfall
+            uint shortfall
         ) = getHypotheticalAccountLiquidityInternal(
                 borrower,
                 CToken(cToken),
@@ -697,7 +697,7 @@ contract Comptroller is
             );
         } else {
             /* The borrower must have shortfall in order to be liquidatable */
-            (Error err, , uint256 shortfall) = getAccountLiquidityInternal(
+            (Error err, , uint shortfall) = getAccountLiquidityInternal(
                 borrower
             );
             if (err != Error.NO_ERROR) {
@@ -922,8 +922,8 @@ contract Comptroller is
     {
         (
             Error err,
-            uint256 liquidity,
-            uint256 shortfall
+            uint liquidity,
+            uint shortfall
         ) = getHypotheticalAccountLiquidityInternal(
                 account,
                 CToken(address(0)),
@@ -1011,8 +1011,8 @@ contract Comptroller is
     {
         (
             Error err,
-            uint256 liquidity,
-            uint256 shortfall
+            uint liquidity,
+            uint shortfall
         ) = getHypotheticalAccountLiquidityInternal(
                 account,
                 CToken(cTokenModify),
@@ -1035,41 +1035,28 @@ contract Comptroller is
      * @return (possible error code,
                 hypothetical account liquidity in excess of collateral requirements,
      *          hypothetical account shortfall below collateral requirements)
-     */
+     */  
     function getHypotheticalAccountLiquidityInternal(
         address account,
         CToken cTokenModify,
-        uint256 redeemTokens,
-        uint256 borrowAmount,
-        bool liquidation
-    )
-        internal
-        view
-        returns (
-            Error,
-            uint256,
-            uint256
-        )
-    {
+        uint redeemTokens,
+        uint borrowAmount,
+        bool liquidation) internal view returns (Error, uint, uint) {
+
         AccountLiquidityLocalVars memory vars; // Holds all our calculation results
-        uint256 oErr;
+        uint oErr;
 
         // For each asset the account is in
         CToken[] memory assets = accountAssets[account];
-        for (uint256 i = 0; i < assets.length; i++) {
+        for (uint i = 0; i < assets.length; i++) {
             CToken asset = assets[i];
 
             // Read the balances and exchange rate from the cToken
-            (
-                oErr,
-                vars.cTokenBalance,
-                vars.borrowBalance,
-                vars.exchangeRateMantissa
-            ) = asset.getAccountSnapshot(account);
-            if (oErr != 0) {
-                // semi-opaque error code, we assume NO_ERROR == 0 is invariant between upgrades
+            (oErr, vars.cTokenBalance, vars.borrowBalance, vars.exchangeRateMantissa) = asset.getAccountSnapshot(account);
+            if (oErr != 0) { // semi-opaque error code, we assume NO_ERROR == 0 is invariant between upgrades
                 return (Error.SNAPSHOT_ERROR, 0, 0);
             }
+
             if(!liquidation){
                 vars.collateralFactor = getIsAccountVip(account)
                     ? Exp({
@@ -1090,6 +1077,7 @@ contract Comptroller is
                         .liquidationThresholdMantissa
                 });
             }
+            
             vars.exchangeRate = Exp({mantissa: vars.exchangeRateMantissa});
 
             // Get the normalized price of the asset
@@ -1100,61 +1088,35 @@ contract Comptroller is
             vars.oraclePrice = Exp({mantissa: vars.oraclePriceMantissa});
 
             // Pre-compute a conversion factor from tokens -> ether (normalized price value)
-            vars.tokensToDenom = mul_(
-                mul_(vars.collateralFactor, vars.exchangeRate),
-                vars.oraclePrice
-            );
+            vars.tokensToDenom = mul_(mul_(vars.collateralFactor, vars.exchangeRate), vars.oraclePrice);
 
             // sumCollateral += tokensToDenom * cTokenBalance
-            vars.sumCollateral = mul_ScalarTruncateAddUInt(
-                vars.tokensToDenom,
-                vars.cTokenBalance,
-                vars.sumCollateral
-            );
+            vars.sumCollateral = mul_ScalarTruncateAddUInt(vars.tokensToDenom, vars.cTokenBalance, vars.sumCollateral);
 
             // sumBorrowPlusEffects += oraclePrice * borrowBalance
-            vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(
-                vars.oraclePrice,
-                vars.borrowBalance,
-                vars.sumBorrowPlusEffects
-            );
+            vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(vars.oraclePrice, vars.borrowBalance, vars.sumBorrowPlusEffects);
 
             // Calculate effects of interacting with cTokenModify
             if (asset == cTokenModify) {
                 // redeem effect
                 // sumBorrowPlusEffects += tokensToDenom * redeemTokens
-                vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(
-                    vars.tokensToDenom,
-                    redeemTokens,
-                    vars.sumBorrowPlusEffects
-                );
+                vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(vars.tokensToDenom, redeemTokens, vars.sumBorrowPlusEffects);
 
                 // borrow effect
                 // sumBorrowPlusEffects += oraclePrice * borrowAmount
-                vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(
-                    vars.oraclePrice,
-                    borrowAmount,
-                    vars.sumBorrowPlusEffects
-                );
+                vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(vars.oraclePrice, borrowAmount, vars.sumBorrowPlusEffects);
             }
         }
 
         // These are safe, as the underflow condition is checked first
         if (vars.sumCollateral > vars.sumBorrowPlusEffects) {
-            return (
-                Error.NO_ERROR,
-                vars.sumCollateral - vars.sumBorrowPlusEffects,
-                0
-            );
+            return (Error.NO_ERROR, vars.sumCollateral - vars.sumBorrowPlusEffects, 0);
         } else {
-            return (
-                Error.NO_ERROR,
-                0,
-                vars.sumBorrowPlusEffects - vars.sumCollateral
-            );
+            return (Error.NO_ERROR, 0, vars.sumBorrowPlusEffects - vars.sumCollateral);
         }
     }
-    
+
+
     /**
      * @notice Calculate number of tokens of collateral asset to seize given an underlying amount
      * @dev Used in liquidation (called in cToken.liquidateBorrowFresh)
