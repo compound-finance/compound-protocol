@@ -5,7 +5,7 @@ import "../../contracts/Comptroller.sol";
 
 contract ComptrollerScenario is Comptroller {
     uint public blockNumber;
-    address public compAddress;
+    address public compAddresss;
 
     constructor() Comptroller() {}
 
@@ -14,12 +14,12 @@ contract ComptrollerScenario is Comptroller {
         return blockNumber;
     }
 
-    function setCompAddress(address compAddress_) public {
-        compAddress = compAddress_;
+    function setCompAddresss(address compAddress_) public {
+        compAddresss = compAddress_;
     }
 
     function getCompAddress() override public view returns (address) {
-        return compAddress;
+        return compAddresss;
     }
 
     function setBlockNumber(uint number) public {
