@@ -76,7 +76,7 @@ jobs:
       - store_artifacts:
           path: ~/junit
     parallelism: 3
-    resource_class: large
+    resource_class: xlarge
 
   verify:
     docker:
@@ -155,7 +155,7 @@ jobs:
       - codecov/upload:
           file: ~/repo/coverage/coverage-final.json
     parallelism: 10
-    resource_class: large
+    resource_class: xlarge
 
   lint:
     docker:
