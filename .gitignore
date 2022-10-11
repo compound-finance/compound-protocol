@@ -47,6 +47,7 @@ node_modules_tmp
 .idea
 
 typechain/*
+typechain-types/*
 artifacts/*
 cache/*
 
