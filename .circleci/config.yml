@@ -1,32 +1,36 @@
 version: 2.1
 
 orbs:
-  codecov: codecov/codecov@1.0.3
+  codecov: codecov/codecov@3.2.3
 
 jobs:
   test:
     docker:
-      - image: circleci/node:13
+      - image: cimg/node:16.17.1
     working_directory: ~/repo
     steps:
-      - run:
-        |
+      - run: |
           sudo wget https://github.com/ethereum/solidity/releases/download/v0.8.10/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
       - checkout
       - restore_cache:
           keys:
-          - v3-dependencies-{{ checksum "yarn.lock" }}
+            - v3-dependencies-{{ checksum "yarn.lock" }}
       - restore_cache:
           keys:
-          - v3-scenario/dependencies-{{ checksum "scenario/yarn.lock" }}
+            - v3-scenario/dependencies-{{ checksum "scenario/yarn.lock" }}
       - restore_cache:
           keys:
-          - v3-solcache
+            - v3-solcache
       - restore_cache:
           keys:
-          - v3-scencache
+            - v3-scencache
       - run: yarn install || (yarn cache clean && yarn install)
+      - run: cd node_modules/@compound-finance/sol-tracing-utils && yarn install
+      - run: cd node_modules/@compound-finance/sol-tracing-utils/node_modules/solidity-parser-antlr && yarn install
+      - run: cd node_modules/@compound-finance/sol-tracing-utils/node_modules/solidity-parser-antlr && yarn run build || true
+      - run: cd node_modules/@compound-finance/sol-tracing-utils/node_modules/solidity-parser-antlr && yarn run copy-files
+      - run: cd node_modules/@compound-finance/sol-tracing-utils/node_modules/solidity-parser-antlr && mv dist/Solidity-EZVQ6AE4.tokens dist/Solidity.tokens
       - run: cd scenario && (yarn install || (yarn cache clean && yarn install))
       - save_cache:
           paths:
@@ -40,6 +44,19 @@ jobs:
           at: ~/repo
       - run: mkdir ~/junit
       - run: ./script/build_scenarios
+      - run:
+          name: Swap node versions
+          command: |
+            set +e
+            wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.1/install.sh | bash
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+            nvm install 12.16.2
+            nvm alias default 12.16.2
+
+            echo 'export NVM_DIR="$HOME/.nvm"' >> $BASH_ENV
+            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
       - run:
           shell: /bin/bash -eox pipefail -O globstar
           name: yarn test
@@ -74,27 +91,31 @@ jobs:
 
   coverage:
     docker:
-      - image: circleci/node:13
+      - image: cimg/node:16.17.1
     working_directory: ~/repo
     steps:
-      - run:
-        |
+      - run: |
           sudo wget https://github.com/ethereum/solidity/releases/download/v0.8.10/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
       - checkout
       - restore_cache:
           keys:
-          - v3-dependencies-{{ checksum "yarn.lock" }}
+            - v3-dependencies-{{ checksum "yarn.lock" }}
       - restore_cache:
           keys:
-          - v3-scenario-dependencies-{{ checksum "scenario/yarn.lock" }}
+            - v3-scenario-dependencies-{{ checksum "scenario/yarn.lock" }}
       - restore_cache:
           keys:
-          - v3-solcache
+            - v3-solcache
       - restore_cache:
           keys:
-          - v3-scencache
+            - v3-scencache
       - run: yarn install || (yarn cache clean && yarn install)
+      - run: cd node_modules/@compound-finance/sol-tracing-utils && yarn install
+      - run: cd node_modules/@compound-finance/sol-tracing-utils/node_modules/solidity-parser-antlr && yarn install
+      - run: cd node_modules/@compound-finance/sol-tracing-utils/node_modules/solidity-parser-antlr && yarn run build || true
+      - run: cd node_modules/@compound-finance/sol-tracing-utils/node_modules/solidity-parser-antlr && yarn run copy-files
+      - run: cd node_modules/@compound-finance/sol-tracing-utils/node_modules/solidity-parser-antlr && mv dist/Solidity-EZVQ6AE4.tokens dist/Solidity.tokens
       - run: cd scenario && (yarn install || (yarn cache clean && yarn install))
       - save_cache:
           paths:
@@ -138,13 +159,13 @@ jobs:
 
   lint:
     docker:
-      - image: circleci/node:13
+      - image: cimg/node:18.10.0
     working_directory: ~/repo
     steps:
       - checkout
       - restore_cache:
           keys:
-          - v3-dependencies-{{ checksum "yarn.lock" }}
+            - v3-dependencies-{{ checksum "yarn.lock" }}
       - run: yarn install || (yarn cache clean && yarn install)
       - save_cache:
           paths:

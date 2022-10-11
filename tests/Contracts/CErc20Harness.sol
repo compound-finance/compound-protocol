@@ -8,6 +8,7 @@ import "../../contracts/CDaiDelegate.sol";
 import "./ComptrollerScenario.sol";
 
 contract CErc20Harness is CErc20Immutable {
+    
     uint blockNumber = 100000;
     uint harnessExchangeRate;
     bool harnessExchangeRateStored;
@@ -30,6 +31,7 @@ contract CErc20Harness is CErc20Immutable {
     name_,
     symbol_,
     decimals_,
+    false,
     admin_) {}
 
     function doTransferOut(address payable to, uint amount) override internal {
@@ -171,6 +173,7 @@ contract CErc20Scenario is CErc20Immutable {
     name_,
     symbol_,
     decimals_,
+    false,
     admin_) {}
 
     function setTotalBorrows(uint totalBorrows_) public {
@@ -230,6 +233,7 @@ contract CErc20DelegatorScenario is CErc20Delegator {
     name_,
     symbol_,
     decimals_,
+    false,
     admin_,
     implementation_,
     becomeImplementationData) {}
