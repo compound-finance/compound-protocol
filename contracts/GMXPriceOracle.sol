@@ -205,11 +205,11 @@ contract GMXPriceOracle is PriceOracle {
     
     function getUnderlyingPrice(CToken cToken) public override view returns (uint) {
         if(cToken.isGLP()){
-            return glpManager.getAumInUsdg(true).mul(1e28).div(glpToken.totalSupply());   
+            return glpManager.getAumInUsdg(true).mul(1e18).div(glpToken.totalSupply());   
         } else if(compareStrings(cToken.symbol(), "tGMX")){
-            return gmxTokenPriceOracle.getPriceInUSD();
+            return gmxTokenPriceOracle.getPriceInUSD().mul(1e10);
         } else {
-            return gmxPriceFeed.getPrice(_getUnderlyingAddress(cToken), true, true, false).div(100);
+            return gmxPriceFeed.getPrice(_getUnderlyingAddress(cToken), true, true, false).div(1e12);
         }
     }
 
