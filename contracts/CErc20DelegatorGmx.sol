@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "./CTokenInterfaces.sol";
+import "./CTokenInterfacesGmx.sol";
 import "./IGmxRewardRouter.sol";
 import "./IStakedGlp.sol";
 import "./EIP20Interface.sol";
@@ -12,7 +12,7 @@ import "./IERC721Receiver.sol";
  * @notice CTokens which wrap an EIP-20 underlying and delegate to an implementation
  * @author Compound
  */
-contract CErc20DelegatorGmx is CTokenInterface, CErc20Interface, CDelegatorInterface {
+contract CErc20DelegatorGmx is CTokenInterfaceGmx, CErc20InterfaceGmx, CDelegatorInterfaceGmx {
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset
@@ -154,7 +154,7 @@ contract CErc20DelegatorGmx is CTokenInterface, CErc20Interface, CDelegatorInter
      * @param repayAmount The amount of the underlying borrowed asset to repay
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) override external returns (uint) {
+    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterfaceGmx cTokenCollateral) override external returns (uint) {
         bytes memory data = delegateToImplementation(abi.encodeWithSignature("liquidateBorrow(address,uint256,address)", borrower, repayAmount, cTokenCollateral));
         return abi.decode(data, (uint));
     }

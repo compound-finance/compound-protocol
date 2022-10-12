@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 pragma abicoder v2;
 
 import "./ComptrollerInterface.sol";
-import "./CTokenInterfaces.sol";
+import "./CTokenInterfacesGmx.sol";
 import "./ErrorReporter.sol";
 import "./EIP20Interface.sol";
 import "./InterestRateModel.sol";
@@ -18,7 +18,7 @@ import "./ISwapRouter.sol";
  * @notice Abstract base for CTokens
  * @author Compound
  */
-abstract contract CTokenGmx is CTokenInterface, ExponentialNoError, TokenErrorReporter {
+abstract contract CTokenGmx is CTokenInterfaceGmx, ExponentialNoError, TokenErrorReporter {
     /**
      * @notice Initialize the money market
      * @param comptroller_ The address of the Comptroller
@@ -773,7 +773,7 @@ abstract contract CTokenGmx is CTokenInterface, ExponentialNoError, TokenErrorRe
      * @param cTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
      */
-    function liquidateBorrowInternal(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) internal nonReentrant {
+    function liquidateBorrowInternal(address borrower, uint repayAmount, CTokenInterfaceGmx cTokenCollateral) internal nonReentrant {
         accrueInterest();
 
         uint error = cTokenCollateral.accrueInterest();
@@ -794,7 +794,7 @@ abstract contract CTokenGmx is CTokenInterface, ExponentialNoError, TokenErrorRe
      * @param cTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
      */
-    function liquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CTokenInterface cTokenCollateral) internal {
+    function liquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CTokenInterfaceGmx cTokenCollateral) internal {
         /* Fail if liquidate not allowed */
         uint allowed = comptroller.liquidateBorrowAllowed(address(this), address(cTokenCollateral), liquidator, borrower, repayAmount);
         if (allowed != 0) {
