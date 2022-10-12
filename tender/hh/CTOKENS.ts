@@ -10,10 +10,10 @@ export const CTOKENS = [
   //   name: "tWBTC",
   //   symbol: "tWBTC",
   //   decimals: CTOKEN_DECIMALS,
-  //   collateralFactor: ethers.utils.parseUnits("7", 17),
-  //   collateralVIP: ethers.utils.parseUnits("7", 17),
-  //   threshold: ethers.utils.parseUnits("7", 17),
-  //   thresholdVIP: ethers.utils.parseUnits("7", 17),
+  //   collateralFactor: ethers.utils.parseUnits("70", 16),
+  //   collateralVIP: ethers.utils.parseUnits("85", 16),
+  //   threshold: ethers.utils.parseUnits("75", 16),
+  //   thresholdVIP: ethers.utils.parseUnits("90", 16),
   //   isGLP: false
   // },
 
@@ -38,17 +38,17 @@ export const CTOKENS = [
 //     isGLP: false
 //   },
 
-  {
-    underlying: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
-    name: "USDT",
-    symbol: "tUSDT",
-    decimals: CTOKEN_DECIMALS,
-    isGLP: false,
-    collateralFactor: ethers.utils.parseUnits("9", 17),
-    collateralVIP: ethers.utils.parseUnits("9", 17),
-    threshold: ethers.utils.parseUnits("9", 17),
-    thresholdVIP: ethers.utils.parseUnits("9", 17),
-},
+//   {
+//     underlying: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+//     name: "USDT",
+//     symbol: "tUSDT",
+//     decimals: CTOKEN_DECIMALS,
+//     isGLP: false,
+//     collateralFactor: ethers.utils.parseUnits("75", 16),
+//     collateralVIP: ethers.utils.parseUnits("85", 16),
+//     threshold: ethers.utils.parseUnits("80", 16),
+//     thresholdVIP: ethers.utils.parseUnits("90", 16),
+// },
 
   
 {
@@ -56,10 +56,10 @@ export const CTOKENS = [
     name: "tUSDC",
     symbol: "tUSDC",
     decimals: CTOKEN_DECIMALS,
-    collateralFactor: ethers.utils.parseUnits("9", 17),
-    collateralVIP: ethers.utils.parseUnits("9", 17),
-    threshold: ethers.utils.parseUnits("9", 17),
-    thresholdVIP: ethers.utils.parseUnits("9", 17),
+    collateralFactor: ethers.utils.parseUnits("80", 16),
+    collateralVIP: ethers.utils.parseUnits("85", 16),
+    threshold: ethers.utils.parseUnits("85", 16),
+    thresholdVIP: ethers.utils.parseUnits("90", 16),
     isGLP: false
   },
 
@@ -93,3 +93,16 @@ export const CTOKENS = [
   // },
 
 ];
+
+export const GMX = {
+  underlying: "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a",
+  name: "GMX",
+  symbol: "tGMX",
+  decimals: 8,
+  collateralFactor: ethers.utils.parseUnits("5", 17),
+  collateralVIP: ethers.utils.parseUnits("80", 16),
+  threshold: ethers.utils.parseUnits("5", 17),
+  thresholdVIP: ethers.utils.parseUnits("80", 16),
+  isGLP: false,
+}
+

@@ -324,86 +324,92 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         return getCashPrior();
     }
 
+    function compoundGLP() external  {
+        if(totalSupply == 0 || !autocompound) {
+            return;
+        }
+
+        prevExchangeRate = exchangeRateStoredInternal();
+        glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
+        uint ethBalance = EIP20Interface(WETH).balanceOf(address(this));
+
+        /* Remember the initial block number */
+        uint currentBlockNumber = getBlockNumber();
+        uint accrualBlockNumberPrior = accrualBlockNumber;
+        glpBlockDelta = currentBlockNumber - accrualBlockNumberPrior;
+
+        // if this is a GLP cToken, claim the ETH and esGMX rewards and stake the esGMX Rewards
+
+        if(ethBalance > 0){
+            uint ethManagementFee = mul_(ethBalance, div_(managementFee, 100));
+            uint ethToCompound = sub_(ethBalance, ethManagementFee);
+            EIP20Interface(WETH).transfer(admin, ethManagementFee);
+            glpRewardRouter.mintAndStakeGlp(WETH, ethToCompound, 0, 0);               
+        } else {
+            glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
+        }
+    }
+
     /**
      * @notice Applies accrued interest to total borrows and reserves
      * @dev This calculates interest accrued from the last checkpointed block
      *   up to the current block and writes new checkpoint to storage.
      */
     function accrueInterest() virtual override public returns (uint) {
+        if (isGLP){
+            return NO_ERROR;
+        }
 
         /* Remember the initial block number */
         uint currentBlockNumber = getBlockNumber();
         uint accrualBlockNumberPrior = accrualBlockNumber;
 
-        // if this is a GLP cToken, claim the ETH and esGMX rewards and stake the esGMX Rewards
-        if (isGLP){
-            if(totalSupply > 0){
-                if(autocompound){
-
-                    prevExchangeRate = exchangeRateStoredInternal();
-                    glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
-                    uint ethBalance =  EIP20Interface(WETH).balanceOf(address(this));
-                    glpBlockDelta = currentBlockNumber - accrualBlockNumberPrior;
-
-                    if(ethBalance > 0){
-                        uint ethManagementFee = mul_(ethBalance, div_(managementFee, 100));
-                        uint ethToCompound = sub_(ethBalance, ethManagementFee);
-                        EIP20Interface(WETH).transfer(admin, ethManagementFee);
-                        glpRewardRouter.mintAndStakeGlp(WETH, ethToCompound, 0, 0);
-                        
-                    }
-                } else {
-                    glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
-                }
-            }
-        } else {
-
-            /* Short-circuit accumulating 0 interest */
-            if (accrualBlockNumberPrior == currentBlockNumber) {
-                return NO_ERROR;
-            }
-            
-            /* Read the previous values out of storage */
-            uint cashPrior = getCashPrior();
-            uint borrowsPrior = totalBorrows;
-            uint reservesPrior = totalReserves;
-            uint borrowIndexPrior = borrowIndex;
-
-            /* Calculate the current borrow interest rate */
-            uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
-            require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
-
-            /* Calculate the number of blocks elapsed since the last accrual */
-            uint blockDelta = currentBlockNumber - accrualBlockNumberPrior;
-
-            /*
-            * Calculate the interest accumulated into borrows and reserves and the new index:
-            *  simpleInterestFactor = borrowRate * blockDelta
-            *  interestAccumulated = simpleInterestFactor * totalBorrows
-            *  totalBorrowsNew = interestAccumulated + totalBorrows
-            *  totalReservesNew = interestAccumulated * reserveFactor + totalReserves
-            *  borrowIndexNew = simpleInterestFactor * borrowIndex + borrowIndex
-            */
-
-            Exp memory simpleInterestFactor = mul_(Exp({mantissa: borrowRateMantissa}), blockDelta);
-            uint interestAccumulated = mul_ScalarTruncate(simpleInterestFactor, borrowsPrior);
-            uint totalBorrowsNew = interestAccumulated + borrowsPrior;
-            uint totalReservesNew = mul_ScalarTruncateAddUInt(Exp({mantissa: reserveFactorMantissa}), interestAccumulated, reservesPrior);
-            uint borrowIndexNew = mul_ScalarTruncateAddUInt(simpleInterestFactor, borrowIndexPrior, borrowIndexPrior);
-
-            /////////////////////////
-            // EFFECTS & INTERACTIONS
-            // (No safe failures beyond this point)
-
-            /* We write the previously calculated values into storage */
-            accrualBlockNumber = currentBlockNumber;
-            borrowIndex = borrowIndexNew;
-            totalBorrows = totalBorrowsNew;
-            totalReserves = totalReservesNew;
-
-            /* We emit an AccrueInterest event */
-            emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
+        /* Short-circuit accumulating 0 interest */
+        if (accrualBlockNumberPrior == currentBlockNumber) {
+            return NO_ERROR;
         }
+        
+        /* Read the previous values out of storage */
+        uint cashPrior = getCashPrior();
+        uint borrowsPrior = totalBorrows;
+        uint reservesPrior = totalReserves;
+        uint borrowIndexPrior = borrowIndex;
+
+        /* Calculate the current borrow interest rate */
+        uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
+        require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
+
+        /* Calculate the number of blocks elapsed since the last accrual */
+        uint blockDelta = currentBlockNumber - accrualBlockNumberPrior;
+
+        /*
+        * Calculate the interest accumulated into borrows and reserves and the new index:
+        *  simpleInterestFactor = borrowRate * blockDelta
+        *  interestAccumulated = simpleInterestFactor * totalBorrows
+        *  totalBorrowsNew = interestAccumulated + totalBorrows
+        *  totalReservesNew = interestAccumulated * reserveFactor + totalReserves
+        *  borrowIndexNew = simpleInterestFactor * borrowIndex + borrowIndex
+        */
+
+        Exp memory simpleInterestFactor = mul_(Exp({mantissa: borrowRateMantissa}), blockDelta);
+        uint interestAccumulated = mul_ScalarTruncate(simpleInterestFactor, borrowsPrior);
+        uint totalBorrowsNew = interestAccumulated + borrowsPrior;
+        uint totalReservesNew = mul_ScalarTruncateAddUInt(Exp({mantissa: reserveFactorMantissa}), interestAccumulated, reservesPrior);
+        uint borrowIndexNew = mul_ScalarTruncateAddUInt(simpleInterestFactor, borrowIndexPrior, borrowIndexPrior);
+
+        /////////////////////////
+        // EFFECTS & INTERACTIONS
+        // (No safe failures beyond this point)
+
+        /* We write the previously calculated values into storage */
+        accrualBlockNumber = currentBlockNumber;
+        borrowIndex = borrowIndexNew;
+        totalBorrows = totalBorrowsNew;
+        totalReserves = totalReservesNew;
+
+        /* We emit an AccrueInterest event */
+        emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
+
         return NO_ERROR;
     }
 
@@ -486,6 +492,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         /* We call the defense hook */
         // unused function
         // comptroller.mintVerify(address(this), minter, actualMintAmount, mintTokens);
+        if (isGLP) {
+            compoundGLP();
+        }
     }
 
     /**

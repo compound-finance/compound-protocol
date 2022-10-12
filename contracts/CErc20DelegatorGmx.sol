@@ -39,7 +39,7 @@ contract CErc20DelegatorGmx is CTokenInterface, CErc20Interface, CDelegatorInter
         admin = payable(msg.sender);
 
         // First delegate gets to initialize the delegator (i.e. storage contract)
-        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,address,uint256,string,string,uint8,bool)",
+        delegateTo(implementation_, abi.encodeWithSignature("initialize(address,address,address,uint256,string,string,uint8)",
                                                             underlying_,
                                                             comptroller_,
                                                             interestRateModel_,
@@ -72,7 +72,7 @@ contract CErc20DelegatorGmx is CTokenInterface, CErc20Interface, CDelegatorInter
         address oldImplementation = implementation;
         implementation = implementation_;
 
-        delegateToImplementation(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
+        // delegateToImplementation(abi.encodeWithSignature("_becomeImplementation(bytes)", becomeImplementationData));
 
         emit NewImplementation(oldImplementation, implementation);
     }
