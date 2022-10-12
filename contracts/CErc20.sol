@@ -74,6 +74,12 @@ contract CErc20 is CToken, CErc20Interface {
         return NO_ERROR;
     }
 
+
+    function compoundGlp() override external returns (uint) {
+        compoundGlpInternal();
+        return NO_ERROR;
+    }
+
     /**
      * @notice Sender redeems cTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted

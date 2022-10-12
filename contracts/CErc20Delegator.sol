@@ -95,6 +95,11 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
         return abi.decode(data, (uint));
     }
 
+    function compoundGlp() override external returns (uint){
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("compoundGlp()"));
+        return abi.decode(data, (uint));
+    }
+
     /**
      * @notice Sender redeems cTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted

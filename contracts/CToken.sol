@@ -324,7 +324,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         return getCashPrior();
     }
 
-    function compoundGLP() external  {
+    function compoundGlpFresh() internal {
         if(totalSupply == 0 || !autocompound) {
             return;
         }
@@ -424,6 +424,11 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         mintFresh(msg.sender, mintAmount);
     }
 
+    
+    function compoundGlpInternal() internal nonReentrant {
+        compoundGlpFresh();
+    }
+
 
     function _setAutocompoundRewards(bool autocompound_) override public returns (uint) {
         // Check caller is admin
@@ -493,8 +498,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // unused function
         // comptroller.mintVerify(address(this), minter, actualMintAmount, mintTokens);
         if (isGLP) {
-            compoundGLP();
+            compoundGlpFresh();
         }
+
     }
 
     /**

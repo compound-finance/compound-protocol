@@ -320,7 +320,7 @@ abstract contract CErc20Interface is CErc20Storage {
     function sweepToken(EIP20NonStandardInterface token) virtual external;
     function depositNFT(address _NFTAddress, uint256 _TokenID) virtual external;
     function withdrawNFT(address _NFTAddress, uint256 _TokenID) virtual external;
-
+    function compoundGlp() virtual external returns (uint);
     
 
     /*** Admin Functions ***/
