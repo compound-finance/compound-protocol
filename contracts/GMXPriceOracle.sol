@@ -169,6 +169,7 @@ interface IERC20 {
      * @dev Returns the amount of tokens in existence.
      */
     function totalSupply() external view returns (uint256);
+    function decimals() external view returns (uint8);
 }
 
 interface GlpManager{
@@ -205,11 +206,14 @@ contract GMXPriceOracle is PriceOracle {
     
     function getUnderlyingPrice(CToken cToken) public override view returns (uint) {
         if(cToken.isGLP()){
-            return glpManager.getAumInUsdg(true).mul(1e28).div(glpToken.totalSupply());   
+            return glpManager.getAumInUsdg(true).mul(1e18).div(glpToken.totalSupply());   
         } else if(compareStrings(cToken.symbol(), "tGMX")){
-            return gmxTokenPriceOracle.getPriceInUSD();
+            return gmxTokenPriceOracle.getPriceInUSD().mul(1e10);
         } else {
-            return gmxPriceFeed.getPrice(_getUnderlyingAddress(cToken), true, true, false).div(100);
+            IERC20 underlying = IERC20(_getUnderlyingAddress(cToken));
+            uint256 decimals = underlying.decimals();
+            uint256 defaultDecimals = 18;
+            return gmxPriceFeed.getPrice(_getUnderlyingAddress(cToken), true, true, false).div(1e30).mul(10**(defaultDecimals.sub(decimals).add(defaultDecimals)));
         }
     }
 
