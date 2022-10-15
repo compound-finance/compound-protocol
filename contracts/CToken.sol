@@ -348,6 +348,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         } else {
             glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
         }
+
+        accrualBlockNumber = currentBlockNumber;
     }
 
     /**
