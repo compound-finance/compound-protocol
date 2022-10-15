@@ -329,14 +329,20 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             return;
         }
 
-        prevExchangeRate = exchangeRateStoredInternal();
-        glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
-        uint ethBalance = EIP20Interface(WETH).balanceOf(address(this));
-
         /* Remember the initial block number */
         uint currentBlockNumber = getBlockNumber();
         uint accrualBlockNumberPrior = accrualBlockNumber;
         glpBlockDelta = currentBlockNumber - accrualBlockNumberPrior;
+
+        if(glpBlockDelta < autoCompoundBlockThreshold){
+            return;
+        }
+
+        prevExchangeRate = exchangeRateStoredInternal();
+        glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
+        uint ethBalance = EIP20Interface(WETH).balanceOf(address(this));
+
+        
 
         // if this is a GLP cToken, claim the ETH and esGMX rewards and stake the esGMX Rewards
 

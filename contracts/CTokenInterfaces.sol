@@ -174,6 +174,7 @@ contract CTokenStorage {
     // used for calculating interest rate performance of GLP vault market
     uint public prevExchangeRate;
     uint public glpBlockDelta;
+    uint public autoCompoundBlockThreshold = 3000;
 
 }
 
