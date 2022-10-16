@@ -324,10 +324,12 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         return getCashPrior();
     }
 
-    function compoundGlpFresh() internal {
+    function compoundGlpFresh(uint256 mintAmount) internal {
         if(totalSupply == 0 || !autocompound) {
             return;
         }
+
+        lastGlpDepositAmount = mintAmount;
 
         /* Remember the initial block number */
         uint currentBlockNumber = getBlockNumber();
@@ -434,7 +436,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
 
     
     function compoundGlpInternal() internal nonReentrant {
-        compoundGlpFresh();
+        compoundGlpFresh(0);
     }
 
 
@@ -506,7 +508,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // unused function
         // comptroller.mintVerify(address(this), minter, actualMintAmount, mintTokens);
         if (isGLP) {
-            compoundGlpFresh();
+            compoundGlpFresh(mintAmount);
         }
 
     }
