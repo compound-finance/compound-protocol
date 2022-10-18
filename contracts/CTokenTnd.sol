@@ -444,6 +444,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @param user The user to mint for
      */
     function mintInternalForUser(uint mintAmount, address user) internal nonReentrant {
+        require(msg.sender == address(rewardTracker), "you do not have permisison");
         accrueInterest();
         // mintFresh emits the actual Mint event if successful and logs on errors, so we don't need to
         mintFresh(user, mintAmount);
@@ -566,6 +567,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @param redeemAmount The amount of underlying to receive from redeeming cTokens
      */
     function redeemUnderlyingInternalForUser(uint redeemAmount, address user) internal nonReentrant {
+        require(msg.sender == address(rewardTracker), "you do not have permisison");
         accrueInterest();
         // redeemFresh emits redeem-specific logs on errors, so we don't need to
         redeemFresh(payable(user), 0, redeemAmount);
