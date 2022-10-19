@@ -4,7 +4,15 @@ import "@nomiclabs/hardhat-etherscan";
 import { task, subtask } from "hardhat/config";
 import { getAllFilesMatching } from "hardhat/internal/util/fs-utils";
 import * as path from 'path';
-import { TASK_NODE_SERVER_READY, TASK_NODE, TASK_TEST_GET_TEST_FILES, TASK_TEST } from "hardhat/builtin-tasks/task-names";
+import {
+ TASK_NODE,
+ TASK_TEST,
+ TASK_NODE_GET_PROVIDER,
+ TASK_NODE_SERVER_READY,
+ TASK_TEST_GET_TEST_FILES,
+ TASK_TEST_RUN_MOCHA_TESTS
+} from "hardhat/builtin-tasks/task-names";
+
 // import "@openzeppelin/hardhat-upgrades";
 // import "hardhat-contract-sizer";
 
@@ -52,11 +60,6 @@ const config: HardhatUserConfig = {
       }
     }
   },
-  etherscan: {
-    apiKey: {
-      arbitrumOne: process.env["ETHERSCAN_API_KEY"],
-    } 
-  },
   solidity: {
     version: "0.8.10",
     settings: {
@@ -68,6 +71,7 @@ const config: HardhatUserConfig = {
   },
 };
 
+// initialize localhost testing server
 task('node:test').setAction(async (taskArgs, hre, runSuper) => {
   subtask(TASK_NODE_SERVER_READY).setAction(async (taskArgs, hre, runSuper) => {
     await hre.network.provider.request({
@@ -83,8 +87,54 @@ task('node:test').setAction(async (taskArgs, hre, runSuper) => {
         },
       ],
     })
-    console.log('Set up forked network');
-    runSuper(taskArgs);
+    await runSuper(taskArgs);
+  });
+  await hre.run(TASK_NODE);
+});
+
+// connect to localhost testing server and run tests
+task('test:local').setAction(async (taskArgs, hre, runSuper) => {
+  subtask(TASK_TEST_RUN_MOCHA_TESTS).setAction(async (taskArgs, hre, runSuper) => {
+    const fpath = path.join(__dirname, 'tender/test/test.ts');
+    taskArgs.testFiles = [fpath];
+    await runSuper(taskArgs);
+  });
+  config.defaultNetwork = 'localhost',
+  await hre.run(TASK_TEST_RUN_MOCHA_TESTS);
+});
+
+// both start localhost testing server and run tests
+task('test:unified').setAction(async (taskArgs, hre, runSuper) => {
+  subtask(TASK_NODE_SERVER_READY).setAction(async (taskArgs, hre, runSuper) => {
+    await hre.network.provider.request({
+      method: "hardhat_setLoggingEnabled",
+      params: [false],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_reset',
+      params: [
+        {
+          allowUnlimitedContractSize: true,
+          forking: {
+            jsonRpcUrl: `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+            enabled: true,
+            ignoreUnknownTxType: true,
+          },
+        },
+      ],
+    })
+    await hre.network.provider.request({
+      method: "hardhat_setLoggingEnabled",
+      params: [false],
+    });
+    subtask(TASK_TEST_RUN_MOCHA_TESTS).setAction(async (taskArgs, hre, runSuper) => {
+      const fpath = path.join(__dirname, 'tender/test/test.ts');
+      taskArgs.testFiles = [fpath];
+      await runSuper(taskArgs);
+    });
+    await hre.run(TASK_TEST_RUN_MOCHA_TESTS);
+    process.exit(0);
+    // await runSuper(taskArgs);
   });
   await hre.run(TASK_NODE);
 });
