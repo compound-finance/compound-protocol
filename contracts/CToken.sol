@@ -339,8 +339,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         if(_glpBlockDelta < autoCompoundBlockThreshold){
             return;
         }
-        
-        glpBlockDelta = ccurrentBlockNumber - accrualBlockNumberPrior;
+
+        glpBlockDelta = _glpBlockDelta;
         prevExchangeRate = exchangeRateStoredInternal();
         glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
         uint ethBalance = EIP20Interface(WETH).balanceOf(address(this));
