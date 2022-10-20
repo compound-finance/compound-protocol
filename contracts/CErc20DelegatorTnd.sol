@@ -107,11 +107,6 @@ contract CErc20DelegatorTnd is CTokenInterfaceTnd, CErc20InterfaceTnd, CDelegato
         return abi.decode(data, (uint));
     }
 
-    function compoundGlp() override external returns (uint){
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("compoundGlp()"));
-        return abi.decode(data, (uint));
-    }
-
     /**
      * @notice Sender redeems cTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
@@ -375,14 +370,6 @@ contract CErc20DelegatorTnd is CTokenInterfaceTnd, CErc20InterfaceTnd, CDelegato
     function sweepToken(EIP20NonStandardInterface token) override external {
         delegateToImplementation(abi.encodeWithSignature("sweepToken(address)", token));
     }
-        
-    function depositNFT(address _NFTAddress, uint256 _TokenID) override external {
-         delegateToImplementation(abi.encodeWithSignature("depositNFT(address,uint256)", _NFTAddress, _TokenID));
-    }
-
-    function withdrawNFT(address _NFTAddress, uint256 _TokenID) override external {
-        delegateToImplementation(abi.encodeWithSignature("withdrawNFT(address,uint256)", _NFTAddress, _TokenID));
-    }
 
 
     /*** Admin Functions ***/
@@ -460,55 +447,15 @@ contract CErc20DelegatorTnd is CTokenInterfaceTnd, CErc20InterfaceTnd, CDelegato
     }
 
     /**
-     * @notice Updates the glp contract addresses using _setGlpAddresses
-     * @dev Admin function to set the GLP contract addresses
-     * @param stakedGLP_ the stakedGLP contract to use
-     * @param glpRewardRouter_ the rewardrouter contract address to use
-     * @param glpManager_ the glpManager contract address to use
+     * @notice Updates the addresses for the TND Token contracts using _setTndTrackerAddresses
+     * @dev Admin function to update the TND Token contract address
+     * @param feeTndTracker_ the feeTndTracker_ contract to use
+     * @param bonusTndTracker_ the bonusTndTracker_ contract address to use
+     * @param stakedTndTracker_ the stakedTndTracker_ contract address to use
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_) override public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setGlpAddresses(address,address,address)", stakedGLP_, glpRewardRouter_, glpManager_));
-        return abi.decode(data, (uint));
-    }
-
-    /**
-     * @notice Updates the fees for the vault strategy markets
-     * @dev Admin function to update the fees
-     * @param withdrawFee_ fee to withdraw funds
-     * @param managementFee_ fee taken from autocompounded rewards
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function _setVaultFees(uint256 withdrawFee_, uint256 managementFee_) override public returns (uint){
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setVaultFees(uint256,uint256)", withdrawFee_, managementFee_));
-        return abi.decode(data, (uint));
-    }
-
-
-    /**
-     * @notice Transfers all esGmx assets to the recipient
-     * @dev Admin function to remove all esGmx assets from the contract
-     * @param recipient the address to send all the assets to
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function _signalTransfer(address recipient) override public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_signalTransfer(address)", recipient));
-        return abi.decode(data, (uint));
-    }
-
-    /**
-     * @notice Toggle wether or not the GLP rewards should be autocompounded
-     * @dev Admin function to set wether or not GLP rewards should be autocompounded
-     * @param autocompound_ should the rewards be autocompounded or not
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function _setAutocompoundRewards(bool autocompound_) override public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setAutocompoundRewards(bool)", autocompound_));
-        return abi.decode(data, (uint));
-    }
-
-    function _setRewardTracker(address _rewardTracker) override public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setRewardTracker(address)", _rewardTracker));
+    function _setTndTrackerAddresses(IRewardTracker feeTndTracker_, IRewardTracker bonusTndTracker_, IRewardTracker stakedTndTracker_) override public returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setTndTrackerAddresses(address,address,address)", feeTndTracker_, bonusTndTracker_, stakedTndTracker_));
         return abi.decode(data, (uint));
     }
 
@@ -574,11 +521,6 @@ contract CErc20DelegatorTnd is CTokenInterfaceTnd, CErc20InterfaceTnd, CDelegato
             case 0 { revert(free_mem_ptr, returndatasize()) }
             default { return(free_mem_ptr, returndatasize()) }
         }
-    }
-
-    function approveGlpRewardRouterWETHSpending() external {
-        require(msg.sender == admin, "only admin can call approve");
-        EIP20Interface(WETH).approve(glpManager, type(uint256).max);
     }
 
 }

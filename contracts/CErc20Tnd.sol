@@ -24,7 +24,7 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
      * @param name_ ERC-20 name of this token
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
-     * @param isGLP_ Wether or not the market being created is for the GLP token
+     
      */
     function initialize(address underlying_,
                         ComptrollerInterface comptroller_,
@@ -32,10 +32,10 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
                         uint initialExchangeRateMantissa_,
                         string memory name_,
                         string memory symbol_,
-                        uint8 decimals_,
-                        bool isGLP_) public {
+                        uint8 decimals_
+                        ) public {
         // CToken initialize does the bulk of the work
-        super.initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, isGLP_);
+        super.initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
         // Set underlying and sanity check it
         underlying = underlying_;
@@ -48,12 +48,12 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
                         uint initialExchangeRateMantissa_,
                         string memory name_,
                         string memory symbol_,
-                        uint8 decimals_,
-                        bool isGLP_) public {
+                        uint8 decimals_
+                        ) public {
         require(admin == address(0), "admin may only be set once");
         admin = payable(msg.sender);
         // CToken initialize does the bulk of the work
-        super.initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, isGLP_);
+        super.initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
         // Set underlying and sanity check it
         underlying = underlying_;
@@ -69,8 +69,9 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function mint(uint mintAmount) override external returns (uint) {
-        mintInternal(mintAmount);
-        comptroller.addToMarketExternal(address(this), msg.sender);
+        //mintInternal(mintAmount);
+        //comptroller.addToMarketExternal(address(this), msg.sender);
+        mintAmount;
         return NO_ERROR;
     }
 
@@ -87,12 +88,6 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
         return NO_ERROR;
     }
 
-
-    function compoundGlp() override external returns (uint) {
-        compoundGlpInternal();
-        return NO_ERROR;
-    }
-
     /**
      * @notice Sender redeems cTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
@@ -100,7 +95,8 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(uint redeemTokens) override external returns (uint) {
-        redeemInternal(redeemTokens);
+        //redeemInternal(redeemTokens);
+        redeemTokens;    
         return NO_ERROR;
     }
 
@@ -111,7 +107,8 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemUnderlying(uint redeemAmount) override external returns (uint) {
-        redeemUnderlyingInternal(redeemAmount);
+        //redeemUnderlyingInternal(redeemAmount);
+        redeemAmount;
         return NO_ERROR;
     }
     /**
@@ -132,7 +129,8 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
     function borrow(uint borrowAmount) override external returns (uint) {
-        borrowInternal(borrowAmount);
+        //borrowInternal(borrowAmount);
+        borrowAmount;
         return NO_ERROR;
     }
 
@@ -142,7 +140,8 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function repayBorrow(uint repayAmount) override external returns (uint) {
-        repayBorrowInternal(repayAmount);
+        //repayBorrowInternal(repayAmount);
+        repayAmount;
         return NO_ERROR;
     }
 
@@ -153,7 +152,9 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function repayBorrowBehalf(address borrower, uint repayAmount) override external returns (uint) {
-        repayBorrowBehalfInternal(borrower, repayAmount);
+        //repayBorrowBehalfInternal(borrower, repayAmount);
+        borrower;
+        repayAmount;
         return NO_ERROR;
     }
 
@@ -179,18 +180,6 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
         require(address(token) != underlying, "CErc20::sweepToken: can not sweep underlying token");
         uint256 balance = token.balanceOf(address(this));
         token.transfer(admin, balance);
-    }
-
-    function onERC721Received(address, address, uint256, bytes calldata) external returns (bytes4) {
-        return IERC721Receiver.onERC721Received.selector;
-    }
-        
-    function depositNFT(address _NFTAddress, uint256 _TokenID) override external {
-        IERC721(_NFTAddress).safeTransferFrom(msg.sender, address(this), _TokenID);
-    }
-
-    function withdrawNFT(address _NFTAddress, uint256 _TokenID) override external {
-        IERC721(_NFTAddress).safeTransferFrom(address(this), admin, _TokenID);
     }
 
     /**
@@ -228,10 +217,7 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
         address underlying_ = underlying;
         EIP20NonStandardInterface token = EIP20NonStandardInterface(underlying_);
         uint balanceBefore = EIP20Interface(underlying_).balanceOf(address(this));
-        if(isGLP){
-            stakedGLP.transferFrom(from, address(this), amount);
-        } else {
-            token.transferFrom(from, address(this), amount);
+        token.transferFrom(from, address(this), amount);
 
             bool success;
             assembly {
@@ -248,7 +234,7 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
                     }
             }
             require(success, "TOKEN_TRANSFER_IN_FAILED");
-        }
+        
 
         // Calculate the amount that was *actually* transferred
         uint balanceAfter = EIP20Interface(underlying_).balanceOf(address(this));
@@ -266,10 +252,7 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
      */
     function doTransferOut(address payable to, uint amount) virtual override internal {
         EIP20NonStandardInterface token = EIP20NonStandardInterface(underlying);
-        if(isGLP){
-            stakedGLP.transfer(to, amount);
-        } else {
-            token.transfer(to, amount);
+        token.transfer(to, amount);
 
             bool success;
             assembly {
@@ -286,7 +269,7 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
                     }
             }
             require(success, "TOKEN_TRANSFER_OUT_FAILED");
-        }
+        
         
     }
 

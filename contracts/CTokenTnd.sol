@@ -25,15 +25,14 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @param name_ EIP-20 name of this token
      * @param symbol_ EIP-20 symbol of this token
      * @param decimals_ EIP-20 decimal precision of this token
-     * @param isGLP_ Wether or not the market being created is for the GLP token
      */
     function initialize(ComptrollerInterface comptroller_,
                         InterestRateModel interestRateModel_,
                         uint initialExchangeRateMantissa_,
                         string memory name_,
                         string memory symbol_,
-                        uint8 decimals_,
-                        bool isGLP_) public {
+                        uint8 decimals_
+                        ) public {
         require(msg.sender == admin, "only admin may initialize the market");
         require(accrualBlockNumber == 0 && borrowIndex == 0, "market may only be initialized once");
 
@@ -56,7 +55,6 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
         name = name_;
         symbol = symbol_;
         decimals = decimals_;
-        isGLP = isGLP_;
 
         // The counter starts true to prevent changing it from zero to non-zero (i.e. smaller cost/refund)
         _notEntered = true;
@@ -229,7 +227,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @return The total borrows with interest
      */
     function totalBorrowsCurrent() override external nonReentrant returns (uint) {
-        accrueInterest();
+        //accrueInterest();
         return totalBorrows;
     }
 
@@ -239,7 +237,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @return The calculated balance
      */
     function borrowBalanceCurrent(address account) override external nonReentrant returns (uint) {
-        accrueInterest();
+        //accrueInterest();
         return borrowBalanceStored(account);
     }
 
@@ -280,7 +278,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @return Calculated exchange rate scaled by 1e18
      */
     function exchangeRateCurrent() override public nonReentrant returns (uint) {
-        accrueInterest();
+        //accrueInterest();
         return exchangeRateStored();
     }
 
@@ -327,101 +325,62 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
         return getCashPrior();
     }
 
-    function compoundGlpFresh(uint256 mintAmount) internal {
-        if(totalSupply == 0 || !autocompound) {
-            return;
-        }
-
-        lastGlpDepositAmount = mintAmount;
-
-        /* Remember the initial block number */
-        uint currentBlockNumber = getBlockNumber();
-        uint accrualBlockNumberPrior = accrualBlockNumber;
-        glpBlockDelta = currentBlockNumber - accrualBlockNumberPrior;
-
-        if(glpBlockDelta < autoCompoundBlockThreshold){
-            return;
-        }
-
-        prevExchangeRate = exchangeRateStoredInternal();
-        glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
-        uint ethBalance = EIP20Interface(WETH).balanceOf(address(this));
-
-        
-
-        // if this is a GLP cToken, claim the ETH and esGMX rewards and stake the esGMX Rewards
-
-        if(ethBalance > 0){
-            uint ethManagementFee = mul_(ethBalance, div_(managementFee, 100));
-            uint ethToCompound = sub_(ethBalance, ethManagementFee);
-            EIP20Interface(WETH).transfer(admin, ethManagementFee);
-            glpRewardRouter.mintAndStakeGlp(WETH, ethToCompound, 0, 0);               
-        } else {
-            glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
-        }
-
-        accrualBlockNumber = currentBlockNumber;
-    }
-
     /**
      * @notice Applies accrued interest to total borrows and reserves
      * @dev This calculates interest accrued from the last checkpointed block
      *   up to the current block and writes new checkpoint to storage.
      */
     function accrueInterest() virtual override public returns (uint) {
-        if (isGLP){
-            return NO_ERROR;
-        }
-
-        /* Remember the initial block number */
-        uint currentBlockNumber = getBlockNumber();
-        uint accrualBlockNumberPrior = accrualBlockNumber;
-
-        /* Short-circuit accumulating 0 interest */
-        if (accrualBlockNumberPrior == currentBlockNumber) {
-            return NO_ERROR;
-        }
         
-        /* Read the previous values out of storage */
-        uint cashPrior = getCashPrior();
-        uint borrowsPrior = totalBorrows;
-        uint reservesPrior = totalReserves;
-        uint borrowIndexPrior = borrowIndex;
+        // /* Remember the initial block number */
+        // uint currentBlockNumber = getBlockNumber();
+        // uint accrualBlockNumberPrior = accrualBlockNumber;
 
-        /* Calculate the current borrow interest rate */
-        uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
-        require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
+        // /* Short-circuit accumulating 0 interest */
+        // if (accrualBlockNumberPrior == currentBlockNumber) {
+        //     return NO_ERROR;
+        // }
+        
+        // /* Read the previous values out of storage */
+        // uint cashPrior = getCashPrior();
+        // uint borrowsPrior = totalBorrows;
+        // uint reservesPrior = totalReserves;
+        // uint borrowIndexPrior = borrowIndex;
 
-        /* Calculate the number of blocks elapsed since the last accrual */
-        uint blockDelta = currentBlockNumber - accrualBlockNumberPrior;
+        // /* Calculate the current borrow interest rate */
+        // uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
+        // require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
 
-        /*
-        * Calculate the interest accumulated into borrows and reserves and the new index:
-        *  simpleInterestFactor = borrowRate * blockDelta
-        *  interestAccumulated = simpleInterestFactor * totalBorrows
-        *  totalBorrowsNew = interestAccumulated + totalBorrows
-        *  totalReservesNew = interestAccumulated * reserveFactor + totalReserves
-        *  borrowIndexNew = simpleInterestFactor * borrowIndex + borrowIndex
-        */
+        // /* Calculate the number of blocks elapsed since the last accrual */
+        // uint blockDelta = currentBlockNumber - accrualBlockNumberPrior;
 
-        Exp memory simpleInterestFactor = mul_(Exp({mantissa: borrowRateMantissa}), blockDelta);
-        uint interestAccumulated = mul_ScalarTruncate(simpleInterestFactor, borrowsPrior);
-        uint totalBorrowsNew = interestAccumulated + borrowsPrior;
-        uint totalReservesNew = mul_ScalarTruncateAddUInt(Exp({mantissa: reserveFactorMantissa}), interestAccumulated, reservesPrior);
-        uint borrowIndexNew = mul_ScalarTruncateAddUInt(simpleInterestFactor, borrowIndexPrior, borrowIndexPrior);
+        // /*
+        // * Calculate the interest accumulated into borrows and reserves and the new index:
+        // *  simpleInterestFactor = borrowRate * blockDelta
+        // *  interestAccumulated = simpleInterestFactor * totalBorrows
+        // *  totalBorrowsNew = interestAccumulated + totalBorrows
+        // *  totalReservesNew = interestAccumulated * reserveFactor + totalReserves
+        // *  borrowIndexNew = simpleInterestFactor * borrowIndex + borrowIndex
+        // */
 
-        /////////////////////////
-        // EFFECTS & INTERACTIONS
-        // (No safe failures beyond this point)
+        // Exp memory simpleInterestFactor = mul_(Exp({mantissa: borrowRateMantissa}), blockDelta);
+        // uint interestAccumulated = mul_ScalarTruncate(simpleInterestFactor, borrowsPrior);
+        // uint totalBorrowsNew = interestAccumulated + borrowsPrior;
+        // uint totalReservesNew = mul_ScalarTruncateAddUInt(Exp({mantissa: reserveFactorMantissa}), interestAccumulated, reservesPrior);
+        // uint borrowIndexNew = mul_ScalarTruncateAddUInt(simpleInterestFactor, borrowIndexPrior, borrowIndexPrior);
 
-        /* We write the previously calculated values into storage */
-        accrualBlockNumber = currentBlockNumber;
-        borrowIndex = borrowIndexNew;
-        totalBorrows = totalBorrowsNew;
-        totalReserves = totalReservesNew;
+        // /////////////////////////
+        // // EFFECTS & INTERACTIONS
+        // // (No safe failures beyond this point)
 
-        /* We emit an AccrueInterest event */
-        emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
+        // /* We write the previously calculated values into storage */
+        // accrualBlockNumber = currentBlockNumber;
+        // borrowIndex = borrowIndexNew;
+        // totalBorrows = totalBorrowsNew;
+        // totalReserves = totalReservesNew;
+
+        // /* We emit an AccrueInterest event */
+        // emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
 
         return NO_ERROR;
     }
@@ -432,7 +391,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @param mintAmount The amount of the underlying asset to supply
      */
     function mintInternal(uint mintAmount) internal nonReentrant {
-        accrueInterest();
+        //accrueInterest();
         // mintFresh emits the actual Mint event if successful and logs on errors, so we don't need to
         mintFresh(msg.sender, mintAmount);
     }
@@ -445,36 +404,10 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      */
     function mintInternalForUser(uint mintAmount, address user) internal nonReentrant {
         require(msg.sender == address(rewardTracker), "you do not have permisison");
-        accrueInterest();
+        //accrueInterest();
         // mintFresh emits the actual Mint event if successful and logs on errors, so we don't need to
         mintFresh(user, mintAmount);
     }
-
-    
-    function compoundGlpInternal() internal nonReentrant {
-        compoundGlpFresh(0);
-    }
-
-
-    function _setAutocompoundRewards(bool autocompound_) override public returns (uint) {
-        // Check caller is admin
-        if (msg.sender != admin) {
-            revert SetAutoCompoundOwnerCheck();
-        }
-        EIP20Interface(WETH).approve(glpManager, type(uint256).max);
-        autocompound = autocompound_;
-        return NO_ERROR;
-    }
-
-    function _setRewardTracker(address _rewardTracker) override public returns (uint) {
-        // Check caller is admin
-        if (msg.sender != admin) {
-            revert SetAutoCompoundOwnerCheck();
-        }
-        rewardTracker = IRewardTracker(_rewardTracker);
-        return NO_ERROR;
-    }
-
 
     /**
      * @notice User supplies assets into the market and receives cTokens in exchange
@@ -490,7 +423,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
         }
 
         /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber() && !isGLP) {
+        if (accrualBlockNumber != getBlockNumber()) {
             revert MintFreshnessCheck();
         }
 
@@ -533,9 +466,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
         /* We call the defense hook */
         // unused function
         // comptroller.mintVerify(address(this), minter, actualMintAmount, mintTokens);
-        if (isGLP) {
-            compoundGlpFresh(mintAmount);
-        }
+        
 
     }
 
@@ -545,7 +476,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @param redeemTokens The number of cTokens to redeem into underlying
      */
     function redeemInternal(uint redeemTokens) internal nonReentrant {
-        accrueInterest();
+        //accrueInterest();
         // redeemFresh emits redeem-specific logs on errors, so we don't need to
         redeemFresh(payable(msg.sender), redeemTokens, 0);
     }
@@ -556,7 +487,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @param redeemAmount The amount of underlying to receive from redeeming cTokens
      */
     function redeemUnderlyingInternal(uint redeemAmount) internal nonReentrant {
-        accrueInterest();
+        //accrueInterest();
         // redeemFresh emits redeem-specific logs on errors, so we don't need to
         redeemFresh(payable(msg.sender), 0, redeemAmount);
     }
@@ -568,7 +499,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      */
     function redeemUnderlyingInternalForUser(uint redeemAmount, address user) internal nonReentrant {
         require(msg.sender == address(rewardTracker), "you do not have permisison");
-        accrueInterest();
+        //accrueInterest();
         // redeemFresh emits redeem-specific logs on errors, so we don't need to
         redeemFresh(payable(user), 0, redeemAmount);
     }
@@ -614,7 +545,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
         }
 
         /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber() && !isGLP) {
+        if (accrualBlockNumber != getBlockNumber()) {
             revert RedeemFreshnessCheck();
         }
 
@@ -641,16 +572,9 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
          *  On success, the cToken has redeemAmount less of cash.
          *  doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
          */
-        bool isRedeemerVip = comptroller.getIsAccountVip(redeemer);
-
-        if(isGLP && !isRedeemerVip  ){
-            uint256 withdrawFeeAmount = div_(mul_(redeemAmount, sub_(100, withdrawFee)), 100);
-            uint256 actualRedeemAmount = sub_(redeemAmount, withdrawFee);
-            doTransferOut(admin, withdrawFeeAmount);
-            doTransferOut(redeemer, actualRedeemAmount);
-        } else {
-            doTransferOut(redeemer, redeemAmount);
-        }
+        
+        doTransferOut(redeemer, redeemAmount);
+        
 
         /* We emit a Transfer event, and a Redeem event */
         emit Transfer(redeemer, address(this), redeemTokens);
@@ -665,7 +589,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
       * @param borrowAmount The amount of the underlying asset to borrow
       */
     function borrowInternal(uint borrowAmount) internal nonReentrant {
-        accrueInterest();
+        //accrueInterest();
         // borrowFresh emits borrow-specific logs on errors, so we don't need to
         borrowFresh(payable(msg.sender), borrowAmount);
     }
@@ -729,7 +653,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @param repayAmount The amount to repay, or -1 for the full outstanding amount
      */
     function repayBorrowInternal(uint repayAmount) internal nonReentrant {
-        accrueInterest();
+        //accrueInterest();
         // repayBorrowFresh emits repay-borrow-specific logs on errors, so we don't need to
         repayBorrowFresh(msg.sender, msg.sender, repayAmount);
     }
@@ -740,7 +664,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @param repayAmount The amount to repay, or -1 for the full outstanding amount
      */
     function repayBorrowBehalfInternal(address borrower, uint repayAmount) internal nonReentrant {
-        accrueInterest();
+        //accrueInterest();
         // repayBorrowFresh emits repay-borrow-specific logs on errors, so we don't need to
         repayBorrowFresh(msg.sender, borrower, repayAmount);
     }
@@ -810,7 +734,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @param repayAmount The amount of the underlying borrowed asset to repay
      */
     function liquidateBorrowInternal(address borrower, uint repayAmount, CTokenInterfaceTnd cTokenCollateral) internal nonReentrant {
-        accrueInterest();
+        //accrueInterest();
 
         uint error = cTokenCollateral.accrueInterest();
         if (error != NO_ERROR) {
@@ -934,6 +858,16 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
         uint protocolSeizeAmount = mul_ScalarTruncate(exchangeRate, protocolSeizeTokens);
         uint totalReservesNew = totalReserves + protocolSeizeAmount;
 
+        uint liquidatorSeizeAmount = mul_ScalarTruncate(exchangeRate, liquidatorSeizeTokens);
+
+        IRewardTracker(feeTndTracker).unstakeForAccount(borrower, address(bonusTndTracker), liquidatorSeizeAmount, borrower);
+        IRewardTracker(bonusTndTracker).unstakeForAccount(borrower, address(stakedTndTracker), liquidatorSeizeAmount, borrower);
+        IRewardTracker(stakedTndTracker).unstakeForAccount(borrower, tnd, liquidatorSeizeAmount, borrower);
+
+        IRewardTracker(stakedTndTracker).stakeForAccount(liquidator, liquidator, tnd, liquidatorSeizeAmount);
+        IRewardTracker(bonusTndTracker).stakeForAccount(liquidator, liquidator, address(stakedTndTracker), liquidatorSeizeAmount);
+        IRewardTracker(feeTndTracker).stakeForAccount(liquidator, liquidator, address(bonusTndTracker), liquidatorSeizeAmount);
+
 
         /////////////////////////
         // EFFECTS & INTERACTIONS
@@ -944,6 +878,8 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
         totalSupply = totalSupply - protocolSeizeTokens;
         accountTokens[borrower] = accountTokens[borrower] - seizeTokens;
         accountTokens[liquidator] = accountTokens[liquidator] + liquidatorSeizeTokens;
+
+
 
         /* Emit a Transfer event */
         emit Transfer(borrower, liquidator, liquidatorSeizeTokens);
@@ -1035,7 +971,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
     function _setReserveFactor(uint newReserveFactorMantissa) override external nonReentrant returns (uint) {
-        accrueInterest();
+        //accrueInterest();
         // _setReserveFactorFresh emits reserve-factor-specific logs on errors, so we don't need to.
         return _setReserveFactorFresh(newReserveFactorMantissa);
     }
@@ -1075,7 +1011,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _addReservesInternal(uint addAmount) internal nonReentrant returns (uint) {
-        accrueInterest();
+        //accrueInterest();
 
         // _addReservesFresh emits reserve-addition-specific logs on errors, so we don't need to.
         _addReservesFresh(addAmount);
@@ -1131,7 +1067,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _reduceReserves(uint reduceAmount) override external nonReentrant returns (uint) {
-        accrueInterest();
+        //accrueInterest();
         // _reduceReservesFresh emits reserve-reduction-specific logs on errors, so we don't need to.
         return _reduceReservesFresh(reduceAmount);
     }
@@ -1190,7 +1126,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _setInterestRateModel(InterestRateModel newInterestRateModel) override public returns (uint) {
-        accrueInterest();
+        //accrueInterest();
         // _setInterestRateModelFresh emits interest-rate-model-update-specific logs on errors, so we don't need to.
         return _setInterestRateModelFresh(newInterestRateModel);
     }
@@ -1232,56 +1168,21 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
     }
 
     /**
-     * @notice Updates the addresses for the GLP contracts using _setStakedGlpAddresses
-     * @dev Admin function to update the stakedGLP contract address
-     * @param stakedGLP_ the stakedGLP contract to use
-     * @param glpRewardRouter_ the rewardrouter contract address to use
-     * @param glpManager_ the glpManager contract address to use
+     * @notice Updates the addresses for the TND Token contracts using _setTndTrackerAddresses
+     * @dev Admin function to update the TND Token contract address
+     * @param feeTndTracker_ the feeTndTracker_ contract to use
+     * @param bonusTndTracker_ the bonusTndTracker_ contract address to use
+     * @param stakedTndTracker_ the stakedTndTracker_ contract address to use
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_) override public returns (uint) {
+    function _setTndTrackerAddresses(IRewardTracker feeTndTracker_, IRewardTracker bonusTndTracker_, IRewardTracker stakedTndTracker_) override public returns (uint) {
         // Check caller is admin
         if (msg.sender != admin) {
             revert SetStakedGlpAddressOwnerCheck();
         }
-        stakedGLP = stakedGLP_;
-        glpRewardRouter = glpRewardRouter_;
-        glpManager = glpManager_;
-        return NO_ERROR;
-    }
-
-    /**
-     * @notice Updates the fees for the vault strategy markets
-     * @dev Admin function to update the fees
-     * @param withdrawFee_ fee to withdraw funds
-     * @param managementFee_ fee taken from autocompounded rewards
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function _setVaultFees(uint256 withdrawFee_, uint256 managementFee_) override public returns (uint) {
-        // Check caller is admin
-        if (msg.sender != admin) {
-            revert SetStakedGlpAddressOwnerCheck();
-        }
-
-        withdrawFee = withdrawFee_;
-        managementFee = managementFee_;
-        return NO_ERROR;
-    }
-
-    /**
-     * @notice Transfers all esGmx assets to the recipient
-     * @dev Admin function to remove all esGmx assets from the contract
-     * @param recipient the address to send all the assets to
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function _signalTransfer(address recipient) override public returns (uint) {
-        // Check caller is admin
-        if (msg.sender != admin) {
-            revert SignalTransferOwnerCheck();
-        }
-        if(getCashPrior() == 0){
-            glpRewardRouter.signalTransfer(recipient);
-        }
+        feeTndTracker = feeTndTracker_;
+        bonusTndTracker = bonusTndTracker_;
+        stakedTndTracker = stakedTndTracker_;
         return NO_ERROR;
     }
 

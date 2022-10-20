@@ -16,49 +16,18 @@ contract CTokenStorageTnd {
     bool internal _notEntered;
 
     /**
-     * @notice Is the underlying token GLP
+     * @notice address of the TND token
      */
-    bool public isGLP;
+    address public tnd;
 
-    /**
-     * @notice Wether or not the eth rewards from glp market should be autocompounded
-     */
-    bool public autocompound;
-
-    /**
-     * @notice GLP reward router for claiming rewards
-     */
-    IGmxRewardRouter public glpRewardRouter = IGmxRewardRouter(0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1);
-
-    /**
-     * @notice Staked GLP Adress to call transfer on
-     */
-    IStakedGlp public stakedGLP = IStakedGlp(0x2F546AD4eDD93B956C8999Be404cdCAFde3E89AE);
-
-    /**
-     * @notice address of the GMX token
-     */
-    address public gmxToken = 0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a;
-
-    /**
-     * @notice Address that handles GMX staking
-     */
-    IRewardTracker public stakedGmxTracker = IRewardTracker(0x908C4D94D34924765f1eDc22A1DD098397c59dD4);
-
-    /**
-     * @notice address of the Staked GMX token
-     */
-    address public sbfGMX = 0xd2D1162512F927a7e282Ef43a362659E4F2a728F;
+    IRewardTracker public feeTndTracker;
+    IRewardTracker public bonusTndTracker;
+    IRewardTracker public stakedTndTracker;
 
     /**
      * @notice Staked GLP Adress to call transfer on
      */
     address public immutable WETH = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
-
-    /**
-     * @notice GLP manager contract to approve transfers on for autocompounding
-     */
-    address public glpManager = 0x321F653eED006AD1C29D174e17d96351BDe22649;
 
     /**
      * @notice address of the RewardTracker
@@ -175,12 +144,6 @@ contract CTokenStorageTnd {
      * @notice Share of seized collateral that is added to reserves
      */
     uint public constant protocolSeizeShareMantissa = 2.8e16; //2.8%
-
-    // used for calculating interest rate performance of GLP vault market
-    uint public prevExchangeRate;
-    uint public glpBlockDelta;
-    uint public autoCompoundBlockThreshold = 3000;
-    uint public lastGlpDepositAmount;
 
 }
 
@@ -300,11 +263,8 @@ abstract contract CTokenInterfaceTnd is CTokenStorageTnd {
     function _setReserveFactor(uint newReserveFactorMantissa) virtual external returns (uint);
     function _reduceReserves(uint reduceAmount) virtual external returns (uint);
     function _setInterestRateModel(InterestRateModel newInterestRateModel) virtual external returns (uint);
-    function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_) virtual public returns (uint);
-    function _signalTransfer(address recipient) virtual public returns (uint);
-    function _setAutocompoundRewards(bool autocompound_) virtual public returns (uint);
-    function _setRewardTracker(address _rewardTracker) virtual public returns (uint);
-    function _setVaultFees(uint256 withdrawFee_, uint256 managementFee_) virtual public returns (uint);
+    function _setTndTrackerAddresses(IRewardTracker feeTndTracker_, IRewardTracker bonusTndTracker_, IRewardTracker stakedTndTracker_) virtual public returns (uint);
+    
 }
 
 contract CErc20StorageTnd {
@@ -328,9 +288,6 @@ abstract contract CErc20InterfaceTnd is CErc20StorageTnd {
     function repayBorrowBehalf(address borrower, uint repayAmount) virtual external returns (uint);
     function liquidateBorrow(address borrower, uint repayAmount, CTokenInterfaceTnd cTokenCollateral) virtual external returns (uint);
     function sweepToken(EIP20NonStandardInterface token) virtual external;
-    function depositNFT(address _NFTAddress, uint256 _TokenID) virtual external;
-    function withdrawNFT(address _NFTAddress, uint256 _TokenID) virtual external;
-    function compoundGlp() virtual external returns (uint);
     
 
     /*** Admin Functions ***/
