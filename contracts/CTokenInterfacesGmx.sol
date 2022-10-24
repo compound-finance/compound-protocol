@@ -28,27 +28,22 @@ contract CTokenStorageGmx {
     /**
      * @notice GLP reward router for claiming rewards
      */
-    IGmxRewardRouter public glpRewardRouter = IGmxRewardRouter(0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1);
-
-    /**
-     * @notice Staked GLP Adress to call transfer on
-     */
-    IStakedGlp public stakedGLP = IStakedGlp(0x2F546AD4eDD93B956C8999Be404cdCAFde3E89AE);
+    IGmxRewardRouter public glpRewardRouter;
 
     /**
      * @notice address of the GMX token
      */
-    address public gmxToken = 0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a;
+    address public gmxToken;
 
     /**
      * @notice Address that handles GMX staking
      */
-    IRewardTracker public stakedGmxTracker = IRewardTracker(0x908C4D94D34924765f1eDc22A1DD098397c59dD4);
+    IRewardTracker public stakedGmxTracker;
 
     /**
      * @notice address of the Staked GMX token
      */
-    address public sbfGMX = 0xd2D1162512F927a7e282Ef43a362659E4F2a728F;
+    address public sbfGMX;
 
     /**
      * @notice Staked GLP Adress to call transfer on
@@ -58,7 +53,7 @@ contract CTokenStorageGmx {
     /**
      * @notice GLP manager contract to approve transfers on for autocompounding
      */
-    address public glpManager = 0x321F653eED006AD1C29D174e17d96351BDe22649;
+    address public glpManager;
 
     /**
      * @notice EIP-20 token name for this token
@@ -293,7 +288,7 @@ abstract contract CTokenInterfaceGmx is CTokenStorageGmx {
     function _setReserveFactor(uint newReserveFactorMantissa) virtual external returns (uint);
     function _reduceReserves(uint reduceAmount) virtual external returns (uint);
     function _setInterestRateModel(InterestRateModel newInterestRateModel) virtual external returns (uint);
-    function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_) virtual public returns (uint);
+    function _setGlpAddresses(IGmxRewardRouter glpRewardRouter_, address glpManager_, address gmxToken_, address stakedGmxTracker_, address sbfGMX_) virtual public returns (uint);
     function _signalTransfer(address recipient) virtual public returns (uint);
     function _setAutocompoundRewards(bool autocompound_) virtual public returns (uint);
     function _setVaultFees(uint256 withdrawFee_, uint256 managementFee_) virtual public returns (uint);

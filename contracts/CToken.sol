@@ -1202,7 +1202,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param glpManager_ the glpManager contract address to use
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_) override public returns (uint) {
+    function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_, address gmxToken_, address stakedGmxTracker_, address sbfGMX_) override public returns (uint) {
         // Check caller is admin
         if (msg.sender != admin) {
             revert SetStakedGlpAddressOwnerCheck();
@@ -1210,6 +1210,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         stakedGLP = stakedGLP_;
         glpRewardRouter = glpRewardRouter_;
         glpManager = glpManager_;
+        sbfGMX = sbfGMX_;
+        gmxToken = gmxToken_;
+        stakedGmxTracker = IRewardTracker(stakedGmxTracker_);
         return NO_ERROR;
     }
 

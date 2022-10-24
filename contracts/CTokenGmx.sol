@@ -9,7 +9,6 @@ import "./EIP20Interface.sol";
 import "./InterestRateModel.sol";
 import "./ExponentialNoError.sol";
 import "./IGmxRewardRouter.sol";
-import "./IStakedGlp.sol";
 import "./TransferHelper.sol";
 import "./ISwapRouter.sol";
 
@@ -358,6 +357,25 @@ abstract contract CTokenGmx is CTokenInterfaceGmx, ExponentialNoError, TokenErro
         return getCashPrior();
     }
 
+    function compoundGmx() internal {
+
+        if(totalSupply > 0){
+            glpRewardRouter.handleRewards(true, true, true, true, true, true, false);
+        }
+
+        if(autocompound){
+            uint ethBalance =  EIP20Interface(WETH).balanceOf(address(this));
+            if(ethBalance > 0){
+                uint ethManagementFee = mul_(ethBalance, div_(managementFee, 100));
+                uint ethToCompound = sub_(ethBalance, ethManagementFee);
+                EIP20Interface(WETH).transfer(admin, ethManagementFee);
+                uint256 amountOfGmxReceived = swapExactInputSingle(ethToCompound);
+                glpRewardRouter.stakeGmx(amountOfGmxReceived);
+            }
+        } 
+        
+    }
+
     /**
      * @notice Applies accrued interest to total borrows and reserves
      * @dev This calculates interest accrued from the last checkpointed block
@@ -412,25 +430,14 @@ abstract contract CTokenGmx is CTokenInterfaceGmx, ExponentialNoError, TokenErro
         totalBorrows = totalBorrowsNew;
         totalReserves = totalReservesNew;
 
-        if(totalSupply > 0){
-            glpRewardRouter.handleRewards(true, true, true, true, true, true, false);
-            if(autocompound){
-                uint ethBalance =  EIP20Interface(WETH).balanceOf(address(this));
-                if(ethBalance > 0){
-                    uint ethManagementFee = mul_(ethBalance, div_(managementFee, 100));
-                    uint ethToCompound = sub_(ethBalance, ethManagementFee);
-                    EIP20Interface(WETH).transfer(admin, ethManagementFee);
-                    uint256 amountOfGmxReceived = swapExactInputSingle(ethToCompound);
-                    glpRewardRouter.stakeGmx(amountOfGmxReceived);
-                }
-            } 
-        }
+        compoundGmx();
 
         /* We emit an AccrueInterest event */
         emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
         
         return NO_ERROR;
     }
+
 
     /**
      * @notice Sender supplies assets into the market and receives cTokens in exchange
@@ -1197,20 +1204,21 @@ abstract contract CTokenGmx is CTokenInterfaceGmx, ExponentialNoError, TokenErro
 
     /**
      * @notice Updates the addresses for the GLP contracts using _setStakedGlpAddresses
-     * @dev Admin function to update the stakedGLP contract address
-     * @param stakedGLP_ the stakedGLP contract to use
+     * @dev Admin function to update the gmx contract address
      * @param glpRewardRouter_ the rewardrouter contract address to use
      * @param glpManager_ the glpManager contract address to use
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_) override public returns (uint) {
+    function _setGlpAddresses(IGmxRewardRouter glpRewardRouter_, address glpManager_, address gmxToken_, address stakedGmxTracker_, address sbfGMX_) override public returns (uint) {
         // Check caller is admin
         if (msg.sender != admin) {
             revert SetStakedGlpAddressOwnerCheck();
         }
-        stakedGLP = stakedGLP_;
         glpRewardRouter = glpRewardRouter_;
         glpManager = glpManager_;
+        gmxToken = gmxToken_;
+        stakedGmxTracker = IRewardTracker(stakedGmxTracker_);
+        sbfGMX = sbfGMX_;
         return NO_ERROR;
     }
 

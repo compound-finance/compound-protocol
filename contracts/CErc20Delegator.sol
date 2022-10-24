@@ -443,8 +443,9 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
      * @param glpManager_ the glpManager contract address to use
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_) override public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setGlpAddresses(address,address,address)", stakedGLP_, glpRewardRouter_, glpManager_));
+    
+    function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_, address gmxToken_, address stakedGmxTracker_, address sbfGMX_) override public returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setGlpAddresses(address,address,address,address,address,address)", stakedGLP_, glpRewardRouter_, glpManager_,gmxToken_,stakedGmxTracker_,sbfGMX_));
         return abi.decode(data, (uint));
     }
 
