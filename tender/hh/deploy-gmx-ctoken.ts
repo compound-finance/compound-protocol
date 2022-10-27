@@ -40,8 +40,15 @@ export async function main() {
   console.log("deploying delegate")
   const deployedCErc20Delegate = await CErc20Delegate.deploy()
   const delegateAddress = deployedCErc20Delegate.address
-
   console.log("deployed CErc20Delegate", delegateAddress)
+
+  try {
+    await verifyContract("contracts/CErc20DelegateGmx.sol:CErc20DelegateGmx", delegateAddress, []);
+    console.log("Verified CErc20Delegate", delegateAddress)
+  } catch (e) {
+    console.error("Error verifying delegator");
+    console.error(e);
+  }
 
   console.log(
       "Calling delegatorFactory.deploy() with",
