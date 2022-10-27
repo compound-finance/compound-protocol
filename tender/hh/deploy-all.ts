@@ -1,10 +1,12 @@
+// This script serves as an outline for deploying the whole protocol.
+// It is rarely necessary to deploy-everything, so comment out steps as needed.
 import hre from "hardhat";
 import { copyFileSync } from "fs";
 
 import { main as DeployProtocol } from "./deploy-protocol";
 import { main as DeployJumpModel } from "./deploy-jumprate-model";
 import { main as DeployCDelegators } from "./deploy-cdelegator";
-import { main as DeployCDelegate } from "./deploy-cdelegate";
+// import { main as DeployCDelegate } from "./deploy-cdelegate";
 import { main as GLPOracle } from "./deploy-glp-oracle";
 
 // import { main as DeployMockOracle } from "./deploy-mock-price-oracle";
@@ -12,7 +14,7 @@ import { main as DeployCeth } from "./deploy-cether";
 // import { main as DeployIrModel } from "./deploy-ir-model";
 // import { main as DeployCToken } from "./deploy-ctoken";
 // import { main as SetMockOraclePrice } from "./set-mock-oracle-price";
-import { main as SetCollateralFactor } from "./set-cf";
+// import { main as SetCollateralFactor } from "./set-cf";
 
 
 const outputFilePath = `./deployments/${hre.network.name}.json`;
@@ -35,15 +37,15 @@ async function main() {
   // await DeployMockOracle();
 
   console.log("deploy protocol")
-  // await DeployProtocol();
+  await DeployProtocol();
 
   // console.log("deploying GLPOracle")
-  await GLPOracle();
+  // await GLPOracle();
 
   // await DeployLens();
 
-  // console.log("Deploy Jump Model")
-  // await DeployJumpModel();
+  console.log("Deploy Jump Model")
+  await DeployJumpModel();
 
   
   // console.log("deploying CETH")
@@ -54,7 +56,7 @@ async function main() {
 
 
   // console.log("deploying CDelegators")
-  // await DeployCDelegators()
+  await DeployCDelegators()
 
   // SetCollateralFactor requires the price to be set first
   // await SetCollateralFactor();

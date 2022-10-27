@@ -2,14 +2,10 @@ import "@typechain/hardhat";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
 import { task, subtask } from "hardhat/config";
-import { getAllFilesMatching } from "hardhat/internal/util/fs-utils";
 import * as path from 'path';
 import {
  TASK_NODE,
- TASK_TEST,
- TASK_NODE_GET_PROVIDER,
  TASK_NODE_SERVER_READY,
- TASK_TEST_GET_TEST_FILES,
  TASK_TEST_RUN_MOCHA_TESTS
 } from "hardhat/builtin-tasks/task-names";
 
@@ -58,8 +54,16 @@ const config: HardhatUserConfig = {
         enabled: true,
         ignoreUnknownTxType: true,
       }
-    }
+    },
+
   },
+
+  etherscan: {
+    apiKey: {
+      arbitrumOne: process.env["ETHERSCAN_API_KEY"],
+    } 
+  },
+  
   solidity: {
     version: "0.8.10",
     settings: {

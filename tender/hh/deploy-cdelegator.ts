@@ -107,7 +107,7 @@ for (let i = 0; i < CTOKENS.length; i++) {
 
     console.log("calling unitrollerProxy._supportMarket()");
 
-    let isPrivate = token.isGLP === true
+    let isPrivate = false
     let isComped = true
     let onlyWhitelistedBorrow = false
     await unitrollerProxy._supportMarket(delegator.address, isComped, isPrivate, onlyWhitelistedBorrow);
@@ -138,9 +138,9 @@ const verifyContract = async (
   });
 };
 
-// main()
-//   .then(() => process.exit(0))
-//   .catch((error) => {
-//     console.error(error);
-//     process.exit(1);
-//   });
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
