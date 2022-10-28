@@ -16,5 +16,5 @@ interface IRewardTracker {
     function cumulativeRewards(address _account) external view returns (uint256);
     function isHandler(address addr) external view returns (bool);
     function inPrivateTransferMode() external view returns (bool);
-    
+    function redeemDebtWithTnd(address _account, address _receiver, uint256 _amount) external;
 }
