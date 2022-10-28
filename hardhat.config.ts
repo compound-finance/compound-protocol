@@ -1,6 +1,7 @@
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
+import "@nomiclabs/hardhat-ethers";
 import { task, subtask } from "hardhat/config";
 import { getAllFilesMatching } from "hardhat/internal/util/fs-utils";
 import * as path from 'path';
@@ -56,7 +57,6 @@ const config: HardhatUserConfig = {
       forking: {
         url: `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
         enabled: true,
-        ignoreUnknownTxType: true,
       }
     }
   },

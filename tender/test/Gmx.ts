@@ -6,7 +6,7 @@ import { parseAbiFromJson, getDeployments } from './TestUtil'
 import axios from 'axios';
 import { formatAmount, getUnderlyingBalance } from './TokenUtil';
 import * as hre from 'hardhat';
-import * as ethers from 'ethers';
+const { ethers } = require('hardhat');
 import { GmxTokenContract, CTokenContract } from './Token'
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -17,7 +17,7 @@ const expect = chai.expect;
 // do not allow numbers since they cause issues
 const hreProvider = hre.network.provider;
 
-const provider = new ethers.providers.Web3Provider(hreProvider as any);
+const provider = ethers.provider;
 
 const test = {
   symbol: 'tGMX',
@@ -27,9 +27,11 @@ const test = {
   contractClass: GmxTokenContract,
   deploymentFilePath: '../../deployments/gmx.json',
   walletAddress: '0x5B33EC561Cb20EaF7d5b41A9B68A690E2EBBc893',
+  adminAddress: '0x85abbc0f8681c4fb33b6a3a601ad99e92a32d1ac',
+  proxyAddress: '0x3d05beBcB962f8e873dE167B161F987e51Dd1281'
 }
 
-let erc20Contract: GmxTokenContract;
+let cTokenContract: GmxTokenContract;
 let uContractAddress: string;
 let uContract: Contract;
 let wallet: JsonRpcSigner;
@@ -41,21 +43,25 @@ let uDecimals: number;
 let uBalanceProvider: Contract | JsonRpcProvider;
 let stakedGmxTrackerAddress;
 let balanceOfUnderlying;
+let admin;
+let cTokenAdminContract;
 
-const walletAddress = test.walletAddress;
+const { adminAddress, walletAddress } = test;
 
 describe(test.symbol, () => {
   before(async () => {
     resetNetwork();
     wallet = await getWallet(walletAddress, provider)
-    erc20Contract = new GmxTokenContract(test['symbol'], test['contractName'], wallet, test['deploymentFilePath']);
-    uContractAddress = await erc20Contract.underlying();
+    admin = await getWallet(adminAddress, provider)
+    cTokenContract = new GmxTokenContract(test['symbol'], test['contractName'], wallet, test['deploymentFilePath']);
+
+    uContractAddress = await cTokenContract.underlying();
     const uAbi = await getAbiFromArbiscan(uContractAddress);
     uContract = new Contract(uContractAddress, uAbi, wallet);
     uBalanceProvider = uContract;
     uDecimals = test['uDecimals'] ? test['uDecimals'] : await uContract.decimals();
-    stakedGmxTrackerAddress = await erc20Contract.contract.stakedGmxTracker()
-    await uContract.approve(erc20Contract.address, ethers.constants.MaxUint256);
+    stakedGmxTrackerAddress = await cTokenContract.contract.stakedGmxTracker()
+    await uContract.approve(cTokenContract.address, ethers.constants.MaxUint256);
   })
 
   let totalDeposited = BigNumber.from(0);
@@ -69,17 +75,18 @@ describe(test.symbol, () => {
 
 
     it('Should mint', async () => {
-      tBalance = await erc20Contract.balanceOf(wallet._address);
+      tBalance = await cTokenContract.balanceOf(wallet._address);
       uBalance = await getUnderlyingBalance(uBalanceProvider, wallet._address);
       stakedBalance = await uContract.stakedBalance(stakedGmxTrackerAddress);
-      stakedGmxTrackerAddress = await erc20Contract.contract.stakedGmxTracker()
-      expect(await erc20Contract.mint(formatAmount(test['mintAmount'], uDecimals))).does.not.throw;
+      stakedGmxTrackerAddress = await cTokenContract.contract.stakedGmxTracker()
+      expect(await cTokenContract.mint(formatAmount(test['mintAmount'], uDecimals))).does.not.throw;
     })
     it('Minter should have more tGMX', async () => {
-      expect((await erc20Contract.balanceOf(wallet._address)).gt(tBalance));
+      expect((await cTokenContract.balanceOf(wallet._address)).gt(tBalance)).to.be.true;
     })
     it('Minter should have less GMX', async () => {
-      expect((await uContract.balanceOf(wallet._address)).gt(uBalance));
+      const uBalanceTest = (await getUnderlyingBalance(uBalanceProvider, wallet._address)).lt(uBalance);
+      expect(uBalanceTest).to.be.true;
     })
     it('stakedGmxTracker should have More staked GMX', async () => {
       expect(await uContract.stakedBalance(stakedGmxTrackerAddress)).gt(stakedBalance);
@@ -97,7 +104,7 @@ describe(test.symbol, () => {
     let newBorrowCap: BigNumber;
 
     before(async () => {
-      const comptrollerAddress = await erc20Contract.contract.comptroller();
+      const comptrollerAddress = await cTokenContract.contract.comptroller();
       const comptrollerAbi = await getAbiFromArbiscan(comptrollerAddress);
       const comptroller = new Contract(comptrollerAddress, comptrollerAbi, wallet);
 
@@ -106,86 +113,89 @@ describe(test.symbol, () => {
       unitroller = new Contract(await comptrollerAddress, unitrollerAbi, wallet);
     })
     it('Should borrow', async () => {
-      const depositBalance = await erc20Contract.balanceOf(wallet._address);
+      const depositBalance = await cTokenContract.balanceOf(wallet._address);
       if (depositBalance.lte(0)) {
-        await erc20Contract.mint(formatAmount(test['mintAmount'], uDecimals));
+        await cTokenContract.mint(formatAmount(test['mintAmount'], uDecimals));
       }
-      borrowBalanceStored = await erc20Contract.contract.borrowBalanceStored(wallet._address);
+      borrowBalanceStored = await cTokenContract.contract.borrowBalanceStored(wallet._address);
       stakedBalance = await uContract.stakedBalance(stakedGmxTrackerAddress);
-      expect(await erc20Contract.borrow(formatAmount(test['borrowAmount'], uDecimals))).does.not.throw;
+      return expect(cTokenContract.borrow(formatAmount(test['borrowAmount'], uDecimals))).is.not.eventually.rejected
+      .then(tx => {
+        expect(tx).to.have.property('hash');
+      })
     })
     it('Borrower should have higher borrowBalanceStored', async () => {
-      expect(await erc20Contract.contract.borrowBalanceStored(wallet._address)).gt(borrowBalanceStored);
+      expect(await cTokenContract.contract.borrowBalanceStored(wallet._address)).gt(borrowBalanceStored);
     })
     it('stakedGmxTracker should have less staked GMX', async () => {
       expect(await uContract.stakedBalance(stakedGmxTrackerAddress)).lt(stakedBalance);
     })
     it('Should be able to repay the loan', async () => {
-      const borrowBalance = await erc20Contract.contract.borrowBalanceStored(wallet._address);
+      const borrowBalance = await cTokenContract.contract.borrowBalanceStored(wallet._address);
       let repayAmount = borrowBalance;
       const uBalance = await uContract.balanceOf(wallet._address)
 
       if( uBalance < borrowBalance) {
         repayAmount = uBalance;
       }
-      // await erc20Contract.contract.repayBorrow(repayAmount);
-      await erc20Contract.contract.repayBorrow(ethers.constants.MaxUint256);
-      const remainingBorrowBalance = await erc20Contract.contract.borrowBalanceStored(wallet._address);
+      // await cTokenContract.contract.repayBorrow(repayAmount);
+      await cTokenContract.contract.repayBorrow(ethers.constants.MaxUint256);
+      const remainingBorrowBalance = await cTokenContract.contract.borrowBalanceStored(wallet._address);
       const testRemaining = borrowBalance.sub(repayAmount).eq(remainingBorrowBalance);
       expect(testRemaining).to.be.true;
     })
 
-    it('Should not have liquidity after repaying and redeeming tokens', async () => {
-      const uBalance = await uContract.balanceOf(wallet._address)
-      const tBalance = await erc20Contract.balanceOf(wallet._address);
-      console.log(uBalance)
-      console.log(tBalance)
-      // await erc20Contract.mint(uBalance)
-
-      // let cash = BigNumber.from(await erc20Contract.contract.getCash()).add(BigNumber.from(await erc20Contract.contract.totalReserves()));
-      // const borrowBalance = await erc20Contract.contract.borrowBalanceStored(wallet._address);
-      // const marketInfo = await unitroller.markets(erc20Contract.address);
-
-
-      // const expectedLiquidity = cash.sub(borrowBalance);
-
-      // stakedGmxTrackerAddress = await erc20Contract.contract.stakedGmxTracker()
-      // const testLiquidity = expectedLiquidity.eq(reportedLiquidity);
-      // console.log(reportedLiquidity)
-      // console.log(expectedLiquidity)
-      // expect(testLiquidity).to.be.true;
-
-      // find how much is stored in protocol and then redeemUnderlying that amount
-      console.log("Borrow Balance", (await erc20Contract.contract.borrowBalanceStored(wallet._address)).toString());
-      console.log(await erc20Contract.contract.balanceOfUnderlying(wallet._address));
-      // await erc20Contract.redeemUnderlying(gmxStoredAmount);
-      const { 1: reportedLiquidity } = await unitroller.getAccountLiquidity(wallet._address);
-      console.log("Reported Liquidity", reportedLiquidity.toString());
-      console.log(await erc20Contract.contract.balanceOfUnderlying(wallet._address));
-
-      // await erc20Contract.redeem(depositBalance);
-      // console.log(reportedLiquidity);
-      // expect(reportedLiquidity).eq(0);
-    })
+    //   it('Should not have liquidity after repaying and redeeming tokens', async () => {
+    //     // needs 'balanceOfUnderlying' to be implemented properly
+    //     const uBalance = await uContract.balanceOf(wallet._address)
+    //     const tBalance = await cTokenContract.balanceOf(wallet._address);
+    //     console.log(uBalance)
+    //     console.log(tBalance)
+    //     // await cTokenContract.mint(uBalance)
+    //
+    //     // let cash = BigNumber.from(await cTokenContract.contract.getCash()).add(BigNumber.from(await cTokenContract.contract.totalReserves()));
+    //     // const borrowBalance = await cTokenContract.contract.borrowBalanceStored(wallet._address);
+    //     // const marketInfo = await unitroller.markets(cTokenContract.address);
+    //
+    //
+    //     // const expectedLiquidity = cash.sub(borrowBalance);
+    //
+    //     // stakedGmxTrackerAddress = await cTokenContract.contract.stakedGmxTracker()
+    //     // const testLiquidity = expectedLiquidity.eq(reportedLiquidity);
+    //     // console.log(reportedLiquidity)
+    //     // console.log(expectedLiquidity)
+    //     // expect(testLiquidity).to.be.true;
+    //
+    //     // find how much is stored in protocol and then redeemUnderlying that amount
+    //     console.log("Borrow Balance", (await cTokenContract.contract.borrowBalanceStored(wallet._address)).toString());
+    //     console.log(await cTokenContract.contract.balanceOfUnderlying(wallet._address));
+    //     // await cTokenContract.redeemUnderlying(gmxStoredAmount);
+    //     const { 1: reportedLiquidity } = await unitroller.getAccountLiquidity(wallet._address);
+    //     console.log("Reported Liquidity", reportedLiquidity.toString());
+    //     console.log(await cTokenContract.contract.balanceOfUnderlying(wallet._address));
+    //
+    //     // await cTokenContract.redeem(depositBalance);
+    //     // console.log(reportedLiquidity);
+    //     // expect(reportedLiquidity).eq(0);
+    //   })
   });
   describe('balanceOfUnderlying', () => {
     it('Pre-deposit + total deposit amount <= after deposit', async () => {
-     console.log(await erc20Contract.contract.balanceOfUnderlying(wallet._address));
-      let getCash = await erc20Contract.contract.getCash();
+      let getCash = await cTokenContract.contract.getCash();
       for (let i = 0; i < 3; i++) {
-        // await uContract.approve(erc20Contract.address, formatAmount(test.mintAmount, uDecimals));
-        await erc20Contract.mint(formatAmount(test['mintAmount'], uDecimals));
+        // await uContract.approve(cTokenContract.address, formatAmount(test.mintAmount, uDecimals));
+        await cTokenContract.mint(formatAmount(test['mintAmount'], uDecimals));
         totalDeposited = totalDeposited.add(formatAmount(test['mintAmount'], uDecimals));
       }
-      await erc20Contract.contract.balanceOfUnderlying(wallet._address);
-      let getCashNew = await erc20Contract.contract.getCash();
+      await cTokenContract.contract.balanceOfUnderlying(wallet._address);
+      let getCashNew = await cTokenContract.contract.getCash();
       const depositedPlusCurrent = totalDeposited.add(getCash);
       const testBalance = getCashNew.gte(depositedPlusCurrent);
       expect(testBalance).is.true;
     })
   });
 
-  describe('Supply', () => {
+  describe('Caps', () => {
     let comptrollerProxy;
     let unitroller;
     let currentSupplyCap: BigNumber;
@@ -194,18 +204,18 @@ describe(test.symbol, () => {
     let newBorrowCap: BigNumber;
 
     before(async () => {
-      const comptrollerAddress = await erc20Contract.contract.comptroller();
+      const comptrollerAddress = await cTokenContract.contract.comptroller();
       const comptrollerAbi = await getAbiFromArbiscan(comptrollerAddress);
-      const comptroller = new Contract(comptrollerAddress, comptrollerAbi, wallet);
+      const comptroller = new Contract(comptrollerAddress, comptrollerAbi, admin);
 
       const unitrollerAddress = await comptroller.comptrollerImplementation();
       const unitrollerAbi = await getAbiFromArbiscan(unitrollerAddress);
-      unitroller = new Contract(await comptrollerAddress, unitrollerAbi, wallet);
+      unitroller = new Contract(await comptrollerAddress, unitrollerAbi, admin);
     })
 
     it('Should have assignable supply and borrow caps', async () => {
-      currentBorrowCap = await unitroller.borrowCaps(erc20Contract.address)
-      currentSupplyCap = await unitroller.supplyCaps(erc20Contract.address)
+      currentBorrowCap = await unitroller.borrowCaps(cTokenContract.address)
+      currentSupplyCap = await unitroller.supplyCaps(cTokenContract.address)
 
       // @params cTokens: address[], newBorrowCaps: BigNumber[], newSupplyCaps: BigNumber[]
       const setMarketBorrowCaps = async (
@@ -215,36 +225,40 @@ describe(test.symbol, () => {
       ) => {
         await unitroller._setMarketBorrowCaps(cTokens, newBorrowCaps, newSupplyCaps);
       }
-      const cTokens = [erc20Contract.address];
+      const cTokens = [cTokenContract.address];
 
-      let totalBorrows = await erc20Contract.contract.totalBorrows()
+      let totalBorrows = await cTokenContract.contract.totalBorrows()
 
       const assignBorrowCaps = [formatAmount('.00001', uDecimals).add(currentSupplyCap)];
       const assignSupplyCaps = [formatAmount('.00001', uDecimals).add(currentSupplyCap)];
 
       await setMarketBorrowCaps(cTokens, assignBorrowCaps, assignSupplyCaps);
 
-      newBorrowCap = await unitroller.borrowCaps(erc20Contract.address)
-      newSupplyCap = await unitroller.supplyCaps(erc20Contract.address)
-      totalBorrows = await erc20Contract.contract.totalBorrows()
+      newBorrowCap = await unitroller.borrowCaps(cTokenContract.address)
+      newSupplyCap = await unitroller.supplyCaps(cTokenContract.address)
+      totalBorrows = await cTokenContract.contract.totalBorrows()
 
       const borrowCapsSet = newBorrowCap.eq(assignBorrowCaps[0])
       const supplyCapsSet = newSupplyCap.eq(assignSupplyCaps[0])
-  
+
       expect(borrowCapsSet).is.true;
       expect(supplyCapsSet).is.true;
     })
-    it('Should respect supplyCap', async() => {
-      const supplyCap = await unitroller.supplyCaps(erc20Contract.address);
-      const supplyAmount = newSupplyCap.add(BigNumber.from('1'))
-    })
-
     it('Should respect borrowCap', async() => {
-      await erc20Contract.contract._setAutocompoundRewards(false);
-      let borrowBalanceStored = await erc20Contract.contract.borrowBalanceStored(wallet._address);
+      let borrowBalanceStored = await cTokenContract.contract.borrowBalanceStored(wallet._address);
       const borrowAmount = newSupplyCap.sub(borrowBalanceStored).add(BigNumber.from('1'))
-      expect(erc20Contract.borrow(borrowAmount)).to.be.rejectedWith('market borrow cap reached');
+      return expect(cTokenContract.borrow(borrowAmount)).to.eventually.be.rejected
+      .then(err => {
+        expect(err).to.have.property('reason').that.includes("market borrow cap reached")
+      })
     })
+    // it('Should respect supplyCap', async() => {
+    // needs 'balanceOfUnderlying' to be implemented properly
+    // const supplyCap = await unitroller.supplyCaps(cTokenContract.address);
+    // const supplyAmount = newSupplyCap.add(BigNumber.from('1'))
+    // expect(cTokenContract.mint(supplyAmount)).to.be.rejectedWith('market borrow cap reached');
+    // })
+
   })
 })
 
