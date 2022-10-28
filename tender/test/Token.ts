@@ -1,5 +1,4 @@
-import { Wallet, Contract, BigNumber } from 'ethers';
-import { formatEther, formatUnits } from 'ethers/lib/utils'
+import { Wallet, Contract, BigNumber} from 'ethers';
 import { formatAmount } from './TokenUtil'
 import * as ethers from 'ethers';
 import { JsonRpcSigner, JsonRpcProvider, ExternalProvider } from '@ethersproject/providers';
@@ -19,8 +18,8 @@ export class CTokenContract {
 
   private contractName: string;
 
-  constructor(symbol: string, contractName: string, signer: JsonRpcSigner) {
-    const address = getDeployments()[symbol];
+  constructor(symbol: string, contractName: string, signer: JsonRpcSigner, deploymentFilePath?: string) {
+    const address = getDeployments(deploymentFilePath)[symbol];
     const abiPath = resolve(__dirname, `../../artifacts/contracts/${contractName}.sol/${contractName}.json`)
     this.abi = parseAbiFromJson(abiPath);
     this.symbol = symbol;
@@ -103,6 +102,13 @@ export class CTokenContract {
     }
     let answer: BigNumber = await this.call('getUnderlyingPrice', this.address);
     // based on calculation from compound subgraph
+  }
+}
+
+
+export class GmxTokenContract extends CTokenContract {
+  constructor(symbol: string, contractName: string, signer: JsonRpcSigner, deploymentFilePath?: string) {
+    super(symbol, contractName, signer, deploymentFilePath);
   }
 }
 

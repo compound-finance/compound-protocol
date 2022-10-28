@@ -8,14 +8,14 @@ import { CTokenContract } from './Token'
 import { formatAmount } from './TokenUtil'
 
 export class ComptrollerContract {
-  constructor(signer: JsonRpcSigner) {
+  constructor(signer: JsonRpcSigner, deploymentFilePath?: string) {
     const comptrollerAbiPath = resolve(
       __dirname,
       `../../artifacts/contracts/Comptroller.sol/Comptroller.json`
     )
     let comptroller: Contract;
     comptroller = new Contract(
-      getDeployments().Unitroller,
+      getDeployments(deploymentFilePath).Unitroller,
       parseAbiFromJson(comptrollerAbiPath),
       signer
     );

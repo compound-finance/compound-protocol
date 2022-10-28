@@ -1,15 +1,16 @@
 import { JsonRpcSigner, JsonRpcProvider, ExternalProvider } from '@ethersproject/providers';
-import { CTokenContract } from './Token'
+import { CTokenContract, GmxTokenContract } from './Token'
 import { getWallet, getAbiFromArbiscan, resetNetwork } from './TestUtil'
 import * as hre from 'hardhat';
 import * as ethers from 'ethers'
-import { BigNumber, Contract } from 'ethers';
+import { Contract, BigNumber } from 'ethers';
 import { expect } from 'chai';
 import { formatAmount, getUnderlyingBalance } from './TokenUtil';
+import * as tokenClasses from './Token';
 const hreProvider = hre.network.provider;
 
 const provider = new ethers.providers.Web3Provider(hreProvider as any);
-
+// USE THE DELEGATOR FILE INSTEAD OF THE CETHER AND CERC20!!!!
 
 const tests = [
   {
@@ -19,16 +20,41 @@ const tests = [
     borrowAmount: '1',
     redeemAmount: '1',
     redeemUnderlyingAmount: '1',
+    contractClass: CTokenContract,
   },
-  {
-    symbol: 'tEth',
-    contractName: 'CEther',
-    walletAddress: '0x52134afB1A391fcEEE6682E51aedbCD47dC55336',
-    mintAmount: '0.001',
-    redeemAmount: 'all',
-    borrowAmount: '0.0005',
-  },
+  // {
+  //   symbol: 'tEth',
+  //   contractName: 'CEther',
+  //   mintAmount: '0.001',
+  //   redeemAmount: 'all',
+  //   borrowAmount: '0.0005',
+  //   contractClass: CTokenContract,
+  // },
+  // {
+  //   symbol: 'tGMX',
+  //   contractName: 'CErc20DelegatorGmx',
+  //   mintAmount: '0.01',
+  //   borrowAmount: '1',
+  //   redeemAmount: '1',
+  //   redeemUnderlyingAmount: '1',
+  //   contractClass: GmxTokenContract,
+  //   deploymentFilePath: '../../deployments/gmx.json',
+  //   walletAddress: '0x5B33EC561Cb20EaF7d5b41A9B68A690E2EBBc893',
+  // }
 ]
+
+const testOptionalDefaults = {
+  contractClass: CTokenContract,
+  deploymentFilePath: '../../deployments/arbitrum.json',
+  walletAddress: '0x52134afB1A391fcEEE6682E51aedbCD47dC55336',
+}
+
+const verifyTestParameters = (test) => {
+  for (let [key, val] of Object.entries(testOptionalDefaults)) {
+    test[key] = test[key] ? test[key] : val;
+  }
+  return test;
+}
 
 let erc20Contract: CTokenContract;
 let uContractAddress: string;
@@ -51,7 +77,13 @@ describe('Erc20', () => {
   for(let test of tests) {
     describe(test.symbol, () => {
       before(async () => {
-        erc20Contract = new CTokenContract(test.symbol, test.contractName, wallet);
+        test = verifyTestParameters(test);
+        // if(wallet._address != test.walletAddress) {
+        //   console.log('impersonating: ', test.walletAddress);
+        //   wallet = await getWallet(test.walletAddress, provider);
+        // }
+        erc20Contract = new test['contractClass'](test.symbol, test.contractName, wallet, test.deploymentFilePath);
+        console.log(await erc20Contract.balanceOf(wallet._address))
         tDecimals = await erc20Contract.decimals();
 
         if (erc20Contract['underlying']) {
