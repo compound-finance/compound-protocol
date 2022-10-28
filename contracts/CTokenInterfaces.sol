@@ -176,6 +176,7 @@ contract CTokenStorage {
     uint public glpBlockDelta;
     uint256 public autoCompoundBlockThreshold = 7000;
     uint public lastGlpDepositAmount;
+    uint public depositsDuringLastInterval;
 
 }
 
