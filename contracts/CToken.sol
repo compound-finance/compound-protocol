@@ -451,6 +451,16 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         return NO_ERROR;
     }
 
+    function _setAutoCompoundBlockThreshold(uint autoCompoundBlockThreshold_) override public returns (uint) {
+        // Check caller is admin
+        if (msg.sender != admin) {
+            revert SetAutoCompoundOwnerCheck();
+        }
+        autoCompoundBlockThreshold = autoCompoundBlockThreshold_;
+        return NO_ERROR;
+    }
+    
+
     /**
      * @notice User supplies assets into the market and receives cTokens in exchange
      * @dev Assumes interest has already been accrued up to the current block
