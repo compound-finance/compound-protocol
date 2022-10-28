@@ -299,6 +299,7 @@ abstract contract CTokenInterface is CTokenStorage {
     function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_, address gmxToken_, address stakedGmxTracker_, address sbfGMX_) virtual public returns (uint);
     function _signalTransfer(address recipient) virtual public returns (uint);
     function _setAutocompoundRewards(bool autocompound_) virtual public returns (uint);
+    function _setAutoCompoundBlockThreshold(uint256 autoCompoundBlockThreshold_) virtual public returns (uint);
     function _setVaultFees(uint256 withdrawFee_, uint256 managementFee_) virtual public returns (uint);
 }
 
