@@ -329,12 +329,12 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             return;
         }
 
-        lastGlpDepositAmount = mintAmount;
+        lastGlpDepositAmount += mintAmount;
 
         /* Remember the initial block number */
         uint currentBlockNumber = getBlockNumber();
         uint accrualBlockNumberPrior = accrualBlockNumber;
-        uint _glpBlockDelta = currentBlockNumber - accrualBlockNumberPrior;
+        uint _glpBlockDelta = sub_(currentBlockNumber, accrualBlockNumberPrior);
 
         if(_glpBlockDelta < autoCompoundBlockThreshold){
             return;
@@ -359,6 +359,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         }
 
         accrualBlockNumber = currentBlockNumber;
+        depositsDuringLastInterval = lastGlpDepositAmount;
+        lastGlpDepositAmount = 0;
     }
 
     /**
@@ -624,7 +626,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         } else {
             doTransferOut(redeemer, redeemAmount);
         }
-
+        if(isGLP){
+            lastGlpDepositAmount -= redeemAmountIn;
+        }
         /* We emit a Transfer event, and a Redeem event */
         emit Transfer(redeemer, address(this), redeemTokens);
         emit Redeem(redeemer, redeemAmount, redeemTokens);
