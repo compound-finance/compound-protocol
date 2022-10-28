@@ -5,8 +5,8 @@ import { resolve } from 'path';
 import { parseAbiFromJson, getDeployments } from './TestUtil'
 import axios from 'axios';
 import { formatAmount, getUnderlyingBalance } from './TokenUtil';
-import * as hre from 'hardhat';
-const { ethers } = require('hardhat');
+import "@nomiclabs/hardhat-ethers";
+import { ethers } from 'hardhat';
 import { GmxTokenContract, CTokenContract } from './Token'
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -15,8 +15,6 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 // do not allow numbers since they cause issues
-const hreProvider = hre.network.provider;
-
 const provider = ethers.provider;
 
 const test = {

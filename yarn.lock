@@ -7461,9 +7461,9 @@ hardhat-deploy@^0.11.10:
     zksync-web3 "^0.8.1"
 
 hardhat@^2.12.1-unknown-txs.0:
-  version "2.12.1"
-  resolved "https://registry.yarnpkg.com/hardhat/-/hardhat-2.12.1.tgz#28b0d7979b55eba379e7de5246240c121c399357"
-  integrity sha512-ihqYoaAKMceVWRcc3VddftFM7Q4/WL5Xan8nrklfDRwwST0W1rWWEE8SrxGikW58IJdREsC/HXVHs0zKfYpiCA==
+  version "2.12.1-unknown-txs.0"
+  resolved "https://registry.yarnpkg.com/hardhat/-/hardhat-2.12.1-unknown-txs.0.tgz#5bbb29c9732b10bf7819b7741bde04763e133957"
+  integrity sha512-VwooAzY/DWrr+GW9P7CBzNa8Bb2ushugznum7D2wo4rSU2ZqnM+ULcvejeEiW/blqxcy3MBYlw/4IMSbdFBLfA==
   dependencies:
     "@ethersproject/abi" "^5.1.2"
     "@metamask/eth-sig-util" "^4.0.0"
