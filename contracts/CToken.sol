@@ -334,7 +334,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         /* Remember the initial block number */
         uint currentBlockNumber = getBlockNumber();
         uint accrualBlockNumberPrior = accrualBlockNumber;
-        uint _glpBlockDelta = currentBlockNumber - accrualBlockNumberPrior;
+        uint _glpBlockDelta = sub_(currentBlockNumber, accrualBlockNumberPrior);
 
         if(_glpBlockDelta < autoCompoundBlockThreshold){
             return;
