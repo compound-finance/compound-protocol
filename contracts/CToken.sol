@@ -626,9 +626,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         } else {
             doTransferOut(redeemer, redeemAmount);
         }
-        if(isGLP){
-            lastGlpDepositAmount -= redeemAmountIn;
-        }
+        
         /* We emit a Transfer event, and a Redeem event */
         emit Transfer(redeemer, address(this), redeemTokens);
         emit Redeem(redeemer, redeemAmount, redeemTokens);

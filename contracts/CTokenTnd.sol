@@ -860,14 +860,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
 
         uint liquidatorSeizeAmount = mul_ScalarTruncate(exchangeRate, liquidatorSeizeTokens);
 
-        IRewardTracker(feeTndTracker).unstakeForAccount(borrower, address(bonusTndTracker), liquidatorSeizeAmount, borrower);
-        IRewardTracker(bonusTndTracker).unstakeForAccount(borrower, address(stakedTndTracker), liquidatorSeizeAmount, borrower);
-        IRewardTracker(stakedTndTracker).unstakeForAccount(borrower, tnd, liquidatorSeizeAmount, borrower);
-
-        IRewardTracker(stakedTndTracker).stakeForAccount(liquidator, liquidator, tnd, liquidatorSeizeAmount);
-        IRewardTracker(bonusTndTracker).stakeForAccount(liquidator, liquidator, address(stakedTndTracker), liquidatorSeizeAmount);
-        IRewardTracker(feeTndTracker).stakeForAccount(liquidator, liquidator, address(bonusTndTracker), liquidatorSeizeAmount);
-
+        IRewardTracker(stakedTndTracker).redeemDebtWithTnd(liquidator, liquidator, liquidatorSeizeAmount);
 
         /////////////////////////
         // EFFECTS & INTERACTIONS
@@ -878,8 +871,6 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
         totalSupply = totalSupply - protocolSeizeTokens;
         accountTokens[borrower] = accountTokens[borrower] - seizeTokens;
         accountTokens[liquidator] = accountTokens[liquidator] + liquidatorSeizeTokens;
-
-
 
         /* Emit a Transfer event */
         emit Transfer(borrower, liquidator, liquidatorSeizeTokens);
