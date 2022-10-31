@@ -407,6 +407,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
         //accrueInterest();
         // mintFresh emits the actual Mint event if successful and logs on errors, so we don't need to
         mintFresh(user, mintAmount);
+        
     }
 
     /**
@@ -441,14 +442,14 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
          *  in case of a fee. On success, the cToken holds an additional `actualMintAmount`
          *  of cash.
          */
-        uint actualMintAmount = doTransferIn(minter, mintAmount);
+        // uint actualMintAmount = doTransferIn(minter, mintAmount);
 
         /*
          * We get the current exchange rate and calculate the number of cTokens to be minted:
          *  mintTokens = actualMintAmount / exchangeRate
          */
 
-        uint mintTokens = div_(actualMintAmount, exchangeRate);
+        uint mintTokens = div_(mintAmount, exchangeRate);
 
         /*
          * We calculate the new total supply of cTokens and minter token balance, checking for overflow:
@@ -460,8 +461,8 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
         accountTokens[minter] = accountTokens[minter] + mintTokens;
 
         /* We emit a Mint event, and a Transfer event */
-        emit Mint(minter, actualMintAmount, mintTokens);
-        emit Transfer(address(this), minter, mintTokens);
+        emit Mint(minter, mintAmount, mintTokens);
+        // emit Transfer(address(this), minter, mintTokens);
 
         /* We call the defense hook */
         // unused function
@@ -573,11 +574,11 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
          *  doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
          */
         
-        doTransferOut(redeemer, redeemAmount);
+        // doTransferOut(redeemer, redeemAmount);
         
 
         /* We emit a Transfer event, and a Redeem event */
-        emit Transfer(redeemer, address(this), redeemTokens);
+        // emit Transfer(redeemer, address(this), redeemTokens);
         emit Redeem(redeemer, redeemAmount, redeemTokens);
 
         /* We call the defense hook */
@@ -599,53 +600,55 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
       * @param borrowAmount The amount of the underlying asset to borrow
       */
     function borrowFresh(address payable borrower, uint borrowAmount) internal {
+        borrower;
+        borrowAmount;
         /* Fail if borrow not allowed */
-        uint allowed = comptroller.borrowAllowed(address(this), borrower, borrowAmount);
-        if (allowed != 0) {
-            revert BorrowComptrollerRejection(allowed);
-        }
+        // uint allowed = comptroller.borrowAllowed(address(this), borrower, borrowAmount);
+        // if (allowed != 0) {
+        //     revert BorrowComptrollerRejection(allowed);
+        // }
 
-        /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber()) {
-            revert BorrowFreshnessCheck();
-        }
+        // /* Verify market's block number equals current block number */
+        // if (accrualBlockNumber != getBlockNumber()) {
+        //     revert BorrowFreshnessCheck();
+        // }
 
-        /* Fail gracefully if protocol has insufficient underlying cash */
-        if (getCashPrior() < borrowAmount) {
-            revert BorrowCashNotAvailable();
-        }
+        // /* Fail gracefully if protocol has insufficient underlying cash */
+        // if (getCashPrior() < borrowAmount) {
+        //     revert BorrowCashNotAvailable();
+        // }
 
-        /*
-         * We calculate the new borrower and total borrow balances, failing on overflow:
-         *  accountBorrowNew = accountBorrow + borrowAmount
-         *  totalBorrowsNew = totalBorrows + borrowAmount
-         */
-        uint accountBorrowsPrev = borrowBalanceStoredInternal(borrower);
-        uint accountBorrowsNew = accountBorrowsPrev + borrowAmount;
-        uint totalBorrowsNew = totalBorrows + borrowAmount;
+        // /*
+        //  * We calculate the new borrower and total borrow balances, failing on overflow:
+        //  *  accountBorrowNew = accountBorrow + borrowAmount
+        //  *  totalBorrowsNew = totalBorrows + borrowAmount
+        //  */
+        // uint accountBorrowsPrev = borrowBalanceStoredInternal(borrower);
+        // uint accountBorrowsNew = accountBorrowsPrev + borrowAmount;
+        // uint totalBorrowsNew = totalBorrows + borrowAmount;
 
-        /////////////////////////
-        // EFFECTS & INTERACTIONS
-        // (No safe failures beyond this point)
+        // /////////////////////////
+        // // EFFECTS & INTERACTIONS
+        // // (No safe failures beyond this point)
 
-        /*
-         * We write the previously calculated values into storage.
-         *  Note: Avoid token reentrancy attacks by writing increased borrow before external transfer.
-        `*/
-        accountBorrows[borrower].principal = accountBorrowsNew;
-        accountBorrows[borrower].interestIndex = borrowIndex;
-        totalBorrows = totalBorrowsNew;
+        // /*
+        //  * We write the previously calculated values into storage.
+        //  *  Note: Avoid token reentrancy attacks by writing increased borrow before external transfer.
+        // `*/
+        // accountBorrows[borrower].principal = accountBorrowsNew;
+        // accountBorrows[borrower].interestIndex = borrowIndex;
+        // totalBorrows = totalBorrowsNew;
 
-        /*
-         * We invoke doTransferOut for the borrower and the borrowAmount.
-         *  Note: The cToken must handle variations between ERC-20 and ETH underlying.
-         *  On success, the cToken borrowAmount less of cash.
-         *  doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
-         */
-        doTransferOut(borrower, borrowAmount);
+        // /*
+        //  * We invoke doTransferOut for the borrower and the borrowAmount.
+        //  *  Note: The cToken must handle variations between ERC-20 and ETH underlying.
+        //  *  On success, the cToken borrowAmount less of cash.
+        //  *  doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
+        //  */
+        // doTransferOut(borrower, borrowAmount);
 
-        /* We emit a Borrow event */
-        emit Borrow(borrower, borrowAmount, accountBorrowsNew, totalBorrowsNew);
+        // /* We emit a Borrow event */
+        // emit Borrow(borrower, borrowAmount, accountBorrowsNew, totalBorrowsNew);
     }
 
     /**
@@ -677,53 +680,56 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
      * @return (uint) the actual repayment amount.
      */
     function repayBorrowFresh(address payer, address borrower, uint repayAmount) internal returns (uint) {
+        payer;
+        borrower;
+        repayAmount;
         /* Fail if repayBorrow not allowed */
-        uint allowed = comptroller.repayBorrowAllowed(address(this), payer, borrower, repayAmount);
-        if (allowed != 0) {
-            revert RepayBorrowComptrollerRejection(allowed);
-        }
+        // uint allowed = comptroller.repayBorrowAllowed(address(this), payer, borrower, repayAmount);
+        // if (allowed != 0) {
+        //     revert RepayBorrowComptrollerRejection(allowed);
+        // }
 
-        /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber()) {
-            revert RepayBorrowFreshnessCheck();
-        }
+        // /* Verify market's block number equals current block number */
+        // if (accrualBlockNumber != getBlockNumber()) {
+        //     revert RepayBorrowFreshnessCheck();
+        // }
 
-        /* We fetch the amount the borrower owes, with accumulated interest */
-        uint accountBorrowsPrev = borrowBalanceStoredInternal(borrower);
+        // /* We fetch the amount the borrower owes, with accumulated interest */
+        // uint accountBorrowsPrev = borrowBalanceStoredInternal(borrower);
 
-        /* If repayAmount == -1, repayAmount = accountBorrows */
-        uint repayAmountFinal = repayAmount == type(uint).max ? accountBorrowsPrev : repayAmount;
+        // /* If repayAmount == -1, repayAmount = accountBorrows */
+        // uint repayAmountFinal = repayAmount == type(uint).max ? accountBorrowsPrev : repayAmount;
 
-        /////////////////////////
-        // EFFECTS & INTERACTIONS
-        // (No safe failures beyond this point)
+        // /////////////////////////
+        // // EFFECTS & INTERACTIONS
+        // // (No safe failures beyond this point)
 
-        /*
-         * We call doTransferIn for the payer and the repayAmount
-         *  Note: The cToken must handle variations between ERC-20 and ETH underlying.
-         *  On success, the cToken holds an additional repayAmount of cash.
-         *  doTransferIn reverts if anything goes wrong, since we can't be sure if side effects occurred.
-         *   it returns the amount actually transferred, in case of a fee.
-         */
-        uint actualRepayAmount = doTransferIn(payer, repayAmountFinal);
+        // /*
+        //  * We call doTransferIn for the payer and the repayAmount
+        //  *  Note: The cToken must handle variations between ERC-20 and ETH underlying.
+        //  *  On success, the cToken holds an additional repayAmount of cash.
+        //  *  doTransferIn reverts if anything goes wrong, since we can't be sure if side effects occurred.
+        //  *   it returns the amount actually transferred, in case of a fee.
+        //  */
+        // uint actualRepayAmount = doTransferIn(payer, repayAmountFinal);
 
-        /*
-         * We calculate the new borrower and total borrow balances, failing on underflow:
-         *  accountBorrowsNew = accountBorrows - actualRepayAmount
-         *  totalBorrowsNew = totalBorrows - actualRepayAmount
-         */
-        uint accountBorrowsNew = accountBorrowsPrev - actualRepayAmount;
-        uint totalBorrowsNew = totalBorrows - actualRepayAmount;
+        // /*
+        //  * We calculate the new borrower and total borrow balances, failing on underflow:
+        //  *  accountBorrowsNew = accountBorrows - actualRepayAmount
+        //  *  totalBorrowsNew = totalBorrows - actualRepayAmount
+        //  */
+        // uint accountBorrowsNew = accountBorrowsPrev - actualRepayAmount;
+        // uint totalBorrowsNew = totalBorrows - actualRepayAmount;
 
-        /* We write the previously calculated values into storage */
-        accountBorrows[borrower].principal = accountBorrowsNew;
-        accountBorrows[borrower].interestIndex = borrowIndex;
-        totalBorrows = totalBorrowsNew;
+        // /* We write the previously calculated values into storage */
+        // accountBorrows[borrower].principal = accountBorrowsNew;
+        // accountBorrows[borrower].interestIndex = borrowIndex;
+        // totalBorrows = totalBorrowsNew;
 
-        /* We emit a RepayBorrow event */
-        emit RepayBorrow(payer, borrower, actualRepayAmount, accountBorrowsNew, totalBorrowsNew);
+        // /* We emit a RepayBorrow event */
+        // emit RepayBorrow(payer, borrower, actualRepayAmount, accountBorrowsNew, totalBorrowsNew);
 
-        return actualRepayAmount;
+        return 0;
     }
 
     /**
@@ -861,6 +867,7 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
         uint liquidatorSeizeAmount = mul_ScalarTruncate(exchangeRate, liquidatorSeizeTokens);
 
         IRewardTracker(stakedTndTracker).redeemDebtWithTnd(liquidator, liquidator, liquidatorSeizeAmount);
+        
 
         /////////////////////////
         // EFFECTS & INTERACTIONS
