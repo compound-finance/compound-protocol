@@ -62,7 +62,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       allowUnlimitedContractSize: true,
       forking: {
-        url: `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+        url: process.env["ARBITRUM_RPC"],
         enabled: true,
       }
     },
