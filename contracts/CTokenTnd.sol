@@ -866,8 +866,8 @@ abstract contract CTokenTnd is CTokenInterfaceTnd, ExponentialNoError, TokenErro
 
         uint liquidatorSeizeAmount = mul_ScalarTruncate(exchangeRate, liquidatorSeizeTokens);
 
-        IRewardTracker(stakedTndTracker).redeemDebtWithTnd(liquidator, liquidator, liquidatorSeizeAmount);
-        
+        IRewardTracker(stakedTndTracker).redeemDebtWithTnd(borrower, liquidator, liquidatorSeizeAmount);
+
 
         /////////////////////////
         // EFFECTS & INTERACTIONS
