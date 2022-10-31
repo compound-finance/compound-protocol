@@ -198,9 +198,10 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
      * @dev This excludes the value of the current message, if any
      * @return The quantity of underlying tokens owned by this contract
      */
-    function getCashPrior() virtual override internal view returns (uint) {
-        EIP20Interface token = EIP20Interface(underlying);
-        return token.balanceOf(address(this));
+    function getCashPrior() virtual override internal view returns (uint256) {
+        uint256 cashPrior;
+        cashPrior = stakedTndTracker.depositBalances(address(this), underlying);
+        return cashPrior;
     }
 
     /**
