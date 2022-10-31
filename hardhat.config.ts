@@ -3,7 +3,7 @@ import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-ethers";
 import { task, subtask } from "hardhat/config";
-import { getAllFilesMatching } from "hardhat/internal/util/fs-utils";
+import { existsSync } from "fs";
 import * as path from 'path';
 import {
  TASK_NODE,
@@ -23,11 +23,18 @@ import * as dotenv from "dotenv";
 
 import * as tdly from "@tenderly/hardhat-tenderly";
 
-tdly.setup({
-  automaticVerifications: true // automatically verifies contracts !!
-});
-
 dotenv.config({ path: __dirname + "/.env" });
+
+function getHomeDir() {
+  return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+}
+
+if (existsSync(`${getHomeDir()}/.tenderly/config.yaml`)) {
+  const automaticVerifications = process.env['AUTOMATIC_VERIFICATIONS'] == '0' ? false : true;
+  tdly.setup({
+    automaticVerifications: automaticVerifications // automatically verifies contracts !!
+  });
+}
 
 const config: HardhatUserConfig = {
   networks: {
@@ -52,13 +59,13 @@ const config: HardhatUserConfig = {
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
-    localhost: {
+    hardhat: {
       allowUnlimitedContractSize: true,
       forking: {
         url: `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
         enabled: true,
       }
-    }
+    },
   },
   solidity: {
     version: "0.8.10",
@@ -70,73 +77,5 @@ const config: HardhatUserConfig = {
     },
   },
 };
-
-// initialize localhost testing server
-task('node:test').setAction(async (taskArgs, hre, runSuper) => {
-  subtask(TASK_NODE_SERVER_READY).setAction(async (taskArgs, hre, runSuper) => {
-    await hre.network.provider.request({
-      method: 'hardhat_reset',
-      params: [
-        {
-          allowUnlimitedContractSize: true,
-          forking: {
-            jsonRpcUrl: `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-            enabled: true,
-            ignoreUnknownTxType: true,
-          },
-        },
-      ],
-    })
-    await runSuper(taskArgs);
-  });
-  await hre.run(TASK_NODE);
-});
-
-// connect to localhost testing server and run tests
-task('test:local').setAction(async (taskArgs, hre, runSuper) => {
-  subtask(TASK_TEST_RUN_MOCHA_TESTS).setAction(async (taskArgs, hre, runSuper) => {
-    const fpath = path.join(__dirname, 'tender/test/test.ts');
-    taskArgs.testFiles = [fpath];
-    await runSuper(taskArgs);
-  });
-  config.defaultNetwork = 'localhost',
-  await hre.run(TASK_TEST_RUN_MOCHA_TESTS);
-});
-
-// both start localhost testing server and run tests
-task('test:unified').setAction(async (taskArgs, hre, runSuper) => {
-  subtask(TASK_NODE_SERVER_READY).setAction(async (taskArgs, hre, runSuper) => {
-    await hre.network.provider.request({
-      method: "hardhat_setLoggingEnabled",
-      params: [false],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_reset',
-      params: [
-        {
-          allowUnlimitedContractSize: true,
-          forking: {
-            jsonRpcUrl: `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-            enabled: true,
-            ignoreUnknownTxType: true,
-          },
-        },
-      ],
-    })
-    await hre.network.provider.request({
-      method: "hardhat_setLoggingEnabled",
-      params: [false],
-    });
-    subtask(TASK_TEST_RUN_MOCHA_TESTS).setAction(async (taskArgs, hre, runSuper) => {
-      const fpath = path.join(__dirname, 'tender/test/test.ts');
-      taskArgs.testFiles = [fpath];
-      await runSuper(taskArgs);
-    });
-    await hre.run(TASK_TEST_RUN_MOCHA_TESTS);
-    process.exit(0);
-    // await runSuper(taskArgs);
-  });
-  await hre.run(TASK_NODE);
-});
 
 export default config;

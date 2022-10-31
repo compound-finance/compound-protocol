@@ -38,6 +38,7 @@ export const getWallet = async (walletAddress, provider) => {
     await impersonateAccount(walletAddress, provider);
     accounts[walletAddress] = provider.getSigner(walletAddress);
   }
+  console.log(wallet)
   return accounts[walletAddress];
 }
 

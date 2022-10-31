@@ -9,9 +9,11 @@ import "@nomiclabs/hardhat-ethers";
 import { ethers } from 'hardhat';
 import { GmxTokenContract, CTokenContract } from './Token'
 import chai from 'chai';
+import chaiBN from 'chai-bn';
 import chaiAsPromised from 'chai-as-promised';
 
 chai.use(chaiAsPromised);
+chai.use(chaiBN(BigNumber));
 const expect = chai.expect;
 
 // do not allow numbers since they cause issues
@@ -87,7 +89,7 @@ describe(test.symbol, () => {
       expect(uBalanceTest).to.be.true;
     })
     it('stakedGmxTracker should have More staked GMX', async () => {
-      expect(await uContract.stakedBalance(stakedGmxTrackerAddress)).gt(stakedBalance);
+      expect(await uContract.stakedBalance(stakedGmxTrackerAddress)).to.be.a.bignumber.gt(stakedBalance);
     })
   });
 
@@ -123,10 +125,10 @@ describe(test.symbol, () => {
       })
     })
     it('Borrower should have higher borrowBalanceStored', async () => {
-      expect(await cTokenContract.contract.borrowBalanceStored(wallet._address)).gt(borrowBalanceStored);
+      expect(await cTokenContract.contract.borrowBalanceStored(wallet._address)).bignumber.gt(borrowBalanceStored);
     })
     it('stakedGmxTracker should have less staked GMX', async () => {
-      expect(await uContract.stakedBalance(stakedGmxTrackerAddress)).lt(stakedBalance);
+      expect(await uContract.stakedBalance(stakedGmxTrackerAddress)).bignumber.lt(stakedBalance);
     })
     it('Should be able to repay the loan', async () => {
       const borrowBalance = await cTokenContract.contract.borrowBalanceStored(wallet._address);
