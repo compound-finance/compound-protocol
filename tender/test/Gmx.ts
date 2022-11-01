@@ -10,7 +10,7 @@ import { parseAbiFromJson, getDeployments } from "./utils/TestUtil";
 import axios from "axios";
 import { formatAmount } from "./utils/TokenUtil";
 import "@nomiclabs/hardhat-ethers";
-import { ethers } from "hardhat";
+import hre, { ethers } from "hardhat";
 import { GmxTokenContract, CTokenContract } from "./contract_helpers/Token";
 import chai from "chai";
 import chaiBN from "chai-bn";
@@ -50,11 +50,11 @@ let balanceOfUnderlying;
 let admin;
 let cTokenAdminContract;
 
-const { adminAddress, walletAddress } = test;
+let { adminAddress, walletAddress } = test;
 
 describe(test.symbol, () => {
   before(async () => {
-    resetNetwork();
+    await resetNetwork();
     wallet = await getWallet(walletAddress, provider);
     admin = await getWallet(adminAddress, provider);
     cTokenContract = new GmxTokenContract(
@@ -245,6 +245,7 @@ describe(test.symbol, () => {
     let currentBorrowCap: BigNumber;
     let newSupplyCap: BigNumber;
     let newBorrowCap: BigNumber;
+    let compAdmin;
 
     before(async () => {
       const comptrollerAddress = await cTokenContract.contract.comptroller();
@@ -252,12 +253,14 @@ describe(test.symbol, () => {
       const comptroller = new Contract(
         comptrollerAddress,
         comptrollerAbi,
-        admin
+        wallet
       );
+      let compAdminAddress = await comptroller.admin();
+      compAdmin = await hre.ethers.getImpersonatedSigner(compAdminAddress);
 
       const unitrollerAddress = await comptroller.comptrollerImplementation();
       const unitrollerAbi = await getAbiFromArbiscan(unitrollerAddress);
-      unitroller = new Contract(await comptrollerAddress, unitrollerAbi, admin);
+      unitroller = new Contract(await comptrollerAddress, unitrollerAbi, compAdmin);
     });
 
     it("Should have assignable supply and borrow caps", async () => {
@@ -281,7 +284,7 @@ describe(test.symbol, () => {
       let totalBorrows = await cTokenContract.contract.totalBorrows();
 
       const assignBorrowCaps = [
-        formatAmount(".00001", uDecimals).add(currentSupplyCap),
+        formatAmount(".00001", uDecimals).add(currentBorrowCap),
       ];
       const assignSupplyCaps = [
         formatAmount(".00001", uDecimals).add(currentSupplyCap),
