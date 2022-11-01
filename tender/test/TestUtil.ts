@@ -1,103 +1,116 @@
-import { JsonRpcSigner, JsonRpcProvider, ExternalProvider } from '@ethersproject/providers';
-import { Wallet, Contract, BigNumber } from 'ethers';
-import { formatEther, formatUnits } from 'ethers/lib/utils'
-import { CTokenContract } from './Token';
-import { readFileSync } from 'fs';
-import { join, resolve } from 'path';
-import * as hre from 'hardhat';
-import * as fs from 'fs'
-import * as dotenv from 'dotenv';
+import {
+  JsonRpcSigner,
+  JsonRpcProvider,
+  ExternalProvider,
+} from "@ethersproject/providers";
+import { Wallet, Contract, BigNumber } from "ethers";
+import { formatEther, formatUnits } from "ethers/lib/utils";
+import { CTokenContract } from "./Token";
+import { readFileSync } from "fs";
+import { join, resolve } from "path";
+import * as hre from "hardhat";
+import * as fs from "fs";
+import * as dotenv from "dotenv";
 dotenv.config();
-import * as ethers from 'ethers'
-import axios from 'axios';
+import * as ethers from "ethers";
+import axios from "axios";
 
 const hreProvider = hre.network.provider;
 const accounts = {};
 // eslint disable-next-line
 
 const arbiscanKey = process.env.ARBISCAN_KEY;
-const arbiscanUrl = 'https://api.arbiscan.io/api?module=contract&action=getabi&apikey=' + arbiscanKey + '&address=';
+const arbiscanUrl =
+  "https://api.arbiscan.io/api?module=contract&action=getabi&apikey=" +
+  arbiscanKey +
+  "&address=";
 
-export const getAbiFromArbiscan = async function (address) {
+export const getAbiFromArbiscan = async function(address) {
   const url = arbiscanUrl + address;
-  return axios.get(url)
+  return axios
+    .get(url)
     .then((resp) => {
       return resp.data;
     })
     .then(async (json) => {
-      try { return JSON.parse(json.result); }
-      catch (e) {
-        await new Promise(resolve => setTimeout(resolve, 200));
+      try {
+        return JSON.parse(json.result);
+      } catch (e) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
         return await getAbiFromArbiscan(address);
       }
     });
-}
+};
 
 export const getWallet = async (walletAddress, provider) => {
   if (!accounts[walletAddress]) {
     await impersonateAccount(walletAddress, provider);
     accounts[walletAddress] = provider.getSigner(walletAddress);
   }
-  console.log(wallet)
   return accounts[walletAddress];
-}
+};
 
 export const getDeployments = (deploymentFilePath?: string) => {
-  deploymentFilePath = deploymentFilePath ? deploymentFilePath : `../../deployments/arbitrum.json`;
-  const deploymentsPath = resolve(
-    __dirname,
-    deploymentFilePath
-  )
+  deploymentFilePath = deploymentFilePath
+    ? deploymentFilePath
+    : `../../deployments/arbitrum.json`;
+  const deploymentsPath = resolve(__dirname, deploymentFilePath);
   try {
-    const file = fs.readFileSync(deploymentsPath, "utf8")
-    const json = JSON.parse(file)
-    return json
+    const file = fs.readFileSync(deploymentsPath, "utf8");
+    const json = JSON.parse(file);
+    return json;
   } catch (e) {
-    console.log(`e`, e)
+    console.log(`e`, e);
   }
-}
+};
 
 export const parseAbiFromJson = (fpath: string) => {
   try {
-    const file = fs.readFileSync(fpath, "utf8")
-    const json = JSON.parse(file)
-    const abi = json.abi
-    return abi
+    const file = fs.readFileSync(fpath, "utf8");
+    const json = JSON.parse(file);
+    const abi = json.abi;
+    return abi;
   } catch (e) {
-    console.log(`e`, e)
+    console.log(`e`, e);
   }
-}
+};
 
-export const initContractInstance = (contractName: string, address: string, signer: JsonRpcSigner) => {
+export const initContractInstance = (
+  contractName: string,
+  address: string,
+  signer: JsonRpcSigner
+) => {
   const abiPath = resolve(
     __dirname,
     `../../artifacts/contracts/${contractName}.sol/${contractName}.json`
-  )
+  );
   const abi = parseAbiFromJson(abiPath);
   return new ethers.Contract(address, abi, signer);
-}
+};
 
-const impersonateAccount = async (address: string, provider: JsonRpcProvider) => {
+const impersonateAccount = async (
+  address: string,
+  provider: JsonRpcProvider
+) => {
   await hre.network.provider.request({
-    method: 'hardhat_impersonateAccount',
-    params: [ address ]
+    method: "hardhat_impersonateAccount",
+    params: [address],
   });
   return await provider.getSigner(address);
-}
+};
 
 export const resetNetwork = async () => {
   await hre.network.provider.request({
-    method: 'hardhat_reset',
+    method: "hardhat_reset",
     params: [
       {
         allowUnlimitedContractSize: true,
         forking: {
-          jsonRpcUrl: `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+          jsonRpcUrl: process.env["ARBITRUM_RPC"],
           enabled: true,
           ignoreUnknownTxType: true,
         },
       },
     ],
-  })
+  });
 };
-
