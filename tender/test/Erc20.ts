@@ -98,7 +98,7 @@ describe("Erc20", () => {
         );
         comptrollerContract = new ComptrollerContract(admin);
       });
-
+      /*
       if (test["mintAmount"]) {
         describe("Mint", () => {
           it("Should have more tTokens and fewer uTokens", async () => {
@@ -209,7 +209,7 @@ describe("Erc20", () => {
           // });
         });
       }
-
+      */
       if (test["liquidate"]) {
         describe("Liquidate", () => {
           let oracleContract: OracleContract;
@@ -221,23 +221,45 @@ describe("Erc20", () => {
             liquidator = await getWallet(liquidatorAddress, provider);
             oracleContract = new OracleContract("MockPriceOracle", wallet);
             await comptrollerContract._setPriceOracle(oracleContract.address);
+            await comptrollerContract.setSigner(wallet);
           });
 
           it("Should liquidate if account liquidity is negative", async () => {
             let assets = await comptrollerContract.getAssetsIn(walletAddress);
 
             for (let asset of assets) {
-              // price has 8 decimals
-              await oracleContract.mockUpdatePrice(asset, 1000000000);
+              await comptrollerContract.exitMarket(asset);
             }
+
+            let ethContract = new CTokenContract("tEth", "CEther", wallet);
+
+            await oracleContract.mockUpdatePrice(
+              ethContract.address,
+              1000000000
+            );
+
+            await oracleContract.mockUpdatePrice(
+              erc20Contract.address,
+              1000000000
+            );
+
+            await ethContract.supply("0.01");
+            await erc20Contract.borrow(
+              formatAmount("0.01", await erc20Contract.decimals())
+            );
+
+            await oracleContract.mockUpdatePrice(
+              ethContract.address,
+              100000000
+            );
+
+            console.log(
+              await comptrollerContract.getAccountLiquidity(walletAddress)
+            );
 
             //await erc20Contract.supply("1");
             //await erc20Contract.borrow(1);
             //erc20Contract.supply(1000);
-
-            //console.log(
-            //  await comptrollerContract.getAccountLiquidity(walletAddress)
-            //);
           });
         });
       }

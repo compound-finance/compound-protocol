@@ -77,7 +77,7 @@ export class CTokenContract {
     }
   };
 
-  supply = async (amount: BigNumber) => {
+  supply = async (amount: string) => {
     if (this.uContract === undefined) {
       await this.createUnderlyingContractInstance();
     }
