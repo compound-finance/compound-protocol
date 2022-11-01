@@ -3,15 +3,15 @@ import {
   JsonRpcProvider,
   ExternalProvider,
 } from "@ethersproject/providers";
-import { getWallet, getAbiFromArbiscan, resetNetwork } from "./utils/TestUtil";
+import { getWallet, getAbiFromArbiscan, resetNetwork } from "../utils/TestUtil";
 import { Wallet, Contract, BigNumber } from "ethers";
 import { resolve } from "path";
-import { parseAbiFromJson, getDeployments } from "./utils/TestUtil";
+import { parseAbiFromJson, getDeployments } from "../utils/TestUtil";
 import axios from "axios";
-import { formatAmount, getUnderlyingBalance } from "./utils/TokenUtil";
+import { formatAmount, getUnderlyingBalance } from "../utils/TokenUtil";
 import * as hre from "hardhat";
 import * as ethers from "ethers";
-import { GmxTokenContract, CTokenContract } from "./utils/Token";
+import { GmxTokenContract, CTokenContract } from "../utils/Token";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 
@@ -38,14 +38,14 @@ const main = async () => {
   );
 
   const uContractAddress = await cTokenContract.underlying();
-  console.log("uContractAddress", uContractAddress);
+  //console.log("uContractAddress", uContractAddress);
   const uAbi = await getAbiFromArbiscan(
     "0x1efb3f88bc88f03fd1804a5c53b7141bbef5ded8"
   );
   const uContract = new Contract(uContractAddress, uAbi, wallet);
   const uBalanceProvider = uContract;
   await uContract.approve(cTokenContract.address, ethers.constants.MaxUint256);
-  console.log(await cTokenContract.balanceOfUnderlying(wallet._address));
+  //console.log(await cTokenContract.balanceOfUnderlying(wallet._address));
 };
 
 main();

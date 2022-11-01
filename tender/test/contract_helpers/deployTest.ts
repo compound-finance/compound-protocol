@@ -48,7 +48,7 @@ const main = async () => {
   const cTokenContract = new ethers.Contract(delegatorAddress, abi, wallet);
   const uTokenAddress = await cTokenContract.underlying();
 
-  console.log(await cTokenContract.balanceOf(walletAddress));
+  //console.log(await cTokenContract.balanceOf(walletAddress));
 
   const uTokenContract = new ethers.Contract(uTokenAddress, abi, wallet);
   const underlyingDecimals = await uTokenContract.decimals();
@@ -66,7 +66,7 @@ const main = async () => {
     await uTokenContract.decimals()
   );
   await cTokenContract.mint(mintAmount);
-  console.log(await cTokenContract.balanceOf(walletAddress));
+  //console.log(await cTokenContract.balanceOf(walletAddress));
 };
 
 main();

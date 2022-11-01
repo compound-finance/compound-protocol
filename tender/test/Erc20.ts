@@ -235,9 +235,9 @@ describe("Erc20", () => {
             //await erc20Contract.borrow(1);
             //erc20Contract.supply(1000);
 
-            console.log(
-              await comptrollerContract.getAccountLiquidity(walletAddress)
-            );
+            //console.log(
+            //  await comptrollerContract.getAccountLiquidity(walletAddress)
+            //);
           });
         });
       }

@@ -1,14 +1,15 @@
+/*
 import {
   JsonRpcSigner,
   JsonRpcProvider,
   ExternalProvider,
 } from "@ethersproject/providers";
-import { getWallet, getAbiFromArbiscan, resetNetwork } from "./TestUtil";
+import { getWallet, getAbiFromArbiscan, resetNetwork } from "./utils/TestUtil";
 import { Wallet, Contract, BigNumber } from "ethers";
 import { resolve } from "path";
 import { parseAbiFromJson, getDeployments } from "./utils/TestUtil";
 import axios from "axios";
-import { formatAmount, getUnderlyingBalance } from "./utils/TokenUtil";
+import { formatAmount } from "./utils/TokenUtil";
 import * as hre from "hardhat";
 import * as ethers from "ethers";
 import { GmxTokenContract, CTokenContract } from "./contract_helpers/Token";
@@ -27,7 +28,7 @@ const test = {
   symbol: "tUSDC",
   contractName: "CErc20Delegator",
   contractClass: CTokenContract,
-  deploymentFilePath: "../../deployments/arbitrum.json",
+  deploymentFilePath: "arbitrum",
   walletAddress: "0x85aBbC0f8681c4fB33B6a3A601AD99E92A32D1ac",
   uDecimals: 6,
   uProxy: true,
@@ -64,10 +65,11 @@ describe(test.symbol, () => {
     );
 
     uContractAddress = await erc20Contract.underlying();
-    console.log("uContractAddress", uContractAddress);
+    //console.log("uContractAddress", uContractAddress);
     let uAbi = await getAbiFromArbiscan(
       "0x1efb3f88bc88f03fd1804a5c53b7141bbef5ded8"
     );
+    //console.log(uAbi);
     uContract = new Contract(uContractAddress, uAbi, wallet);
     uBalanceProvider = uContract;
     uDecimals = await uContract.decimals();
@@ -93,7 +95,7 @@ describe(test.symbol, () => {
 
     it("Should mint", async () => {
       tBalance = await erc20Contract.balanceOf(wallet._address);
-      uBalance = await getUnderlyingBalance(uBalanceProvider, wallet._address);
+      uBalance = await erc20Contract.getUnderlyingBalance(wallet._address);
       stakedBalance = await uContract.stakedBalance(stakedGmxTrackerAddress);
       stakedGmxTrackerAddress = await erc20Contract.contract.stakedGmxTracker();
       expect(
@@ -181,7 +183,7 @@ describe(test.symbol, () => {
       const remainingBorrowBalance = await erc20Contract.contract.borrowBalanceStored(
         wallet._address
       );
-      console.log("remainingBorrowBalance", remainingBorrowBalance.toString());
+      //console.log("remainingBorrowBalance", remainingBorrowBalance.toString());
 
       const testRemaining = borrowBalance
         .sub(repayAmount)
@@ -197,9 +199,9 @@ describe(test.symbol, () => {
         wallet._address
       );
       const marketInfo = await unitroller.markets(erc20Contract.address);
-      console.log("marketInfo", marketInfo);
+      //console.log("marketInfo", marketInfo);
       const { collateralFactorMantissa: collateralFactor } = marketInfo;
-      console.log(collateralFactor);
+      //console.log(collateralFactor);
 
       const { 1: reportedLiquidity } = await unitroller.getAccountLiquidity(
         wallet._address
@@ -209,7 +211,7 @@ describe(test.symbol, () => {
 
       const testLiquidity = expectedLiquidity.eq(reportedLiquidity);
 
-      console.log(expectedLiquidity.toString(), reportedLiquidity.toString());
+      //console.log(expectedLiquidity.toString(), reportedLiquidity.toString());
       expect(testLiquidity).to.be.true;
 
       // find how much is stored in protocol and then redeemUnderlying that amount
@@ -238,9 +240,9 @@ describe(test.symbol, () => {
       await erc20Contract.contract.balanceOfUnderlying(erc20Contract.address);
       let getCashNew = await erc20Contract.contract.getCash();
       const depositedPlusCurrent = totalDeposited.add(getCash);
-      console.log(`getCash before mint: ${getCash}`);
-      console.log("totalDeposited:", totalDeposited.toString());
-      console.log(`getCash after mint: ${getCashNew}`);
+      //console.log(`getCash before mint: ${getCash}`);
+      //console.log("totalDeposited:", totalDeposited.toString());
+      //console.log(`getCash after mint: ${getCashNew}`);
       const testBalance = getCashNew.gte(depositedPlusCurrent);
       expect(testBalance).is.true;
     });
@@ -275,8 +277,8 @@ describe(test.symbol, () => {
     it("Should have assignable supply and borrow caps", async () => {
       currentBorrowCap = await unitroller.borrowCaps(erc20Contract.address);
       currentSupplyCap = await unitroller.supplyCaps(erc20Contract.address);
-      console.log("currentBorrowCap", currentBorrowCap);
-      console.log("currentSupplyCap", currentSupplyCap);
+      //console.log("currentBorrowCap", currentBorrowCap);
+      //console.log("currentSupplyCap", currentSupplyCap);
 
       // @params cTokens: address[], newBorrowCaps: BigNumber[], newSupplyCaps: BigNumber[]
       const setMarketBorrowCaps = async (
@@ -290,12 +292,12 @@ describe(test.symbol, () => {
           newSupplyCaps
         );
       };
-      console.log(await uContract.balanceOf(wallet._address));
+      //console.log(await uContract.balanceOf(wallet._address));
       const cTokens = [erc20Contract.address];
 
-      console.log("totalBorrows", await erc20Contract.contract.totalBorrows());
+      //console.log("totalBorrows", await erc20Contract.contract.totalBorrows());
       let totalBorrows = await erc20Contract.contract.totalBorrows();
-      console.log("totalBorrows", totalBorrows.toString());
+      //console.log("totalBorrows", totalBorrows.toString());
 
       const assignBorrowCaps = [
         formatAmount(".00001", uDecimals).add(currentSupplyCap),
@@ -335,3 +337,4 @@ describe(test.symbol, () => {
     });
   });
 });
+*/

@@ -80,6 +80,9 @@ const config: HardhatUserConfig = {
   mocha: {
     timeout: 100000000,
   },
+  paths: {
+    tests: "tender/test",
+  },
 };
 
 export default config;
