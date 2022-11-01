@@ -3,16 +3,16 @@ import {
   JsonRpcProvider,
   ExternalProvider,
 } from "@ethersproject/providers";
-import { CTokenContract, GmxTokenContract } from "./Token";
-import { ComptrollerContract } from "./Comptroller";
-import { OracleContract } from "./PriceOracle.ts";
+import { CTokenContract, GmxTokenContract } from "./contract_helpers/Token";
+import { ComptrollerContract } from "./contract_helpers/Comptroller";
+import { OracleContract } from "./contract_helpers/PriceOracle";
 import { getWallet, getAbiFromArbiscan, resetNetwork } from "./utils/TestUtil";
 import * as hre from "hardhat";
 import * as ethers from "ethers";
 import { Contract, BigNumber } from "ethers";
 import { expect } from "chai";
 import { formatAmount, getUnderlyingBalance } from "./utils/TokenUtil";
-import * as tokenClasses from "./Token";
+import * as tokenClasses from "./contract_helpers/Token";
 const hreProvider = hre.network.provider;
 
 const provider = new ethers.providers.Web3Provider(hreProvider as any);
@@ -93,12 +93,11 @@ describe("Erc20", () => {
         erc20Contract = new test["contractClass"](
           test.symbol,
           test.contractName,
-          wallet,
-          test.deploymentFilePath
+          wallet
         );
         comptrollerContract = new ComptrollerContract(admin);
       });
-      /*
+
       if (test["mintAmount"]) {
         describe("Mint", () => {
           it("Should have more tTokens and fewer uTokens", async () => {
@@ -209,7 +208,7 @@ describe("Erc20", () => {
           // });
         });
       }
-      */
+
       if (test["liquidate"]) {
         describe("Liquidate", () => {
           let oracleContract: OracleContract;

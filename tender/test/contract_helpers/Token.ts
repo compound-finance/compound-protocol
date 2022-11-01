@@ -1,5 +1,5 @@
 import { Wallet, Contract, BigNumber } from "ethers";
-import { formatAmount } from "./utils/TokenUtil";
+import { formatAmount } from "../utils/TokenUtil";
 import * as ethers from "ethers";
 import {
   JsonRpcSigner,
@@ -7,7 +7,7 @@ import {
   ExternalProvider,
 } from "@ethersproject/providers";
 import { resolve } from "path";
-import { parseAbiFromJson, getDeployments } from "./utils/TestUtil";
+import { parseAbiFromJson, getDeployments } from "../utils/TestUtil";
 import axios from "axios";
 
 // do not allow numbers since they cause issues
@@ -33,7 +33,7 @@ export class CTokenContract {
     const address = getDeployments(deploymentFilePath)[symbol];
     const abiPath = resolve(
       __dirname,
-      `../../artifacts/contracts/${contractName}.sol/${contractName}.json`
+      `../../../artifacts/contracts/${contractName}.sol/${contractName}.json`
     );
     this.abi = parseAbiFromJson(abiPath);
     this.symbol = symbol;

@@ -7,9 +7,9 @@ import {
   ExternalProvider,
 } from "@ethersproject/providers";
 import { resolve } from "path";
-import { parseAbiFromJson, getDeployments } from "./utils/TestUtil";
+import { parseAbiFromJson, getDeployments } from "../utils/TestUtil";
 import { CTokenContract } from "./Token";
-import { formatAmount } from "./utils/TokenUtil";
+import { formatAmount } from "../utils/TokenUtil";
 
 export class ComptrollerContract {
   public contract: Contract;
@@ -17,7 +17,7 @@ export class ComptrollerContract {
   constructor(signer: JsonRpcSigner) {
     const comptrollerAbiPath = resolve(
       __dirname,
-      `../../artifacts/contracts/Comptroller.sol/Comptroller.json`
+      `../../../artifacts/contracts/Comptroller.sol/Comptroller.json`
     );
 
     this.contract = new Contract(

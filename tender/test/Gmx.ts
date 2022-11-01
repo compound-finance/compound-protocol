@@ -11,7 +11,7 @@ import axios from "axios";
 import { formatAmount, getUnderlyingBalance } from "./utils/TokenUtil";
 import "@nomiclabs/hardhat-ethers";
 import { ethers } from "hardhat";
-import { GmxTokenContract, CTokenContract } from "./Token";
+import { GmxTokenContract, CTokenContract } from "./contract_helpers/Token";
 import chai from "chai";
 import chaiBN from "chai-bn";
 import chaiAsPromised from "chai-as-promised";

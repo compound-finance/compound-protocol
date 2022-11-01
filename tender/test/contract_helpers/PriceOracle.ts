@@ -1,4 +1,4 @@
-import { parseAbiFromJson, getDeployments } from "./utils/TestUtil";
+import { parseAbiFromJson, getDeployments } from "../utils/TestUtil";
 import {
   JsonRpcSigner,
   JsonRpcProvider,
@@ -13,7 +13,7 @@ export class OracleContract {
   constructor(oracleName: string, signer: JsonRpcSigner) {
     const oracleAbiPath = resolve(
       __dirname,
-      `../../artifacts/contracts/${oracleName}.sol/${oracleName}.json`
+      `../../../artifacts/contracts/${oracleName}.sol/${oracleName}.json`
     );
 
     this.address = getDeployments().MockPriceOracle;

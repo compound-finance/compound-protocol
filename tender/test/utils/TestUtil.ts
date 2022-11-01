@@ -53,7 +53,7 @@ export const getWallet = async (walletAddress, provider) => {
 export const getDeployments = (deploymentFilePath?: string) => {
   deploymentFilePath = deploymentFilePath
     ? deploymentFilePath
-    : `../../deployments/arbitrum.json`;
+    : `../../../deployments/arbitrum.json`;
   const deploymentsPath = resolve(__dirname, deploymentFilePath);
   try {
     const file = fs.readFileSync(deploymentsPath, "utf8");
@@ -82,7 +82,7 @@ export const initContractInstance = (
 ) => {
   const abiPath = resolve(
     __dirname,
-    `../../artifacts/contracts/${contractName}.sol/${contractName}.json`
+    `../../../artifacts/contracts/${contractName}.sol/${contractName}.json`
   );
   const abi = parseAbiFromJson(abiPath);
   return new ethers.Contract(address, abi, signer);
