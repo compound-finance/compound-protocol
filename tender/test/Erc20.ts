@@ -4,6 +4,8 @@ import {
   ExternalProvider,
 } from "@ethersproject/providers";
 import { CTokenContract, GmxTokenContract } from "./Token";
+import { ComptrollerContract } from "./Comptroller";
+import { OracleContract } from "./PriceOracle.ts";
 import { getWallet, getAbiFromArbiscan, resetNetwork } from "./TestUtil";
 import * as hre from "hardhat";
 import * as ethers from "ethers";
@@ -25,6 +27,7 @@ const tests = [
     redeemAmount: "1",
     redeemUnderlyingAmount: "1",
     contractClass: CTokenContract,
+    liquidate: "yes",
   },
   {
     symbol: "tEth",
@@ -90,6 +93,7 @@ describe("Erc20", () => {
           test.deploymentFilePath
         );
       });
+      /*
       if (test["mintAmount"]) {
         describe("Mint", () => {
           it("Should have more tTokens and fewer uTokens", async () => {
@@ -198,6 +202,23 @@ describe("Erc20", () => {
           //   borrowBalance = await erc20Contract.borrowBalanceStored()
           //   console.log(borrowBalance.toString())
           // });
+        });
+      }
+      */
+      if (test["liquidate"]) {
+        describe("Liquidate", () => {
+          let liquidator: JsonRpcSigner;
+          let repayAmount;
+          const liquidatorAddress =
+            "0x88964546aa6d9da1306bf0a29cc01cde8b0c660e";
+
+          before(async () => {
+            liquidator = await getWallet(liquidatorAddress, provider);
+            oracleContract = new OracleContract("MockPriceOracle", wallet);
+            await comptrollerContract._setPriceOracle(oracleContract.address);
+          });
+
+          it("Should liquidate if account liquidity is negative", async () => {});
         });
       }
     });
