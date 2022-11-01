@@ -8,7 +8,7 @@ import { Wallet, Contract, BigNumber } from "ethers";
 import { resolve } from "path";
 import { parseAbiFromJson, getDeployments } from "./utils/TestUtil";
 import axios from "axios";
-import { formatAmount, getUnderlyingBalance } from "./utils/TokenUtil";
+import { formatAmount } from "./utils/TokenUtil";
 import "@nomiclabs/hardhat-ethers";
 import { ethers } from "hardhat";
 import { GmxTokenContract, CTokenContract } from "./contract_helpers/Token";
@@ -29,7 +29,7 @@ const test = {
   mintAmount: "0.05",
   borrowAmount: "0.01",
   contractClass: GmxTokenContract,
-  deploymentFilePath: "../../deployments/gmx.json",
+  deploymentFile: "gmx",
   walletAddress: "0x5B33EC561Cb20EaF7d5b41A9B68A690E2EBBc893",
   adminAddress: "0x85abbc0f8681c4fb33b6a3a601ad99e92a32d1ac",
   proxyAddress: "0x3d05beBcB962f8e873dE167B161F987e51Dd1281",
@@ -61,7 +61,7 @@ describe(test.symbol, () => {
       test["symbol"],
       test["contractName"],
       wallet,
-      test["deploymentFilePath"]
+      test["deploymentFile"]
     );
 
     uContractAddress = await cTokenContract.underlying();
@@ -89,7 +89,7 @@ describe(test.symbol, () => {
 
     it("Should mint", async () => {
       tBalance = await cTokenContract.balanceOf(wallet._address);
-      uBalance = await getUnderlyingBalance(uBalanceProvider, wallet._address);
+      uBalance = await cTokenContract.getUnderlyingBalance(wallet._address);
       stakedBalance = await uContract.stakedBalance(stakedGmxTrackerAddress);
       stakedGmxTrackerAddress = await cTokenContract.contract.stakedGmxTracker();
       expect(
@@ -102,7 +102,7 @@ describe(test.symbol, () => {
     });
     it("Minter should have less GMX", async () => {
       const uBalanceTest = (
-        await getUnderlyingBalance(uBalanceProvider, wallet._address)
+        await cTokenContract.getUnderlyingBalance(wallet._address)
       ).lt(uBalance);
       expect(uBalanceTest).to.be.true;
     });

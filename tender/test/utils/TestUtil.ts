@@ -50,11 +50,11 @@ export const getWallet = async (walletAddress, provider) => {
   return accounts[walletAddress];
 };
 
-export const getDeployments = (deploymentFilePath?: string) => {
-  deploymentFilePath = deploymentFilePath
-    ? deploymentFilePath
+export const getDeployments = (deploymentFile?: string) => {
+  deploymentFile = deploymentFile
+    ? `../../../deployments/${deploymentFile}.json`
     : `../../../deployments/arbitrum.json`;
-  const deploymentsPath = resolve(__dirname, deploymentFilePath);
+  const deploymentsPath = resolve(__dirname, deploymentFile);
   try {
     const file = fs.readFileSync(deploymentsPath, "utf8");
     const json = JSON.parse(file);
