@@ -1,5 +1,5 @@
 import { Wallet, Contract, BigNumber } from "ethers";
-import { formatAmount } from "./TokenUtil";
+import { formatAmount } from "./utils/TokenUtil";
 import * as ethers from "ethers";
 import {
   JsonRpcSigner,
@@ -7,7 +7,7 @@ import {
   ExternalProvider,
 } from "@ethersproject/providers";
 import { resolve } from "path";
-import { parseAbiFromJson, getDeployments } from "./TestUtil";
+import { parseAbiFromJson, getDeployments } from "./utils/TestUtil";
 import axios from "axios";
 
 // do not allow numbers since they cause issues

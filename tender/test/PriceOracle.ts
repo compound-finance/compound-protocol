@@ -1,4 +1,4 @@
-import { parseAbiFromJson, getDeployments } from "./TestUtil";
+import { parseAbiFromJson, getDeployments } from "./utils/TestUtil";
 import {
   JsonRpcSigner,
   JsonRpcProvider,

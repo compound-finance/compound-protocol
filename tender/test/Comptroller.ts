@@ -7,9 +7,9 @@ import {
   ExternalProvider,
 } from "@ethersproject/providers";
 import { resolve } from "path";
-import { parseAbiFromJson, getDeployments } from "./TestUtil";
+import { parseAbiFromJson, getDeployments } from "./utils/TestUtil";
 import { CTokenContract } from "./Token";
-import { formatAmount } from "./TokenUtil";
+import { formatAmount } from "./utils/TokenUtil";
 
 export class ComptrollerContract {
   public contract: Contract;

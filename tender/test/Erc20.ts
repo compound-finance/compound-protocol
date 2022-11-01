@@ -6,12 +6,12 @@ import {
 import { CTokenContract, GmxTokenContract } from "./Token";
 import { ComptrollerContract } from "./Comptroller";
 import { OracleContract } from "./PriceOracle.ts";
-import { getWallet, getAbiFromArbiscan, resetNetwork } from "./TestUtil";
+import { getWallet, getAbiFromArbiscan, resetNetwork } from "./utils/TestUtil";
 import * as hre from "hardhat";
 import * as ethers from "ethers";
 import { Contract, BigNumber } from "ethers";
 import { expect } from "chai";
-import { formatAmount, getUnderlyingBalance } from "./TokenUtil";
+import { formatAmount, getUnderlyingBalance } from "./utils/TokenUtil";
 import * as tokenClasses from "./Token";
 const hreProvider = hre.network.provider;
 
@@ -64,18 +64,22 @@ const verifyTestParameters = (test) => {
 };
 
 let erc20Contract: CTokenContract;
+let comptrollerContract: ComptrollerContract;
 let uContractAddress: string;
 let uContract: Contract;
 let wallet: JsonRpcSigner;
+let admin: JsonRpcSigner;
 
 let uBalanceProvider: Contract | JsonRpcProvider;
 
 const walletAddress = "0x52134afB1A391fcEEE6682E51aedbCD47dC55336";
+const adminAddress = "0x85abbc0f8681c4fb33b6a3a601ad99e92a32d1ac";
 
 describe("Erc20", () => {
   before(async () => {
     resetNetwork();
     wallet = await getWallet(walletAddress, provider);
+    admin = await getWallet(adminAddress, provider);
   });
 
   for (let test of tests) {
@@ -92,6 +96,7 @@ describe("Erc20", () => {
           wallet,
           test.deploymentFilePath
         );
+        comptrollerContract = new ComptrollerContract(admin);
       });
       /*
       if (test["mintAmount"]) {
@@ -207,8 +212,8 @@ describe("Erc20", () => {
       */
       if (test["liquidate"]) {
         describe("Liquidate", () => {
+          let oracleContract: OracleContract;
           let liquidator: JsonRpcSigner;
-          let repayAmount;
           const liquidatorAddress =
             "0x88964546aa6d9da1306bf0a29cc01cde8b0c660e";
 
