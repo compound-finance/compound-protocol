@@ -124,7 +124,7 @@ abstract contract BaseJumpRateModelV2 is InterestRateModel {
      * @notice Internal function to update the parameters of the interest rate model
      * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by BASE)
      * @param multiplierPerYear The rate of increase in interest rate wrt utilization (scaled by BASE)
-     * @param jumpMultiplierPerYear The multiplierPerBlock after hitting a specified utilization point
+     * @param jumpMultiplierPerYear The multiplierPerBlock after hitting a specified utilization point (scaled by BASE)
      * @param kink_ The utilization point at which the jump multiplier is applied
      */
     function updateJumpRateModelInternal(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) internal {
