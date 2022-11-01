@@ -29,14 +29,15 @@ const tests = [
     contractClass: CTokenContract,
     liquidate: "yes",
   },
-  {
-    symbol: "tEth",
-    contractName: "CEther",
-    mintAmount: "0.001",
-    redeemAmount: "all",
-    borrowAmount: "0.0005",
-    contractClass: CTokenContract,
-  },
+  //{
+  //  symbol: "tEth",
+  //  contractName: "CEther",
+  //  mintAmount: "0.001",
+  //  redeemAmount: "all",
+  //  borrowAmount: "0.0005",
+  //  contractClass: CTokenContract,
+  //},
+
   // {
   //   symbol: 'tGMX',
   //   contractName: 'CErc20DelegatorGmx',
@@ -222,7 +223,22 @@ describe("Erc20", () => {
             await comptrollerContract._setPriceOracle(oracleContract.address);
           });
 
-          it("Should liquidate if account liquidity is negative", async () => {});
+          it("Should liquidate if account liquidity is negative", async () => {
+            let assets = await comptrollerContract.getAssetsIn(walletAddress);
+
+            for (let asset of assets) {
+              // price has 8 decimals
+              await oracleContract.mockUpdatePrice(asset, 1000000000);
+            }
+
+            //await erc20Contract.supply("1");
+            //await erc20Contract.borrow(1);
+            //erc20Contract.supply(1000);
+
+            console.log(
+              await comptrollerContract.getAccountLiquidity(walletAddress)
+            );
+          });
         });
       }
     });

@@ -101,6 +101,29 @@ export class CTokenContract {
     }
   };
 
+  liquidateBorrow = async (
+    borrower: string,
+    cTokenCollateral: string,
+    amount: BigNumber
+  ) => {
+    if (this.contractName == "CEther") {
+      return await this.call("liquidateBorrow", borrower, cTokenCollateral, {
+        value: amount,
+      });
+    } else if (this.contractName == "CErc20") {
+      return await this.call(
+        "liquidateBorrow",
+        borrower,
+        amount,
+        cTokenCollateral
+      );
+    }
+  };
+
+  borrow = async (amount: BigNumber) => {
+    return await this.call("borrow", amount);
+  };
+
   balanceOf = async (address?: string) => {
     address = address ? address : this.signer._address;
     return this.call("balanceOf", address);
