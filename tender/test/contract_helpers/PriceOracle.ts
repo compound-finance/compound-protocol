@@ -9,6 +9,7 @@ import { Wallet, Contract, BigNumber } from "ethers";
 
 export class OracleContract {
   public contract: Contract;
+  public address: string;
 
   constructor(oracleName: string, signer: JsonRpcSigner) {
     const oracleAbiPath = resolve(
@@ -33,7 +34,7 @@ export class OracleContract {
     }
   };
 
-  mockUpdatePrice = async (ctokenAddress: string, price: bigNumber) => {
+  mockUpdatePrice = async (ctokenAddress: string, price: BigNumber) => {
     return await this.call("mockUpdatePrice", ctokenAddress, price);
   };
 

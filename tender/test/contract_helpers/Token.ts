@@ -75,6 +75,7 @@ export class CTokenContract {
       this.uContract = null;
       this.uDecimals = 18;
     }
+    return this.uContract;
   };
 
   supply = async (amount: string) => {
