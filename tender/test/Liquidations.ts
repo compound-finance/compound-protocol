@@ -122,6 +122,12 @@ describe("TestLiquidate", () => {
 
     console.log('borrowing')
 
+    const borrowedBalance = async (tTokenContract, wallet) => {
+      const tTokenBalance = await tTokenContract.connect(wallet).borrowBalanceStored(wallet.address);
+      const exchangeRate = await tTokenContract.connect(wallet).exchangeRateStored();
+      return tTokenBalance.mul(exchangeRate).div(formatAmount('1', 18))
+    };
+
     const underlyingBalance = async (tTokenContract, wallet) => {
       const tTokenBalance = await tTokenContract.connect(wallet).balanceOf(wallet.address);
       const exchangeRate = await tTokenContract.connect(wallet).exchangeRateStored();
@@ -132,6 +138,7 @@ describe("TestLiquidate", () => {
     const uBalanceSupplied = await underlyingBalance(tTokenSupply, usdcWallet)
     const {1: collateralFactor} = await unitroller.markets(borrowTokens['tToken'])
     const maxBorrow = (uBalanceSupplied.mul(collateralFactor)).div(formatAmount('1', 18))
+    console.log('max borrow', maxBorrow.toString())
     await tTokenBorrow.connect(usdcWallet).borrow(maxBorrow);
 
     console.log("After Borrow",
@@ -147,14 +154,18 @@ describe("TestLiquidate", () => {
       await unitroller.getAccountLiquidity(USDC_WHALE)
     );
     const closeFactor = await unitroller.closeFactorMantissa();
-    const shortfall = await underlyingBalance(tTokenSupply, usdcWallet)
-    const repayAmount = ((shortfall.mul(closeFactor)).div(formatAmount('1', 18))).div(2);
-    console.log(closeFactor)
-    console.log('repay amount', repayAmount)
-    console.log('usdt whale tUSDC balance before liquidation of usdc whale:', await tTokenSupply.balanceOf(USDT_WHALE))
-    await tTokenBorrow.connect(usdtWallet).liquidateBorrow(USDC_WHALE, repayAmount, supplyTokens['tToken'])
+    const shortfall = await borrowedBalance(tTokenBorrow, usdcWallet)
+    console.log('shortfall', shortfall.toString())
+
+    // const repayAmount = maxBorrow.div(2)
+    // console.log(closeFactor)
+    // console.log('repay amount', repayAmount)
+    // console.log('usdt whale tUSDC balance before liquidation of usdc whale:', await tTokenSupply.balanceOf(USDT_WHALE))
+    await tTokenBorrow.connect(usdtWallet).liquidateBorrow(USDC_WHALE, 5000, supplyTokens['tToken'])
     console.log('usdt whale tUSDC balance after liquidation of usdc whale:', await tTokenSupply.balanceOf(USDT_WHALE))
-    console.log(await underlyingBalance(tTokenSupply, usdcWallet))
+    console.log("Liquidity of borrower after liquidation",
+      await unitroller.getAccountLiquidity(USDC_WHALE)
+    );
   })
 })
 
