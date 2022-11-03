@@ -6,12 +6,13 @@ import {
 } from "@ethersproject/providers";
 import { resolve } from "path";
 import { Wallet, Contract, BigNumber } from "ethers";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 export class OracleContract {
   public contract: Contract;
   public address: string;
 
-  constructor(oracleName: string, signer: JsonRpcSigner) {
+  constructor(oracleName: string, signer: JsonRpcSigner | SignerWithAddress) {
     const oracleAbiPath = resolve(
       __dirname,
       `../../../artifacts/contracts/${oracleName}.sol/${oracleName}.json`
