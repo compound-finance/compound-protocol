@@ -14,7 +14,13 @@ const glpRewardRouterAddress = "0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1"
 const glpManagerAddress = "0x321f653eed006ad1c29d174e17d96351bde22649"
 
 
-export async function deploy () {
+export async function deploy (deploymentFp) {
+
+  const copyPath = deploymentFp
+    ? resolve(__dirname, `../../../deployments/${deploymentFp}.json`)
+    : resolve(__dirname, `../../../deployments/gmx.json`)
+
+  const outputFilePath = resolve(__dirname, `../../../deployments/${hre.network.name}.json`)
   const [deployer] = await hre.ethers.getSigners();
   console.log(`>>>>>>>>>>>> Deployer: ${deployer.address} <<<<<<<<<<<<\n`);
 
@@ -37,6 +43,7 @@ export async function deploy () {
 
   for (let i = 0; i < CTOKENS.length; i++) {
     let token = CTOKENS[i];
+    console.log(token)
 
     const erc20Underlying = await hre.ethers.getContractAt(
       "EIP20Interface",

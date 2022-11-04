@@ -5,7 +5,18 @@ const CTOKEN_DECIMALS = 8;
 
 // These addresses need to be correct
 export const CTOKENS = [
-{
+  {
+    underlying: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+    name: "USDT",
+    symbol: "tUSDT",
+    decimals: CTOKEN_DECIMALS,
+    isGLP: false,
+    collateralFactor: ethers.utils.parseUnits("75", 16),
+    collateralVIP: ethers.utils.parseUnits("85", 16),
+    threshold: ethers.utils.parseUnits("80", 16),
+    thresholdVIP: ethers.utils.parseUnits("90", 16),
+  },
+  {
     underlying: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
     name: "tUSDC",
     symbol: "tUSDC",

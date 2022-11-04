@@ -15,6 +15,9 @@ import { resolve } from 'path'
 import { parseAbiFromJson, getDeployments } from "./utils/TestUtil";
 import * as tokenClasses from "./contract_helpers/Token";
 import { copyFile } from "fs";
+import { CTokens } from "./deploy/CTOKENS"
+import { deploy } from "./deploy/cdelegators";
+import { readFileSync } from "fs";
 
 const provider = hre.network.provider;
 
@@ -23,21 +26,16 @@ const comptrollerAddress = "0x0e9109c678ba6E807Dd53ECf7A5A1e658681AD70";
 const IERC20 = 'contracts/IERC20.sol:IERC20'
 const CERC20 = 'contracts/CErc20.sol:CErc20'
 
-const borrowTokens = { //USDT
-  uToken: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
-  tToken: "0x102517Ea9340eDd21afdfAA911560311FeEFc607",
-}
-
-const supplyTokens = { //USDC
-  uToken: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
-  tToken: "0xB1087a450373BB26BCf1A18E788269bde9c8fc85",
-}
-
 describe("TestLiquidate", () => {
   const USDT_WHALE="0x750f6Ed08f00f5e1c519e650d82d6Ff101E60841";
   const USDC_WHALE="0x39ef179bB1953f916003F5Dc9a321ce978df3118"
   let usdcWallet;
   let usdtWallet;
+
+  let borrowTokens;
+  let supplyTokens;
+
+  let deployed;
 
   let uTokenSupply;
   let tTokenSupply;
@@ -53,6 +51,30 @@ describe("TestLiquidate", () => {
 
   before(async () => {
     await resetNetwork();
+
+    await deploy('arbitrum');
+
+    const deploymentFork = 'arbitrum'
+    const deploymentRead = 'localhost'
+
+    deployed = JSON.parse(
+      readFileSync(
+        resolve(__dirname, `../../deployments/localhost.json`),
+        'utf-8'
+      )
+    );
+
+    borrowTokens = { //USDT
+      uToken: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+      tToken: deployed['tUSDT'],
+    }
+
+    supplyTokens = { //USDC
+      uToken: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
+      tToken: deployed['tUSDC'],
+      // tToken: "0xB1087a450373BB26BCf1A18E788269bde9c8fc85",
+    }
+
     usdcWallet = await ethers.getImpersonatedSigner(USDC_WHALE);
     usdtWallet = await ethers.getImpersonatedSigner(USDT_WHALE);
     await fundWithEth(USDC_WHALE);
@@ -63,7 +85,7 @@ describe("TestLiquidate", () => {
     uTokenBorrow = await ethers.getContractAt(IERC20, borrowTokens['uToken'])
     tTokenBorrow = await ethers.getContractAt(CERC20, borrowTokens['tToken'])
 
-    const comptrollerAddress = '0x49ea2c991290ca13f57ae2b8ca98bc6140925db3';
+    const comptrollerAddress = deployed['Unitroller'];
     const comptrollerAbi = await getAbiFromArbiscan(comptrollerAddress);
 
     const comptroller = new Contract(
@@ -96,7 +118,7 @@ describe("TestLiquidate", () => {
     for (let token of await unitroller.getAllMarkets()){
       await mockPriceOracle.mockUpdatePrice(
         token,
-        formatAmount('.01', 18)
+        formatAmount('1', 18)
       )
     }
   })
@@ -114,8 +136,8 @@ describe("TestLiquidate", () => {
     await uTokenSupply.connect(usdcWallet).transfer(USDT_WHALE, formatAmount('10', 6))
 
     console.log('minting')
-    await tTokenSupply.connect(usdcWallet).mint(formatAmount('1', 6));
-    await tTokenBorrow.connect(usdtWallet).mint(formatAmount('100', 6));
+    await tTokenSupply.connect(usdcWallet).mint(formatAmount('2', 6));
+    await tTokenBorrow.connect(usdtWallet).mint(formatAmount('1000', 6));
 
     console.log(await unitroller.getAccountLiquidity(USDC_WHALE))
     console.log(await unitroller.getAccountLiquidity(USDT_WHALE))
@@ -137,6 +159,7 @@ describe("TestLiquidate", () => {
 
     const uBalanceSupplied = await underlyingBalance(tTokenSupply, usdcWallet)
     const {1: collateralFactor} = await unitroller.markets(borrowTokens['tToken'])
+    console.log('collateral factor', collateralFactor.toString())
     const maxBorrow = (uBalanceSupplied.mul(collateralFactor)).div(formatAmount('1', 18))
     console.log('max borrow', maxBorrow.toString())
     await tTokenBorrow.connect(usdcWallet).borrow(maxBorrow);
@@ -146,22 +169,20 @@ describe("TestLiquidate", () => {
     );
 
     await mockPriceOracle.mockUpdatePrice(
-      tTokenBorrow.address,
-      formatAmount('.03', 18)
+      tTokenSupply.address,
+      formatAmount('.1', 18)
     );
 
     console.log("After Price Update",
       await unitroller.getAccountLiquidity(USDC_WHALE)
     );
+
     const closeFactor = await unitroller.closeFactorMantissa();
     const shortfall = await borrowedBalance(tTokenBorrow, usdcWallet)
-    console.log('shortfall', shortfall.toString())
 
-    // const repayAmount = maxBorrow.div(2)
-    // console.log(closeFactor)
-    // console.log('repay amount', repayAmount)
+    const repayAmount = (shortfall.mul(closeFactor)).div(formatAmount('1', 16))
     // console.log('usdt whale tUSDC balance before liquidation of usdc whale:', await tTokenSupply.balanceOf(USDT_WHALE))
-    await tTokenBorrow.connect(usdtWallet).liquidateBorrow(USDC_WHALE, 5000, supplyTokens['tToken'])
+    await tTokenBorrow.connect(usdtWallet).liquidateBorrow(USDC_WHALE, repayAmount, supplyTokens['tToken'])
     console.log('usdt whale tUSDC balance after liquidation of usdc whale:', await tTokenSupply.balanceOf(USDT_WHALE))
     console.log("Liquidity of borrower after liquidation",
       await unitroller.getAccountLiquidity(USDC_WHALE)
