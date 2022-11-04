@@ -41,7 +41,6 @@ export const CTokens = {
     thresholdVIP: ethers.utils.parseUnits("90", 16),
     isGLP: false
   },
-
   tfsGLP: {
     underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
     name: "fsGLP",
@@ -53,7 +52,6 @@ export const CTokens = {
     thresholdVIP: ethers.utils.parseUnits("95", 16),
     isGLP: true
   },
-
   tFRAX: {
     underlying: "0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F",
     name: "FRAX",
@@ -62,7 +60,6 @@ export const CTokens = {
     collateralFactor: ethers.utils.parseUnits("9", 17),
     isGLP: false
   },
-
   tUSDT: {
     underlying: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
     name: "USDT",
@@ -74,7 +71,6 @@ export const CTokens = {
     threshold: ethers.utils.parseUnits("80", 16),
     thresholdVIP: ethers.utils.parseUnits("90", 16),
   },
-
   tUSDC: {
     underlying: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
     name: "tUSDC",

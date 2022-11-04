@@ -5,7 +5,6 @@ import {
 } from "@ethersproject/providers";
 import { Wallet, Contract, BigNumber } from "ethers";
 import { formatEther, formatUnits } from "ethers/lib/utils";
-import { CTokenContract } from "./Token";
 import { readFileSync } from "fs";
 import { join, resolve } from "path";
 import * as hre from "hardhat";

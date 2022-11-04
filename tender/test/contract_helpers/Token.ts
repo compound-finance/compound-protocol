@@ -18,9 +18,9 @@ export class CTokenContract {
   public symbol: string;
   public address: string;
   public contract: Contract;
-  public hasUnderlying: bool;
+  public hasUnderlying: boolean;
   public uContract: any;
-  public uDecimals: bigNumber;
+  public uDecimals: number;
 
   private contractName: string;
 
