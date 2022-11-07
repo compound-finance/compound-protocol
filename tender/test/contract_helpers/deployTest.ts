@@ -2,8 +2,8 @@ import hre, { ethers } from "hardhat";
 // import { ethers } from "ethers";
 // import * as ethers from 'ethers';
 import { readFileSync, writeFileSync } from "fs";
-import { formatAmount, getUnderlyingBalance } from "./utils/TokenUtil";
-import { deploy } from "./deploy/cdelegators";
+import { formatAmount, getUnderlyingBalance } from "../utils/TokenUtil";
+import { deploy } from "../deploy/cdelegators";
 import { resolve } from "path";
 
 const provider = hre.network.provider;
