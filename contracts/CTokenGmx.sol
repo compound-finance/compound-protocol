@@ -366,9 +366,9 @@ abstract contract CTokenGmx is CTokenInterfaceGmx, ExponentialNoError, TokenErro
         if(autocompound){
             uint ethBalance =  EIP20Interface(WETH).balanceOf(address(this));
             if(ethBalance > 0){
-                uint ethManagementFee = mul_(ethBalance, div_(managementFee, 100));
-                uint ethToCompound = sub_(ethBalance, ethManagementFee);
-                EIP20Interface(WETH).transfer(admin, ethManagementFee);
+                uint ethperformanceFee = mul_(ethBalance, div_(performanceFee, 100));
+                uint ethToCompound = sub_(ethBalance, ethperformanceFee);
+                EIP20Interface(WETH).transfer(admin, ethperformanceFee);
                 uint256 amountOfGmxReceived = swapExactInputSingle(ethToCompound);
                 glpRewardRouter.stakeGmx(amountOfGmxReceived);
             }
@@ -1223,20 +1223,21 @@ abstract contract CTokenGmx is CTokenInterfaceGmx, ExponentialNoError, TokenErro
     }
 
     /**
-     * @notice Updates the fees for the vault strategy markets
+     * @notice Updates the fees for the vault strategy markets with denominator of 10000
      * @dev Admin function to update the fees
      * @param withdrawFee_ fee to withdraw funds
-     * @param managementFee_ fee taken from autocompounded rewards
+     * @param performanceFee_ fee taken from autocompounded rewards
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setVaultFees(uint256 withdrawFee_, uint256 managementFee_) override public returns (uint) {
+    function _setVaultFees(uint256 withdrawFee_, uint256 performanceFee_) override public returns (uint) {
         // Check caller is admin
         if (msg.sender != admin) {
             revert SetStakedGlpAddressOwnerCheck();
         }
-
+        require(withdrawFee_ <= withdrawFeeMAX, "withdraw fee too high");
+        require(performanceFee_ <= performanceFeeMAX, "performance fee to high");
         withdrawFee = withdrawFee_;
-        managementFee = managementFee_;
+        performanceFee = performanceFee_;
         return NO_ERROR;
     }
 

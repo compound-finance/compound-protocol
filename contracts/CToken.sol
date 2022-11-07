@@ -350,9 +350,9 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // if this is a GLP cToken, claim the ETH and esGMX rewards and stake the esGMX Rewards
 
         if(ethBalance > 0){
-            uint ethManagementFee = mul_(ethBalance, div_(managementFee, 100));
-            uint ethToCompound = sub_(ethBalance, ethManagementFee);
-            EIP20Interface(WETH).transfer(admin, ethManagementFee);
+            uint ethperformanceFee = mul_(ethBalance, div_(performanceFee, 10000));
+            uint ethToCompound = sub_(ethBalance, ethperformanceFee);
+            EIP20Interface(WETH).transfer(admin, ethperformanceFee);
             glpRewardRouter.mintAndStakeGlp(WETH, ethToCompound, 0, 0);               
         } else {
             glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
@@ -618,11 +618,11 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
          */
         bool isRedeemerVip = comptroller.getIsAccountVip(redeemer);
 
-        if(isGLP && !isRedeemerVip  ){
-            uint256 withdrawFeeAmount = div_(mul_(redeemAmount, sub_(100, withdrawFee)), 100);
-            uint256 actualRedeemAmount = sub_(redeemAmount, withdrawFee);
-            doTransferOut(admin, withdrawFeeAmount);
+        if(isGLP && !isRedeemerVip && withdrawFee > 0){
+            uint256 actualRedeemAmount = div_(mul_(redeemAmount, sub_(10000, withdrawFee)), 10000);
+            uint256 withdrawFeeAmount = sub_(redeemAmount, actualRedeemAmount);
             doTransferOut(redeemer, actualRedeemAmount);
+            doTransferOut(admin, withdrawFeeAmount);
         } else {
             doTransferOut(redeemer, redeemAmount);
         }
@@ -1229,20 +1229,21 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     }
 
     /**
-     * @notice Updates the fees for the vault strategy markets
+     * @notice Updates the fees for the vault strategy markets with denominator of 10000
      * @dev Admin function to update the fees
      * @param withdrawFee_ fee to withdraw funds
-     * @param managementFee_ fee taken from autocompounded rewards
+     * @param performanceFee_ fee taken from autocompounded rewards
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setVaultFees(uint256 withdrawFee_, uint256 managementFee_) override public returns (uint) {
+    function _setVaultFees(uint256 withdrawFee_, uint256 performanceFee_) override public returns (uint) {
         // Check caller is admin
         if (msg.sender != admin) {
             revert SetStakedGlpAddressOwnerCheck();
         }
-
+        require(withdrawFee_ <= withdrawFeeMAX, "withdraw fee too high");
+        require(performanceFee_ <= performanceFeeMAX, "performance fee to high");
         withdrawFee = withdrawFee_;
-        managementFee = managementFee_;
+        performanceFee = performanceFee_;
         return NO_ERROR;
     }
 
