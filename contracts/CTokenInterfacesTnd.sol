@@ -279,10 +279,10 @@ abstract contract CErc20InterfaceTnd is CErc20StorageTnd {
     /*** User Interface ***/
 
     function mint(uint mintAmount) virtual external returns (uint);
-    function mintForUser(uint mintAmount, address user) virtual external returns (uint);
+    function mintTsTnd(uint mintAmount, address user) virtual external returns (uint);
     function redeem(uint redeemTokens) virtual external returns (uint);
     function redeemUnderlying(uint redeemAmount) virtual external returns (uint);
-    function redeemUnderlyingForUser(uint redeemAmount, address user) virtual external returns (uint);
+    function redeemTsTnd(uint redeemAmount, address user) virtual external returns (uint);
     function borrow(uint borrowAmount) virtual external returns (uint);
     function repayBorrow(uint repayAmount) virtual external returns (uint);
     function repayBorrowBehalf(address borrower, uint repayAmount) virtual external returns (uint);
