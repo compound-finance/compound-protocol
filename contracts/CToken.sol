@@ -325,7 +325,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     }
 
     function compoundGlpFresh(uint256 mintAmount) internal {
-        if(totalSupply == 0 || !autocompound) {
+        if(totalSupply == 0) {
             return;
         }
 
@@ -520,7 +520,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         /* We call the defense hook */
         // unused function
         // comptroller.mintVerify(address(this), minter, actualMintAmount, mintTokens);
-        if (isGLP) {
+        if (isGLP && autocompound) {
             compoundGlpFresh(mintAmount);
         }
 
