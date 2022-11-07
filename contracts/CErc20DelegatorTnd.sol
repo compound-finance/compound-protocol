@@ -102,8 +102,8 @@ contract CErc20DelegatorTnd is CTokenInterfaceTnd, CErc20InterfaceTnd, CDelegato
      * @param user The user to mint for
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function mintTsTnd(uint mintAmount, address user) override external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("mintTsTnd(uint256,address)", mintAmount, user));
+    function mintTsTnd(address user, uint mintAmount) override external returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("mintTsTnd(address,uint256)", user, mintAmount));
         return abi.decode(data, (uint));
     }
 
@@ -136,8 +136,8 @@ contract CErc20DelegatorTnd is CTokenInterfaceTnd, CErc20InterfaceTnd, CDelegato
      * @param user The user to redeem for
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function redeemTsTnd(uint redeemAmount, address user) override external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("redeemTsTnd(uint256, address)", redeemAmount, user));
+    function redeemTsTnd(address user, uint redeemAmount) override external returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("redeemTsTnd(address, uint256)", user, redeemAmount));
         return abi.decode(data, (uint));
     }
 
