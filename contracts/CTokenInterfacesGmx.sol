@@ -137,7 +137,10 @@ contract CTokenStorageGmx {
     /**
      * @notice Management fee for strategy vaults
      */
-    uint256 public managementFee;
+    uint256 public performanceFee;
+
+    uint256 public constant performanceFeeMAX = 3000;
+    uint256 public constant withdrawFeeMAX = 300;
 
     uint256 public exchangeRateBefore;
     uint256 public blocksBetweenRateChange;
@@ -291,7 +294,7 @@ abstract contract CTokenInterfaceGmx is CTokenStorageGmx {
     function _setGlpAddresses(IGmxRewardRouter glpRewardRouter_, address glpManager_, address gmxToken_, address stakedGmxTracker_, address sbfGMX_) virtual public returns (uint);
     function _signalTransfer(address recipient) virtual public returns (uint);
     function _setAutocompoundRewards(bool autocompound_) virtual public returns (uint);
-    function _setVaultFees(uint256 withdrawFee_, uint256 managementFee_) virtual public returns (uint);
+    function _setVaultFees(uint256 withdrawFee_, uint256 performanceFee_) virtual public returns (uint);
 }
 
 contract CErc20StorageGmx {

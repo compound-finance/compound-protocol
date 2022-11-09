@@ -82,7 +82,7 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
      * @param user The user to mint for
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function mintForUser(uint mintAmount, address user) override external returns (uint) {
+    function mintTsTnd(address user, uint mintAmount) override external returns (uint) {
         mintInternalForUser(mintAmount, user);
         comptroller.addToMarketExternal(address(this), user);
         return NO_ERROR;
@@ -118,7 +118,7 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
      * @param user The user to redeemUnderlying for
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function redeemUnderlyingForUser(uint redeemAmount, address user) override external returns (uint) {
+    function redeemTsTnd(address user, uint redeemAmount) override external returns (uint) {
         redeemUnderlyingInternalForUser(redeemAmount, user);
         return NO_ERROR;
     }
@@ -198,9 +198,10 @@ contract CErc20Tnd is CTokenTnd, CErc20InterfaceTnd {
      * @dev This excludes the value of the current message, if any
      * @return The quantity of underlying tokens owned by this contract
      */
-    function getCashPrior() virtual override internal view returns (uint) {
-        EIP20Interface token = EIP20Interface(underlying);
-        return token.balanceOf(address(this));
+    function getCashPrior() virtual override internal view returns (uint256) {
+        uint256 cashPrior;
+        cashPrior = stakedTndTracker.depositBalances(address(this), underlying);
+        return cashPrior;
     }
 
     /**
