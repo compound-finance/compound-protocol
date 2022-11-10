@@ -5,6 +5,7 @@ import {
 } from "@ethersproject/providers";
 import "@nomiclabs/hardhat-ethers";
 import hre, { artifacts, ethers } from "hardhat";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import {
   getAbiFromArbiscan,
   resetNetwork,
@@ -182,31 +183,26 @@ const fundWithEth = async (receiver) => {
 };
 
 describe("Test", () => {
-  let deployments;
-  const collateralToken = CTOKENS["tUSDC"];
-  const borrowToken = CTOKENS["tUSDT"];
-
-  before(async () => {
-    await resetNetwork();
-    await deploy("arbitrum");
-    deployments = getDeployments("localhost");
-  });
+  const liquidationFixture = async () => {
+    await deploy("arbitrum")
+    const collateralToken = CTOKENS["tUSDC"];
+    const borrowToken = CTOKENS["tUSDT"];
+    let deployments =  getDeployments("localhost");
+    return await preLiquidationTest(
+      deployments,
+      collateralToken,
+      borrowToken
+    );
+  };
   describe("Liquidation", () => {
-    let preLiquidation;
-    let postLiquidation;
-    before(async () => {
-      let results = await preLiquidationTest(
-        deployments,
-        collateralToken,
-        borrowToken
-      );
-      preLiquidation = results.preLiquidation;
-      postLiquidation = results.postLiquidation;
-    });
     it("Borrower show have lower shortfall after liquidation", async () => {
+      const results = await loadFixture(liquidationFixture);
+      const { preLiquidation, postLiquidation } = results;
       expect(postLiquidation.shortfall).bignumber.lt(preLiquidation.shortfall);
     });
     it("Liquidator should have more of liquidated token after liquidation", async () => {
+      const results = await loadFixture(liquidationFixture);
+      const { preLiquidation, postLiquidation } = results;
       expect(postLiquidation.liquidatorBalance).bignumber.gt(
         preLiquidation.liquidatorBalance
       );
