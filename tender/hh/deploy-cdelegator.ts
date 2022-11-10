@@ -10,6 +10,9 @@ const outputFilePath = `./deployments/${hre.network.name}.json`;
 const stakedGLPAddress = "0x2F546AD4eDD93B956C8999Be404cdCAFde3E89AE"
 const glpRewardRouterAddress = "0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1"
 const glpManagerAddress = "0x321f653eed006ad1c29d174e17d96351bde22649"
+const gmxToken = "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a"
+const stakedGmxTracker = "0x908c4d94d34924765f1edc22a1dd098397c59dd4"
+const sbfGMX = "0xd2D1162512F927a7e282Ef43a362659E4F2a728F"
 
 
 export async function main() {
@@ -102,8 +105,17 @@ for (let i = 0; i < CTOKENS.length; i++) {
 
     if (token.isGLP) {
       console.log("calling ctoken._setGlpAddresses()");
-      await delegator._setGlpAddresses(stakedGLPAddress, glpRewardRouterAddress, glpManagerAddress);
+      await delegator._setGlpAddresses(
+        stakedGLPAddress,
+        glpRewardRouterAddress,
+        glpManagerAddress,
+        gmxToken,
+        stakedGmxTracker,
+        sbfGMX
+      );
     }
+
+    //    function _setGlpAddresses(IGmxRewardRouter glpRewardRouter_, address glpManager_, address gmxToken_, address stakedGmxTracker_, address sbfGMX_) virtual public returns (uint);
 
     console.log("calling unitrollerProxy._supportMarket()");
 
