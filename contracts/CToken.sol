@@ -353,9 +353,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             uint ethperformanceFee = div_(mul_(ethBalance, performanceFee), 10000);
             uint ethToCompound = sub_(ethBalance, ethperformanceFee);
             EIP20Interface(WETH).transfer(admin, ethperformanceFee);
-            glpRewardRouter.mintAndStakeGlp(WETH, ethToCompound, 0, 0);               
-        } else {
-            glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
+            glpRewardRouter.mintAndStakeGlp(WETH, ethToCompound, 0, 0);
         }
 
         accrualBlockNumber = currentBlockNumber;
