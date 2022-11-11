@@ -350,7 +350,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // if this is a GLP cToken, claim the ETH and esGMX rewards and stake the esGMX Rewards
 
         if(ethBalance > 0){
-            uint ethperformanceFee = mul_(ethBalance, div_(performanceFee, 10000));
+            uint ethperformanceFee = div_(mul_(ethBalance, performanceFee), 10000);
             uint ethToCompound = sub_(ethBalance, ethperformanceFee);
             EIP20Interface(WETH).transfer(admin, ethperformanceFee);
             glpRewardRouter.mintAndStakeGlp(WETH, ethToCompound, 0, 0);               
