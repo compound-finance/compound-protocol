@@ -5,7 +5,7 @@ import { toBn } from "../utils/bn";
 // IR Model Params
 // const params = {
 //   address: "0x49c67df0d856785739a2e454aa4921d63a51be13",
-//   blocksPerYear: "144752795",
+//   blocksPerYear: "2628000",
 //   baseRate: "6.77",
 //   kink: "90",
 //   multiplierPreKink: "0",
@@ -14,7 +14,7 @@ import { toBn } from "../utils/bn";
 
 const params = {
   address: "0x9dEB4B6fd089eD03ceFB64549EAEB06e60C0c6BE",
-  blocksPerYear: "144752795",
+  blocksPerYear: "2628000",
   baseRate: "11.333",
   kink: "90",
   multiplierPreKink: "0",
