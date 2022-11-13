@@ -7,7 +7,7 @@ export const CERC20 = 'contracts/CErc20.sol:CErc20';
 
 export const WHALES = {
   USDT: "0x750f6Ed08f00f5e1c519e650d82d6Ff101E60841",
-  USDC: "0x39ef179bB1953f916003F5Dc9a321ce978df3118",
+  USDC: "0x4fc126B084fD491cF417c306717019e9C0d6d087",
 }
 
 export const CTOKENS = {
