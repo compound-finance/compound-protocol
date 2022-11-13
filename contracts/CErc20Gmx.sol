@@ -17,7 +17,7 @@ interface CompLike {
  * @notice CTokens which wrap an EIP-20 underlying
  * @author Compound
  */
-contract CErc20Gmx is CTokenGmx, CErc20InterfaceGmx {
+contract CErc20Gmx is CTokenGmx, CErc20Interface {
     /**
      * @notice Initialize the new money market
      * @param underlying_ The address of the underlying asset
@@ -58,6 +58,11 @@ contract CErc20Gmx is CTokenGmx, CErc20InterfaceGmx {
         return NO_ERROR;
     }
 
+    function compound() override external returns (uint) {
+        compoundInternal();
+        return NO_ERROR;
+    }
+
     /**
      * @notice Sender redeems cTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
@@ -77,6 +82,18 @@ contract CErc20Gmx is CTokenGmx, CErc20InterfaceGmx {
      */
     function redeemUnderlying(uint redeemAmount) override external returns (uint) {
         redeemUnderlyingInternal(redeemAmount);
+        return NO_ERROR;
+    }
+
+    /**
+     * @notice Redeems cTokens for a user in exchange for a specified amount of underlying asset
+     * @dev Accrues interest whether or not the operation succeeds, unless reverted
+     * @param redeemAmount The amount of underlying to redeem
+     * @param user The user to redeem for
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function redeemUnderlyingForUser(uint redeemAmount, address user) override external returns (uint) {
+        redeemUnderlyingInternalForUser(redeemAmount, user);
         return NO_ERROR;
     }
 
@@ -119,7 +136,7 @@ contract CErc20Gmx is CTokenGmx, CErc20InterfaceGmx {
      * @param cTokenCollateral The market in which to seize collateral from the borrower
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterfaceGmx cTokenCollateral) override external returns (uint) {
+    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) override external returns (uint) {
         liquidateBorrowInternal(borrower, repayAmount, cTokenCollateral);
         return NO_ERROR;
     }

@@ -95,8 +95,8 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
         return abi.decode(data, (uint));
     }
 
-    function compoundGlp() override external returns (uint){
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("compoundGlp()"));
+    function compound() override external returns (uint){
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("compound()"));
         return abi.decode(data, (uint));
     }
 
@@ -119,6 +119,18 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
      */
     function redeemUnderlying(uint redeemAmount) override external returns (uint) {
         bytes memory data = delegateToImplementation(abi.encodeWithSignature("redeemUnderlying(uint256)", redeemAmount));
+        return abi.decode(data, (uint));
+    }
+
+    /**
+     * @notice Redeems cTokens for a user in exchange for a specified amount of underlying asset
+     * @dev Accrues interest whether or not the operation succeeds, unless reverted
+     * @param redeemAmount The amount of underlying to redeem
+     * @param user The user to redeem for
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function redeemUnderlyingForUser(uint redeemAmount, address user) override external returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("redeemUnderlying(uint256,address)", redeemAmount, user));
         return abi.decode(data, (uint));
     }
 

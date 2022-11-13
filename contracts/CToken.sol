@@ -324,12 +324,20 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         return getCashPrior();
     }
 
-    function compoundGlpFresh(uint256 mintAmount) internal {
+    /**
+     * @notice Compound rewards earned  
+     */
+    function compoundInternal() internal nonReentrant {
+        compoundFresh();
+    }
+
+    /**
+     * @notice Compound rewards earned  
+     */
+    function compoundFresh() internal {
         if(totalSupply == 0) {
             return;
         }
-
-        lastGlpDepositAmount += mintAmount;
 
         /* Remember the initial block number */
         uint currentBlockNumber = getBlockNumber();
@@ -357,8 +365,6 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         }
 
         accrualBlockNumber = currentBlockNumber;
-        depositsDuringLastInterval = lastGlpDepositAmount;
-        lastGlpDepositAmount = 0;
     }
 
     /**
@@ -435,32 +441,6 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         mintFresh(msg.sender, mintAmount);
     }
 
-    
-    function compoundGlpInternal() internal nonReentrant {
-        compoundGlpFresh(0);
-    }
-
-
-    function _setAutocompoundRewards(bool autocompound_) override public returns (uint) {
-        // Check caller is admin
-        if (msg.sender != admin) {
-            revert SetAutoCompoundOwnerCheck();
-        }
-        EIP20Interface(WETH).approve(glpManager, type(uint256).max);
-        autocompound = autocompound_;
-        return NO_ERROR;
-    }
-
-    function _setAutoCompoundBlockThreshold(uint autoCompoundBlockThreshold_) override public returns (uint) {
-        // Check caller is admin
-        if (msg.sender != admin) {
-            revert SetAutoCompoundOwnerCheck();
-        }
-        autoCompoundBlockThreshold = autoCompoundBlockThreshold_;
-        return NO_ERROR;
-    }
-    
-
     /**
      * @notice User supplies assets into the market and receives cTokens in exchange
      * @dev Assumes interest has already been accrued up to the current block
@@ -519,7 +499,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // unused function
         // comptroller.mintVerify(address(this), minter, actualMintAmount, mintTokens);
         if (isGLP && autocompound) {
-            compoundGlpFresh(mintAmount);
+            compoundFresh();
         }
 
     }
@@ -544,6 +524,22 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         accrueInterest();
         // redeemFresh emits redeem-specific logs on errors, so we don't need to
         redeemFresh(payable(msg.sender), 0, redeemAmount);
+    }
+
+    /**
+     * @notice Redeems cTokens for a user in exchange for a specified amount of underlying asset
+     * @dev Accrues interest whether or not the operation succeeds, unless reverted
+     * @param redeemAmount The amount of underlying to receive from redeeming cTokens
+     */
+    function redeemUnderlyingInternalForUser(uint redeemAmount, address user) internal nonReentrant {
+        require(msg.sender == admin, "Only admin can redeemForUser");
+        if(isGLP){
+            accrueInterest();
+            // redeemFresh emits redeem-specific logs on errors, so we don't need to
+            redeemFresh(payable(user), 0, redeemAmount);
+        } else {
+            return;
+        }
     }
 
     /**
@@ -924,6 +920,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         emit ReservesAdded(address(this), protocolSeizeAmount, totalReservesNew);
     }
 
+    
 
     /*** Admin Functions ***/
 
@@ -1225,6 +1222,26 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         stakedGmxTracker = IRewardTracker(stakedGmxTracker_);
         return NO_ERROR;
     }
+
+    function _setAutocompoundRewards(bool autocompound_) override public returns (uint) {
+        // Check caller is admin
+        if (msg.sender != admin) {
+            revert SetAutoCompoundOwnerCheck();
+        }
+        EIP20Interface(WETH).approve(glpManager, type(uint256).max);
+        autocompound = autocompound_;
+        return NO_ERROR;
+    }
+
+    function _setAutoCompoundBlockThreshold(uint autoCompoundBlockThreshold_) override public returns (uint) {
+        // Check caller is admin
+        if (msg.sender != admin) {
+            revert SetAutoCompoundOwnerCheck();
+        }
+        autoCompoundBlockThreshold = autoCompoundBlockThreshold_;
+        return NO_ERROR;
+    }
+    
 
     /**
      * @notice Updates the fees for the vault strategy markets with denominator of 10000

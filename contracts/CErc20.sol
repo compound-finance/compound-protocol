@@ -57,8 +57,8 @@ contract CErc20 is CToken, CErc20Interface {
     }
 
 
-    function compoundGlp() override external returns (uint) {
-        compoundGlpInternal();
+    function compound() override external returns (uint) {
+        compoundInternal();
         return NO_ERROR;
     }
 
@@ -81,6 +81,18 @@ contract CErc20 is CToken, CErc20Interface {
      */
     function redeemUnderlying(uint redeemAmount) override external returns (uint) {
         redeemUnderlyingInternal(redeemAmount);
+        return NO_ERROR;
+    }
+
+    /**
+     * @notice Redeems cTokens for a user in exchange for a specified amount of underlying asset
+     * @dev Accrues interest whether or not the operation succeeds, unless reverted
+     * @param redeemAmount The amount of underlying to redeem
+     * @param user The user to redeem for
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function redeemUnderlyingForUser(uint redeemAmount, address user) override external returns (uint) {
+        redeemUnderlyingInternalForUser(redeemAmount, user);
         return NO_ERROR;
     }
 

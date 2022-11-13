@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "./CTokenInterfacesGmx.sol";
+import "./CTokenInterfaces.sol";
 import "./IGmxRewardRouter.sol";
 import "./IStakedGlp.sol";
 import "./EIP20Interface.sol";
@@ -12,7 +12,7 @@ import "./IERC721Receiver.sol";
  * @notice CTokens which wrap an EIP-20 underlying and delegate to an implementation
  * @author Compound
  */
-contract CErc20DelegatorGmx is CTokenInterfaceGmx, CErc20InterfaceGmx, CDelegatorInterfaceGmx {
+contract CErc20DelegatorGmx is CTokenInterface, CErc20Interface, CDelegatorInterface {
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset
@@ -116,6 +116,18 @@ contract CErc20DelegatorGmx is CTokenInterfaceGmx, CErc20InterfaceGmx, CDelegato
     }
 
     /**
+     * @notice Redeems cTokens for a user in exchange for a specified amount of underlying asset
+     * @dev Accrues interest whether or not the operation succeeds, unless reverted
+     * @param redeemAmount The amount of underlying to redeem
+     * @param user The user to redeem for
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function redeemUnderlyingForUser(uint redeemAmount, address user) override external returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("redeemUnderlying(uint256,address)", redeemAmount, user));
+        return abi.decode(data, (uint));
+    }
+
+    /**
       * @notice Sender borrows assets from the protocol to their own address
       * @param borrowAmount The amount of the underlying asset to borrow
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -146,6 +158,11 @@ contract CErc20DelegatorGmx is CTokenInterfaceGmx, CErc20InterfaceGmx, CDelegato
         return abi.decode(data, (uint));
     }
 
+    function compound() override external returns (uint){
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("compound()"));
+        return abi.decode(data, (uint));
+    }
+
     /**
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
@@ -154,7 +171,7 @@ contract CErc20DelegatorGmx is CTokenInterfaceGmx, CErc20InterfaceGmx, CDelegato
      * @param repayAmount The amount of the underlying borrowed asset to repay
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterfaceGmx cTokenCollateral) override external returns (uint) {
+    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) override external returns (uint) {
         bytes memory data = delegateToImplementation(abi.encodeWithSignature("liquidateBorrow(address,uint256,address)", borrower, repayAmount, cTokenCollateral));
         return abi.decode(data, (uint));
     }
@@ -431,12 +448,19 @@ contract CErc20DelegatorGmx is CTokenInterfaceGmx, CErc20InterfaceGmx, CDelegato
     /**
      * @notice Updates the glp contract addresses using _setGlpAddresses
      * @dev Admin function to set the GLP contract addresses
+     * @param stakedGLP_ the stakedGLP contract to use
      * @param glpRewardRouter_ the rewardrouter contract address to use
      * @param glpManager_ the glpManager contract address to use
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setGlpAddresses(IGmxRewardRouter glpRewardRouter_, address glpManager_, address gmxToken_, address stakedGmxTracker_, address sbfGMX_) override public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setGlpAddresses(address,address,address,address,address)", glpRewardRouter_, glpManager_, gmxToken_,stakedGmxTracker_, sbfGMX_));
+    
+    function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_, address gmxToken_, address stakedGmxTracker_, address sbfGMX_) override public returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setGlpAddresses(address,address,address,address,address,address)", stakedGLP_, glpRewardRouter_, glpManager_,gmxToken_,stakedGmxTracker_,sbfGMX_));
+        return abi.decode(data, (uint));
+    }
+
+    function _setAutoCompoundBlockThreshold(uint256 autoCompoundBlockThreshold_) override public returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setAutoCompoundBlockThreshold(uint256)", autoCompoundBlockThreshold_));
         return abi.decode(data, (uint));
     }
 

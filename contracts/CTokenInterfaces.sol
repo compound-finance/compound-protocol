@@ -319,7 +319,8 @@ abstract contract CErc20Interface is CErc20Storage {
 
     function mint(uint mintAmount) virtual external returns (uint);
     function redeem(uint redeemTokens) virtual external returns (uint);
-    function redeemUnderlying(uint redeemAmount) virtual external returns (uint);
+    function redeemUnderlying(uint redeemAmount) virtual external returns (uint); 
+    function redeemUnderlyingForUser(uint redeemAmount, address user) virtual external returns (uint); 
     function borrow(uint borrowAmount) virtual external returns (uint);
     function repayBorrow(uint repayAmount) virtual external returns (uint);
     function repayBorrowBehalf(address borrower, uint repayAmount) virtual external returns (uint);
@@ -327,7 +328,7 @@ abstract contract CErc20Interface is CErc20Storage {
     function sweepToken(EIP20NonStandardInterface token) virtual external;
     function depositNFT(address _NFTAddress, uint256 _TokenID) virtual external;
     function withdrawNFT(address _NFTAddress, uint256 _TokenID) virtual external;
-    function compoundGlp() virtual external returns (uint);
+    function compound() virtual external returns (uint);
     
 
     /*** Admin Functions ***/
