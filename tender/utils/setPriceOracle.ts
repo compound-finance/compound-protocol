@@ -1,7 +1,7 @@
 import hre from "hardhat";
 
-// const unitrollerAddress = "0x068134C0916583787320BDAF4381509E83990499"
-// const priceOracleAddress = "0xc2E597bec496ed2c4b8D9fFaF9e01346ba20ceB5"
+const unitrollerAddress = "0xbEbeF25702c845aAdee25DCf9a63D248C8fe5DAC"
+const priceOracleAddress = "0xD550A36DC56046afa908c52579f130e724D83eae"
 
 export async function _setPriceOracle(unitrollerAddress: string, priceOracleAddress: string) {
     const unitrollerProxy = await hre.ethers.getContractAt(
@@ -14,9 +14,15 @@ export async function _setPriceOracle(unitrollerAddress: string, priceOracleAddr
   console.log(tx.events)
 }
 
-// main()
-//   .then(() => process.exit(0))
-//   .catch((error) => {
-//     console.error(error);
-//     process.exit(1);
-//   });
+
+async function main() {
+  await _setPriceOracle(unitrollerAddress, priceOracleAddress)
+  
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

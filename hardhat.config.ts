@@ -2,17 +2,7 @@ import "@typechain/hardhat";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-ethers";
-import { task, subtask } from "hardhat/config";
 import { existsSync } from "fs";
-import * as path from "path";
-import {
-  TASK_NODE,
-  TASK_TEST,
-  TASK_NODE_GET_PROVIDER,
-  TASK_NODE_SERVER_READY,
-  TASK_TEST_GET_TEST_FILES,
-  TASK_TEST_RUN_MOCHA_TESTS,
-} from "hardhat/builtin-tasks/task-names";
 
 // import "@openzeppelin/hardhat-upgrades";
 // import "hardhat-contract-sizer";
@@ -25,6 +15,22 @@ import * as tdly from "@tenderly/hardhat-tenderly";
 
 dotenv.config({ path: __dirname + "/.env" });
 
+function getEnvVariableOrFail(name: string): string {
+  let value = process.env[name]
+
+  if (typeof value === "string") {
+    return value
+  }
+
+  console.error(`${name} is not defined in the environment`)
+  process.exit(1)
+}
+
+const ARBITRUM_RPC = getEnvVariableOrFail("ARBITRUM_RPC")
+const ETHERSCAN_API_KEY = getEnvVariableOrFail("ETHERSCAN_API_KEY")
+const PRIVATE_KEY = getEnvVariableOrFail("PRIVATE_KEY")
+
+
 function getHomeDir() {
   return process.env[process.platform == "win32" ? "USERPROFILE" : "HOME"];
 }
@@ -36,24 +42,23 @@ if (existsSync(`${getHomeDir()}/.tenderly/config.yaml`)) {
     automaticVerifications: automaticVerifications, // automatically verifies contracts !!
   });
 }
-
 const config: HardhatUserConfig = {
   networks: {
     arbitrum: {
-      url: process.env["ARBITRUM_RPC"] || "",
-      accounts: [process.env["PRIVATE_KEY"] || ""],
+      url: ARBITRUM_RPC,
+      accounts: [PRIVATE_KEY],
     },
     mainnet: {
-      url: process.env["ARBITRUM_RPC"] || "",
-      accounts: [process.env["PRIVATE_KEY"] || ""],
+      url: ARBITRUM_RPC,
+      accounts: [PRIVATE_KEY],
     },
     ropsten: {
       url: process.env["ROPSTEN_RPC"] || "https://ropsten.infura.io/v3/",
-      accounts: [process.env["PRIVATE_KEY"] || ""],
+      accounts: [PRIVATE_KEY],
     },
     metis: {
       url: process.env["METIS_RPC"] || "https://andromeda.metis.io/?owner=1088",
-      accounts: [process.env["PRIVATE_KEY"] || ""],
+      accounts: [PRIVATE_KEY],
     },
     stardust: {
       url: "https://stardust.metis.io/?owner=588",
@@ -63,12 +68,19 @@ const config: HardhatUserConfig = {
     hardhat: {
       allowUnlimitedContractSize: true,
       forking: {
-        url: process.env["ARBITRUM_RPC"] || "",
+        url: ARBITRUM_RPC,
         blockNumber: 36797170,
         enabled: true,
       },
     },
   },
+
+  etherscan: {
+    apiKey: {
+      arbitrumOne: ETHERSCAN_API_KEY,
+    } 
+  },
+  
   solidity: {
     version: "0.8.10",
     settings: {

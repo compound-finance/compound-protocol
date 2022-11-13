@@ -17,25 +17,28 @@ export const CTOKENS = [
   //   isGLP: false
   // },
 
-  // {
-  //     underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
-  //     name: "fsGLP",
-  //     symbol: "tfsGLP",
-  //     decimals: CTOKEN_DECIMALS,
-  //     collateralFactor: ethers.utils.parseUnits("5", 17),
-  //     collateralVIP: ethers.utils.parseUnits("95", 16),
-  //     threshold: ethers.utils.parseUnits("5", 17),
-  //     thresholdVIP: ethers.utils.parseUnits("95", 16),
-  //     isGLP: true
-  //   },
+  {
+      underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
+      name: "fsGLP",
+      symbol: "tfsGLP",
+      decimals: CTOKEN_DECIMALS,
+      collateralFactor: ethers.utils.parseUnits("5", 17),
+      collateralVIP: ethers.utils.parseUnits("95", 16),
+      threshold: ethers.utils.parseUnits("5", 17),
+      thresholdVIP: ethers.utils.parseUnits("95", 16),
+      isGLP: true
+    },
 
 //   {
 //     underlying: "0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F",
 //     name: "FRAX",
 //     symbol: "tFRAX",
 //     decimals: CTOKEN_DECIMALS,
-//     collateralFactor: ethers.utils.parseUnits("9", 17),
-//     isGLP: false
+//     isGLP: false,
+//     collateralFactor: ethers.utils.parseUnits("40", 16),
+//     collateralVIP: ethers.utils.parseUnits("85", 16),
+//     threshold: ethers.utils.parseUnits("50", 16),
+//     thresholdVIP: ethers.utils.parseUnits("90", 16)
 //   },
 
 //   {
@@ -48,30 +51,34 @@ export const CTOKENS = [
 //     collateralVIP: ethers.utils.parseUnits("85", 16),
 //     threshold: ethers.utils.parseUnits("80", 16),
 //     thresholdVIP: ethers.utils.parseUnits("90", 16),
-// },
+//   },
 
   
-{
-    underlying: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
-    name: "tUSDC",
-    symbol: "tUSDC",
-    decimals: CTOKEN_DECIMALS,
-    collateralFactor: ethers.utils.parseUnits("80", 16),
-    collateralVIP: ethers.utils.parseUnits("85", 16),
-    threshold: ethers.utils.parseUnits("85", 16),
-    thresholdVIP: ethers.utils.parseUnits("90", 16),
-    isGLP: false
-  },
+// {
+//     underlying: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
+//     name: "tUSDC",
+//     symbol: "tUSDC",
+//     decimals: CTOKEN_DECIMALS,
+//     collateralFactor: ethers.utils.parseUnits("80", 16),
+//     collateralVIP: ethers.utils.parseUnits("85", 16),
+//     threshold: ethers.utils.parseUnits("85", 16),
+//     thresholdVIP: ethers.utils.parseUnits("90", 16),
+//     isGLP: false
+//   },
 
 
-  // /not deployed
+  // // /not deployed
   // {
   //   underlying: "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
   //   name: "tDAI",
   //   symbol: "tDAI",
   //   decimals: CTOKEN_DECIMALS,
-  //   collateralFactor: ethers.utils.parseUnits("9", 17),
-  //   isGLP: false
+  //   isGLP: false,
+
+  //   collateralFactor: ethers.utils.parseUnits("40", 16),
+  //   collateralVIP: ethers.utils.parseUnits("85", 16),
+  //   threshold: ethers.utils.parseUnits("50", 16),
+  //   thresholdVIP: ethers.utils.parseUnits("90", 16)
   // },
 
   // {
