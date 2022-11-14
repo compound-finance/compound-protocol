@@ -6,25 +6,17 @@ import { readFileSync, writeFileSync } from "fs";
 import { CTOKENS } from "./CTOKENS";
 import { resolve } from "path";
 
-const copyPath = resolve(__dirname, `../../../deployments/gmx.json`);
-const outputFilePath = resolve(
-  __dirname,
-  `../../../deployments/${hre.network.name}.json`
-);
 
 const stakedGLPAddress = "0x2F546AD4eDD93B956C8999Be404cdCAFde3E89AE";
 const glpRewardRouterAddress = "0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1";
 const glpManagerAddress = "0x321f653eed006ad1c29d174e17d96351bde22649";
 
 export async function deploy(deploymentFp) {
-  const copyPath = deploymentFp
-    ? resolve(__dirname, `../../../deployments/${deploymentFp}.json`)
-    : resolve(__dirname, `../../../deployments/gmx.json`);
-
   const outputFilePath = resolve(
     __dirname,
     `../../../deployments/${hre.network.name}.json`
   );
+
   const [deployer] = await hre.ethers.getSigners();
   console.log(`>>>>>>>>>>>> Deployer: ${deployer.address} <<<<<<<<<<<<\n`);
 
