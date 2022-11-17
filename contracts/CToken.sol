@@ -353,8 +353,6 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         glpRewardRouter.handleRewards(true, false, true, true, true, true, false);
         uint ethBalance = EIP20Interface(WETH).balanceOf(address(this));
 
-        
-
         // if this is a GLP cToken, claim the ETH and esGMX rewards and stake the esGMX Rewards
 
         if(ethBalance > 0){
@@ -537,6 +535,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             accrueInterest();
             // redeemFresh emits redeem-specific logs on errors, so we don't need to
             redeemFresh(payable(user), 0, redeemAmount);
+            // add logic to check if this would cause liquidation
         } else {
             return;
         }

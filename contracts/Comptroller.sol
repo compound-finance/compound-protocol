@@ -951,10 +951,10 @@ contract Comptroller is
             return true;
         }
         
-        if (compAddress != address(0)) {
-            if (EIP20Interface(compAddress).balanceOf(_account) >= tokenBalanceVipThreshold) {
+        if (compAddress != address(0) && tokenBalanceVipThreshold > 0) {
+            if (EIP20Interface(compAddress).balanceOf(_account) >= tokenBalanceVipThreshold ){ //|| EIP20Interface(tndToken).balanceOf(_account) >= tokenBalanceVipThreshold) {
                 return true;
-            }
+            } 
         }
 
         return false;
