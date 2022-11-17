@@ -123,7 +123,7 @@ contract CErc20DelegatorGmx is CTokenInterface, CErc20Interface, CDelegatorInter
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemUnderlyingForUser(uint redeemAmount, address user) override external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("redeemUnderlying(uint256,address)", redeemAmount, user));
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("redeemUnderlyingForUser(uint256,address)", redeemAmount, user));
         return abi.decode(data, (uint));
     }
 
