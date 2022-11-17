@@ -534,8 +534,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         if(isGLP){
             accrueInterest();
             // redeemFresh emits redeem-specific logs on errors, so we don't need to
+            
             redeemFresh(payable(user), 0, redeemAmount);
-            // add logic to check if this would cause liquidation
         } else {
             return;
         }

@@ -952,7 +952,7 @@ contract Comptroller is
         }
         
         if (compAddress != address(0) && tokenBalanceVipThreshold > 0) {
-            if (EIP20Interface(compAddress).balanceOf(_account) >= tokenBalanceVipThreshold ){ //|| EIP20Interface(tndToken).balanceOf(_account) >= tokenBalanceVipThreshold) {
+            if (EIP20Interface(compAddress).balanceOf(_account) >= tokenBalanceVipThreshold || EIP20Interface(tndAddress).balanceOf(_account) >= tokenBalanceVipThreshold) {
                 return true;
             } 
         }
@@ -1991,6 +1991,12 @@ contract Comptroller is
         if (!immutableCompAddress) {
             compAddress = compAddress_;
         }
+    }
+
+     function setTndAddress(address tndAddress_) external {
+        require(msg.sender == admin, "only admin can set compAddress");
+        tndAddress = tndAddress_;
+        
     }
 
     function setImmutableCompAddress() external {
