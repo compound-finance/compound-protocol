@@ -6,8 +6,8 @@ export const IERC20 = 'contracts/IERC20.sol:IERC20';
 export const CERC20 = 'contracts/CErc20.sol:CErc20';
 
 export const WHALES = {
-  USDT: "0x750f6Ed08f00f5e1c519e650d82d6Ff101E60841",
-  USDC: "0x4fc126B084fD491cF417c306717019e9C0d6d087",
+  USDT: "0x1824f8622526e342a8ccca3ba8f2a93b1fe77344",
+  USDC: "0x02944e3fb72aa13095d7cebd8389fc74bec8e48e",
 }
 
 export const CTOKENS = {

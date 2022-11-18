@@ -6,25 +6,19 @@ import { readFileSync, writeFileSync } from "fs";
 import { CTOKENS } from "./CTOKENS";
 import { resolve } from "path";
 
-const copyPath = resolve(__dirname, `../../../deployments/gmx.json`);
-const outputFilePath = resolve(
-  __dirname,
-  `../../../deployments/${hre.network.name}.json`
-);
-
-const stakedGLPAddress = "0x2F546AD4eDD93B956C8999Be404cdCAFde3E89AE";
-const glpRewardRouterAddress = "0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1";
-const glpManagerAddress = "0x321f653eed006ad1c29d174e17d96351bde22649";
+const stakedGlpAddress = '0x2F546AD4eDD93B956C8999Be404cdCAFde3E89AE'
+const glpRewardRouterAddress = '0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1'
+const glpManagerAddress = '0x321F653eED006AD1C29D174e17d96351BDe22649'
+const gmxTokenAddress = '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a'
+const stakedGmxTrackerAddress = '0x908C4D94D34924765f1eDc22A1DD098397c59dD4'
+const sbfGMXAddress = '0xd2D1162512F927a7e282Ef43a362659E4F2a728F'
 
 export async function deploy(deploymentFp) {
-  const copyPath = deploymentFp
-    ? resolve(__dirname, `../../../deployments/${deploymentFp}.json`)
-    : resolve(__dirname, `../../../deployments/gmx.json`);
-
   const outputFilePath = resolve(
     __dirname,
     `../../../deployments/${hre.network.name}.json`
   );
+
   const [deployer] = await hre.ethers.getSigners();
   console.log(`>>>>>>>>>>>> Deployer: ${deployer.address} <<<<<<<<<<<<\n`);
 
@@ -76,14 +70,18 @@ export async function deploy(deploymentFp) {
     await delegator.deployed();
 
     if (token.isGLP) {
-      await delegator._setGlpAddresses(
-        stakedGLPAddress,
+      await delegator
+      .connect(admin)
+      ._setGlpAddresses(
+        stakedGlpAddress,
         glpRewardRouterAddress,
-        glpManagerAddress
+        glpManagerAddress,
+        gmxTokenAddress,
+        stakedGmxTrackerAddress,
+        sbfGMXAddress,
       );
     }
-
-    let isPrivate = token.isGLP === true;
+    let isPrivate = false;
     let isComped = true;
     let onlyWhitelistedBorrow = false;
     await unitrollerProxy

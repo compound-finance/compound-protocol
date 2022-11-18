@@ -6,6 +6,17 @@ const CTOKEN_DECIMALS = 8;
 // These addresses need to be correct
 export const CTOKENS = [
   {
+    underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
+    name: "tfsGLP",
+    symbol: "tfsGLP",
+    decimals: CTOKEN_DECIMALS,
+    collateralFactor: ethers.utils.parseUnits("5", 17),
+    collateralVIP: ethers.utils.parseUnits("95", 16),
+    threshold: ethers.utils.parseUnits("5", 17),
+    thresholdVIP: ethers.utils.parseUnits("95", 16),
+    isGLP: true
+  },
+  {
     underlying: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
     name: "USDT",
     symbol: "tUSDT",
@@ -26,6 +37,17 @@ export const CTOKENS = [
     threshold: ethers.utils.parseUnits("85", 16),
     thresholdVIP: ethers.utils.parseUnits("90", 16),
     isGLP: false
+  },
+  {
+    underlying: "0x1aDDD80E6039594eE970E5872D247bf0414C8903",
+    name: "tfsGLP",
+    symbol: "tfsGLP",
+    decimals: CTOKEN_DECIMALS,
+    collateralFactor: ethers.utils.parseUnits("5", 17),
+    collateralVIP: ethers.utils.parseUnits("95", 16),
+    threshold: ethers.utils.parseUnits("5", 17),
+    thresholdVIP: ethers.utils.parseUnits("95", 16),
+    isGLP: true
   },
 ];
 
@@ -83,16 +105,16 @@ export const CTokens = {
     isGLP: false
   },
 };
-
-export const GMX = {
-  underlying: "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a",
-  name: "GMX",
-  symbol: "tGMX",
-  decimals: 8,
-  collateralFactor: ethers.utils.parseUnits("5", 17),
-  collateralVIP: ethers.utils.parseUnits("80", 16),
-  threshold: ethers.utils.parseUnits("5", 17),
-  thresholdVIP: ethers.utils.parseUnits("80", 16),
-  isGLP: false,
-}
-
+//
+// export const GMX = {
+//   underlying: "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a",
+//   name: "GMX",
+//   symbol: "tGMX",
+//   decimals: 8,
+//   collateralFactor: ethers.utils.parseUnits("5", 17),
+//   collateralVIP: ethers.utils.parseUnits("80", 16),
+//   threshold: ethers.utils.parseUnits("5", 17),
+//   thresholdVIP: ethers.utils.parseUnits("80", 16),
+//   isGLP: false,
+// }
+//
