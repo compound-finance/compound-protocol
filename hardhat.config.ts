@@ -69,7 +69,7 @@ const config: HardhatUserConfig = {
       allowUnlimitedContractSize: true,
       forking: {
         url: process.env["ARBITRUM_RPC"] || "",
-        blockNumber: 36996288,
+        blockNumber: 38930690,
         enabled: true,
       },
     },

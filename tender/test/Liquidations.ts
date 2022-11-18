@@ -187,7 +187,7 @@ describe("Test", () => {
     await deploy("arbitrum")
     const collateralToken = CTOKENS["tUSDC"];
     const borrowToken = CTOKENS["tUSDT"];
-    let deployments =  getDeployments("localhost");
+    let deployments = getDeployments("hardhat");
     return await preLiquidationTest(
       deployments,
       collateralToken,
