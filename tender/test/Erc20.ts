@@ -11,7 +11,7 @@ import * as hre from "hardhat";
 import * as ethers from "ethers";
 import { Contract, BigNumber } from "ethers";
 import { expect } from "chai";
-import { formatAmount, getUnderlyingBalance } from "./utils/TokenUtil";
+import { formatAmount } from "./utils/TokenUtil";
 import * as tokenClasses from "./contract_helpers/Token";
 const hreProvider = hre.network.provider;
 
@@ -29,14 +29,14 @@ const tests = [
     contractClass: CTokenContract,
     liquidate: "yes",
   },
-  //{
-  //  symbol: "tEth",
-  //  contractName: "CEther",
-  //  mintAmount: "0.001",
-  //  redeemAmount: "all",
-  //  borrowAmount: "0.0005",
-  //  contractClass: CTokenContract,
-  //},
+  {
+   symbol: "tEth",
+   contractName: "CEther",
+   mintAmount: "0.001",
+   redeemAmount: "all",
+   borrowAmount: "0.0005",
+   contractClass: CTokenContract,
+  },
 
   // {
   //   symbol: 'tGMX',
@@ -199,17 +199,6 @@ describe("Erc20", () => {
             expect(tBalanceTest).to.be.true;
             expect(uBalanceTest).to.be.true;
           });
-        });
-      }
-      if (test["borrowAmount"]) {
-        describe("Borrow", () => {
-          // it('Should have more tTokens and fewer uTokens', async () => {
-          //   let borrowBalance = await erc20Contract.borrowBalanceStored()
-          //   console.log(borrowBalance.toString())
-          //   await erc20Contract.borrow(formatAmount(.0005));
-          //   borrowBalance = await erc20Contract.borrowBalanceStored()
-          //   console.log(borrowBalance.toString())
-          // });
         });
       }
     });
