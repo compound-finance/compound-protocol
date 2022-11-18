@@ -18,7 +18,7 @@ const params = {
   baseRate: "7",
   kink: "90",
   multiplierPreKink: "0",
-  multiplierPostKink: "50",
+  multiplierPostKink: "0",
   // admin: "0x51129c8332A220E0bF9546A6Fe07481c17D2B638",
 };
 // see https://parasset2021-55646.medium.com/lending-protocol-interest-rate-model-comparison-48ff226f6e91
