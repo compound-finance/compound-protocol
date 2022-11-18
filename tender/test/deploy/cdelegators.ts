@@ -81,7 +81,7 @@ export async function deploy(deploymentFp) {
         sbfGMXAddress,
       );
     }
-    let isPrivate = token.isGLP === true;
+    let isPrivate = false;
     let isComped = true;
     let onlyWhitelistedBorrow = false;
     await unitrollerProxy

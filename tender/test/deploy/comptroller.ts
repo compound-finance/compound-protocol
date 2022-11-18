@@ -3,7 +3,7 @@ import "@nomiclabs/hardhat-ethers"
 import { readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
 
-async function deployComptroller(deploymentFp) {
+export async function deployComptroller(deploymentFp) {
   const outputFilePath = resolve(
     __dirname,
     `../../../deployments/${hre.network.name}.json`
