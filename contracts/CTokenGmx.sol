@@ -1283,7 +1283,7 @@ abstract contract CTokenGmx is CTokenInterface, ExponentialNoError, TokenErrorRe
         if (msg.sender != admin) {
             revert SignalTransferOwnerCheck();
         }
-        if(getCashPrior() == 0){
+        if(totalSupply == 0){
             glpRewardRouter.signalTransfer(recipient);
         }
         return NO_ERROR;
