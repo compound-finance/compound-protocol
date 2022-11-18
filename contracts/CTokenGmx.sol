@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 pragma abicoder v2;
 
 import "./ComptrollerInterface.sol";
-import "./CTokenInterfacesGmx.sol";
+import "./CTokenInterfaces.sol";
 import "./ErrorReporter.sol";
 import "./EIP20Interface.sol";
 import "./InterestRateModel.sol";
@@ -17,7 +17,7 @@ import "./ISwapRouter.sol";
  * @notice Abstract base for CTokens
  * @author Compound
  */
-abstract contract CTokenGmx is CTokenInterfaceGmx, ExponentialNoError, TokenErrorReporter {
+abstract contract CTokenGmx is CTokenInterface, ExponentialNoError, TokenErrorReporter {
     /**
      * @notice Initialize the money market
      * @param comptroller_ The address of the Comptroller
@@ -357,22 +357,26 @@ abstract contract CTokenGmx is CTokenInterfaceGmx, ExponentialNoError, TokenErro
         return getCashPrior();
     }
 
-    function compoundGmx() internal {
+    function compoundInternal() internal nonReentrant {
+        compoundFresh();
+    }
+
+    function compoundFresh() internal {
 
         if(totalSupply > 0){
             glpRewardRouter.handleRewards(true, true, true, true, true, true, false);
         }
 
-        if(autocompound){
-            uint ethBalance =  EIP20Interface(WETH).balanceOf(address(this));
-            if(ethBalance > 0){
-                uint ethperformanceFee = mul_(ethBalance, div_(performanceFee, 100));
-                uint ethToCompound = sub_(ethBalance, ethperformanceFee);
-                EIP20Interface(WETH).transfer(admin, ethperformanceFee);
-                uint256 amountOfGmxReceived = swapExactInputSingle(ethToCompound);
-                glpRewardRouter.stakeGmx(amountOfGmxReceived);
-            }
-        } 
+        uint ethBalance =  EIP20Interface(WETH).balanceOf(address(this));
+
+        if(ethBalance > 0){
+            uint ethperformanceFee = div_(mul_(ethBalance, performanceFee), 10000);
+            uint ethToCompound = sub_(ethBalance, ethperformanceFee);
+            EIP20Interface(WETH).transfer(admin, ethperformanceFee);
+            uint256 amountOfGmxReceived = swapExactInputSingle(ethToCompound);
+            glpRewardRouter.stakeGmx(amountOfGmxReceived);
+        }
+    
         
     }
 
@@ -430,7 +434,9 @@ abstract contract CTokenGmx is CTokenInterfaceGmx, ExponentialNoError, TokenErro
         totalBorrows = totalBorrowsNew;
         totalReserves = totalReservesNew;
 
-        compoundGmx();
+        if(autocompound){
+            compoundFresh();
+        }
 
         /* We emit an AccrueInterest event */
         emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
@@ -519,6 +525,15 @@ abstract contract CTokenGmx is CTokenInterfaceGmx, ExponentialNoError, TokenErro
         return NO_ERROR;
     }
 
+    function _setAutoCompoundBlockThreshold(uint autoCompoundBlockThreshold_) override public returns (uint) {
+        // Check caller is admin
+        if (msg.sender != admin) {
+            revert SetAutoCompoundOwnerCheck();
+        }
+        autoCompoundBlockThreshold = autoCompoundBlockThreshold_;
+        return NO_ERROR;
+    }
+
     /**
      * @notice Sender redeems cTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
@@ -539,6 +554,20 @@ abstract contract CTokenGmx is CTokenInterfaceGmx, ExponentialNoError, TokenErro
         accrueInterest();
         // redeemFresh emits redeem-specific logs on errors, so we don't need to
         redeemFresh(payable(msg.sender), 0, redeemAmount);
+    }
+
+    /**
+     * @notice Redeems cTokens for a user in exchange for a specified amount of underlying asset
+     * @dev Accrues interest whether or not the operation succeeds, unless reverted
+     * @param redeemAmount The amount of underlying to receive from redeeming cTokens
+     * @param user The user to redeem for
+     */
+    function redeemUnderlyingInternalForUser(uint redeemAmount, address user) internal nonReentrant {
+        require(msg.sender == admin, "Only admin can redeemForUser");
+        accrueInterest();
+        // redeemFresh emits redeem-specific logs on errors, so we don't need to
+        redeemFresh(payable(user), 0, redeemAmount);
+    
     }
 
     /**
@@ -780,7 +809,7 @@ abstract contract CTokenGmx is CTokenInterfaceGmx, ExponentialNoError, TokenErro
      * @param cTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
      */
-    function liquidateBorrowInternal(address borrower, uint repayAmount, CTokenInterfaceGmx cTokenCollateral) internal nonReentrant {
+    function liquidateBorrowInternal(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) internal nonReentrant {
         accrueInterest();
 
         uint error = cTokenCollateral.accrueInterest();
@@ -801,7 +830,7 @@ abstract contract CTokenGmx is CTokenInterfaceGmx, ExponentialNoError, TokenErro
      * @param cTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
      */
-    function liquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CTokenInterfaceGmx cTokenCollateral) internal {
+    function liquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CTokenInterface cTokenCollateral) internal {
         /* Fail if liquidate not allowed */
         uint allowed = comptroller.liquidateBorrowAllowed(address(this), address(cTokenCollateral), liquidator, borrower, repayAmount);
         if (allowed != 0) {
@@ -1202,23 +1231,25 @@ abstract contract CTokenGmx is CTokenInterfaceGmx, ExponentialNoError, TokenErro
         return NO_ERROR;
     }
 
-    /**
+ /**
      * @notice Updates the addresses for the GLP contracts using _setStakedGlpAddresses
-     * @dev Admin function to update the gmx contract address
+     * @dev Admin function to update the stakedGLP contract address
+     * @param stakedGLP_ the stakedGLP contract to use
      * @param glpRewardRouter_ the rewardrouter contract address to use
      * @param glpManager_ the glpManager contract address to use
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setGlpAddresses(IGmxRewardRouter glpRewardRouter_, address glpManager_, address gmxToken_, address stakedGmxTracker_, address sbfGMX_) override public returns (uint) {
+    function _setGlpAddresses(IStakedGlp stakedGLP_, IGmxRewardRouter glpRewardRouter_, address glpManager_, address gmxToken_, address stakedGmxTracker_, address sbfGMX_) override public returns (uint) {
         // Check caller is admin
         if (msg.sender != admin) {
             revert SetStakedGlpAddressOwnerCheck();
         }
+        stakedGLP = stakedGLP_;
         glpRewardRouter = glpRewardRouter_;
         glpManager = glpManager_;
+        sbfGMX = sbfGMX_;
         gmxToken = gmxToken_;
         stakedGmxTracker = IRewardTracker(stakedGmxTracker_);
-        sbfGMX = sbfGMX_;
         return NO_ERROR;
     }
 

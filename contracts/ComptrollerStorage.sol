@@ -151,6 +151,9 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
     /// @notice The address of the reward token
     address public compAddress;
 
+    /// @notice The address of the TND token
+    address public tndAddress;
+
     /// @notice Can the reward token address be modified
     bool public immutableCompAddress;
 }
