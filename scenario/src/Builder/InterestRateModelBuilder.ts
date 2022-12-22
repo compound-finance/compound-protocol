@@ -22,7 +22,7 @@ import {getContract, getTestContract} from '../Contract';
 const FixedInterestRateModel = getTestContract('InterestRateModelHarness');
 const WhitePaperInterestRateModel = getContract('WhitePaperInterestRateModel');
 const JumpRateModel = getContract('JumpRateModel');
-const DAIInterestRateModel = getContract('DAIInterestRateModelV3');
+const DAIInterestRateModel = getContract('DAIInterestRateModelV4');
 const JumpRateModelV2 = getContract('JumpRateModelV2');
 const LegacyJumpRateModelV2 = getContract('LegacyJumpRateModelV2');
 
