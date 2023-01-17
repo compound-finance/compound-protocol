@@ -5,8 +5,8 @@ import "./JumpRateModelV2.sol";
 /**
   * @title Compound's DAIInterestRateModel Contract (version 4)
   * @author Compound, Dharma (modified by Maker Growth)
-  * @notice The change from v3 to v4 of this contract was just the `SECONDS_PER_BLOCK` constant,
-  * as noted in https://github.com/compound-finance/compound-protocol/issues/230
+  * @notice Version 4 modifies the number of seconds per block to 12,
+  * and takes the stability fee of ETH-B as a reference.
   */
 contract DAIInterestRateModelV4 is JumpRateModelV2 {
     uint256 private constant BASE = 1e18;
