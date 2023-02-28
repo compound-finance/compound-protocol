@@ -28,8 +28,19 @@
     "solparse": "^2.2.8"
   },
   "dependencies": {
+    "@nomiclabs/hardhat-waffle": "^2.0.5",
+    "@openzeppelin/hardhat-upgrades": "^1.22.1",
     "@solidity-parser/parser": "^0.13.2",
-    "eth-saddle": "^0.1.25"
+    "dotenv": "^16.0.3",
+    "eth-saddle": "^0.1.25",
+    "hardhat": "^2.12.7",
+    "hardhat-abi-exporter": "^2.10.1",
+    "hardhat-contract-sizer": "^2.8.0",
+    "hardhat-deploy": "^0.11.24",
+    "hardhat-deploy-ethers": "^0.3.0-beta.13",
+    "hardhat-spdx-license-identifier": "^2.1.0",
+    "hardhat-storage-layout-diff": "^0.0.4",
+    "hardhat-watcher": "^2.5.0"
   },
   "resolutions": {
     "scrypt.js": "https://registry.npmjs.org/@compound-finance/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz",

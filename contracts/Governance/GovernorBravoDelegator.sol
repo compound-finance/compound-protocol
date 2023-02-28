@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
-pragma solidity ^0.8.10;
+pragma solidity ^0.5.16;
+pragma experimental ABIEncoderV2;
 
 import "./GovernorBravoInterfaces.sol";
 
@@ -63,7 +64,7 @@ contract GovernorBravoDelegator is GovernorBravoDelegatorStorage, GovernorBravoE
      * It returns to the external caller whatever the implementation returns
      * or forwards reverts.
      */
-    fallback () external payable {
+    function () external payable {
         // delegate all other functions to current implementation
         (bool success, ) = implementation.delegatecall(msg.data);
 

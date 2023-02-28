@@ -1,0 +1,48 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "JugLike",
+  "sourceName": "contracts/DAIInterestRateModelV3.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "base",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "ilks",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "duty",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "rho",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5060d88061001f6000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c80635001f3b5146037578063d9638d36146052575b600080fd5b603f60015481565b6040519081526020015b60405180910390f35b6076605d366004608a565b6000602081905290815260409020805460019091015482565b604080519283526020830191909152016049565b600060208284031215609b57600080fd5b503591905056fea26469706673582212205a820d621f0b67b449ca4d4f9790b1980d9b35ce8517e2563f79be5f7cdb06ca64736f6c634300080a0033",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060325760003560e01c80635001f3b5146037578063d9638d36146052575b600080fd5b603f60015481565b6040519081526020015b60405180910390f35b6076605d366004608a565b6000602081905290815260409020805460019091015482565b604080519283526020830191909152016049565b600060208284031215609b57600080fd5b503591905056fea26469706673582212205a820d621f0b67b449ca4d4f9790b1980d9b35ce8517e2563f79be5f7cdb06ca64736f6c634300080a0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

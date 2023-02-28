@@ -1,0 +1,271 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ComptrollerV2Storage",
+  "sourceName": "contracts/ComptrollerStorage.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "_borrowGuardianPaused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "_mintGuardianPaused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "accountAssets",
+      "outputs": [
+        {
+          "internalType": "contract CToken",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "admin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "borrowGuardianPaused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "closeFactorMantissa",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "comptrollerImplementation",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "liquidationIncentiveMantissa",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "markets",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "isListed",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "collateralFactorMantissa",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "isComped",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "maxAssets",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "mintGuardianPaused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "oracle",
+      "outputs": [
+        {
+          "internalType": "contract PriceOracle",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pauseGuardian",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pendingAdmin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pendingComptrollerImplementation",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "seizeGuardianPaused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "transferGuardianPaused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b506103aa806100206000396000f3fe608060405234801561001057600080fd5b506004361061010b5760003560e01c80638e8f294b116100a2578063dce1544911610071578063dce154491461027e578063dcfbc0c714610291578063e6653f3d146102a4578063e8755446146102b8578063f851a440146102c157600080fd5b80638e8f294b146101fb57806394b2294b1461024e578063ac0b0bb714610257578063bb82aa5e1461026b57600080fd5b80636d154ea5116100de5780636d154ea51461018e578063731f0c2b146101b15780637dc0d1d0146101d457806387f76303146101e757600080fd5b806324a3d6221461011057806326782247146101405780633c94786f146101535780634ada90af14610177575b600080fd5b600a54610123906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b600154610123906001600160a01b031681565b600a5461016790600160a01b900460ff1681565b6040519015158152602001610137565b61018060065481565b604051908152602001610137565b61016761019c366004610328565b600c6020526000908152604090205460ff1681565b6101676101bf366004610328565b600b6020526000908152604090205460ff1681565b600454610123906001600160a01b031681565b600a5461016790600160b01b900460ff1681565b61022f610209366004610328565b60096020526000908152604090208054600182015460039092015460ff91821692911683565b6040805193151584526020840192909252151590820152606001610137565b61018060075481565b600a5461016790600160b81b900460ff1681565b600254610123906001600160a01b031681565b61012361028c36600461034a565b6102d4565b600354610123906001600160a01b031681565b600a5461016790600160a81b900460ff1681565b61018060055481565b600054610123906001600160a01b031681565b600860205281600052604060002081815481106102f057600080fd5b6000918252602090912001546001600160a01b03169150829050565b80356001600160a01b038116811461032357600080fd5b919050565b60006020828403121561033a57600080fd5b6103438261030c565b9392505050565b6000806040838503121561035d57600080fd5b6103668361030c565b94602093909301359350505056fea2646970667358221220121c216a9f48af97225717eaebea8a839453d284df8c135caddeb463bae5728b64736f6c634300080a0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061010b5760003560e01c80638e8f294b116100a2578063dce1544911610071578063dce154491461027e578063dcfbc0c714610291578063e6653f3d146102a4578063e8755446146102b8578063f851a440146102c157600080fd5b80638e8f294b146101fb57806394b2294b1461024e578063ac0b0bb714610257578063bb82aa5e1461026b57600080fd5b80636d154ea5116100de5780636d154ea51461018e578063731f0c2b146101b15780637dc0d1d0146101d457806387f76303146101e757600080fd5b806324a3d6221461011057806326782247146101405780633c94786f146101535780634ada90af14610177575b600080fd5b600a54610123906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b600154610123906001600160a01b031681565b600a5461016790600160a01b900460ff1681565b6040519015158152602001610137565b61018060065481565b604051908152602001610137565b61016761019c366004610328565b600c6020526000908152604090205460ff1681565b6101676101bf366004610328565b600b6020526000908152604090205460ff1681565b600454610123906001600160a01b031681565b600a5461016790600160b01b900460ff1681565b61022f610209366004610328565b60096020526000908152604090208054600182015460039092015460ff91821692911683565b6040805193151584526020840192909252151590820152606001610137565b61018060075481565b600a5461016790600160b81b900460ff1681565b600254610123906001600160a01b031681565b61012361028c36600461034a565b6102d4565b600354610123906001600160a01b031681565b600a5461016790600160a81b900460ff1681565b61018060055481565b600054610123906001600160a01b031681565b600860205281600052604060002081815481106102f057600080fd5b6000918252602090912001546001600160a01b03169150829050565b80356001600160a01b038116811461032357600080fd5b919050565b60006020828403121561033a57600080fd5b6103438261030c565b9392505050565b6000806040838503121561035d57600080fd5b6103668361030c565b94602093909301359350505056fea2646970667358221220121c216a9f48af97225717eaebea8a839453d284df8c135caddeb463bae5728b64736f6c634300080a0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
