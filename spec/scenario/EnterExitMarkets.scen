@@ -4,12 +4,12 @@ Test "Enter Markets Idempotent"
 	NewComptroller
 	Assert Equal (Comptroller MembershipLength Geoff) Zero
 	Assert Equal (Comptroller AssetsIn Geoff) []
-	ListedCToken ZRX cZRX
+	ListedXToken ZRX cZRX
 	EnterMarkets Geoff cZRX
 	Assert Log MarketEntered (cToken (Address cZRX)) (account (Address Geoff))
 	Assert Equal (Comptroller MembershipLength Geoff) (Exactly 1)
 	Assert True (Comptroller CheckMembership Geoff cZRX)
-	ListedCToken OMG cOMG
+	ListedXToken OMG cOMG
 	EnterMarkets Geoff cZRX cOMG
 	Assert Equal (Comptroller MembershipLength Geoff) (Exactly 2)
 	Assert True (Comptroller CheckMembership Geoff cZRX)
@@ -19,10 +19,10 @@ Test "Enter Markets Idempotent"
 Test "Entered Market Must Be Supported"
 	NewComptroller
 	Assert Equal (Comptroller MembershipLength Geoff) Zero
-	ListedCToken ZRX cZRX
+	ListedXToken ZRX cZRX
 	EnterMarkets Geoff cZRX
 	Assert Equal (Comptroller MembershipLength Geoff) (Exactly 1)
-	NewCToken OMG cOMG
+	NewXToken OMG cOMG
 	EnterMarkets Geoff cZRX cOMG
 	Assert Equal (Comptroller MembershipLength Geoff) (Exactly 1)
 	Assert True (Comptroller CheckMembership Geoff cZRX)
@@ -35,7 +35,7 @@ Test "Entered Market Must Be Supported"
 
 Test "Exit single market"
 	NewComptroller
-	ListedCToken ZRX cZRX
+	ListedXToken ZRX cZRX
 	EnterMarkets Geoff cZRX
 	Assert Equal (Comptroller AssetsIn Geoff) [(Address cZRX)]
 	ExitMarket Geoff cZRX
@@ -43,14 +43,14 @@ Test "Exit single market"
 
 Test "Exit non-entered market"
 	NewComptroller
-	ListedCToken ZRX cZRX
+	ListedXToken ZRX cZRX
 	ExitMarket Geoff cZRX
 	Assert Equal (Comptroller AssetsIn Geoff) []
 
 Test "Exit one of two market from the front"
 	NewComptroller
-	ListedCToken ZRX cZRX
-	ListedCToken OMG cOMG
+	ListedXToken ZRX cZRX
+	ListedXToken OMG cOMG
 	EnterMarkets Geoff cZRX cOMG
 	Assert Equal (Comptroller AssetsIn Geoff) [(Address cZRX) (Address cOMG)]
 	ExitMarket Geoff cZRX
@@ -58,8 +58,8 @@ Test "Exit one of two market from the front"
 
 Test "Exit one of two market from the back"
 	NewComptroller
-	ListedCToken ZRX cZRX
-	ListedCToken OMG cOMG
+	ListedXToken ZRX cZRX
+	ListedXToken OMG cOMG
 	EnterMarkets Geoff cZRX cOMG
 	Assert Equal (Comptroller AssetsIn Geoff) [(Address cZRX) (Address cOMG)]
 	ExitMarket Geoff cOMG
@@ -67,11 +67,11 @@ Test "Exit one of two market from the back"
 
 Test "Exit multiple markets"
 	NewComptroller
-	ListedCToken ZRX cZRX
-	ListedCToken OMG cOMG
-	ListedCToken BAT cBAT
-	ListedCToken REP cREP
-	ListedCToken DAI cDAI
+	ListedXToken ZRX cZRX
+	ListedXToken OMG cOMG
+	ListedXToken BAT cBAT
+	ListedXToken REP cREP
+	ListedXToken DAI cDAI
 	EnterMarkets Geoff cZRX cOMG cBAT cREP cDAI
 	Assert Equal (Comptroller AssetsIn Geoff) [(Address cZRX) (Address cOMG) (Address cBAT) (Address cREP) (Address cDAI)]
 	ExitMarket Geoff cZRX
@@ -87,11 +87,11 @@ Test "Exit multiple markets"
 
 Test "Realistic Market Scenario"
 	PricedComptroller
-	ListedCToken ZRX cZRX
+	ListedXToken ZRX cZRX
 	SetPriceCF cZRX 0.002 0.4
 	ListedEtherToken cETH
 	Comptroller SetCollateralFactor cEth 0.8
-	ListedCToken BAT cBAT
+	ListedXToken BAT cBAT
 	SetPriceCF cBAT 0.0015 0.3
 	-- Mint some cZRX and cETH
 	Prep Geoff 1250e18 ZRX cZRX

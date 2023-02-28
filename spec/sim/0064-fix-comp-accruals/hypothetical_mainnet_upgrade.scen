@@ -29,14 +29,14 @@ From DaiHolder (Erc20 DAI Transfer Jared 1000000e18)
 
 -- Pre Proposal 62: Deposit collateral and borrow SUSHI
 From Geoff (Erc20 USDC Approve (Address cUSDC) 1000000e6)
-From Geoff (CToken cUSDC Mint 1000000e6)
+From Geoff (XToken cUSDC Mint 1000000e6)
 From Geoff (Comptroller EnterMarkets (cUSDC))
-From Geoff (CToken cSUSHI Borrow 1000e18)
+From Geoff (XToken cSUSHI Borrow 1000e18)
 
 From Torrey (Erc20 USDC Approve (Address cUSDC) 1000000e6)
-From Torrey (CToken cUSDC Mint 1000000e6)
+From Torrey (XToken cUSDC Mint 1000000e6)
 From Torrey (Comptroller EnterMarkets (cUSDC))
-From Torrey (CToken cSUSHI Borrow 1000e18)
+From Torrey (XToken cSUSHI Borrow 1000e18)
 
 -- Execute proposal 62
 GovernorBravo GovernorBravo Proposal LastProposal Execute
@@ -50,7 +50,7 @@ Assert Equal (Erc20 COMP TokenBalance Geoff) (988792275103122749560) -- Huge amo
 Assert Equal (Comptroller CompAccrued Geoff) (0)
 
 -- Cause Torrey to accrue COMP without claiming
-From Torrey (CToken cSUSHI Borrow 1e18) -- Causes COMP to be distributed but not claimed
+From Torrey (XToken cSUSHI Borrow 1e18) -- Causes COMP to be distributed but not claimed
 
 -- Deploy latest Comptroller
 ComptrollerImpl Deploy Standard NewComptroller
@@ -78,15 +78,15 @@ Assert Equal (Comptroller CompAccrued Torrey) (988792086947769887785) -- Huge am
 
 -- Post bug fix: Deposit collateral (DAI) and borrow SUSHI - block COMP sending
 From Coburn (Erc20 DAI Approve (Address cDAI) 1000000e18)
-From Coburn (CToken cDAI Mint 1000000e18)
+From Coburn (XToken cDAI Mint 1000000e18)
 From Coburn (Comptroller EnterMarkets (cDAI))
-From Coburn (CToken cSUSHI Borrow 1000e18)
+From Coburn (XToken cSUSHI Borrow 1000e18)
 
 -- Post bug fix: Deposit collateral (DAI) and borrow BAT - don't block COMP sending
 From Jared (Erc20 DAI Approve (Address cDAI) 1000000e18)
-From Jared (CToken cDAI Mint 1000000e18)
+From Jared (XToken cDAI Mint 1000000e18)
 From Jared (Comptroller EnterMarkets (cDAI))
-From Jared (CToken cBAT Borrow 1000e18)
+From Jared (XToken cBAT Borrow 1000e18)
 
 -- Accrue rewards (if any)
 MineBlock

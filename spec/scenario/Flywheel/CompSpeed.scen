@@ -15,8 +15,8 @@ Macro FlywheelComptroller price=1.0 compInitAmount=5000000e18
     Comptroller SetCloseFactor 0.5
     Comptroller LiquidationIncentive 1.1
     -- Add markets
-    NewCToken ZRX cZRX
-    NewCToken BAT cBAT
+    NewXToken ZRX cZRX
+    NewXToken BAT cBAT
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
     -- Setup COMP token

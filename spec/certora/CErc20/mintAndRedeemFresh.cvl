@@ -20,7 +20,7 @@ description "Break mint with result=$result minter=$minter mintAmount=$mintAmoun
       - no *other* storage should change - XXX can we specify this?
 
       |----------+--------+--------+-------|
-      |          | CToken | Minter | Other |
+      |          | XToken | Minter | Other |
       |----------+--------+--------+-------|
       | cash     |   +A   |   -A   |   0   |
       | borrows  |    0   |    0   |   0   |
@@ -135,7 +135,7 @@ description "Break redeem with result=$result redeemer=$redeemer redeemAmount=$r
       - no *other* storage should change - XXX can we specify this?
 
       |----------+--------+----------+-------|
-      |          | CToken | Redeemer | Other |
+      |          | XToken | Redeemer | Other |
       |----------+--------+----------+-------|
       | cash     |   -A   |    +A    |   0   |
       | borrows  |    0   |     0    |   0   |

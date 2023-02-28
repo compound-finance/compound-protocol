@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "../../contracts/CErc20.sol";
-import "../../contracts/CToken.sol";
+import "../../contracts/XErc20.sol";
+import "../../contracts/XToken.sol";
 import "../../contracts/PriceOracle.sol";
 
 interface V1PriceOracleInterface {
@@ -71,7 +71,7 @@ contract PriceOracleProxy is PriceOracle {
      * @param cToken The cToken to get the underlying price of
      * @return The underlying asset price mantissa (scaled by 1e18)
      */
-    function getUnderlyingPrice(CToken cToken) override public view returns (uint) {
+    function getUnderlyingPrice(XToken cToken) override public view returns (uint) {
         address cTokenAddress = address(cToken);
 
         if (cTokenAddress == cEthAddress) {
@@ -93,7 +93,7 @@ contract PriceOracleProxy is PriceOracle {
         }
 
         // otherwise just read from v1 oracle
-        address underlying = CErc20(cTokenAddress).underlying();
+        address underlying = XErc20(cTokenAddress).underlying();
         return v1PriceOracle.assetPrices(underlying);
     }
 

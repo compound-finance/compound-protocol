@@ -10,7 +10,7 @@ UseConfigs mainnet
 
 
 -- Delegate and propose update
-CTokenDelegate Deploy CErc20Delegate newCUNIImpl
+XTokenDelegate Deploy XErc20Delegate newCUNIImpl
 
 From CompHolder (Comp Delegate CompHolder)
 From CompHolder (Governor GovernorAlpha Propose "Update cUNI implementation" [(Address cUNI) (Address cUNI) (Address cUNI)] [0 0 0] ["_setImplementation(address,bool,bytes)" "sweepToken(address)" "transfer(address,uint256)"] [[(address newCUNIImpl) false "0x"] [(address cUNI)] [(address cUNISender) 1]])
@@ -27,16 +27,16 @@ Assert Equal (Erc20 (Address cUNI) TokenBalance cUNISender) (1)
 Assert Equal (Erc20 (Address cUNI) TokenBalance Timelock) (179874258721489)
 
 -- Ensure accrue interest works
-CToken cUNI AccrueInterest
+XToken cUNI AccrueInterest
 
 -- Mint Test
 Assert Equal (Erc20 Uni TokenBalance cUNI) (8841949597201167092831625)
 From UniHolder (Erc20 Uni Approve cUNI 10000000)
-From UniHolder (CToken cUNI Mint 10000000)
+From UniHolder (XToken cUNI Mint 10000000)
 Assert Equal (Erc20 Uni TokenBalance cUNI) (8841949597201167102831625)
 
 -- Borrow Test
-From CUSDCHolder (CToken cUNI Borrow 10000000)
+From CUSDCHolder (XToken cUNI Borrow 10000000)
 Assert Equal (Erc20 Uni TokenBalance CUSDCHolder) (10000000)
 
 Print "cUNI implementation migration ok" 

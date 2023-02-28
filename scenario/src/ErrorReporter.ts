@@ -1,12 +1,11 @@
-
-import { utils } from 'ethers';
-import {ComptrollerErr, TokenErr} from './ErrorReporterConstants';
+import { utils } from "ethers";
+import { ComptrollerErr, TokenErr } from "./ErrorReporterConstants";
 
 export interface ErrorReporter {
-  getError(error: any): string | null
-  getInfo(info: any): string | null
-  getDetail(error: any, detail: number): string
-  getEncodedCustomError(errorName: string, args: unknown[]): string | null
+  getError(error: any): string | null;
+  getInfo(info: any): string | null;
+  getDetail(error: any, detail: number): string;
+  getEncodedCustomError(errorName: string, args: unknown[]): string | null;
 }
 
 class NoErrorReporterType implements ErrorReporter {
@@ -23,11 +22,11 @@ class NoErrorReporterType implements ErrorReporter {
   }
 
   getEncodedCustomError(errorName: string, args: unknown[]): string | null {
-    return null
+    return null;
   }
 }
 
-class CTokenErrorReporterType implements ErrorReporter {
+class XTokenErrorReporterType implements ErrorReporter {
   getError(error: any): string | null {
     if (error === null) {
       return null;
@@ -59,9 +58,9 @@ class CTokenErrorReporterType implements ErrorReporter {
 
   getEncodedCustomError(errorName: string, args: unknown[]): string | null {
     try {
-      return TokenErr.CustomErrors.encodeErrorResult(errorName, args)
+      return TokenErr.CustomErrors.encodeErrorResult(errorName, args);
     } catch (err) {
-      return null
+      return null;
     }
   }
 }
@@ -99,17 +98,20 @@ class ComptrollerErrorReporterType implements ErrorReporter {
 
   getEncodedCustomError(errorName: string, args: unknown[]): string | null {
     try {
-      return ComptrollerErr.CustomErrors.encodeErrorResult(errorName, args)
+      return ComptrollerErr.CustomErrors.encodeErrorResult(errorName, args);
     } catch (err) {
-      return null
+      return null;
     }
   }
 }
 
-export function formatResult(errorReporter: ErrorReporter, result: any): string {
+export function formatResult(
+  errorReporter: ErrorReporter,
+  result: any
+): string {
   const errorStr = errorReporter.getError(result);
   if (errorStr !== null) {
-    return `Error=${errorStr}`
+    return `Error=${errorStr}`;
   } else {
     return `Result=${result}`;
   }
@@ -117,5 +119,5 @@ export function formatResult(errorReporter: ErrorReporter, result: any): string 
 
 // Singleton instances
 export const NoErrorReporter = new NoErrorReporterType();
-export const CTokenErrorReporter = new CTokenErrorReporterType();
+export const XTokenErrorReporter = new XTokenErrorReporterType();
 export const ComptrollerErrorReporter = new ComptrollerErrorReporterType();

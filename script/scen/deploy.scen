@@ -18,12 +18,12 @@ Gate (Erc20 REP Address) (Erc20 Deploy Standard REP "Augur")
 Gate (Erc20 USDC Address) (Erc20 Deploy Standard USDC "USD Coin" 6)
 
 -- Now deploy our cTokens
-Gate (CToken cZRX Address) (CToken Deploy CErc20 cZRX "Test 0x 📈" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
-Gate (CToken cBAT Address) (CToken Deploy CErc20 cBAT "Test Basic Attention Token 📈" (Erc20 BAT Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
-Gate (CToken cDAI Address) (CToken Deploy CErc20 cDAI "Test Dai 📈" (Erc20 DAI Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
-Gate (CToken cREP Address) (CToken Deploy CErc20 cREP "Test Augur 📈" (Erc20 REP Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
-Gate (CToken cETH Address) (CToken Deploy CEther cETH "Test Ether 📈" (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
-Gate (CToken cUSDC Address) (CToken Deploy CErc20 cUSDC "Test USD Coin 📈" (Erc20 USDC Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 2e-4 8)
+Gate (XToken cZRX Address) (XToken Deploy XErc20 cZRX "Test 0x 📈" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
+Gate (XToken cBAT Address) (XToken Deploy XErc20 cBAT "Test Basic Attention Token 📈" (Erc20 BAT Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
+Gate (XToken cDAI Address) (XToken Deploy XErc20 cDAI "Test Dai 📈" (Erc20 DAI Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
+Gate (XToken cREP Address) (XToken Deploy XErc20 cREP "Test Augur 📈" (Erc20 REP Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
+Gate (XToken cETH Address) (XToken Deploy XEther cETH "Test Ether 📈" (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
+Gate (XToken cUSDC Address) (XToken Deploy XErc20 cUSDC "Test USD Coin 📈" (Erc20 USDC Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 2e-4 8)
 
 -- Deploy Maximillion
 Gate (Maximillion Address) (Maximillion Deploy cETH)

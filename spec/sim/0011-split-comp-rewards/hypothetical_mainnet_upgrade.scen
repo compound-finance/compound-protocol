@@ -195,7 +195,7 @@ Print "Verifying exploits/bugs are patched"
 
 -- Mint test
 From TokenHolder (Erc20 MKR Approve (Address cMKR) 1000e18)
-From TokenHolder (CToken cMKR Mint 1000e18)
+From TokenHolder (XToken cMKR Mint 1000e18)
 
 Comptroller ClaimComp TokenHolder
 Assert Equal (Erc20 COMP TokenBalance TokenHolder) (0)
@@ -217,10 +217,10 @@ IncreaseTime 604910
 GovernorBravo GovernorBravo Proposal LastProposal Execute
 
 -- Ensure accrue interest
-CToken cMKR AccrueInterest
+XToken cMKR AccrueInterest
 
 From TokenHolder (Erc20 MKR Approve (Address cMKR) 1000e18)
-From TokenHolder (CToken cMKR Mint 1000e18)
+From TokenHolder (XToken cMKR Mint 1000e18)
 
 Comptroller ClaimComp TokenHolder
 Assert Equal (Erc20 COMP TokenBalance TokenHolder) (2)
@@ -237,7 +237,7 @@ GovernorBravo GovernorBravo Proposal LastProposal Queue
 IncreaseTime 604910
 GovernorBravo GovernorBravo Proposal LastProposal Execute
 
-CToken cMKR AccrueInterest
+XToken cMKR AccrueInterest
 Comptroller ClaimComp TokenHolder
 Assert Equal (Erc20 COMP TokenBalance TokenHolder) (32056)
 
@@ -258,10 +258,10 @@ IncreaseTime 604910
 GovernorBravo GovernorBravo Proposal LastProposal Execute
 
 -- Ensure accrue interest
-CToken cMKR AccrueInterest
+XToken cMKR AccrueInterest
 
 From TokenHolder (Erc20 MKR Approve (Address cMKR) 1000e18)
-From TokenHolder (CToken cMKR Mint 1000e18)
+From TokenHolder (XToken cMKR Mint 1000e18)
 
 Comptroller ClaimComp TokenHolder
 Assert Equal (Erc20 COMP TokenBalance TokenHolder) (32058)

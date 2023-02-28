@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "./CErc20.sol";
+import "./XErc20.sol";
 
 /**
- * @title Compound's CErc20Delegate Contract
- * @notice CTokens which wrap an EIP-20 underlying and are delegated to
+ * @title Compound's XErc20Delegate Contract
+ * @notice XTokens which wrap an EIP-20 underlying and are delegated to
  * @author Compound
  */
-contract CErc20Delegate is CErc20, CDelegateInterface {
+contract XErc20Delegate is XErc20, XDelegateInterface {
     /**
      * @notice Construct an empty delegate
      */

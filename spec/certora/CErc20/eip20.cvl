@@ -18,7 +18,7 @@ description "Break transferFrom" {
       - no effect on exchange rate
       - no more than approved
       |----------+--------+-----+-----+-------|
-      |          | CToken | Src | Dst | Other |
+      |          | XToken | Src | Dst | Other |
       |----------+--------+-----+-----+-------|
       | cash     |    0   |  0  |  0  |   0   |
       | borrows  |    0   |  0  |  0  |   0   |

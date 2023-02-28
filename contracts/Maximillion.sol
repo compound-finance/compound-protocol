@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "./CEther.sol";
+import "./XEther.sol";
 
 /**
  * @title Compound's Maximillion Contract
@@ -11,12 +11,12 @@ contract Maximillion {
     /**
      * @notice The default cEther market to repay in
      */
-    CEther public cEther;
+    XEther public cEther;
 
     /**
-     * @notice Construct a Maximillion to repay max in a CEther market
+     * @notice Construct a Maximillion to repay max in a XEther market
      */
-    constructor(CEther cEther_) public {
+    constructor(XEther cEther_) public {
         cEther = cEther_;
     }
 
@@ -35,7 +35,7 @@ contract Maximillion {
      * @param borrower The address of the borrower account to repay on behalf of
      * @param cEther_ The address of the cEther contract to repay in
      */
-    function repayBehalfExplicit(address borrower, CEther cEther_) public payable {
+    function repayBehalfExplicit(address borrower, XEther cEther_) public payable {
         uint received = msg.value;
         uint borrows = cEther_.borrowBalanceCurrent(borrower);
         if (received > borrows) {

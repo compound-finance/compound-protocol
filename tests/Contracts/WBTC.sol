@@ -670,7 +670,7 @@ contract OwnableContract is CanReclaimToken, Claimable {
 
 // File: contracts/token/WBTC.sol
 
-contract WBTCToken is StandardToken, DetailedERC20("Wrapped BTC", "WBTC", 8),
+contract WBTXToken is StandardToken, DetailedERC20("Wrapped BTC", "WBTC", 8),
     MintableToken, BurnableToken, PausableToken, OwnableContract {
 
     function approve(address _spender, uint256 _value) override(ERC20, PausableToken, StandardToken) public returns (bool) {

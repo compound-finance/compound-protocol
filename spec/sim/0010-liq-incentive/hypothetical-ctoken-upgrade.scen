@@ -7,10 +7,10 @@ Web3Fork "https://mainnet-eth.compound.finance/@12466889" (CompHolder UniHolder 
 UseConfigs mainnet
 
 From CompHolder (Comp Delegate CompHolder)
-From CompHolder (Governor GovernorBravo Propose "Update cERC20 Implementation" [(Address cCOMP) (Address cDAI) (Address cUNI) (Address cUSDT) (Address cWBTC2)] [0 0 0 0 0] ["_setImplementation(address,bool,bytes)" "_setImplementation(address,bool,bytes)" "_setImplementation(address,bool,bytes)" "_setImplementation(address,bool,bytes)" "_setImplementation(address,bool,bytes)"] [[(address cErc20ImplG2) false "0x"] [(address cErc20ImplG2) false "0x"][(address cErc20ImplG2) false "0x"][(address cErc20ImplG2) false "0x"][(address cErc20ImplG2) false "0x"]])
+From CompHolder (Governor GovernorBravo Propose "Update xERC20 Implementation" [(Address cCOMP) (Address cDAI) (Address cUNI) (Address cUSDT) (Address cWBTC2)] [0 0 0 0 0] ["_setImplementation(address,bool,bytes)" "_setImplementation(address,bool,bytes)" "_setImplementation(address,bool,bytes)" "_setImplementation(address,bool,bytes)" "_setImplementation(address,bool,bytes)"] [[(address cErc20ImplG2) false "0x"] [(address cErc20ImplG2) false "0x"][(address cErc20ImplG2) false "0x"][(address cErc20ImplG2) false "0x"][(address cErc20ImplG2) false "0x"]])
 
 -- upgrade to mainnet cerc20delegate deployment
-From CompHolder (Governor GovernorBravo Propose "Update cERC20 Implementation" [(Address cDAI)] [0] ["_setImplementation(address,bool,bytes)"] [[(address cErc20ImplG2) false "0x"]])
+From CompHolder (Governor GovernorBravo Propose "Update xERC20 Implementation" [(Address cDAI)] [0] ["_setImplementation(address,bool,bytes)"] [[(address cErc20ImplG2) false "0x"]])
 
 AdvanceBlocks 13140
 From CompHolder (GovernorBravo GovernorBravo Proposal LastProposal Vote For)
@@ -20,8 +20,8 @@ IncreaseTime 604910
 Governor GovernorBravo Proposal LastProposal Execute
 
 -- Test basic actions
-From Liquidator (CToken cDAI RedeemUnderlying 20000e18)
-From UniHolder (CToken cUSDC Borrow 8e13)
+From Liquidator (XToken cDAI RedeemUnderlying 20000e18)
+From UniHolder (XToken cUSDC Borrow 8e13)
 
 Print "Migration to reserve delegate is ok"
 

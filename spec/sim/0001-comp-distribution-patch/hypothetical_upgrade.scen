@@ -52,15 +52,15 @@ Assert Equal (Comptroller CompSpeed cZRX) 0.009899276398349366e18
 
 -- Check the market borrows
 
-Assert Equal (CToken cBAT TotalBorrows) 816167647101108360363936140
-Assert Equal (CToken cDAI TotalBorrows) 23521775646627969501566436
-Assert Equal (CToken cETH TotalBorrows) 1260824767124865834187
-Assert Equal (CToken cREP TotalBorrows) 5305791273320090270164
-Assert Equal (CToken cSAI TotalBorrows) 87120566019791136455808
-Assert Equal (CToken cUSDC TotalBorrows) 9369602511430
-Assert Equal (CToken cUSDT TotalBorrows) 51344064688134
-Assert Equal (CToken cWBTC TotalBorrows) 134858882039
-Assert Equal (CToken cZRX TotalBorrows) 54734120640511560139309871
+Assert Equal (XToken cBAT TotalBorrows) 816167647101108360363936140
+Assert Equal (XToken cDAI TotalBorrows) 23521775646627969501566436
+Assert Equal (XToken cETH TotalBorrows) 1260824767124865834187
+Assert Equal (XToken cREP TotalBorrows) 5305791273320090270164
+Assert Equal (XToken cSAI TotalBorrows) 87120566019791136455808
+Assert Equal (XToken cUSDC TotalBorrows) 9369602511430
+Assert Equal (XToken cUSDT TotalBorrows) 51344064688134
+Assert Equal (XToken cWBTC TotalBorrows) 134858882039
+Assert Equal (XToken cZRX TotalBorrows) 54734120640511560139309871
 
 -- Check the market prices
 
@@ -133,7 +133,7 @@ Assert Equal (Comptroller CompSpeed cZRX) 14753230161829420
 Assert Equal (Erc20 cUSDC TokenBalance USDCWhale) 0
 
 From USDCWhale (Trx GasPrice 0 (Erc20 USDC Approve cUSDC UInt256Max))
-From USDCWhale (Trx GasPrice 0 (CToken cUSDC Mint 10000e6))
+From USDCWhale (Trx GasPrice 0 (XToken cUSDC Mint 10000e6))
 
 Assert Equal (Erc20 cUSDC TokenBalance USDCWhale) 47481980579468
 Assert Equal (Erc20 cUSDC TotalSupply) 927050045835492296
@@ -143,14 +143,14 @@ Assert Equal (Erc20 cUSDC TotalSupply) 927050045835492296
 Assert Equal (Erc20 cETH TokenBalance cBATBorrower) 384765976900
 Assert Equal (Erc20 cETH TotalSupply) 4585405574577755
 
-Assert Equal (CToken cBAT BorrowBalance cBATBorrower) 37550980777226218529804
-Assert Equal (CToken cBAT TotalBorrows) 816167647101108360363936140
+Assert Equal (XToken cBAT BorrowBalance cBATBorrower) 37550980777226218529804
+Assert Equal (XToken cBAT TotalBorrows) 816167647101108360363936140
 
-Expect Changes (CToken cBAT BorrowBalance cBATBorrower) 6666005042256047300989
-From cBATBorrower (CToken cBAT Borrow 6666000000000000000000)
+Expect Changes (XToken cBAT BorrowBalance cBATBorrower) 6666005042256047300989
+From cBATBorrower (XToken cBAT Borrow 6666000000000000000000)
 
-Assert Equal (CToken cBAT BorrowBalance cBATBorrower) 44216985819482265830793
-Assert Equal (CToken cBAT TotalBorrows) 818374059192055804747435060
+Assert Equal (XToken cBAT BorrowBalance cBATBorrower) 44216985819482265830793
+Assert Equal (XToken cBAT TotalBorrows) 818374059192055804747435060
 
 -- Claim comp to true up their balances
 

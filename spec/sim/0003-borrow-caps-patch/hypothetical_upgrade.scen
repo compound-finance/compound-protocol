@@ -30,18 +30,18 @@ Assert Equal (Address (Unitroller Implementation)) (Address ComptrollerG5)
 Assert Equal (Erc20 SAI TokenBalance (Address Arr00)) (2360000000000000000000)
 
 From USDCWhale (Trx GasPrice 0 (Erc20 USDC Approve cUSDC UInt256Max))
-From USDCWhale (Trx GasPrice 0 (CToken cUSDC Mint 214000000e6))
-From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 1000000e6))
+From USDCWhale (Trx GasPrice 0 (XToken cUSDC Mint 214000000e6))
+From USDCWhale (Trx GasPrice 0 (XToken cUSDC Borrow 1000000e6))
 
 From CompHolder (Comptroller SetMarketBorrowCaps (cUSDC) (83000000e6))
 
 AllowFailures
-From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 1000000e6))
+From USDCWhale (Trx GasPrice 0 (XToken cUSDC Borrow 1000000e6))
 Assert Revert
 
 Successfully
-From USDCWhale (Trx GasPrice 0 (CToken cUSDC RepayBorrow 1000000e6))
-From USDCWhale (Trx GasPrice 0 (CToken cUSDC Borrow 10e6))
+From USDCWhale (Trx GasPrice 0 (XToken cUSDC RepayBorrow 1000000e6))
+From USDCWhale (Trx GasPrice 0 (XToken cUSDC Borrow 10e6))
 
 
 

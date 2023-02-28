@@ -1,7 +1,7 @@
 
 Test "Borrow some Eth enters Eth and succeeds when Eth not entered"
     NewComptroller price:1.0
-    ListedCToken ZRX cZRX
+    ListedXToken ZRX cZRX
     ListedEtherToken cETH initialExchangeRate:0.005e9
     SetCollateralFactor cZRX collateralFactor:0.5
     SetCollateralFactor cETH collateralFactor:0.5
@@ -18,7 +18,7 @@ Test "Borrow some Eth enters Eth and succeeds when Eth not entered"
 
 Test "Borrow some ETH fails when no ETH available"
     NewComptroller price:1.0
-    ListedCToken ZRX cZRX
+    ListedXToken ZRX cZRX
     ListedEtherToken cETH initialExchangeRate:0.005e9
     SetCollateralFactor cZRX collateralFactor:0.5
     SetCollateralFactor cETH collateralFactor:0.5
@@ -26,8 +26,8 @@ Test "Borrow some ETH fails when no ETH available"
     Mint Geoff 100e18 cZRX
     EnterMarkets Geoff cZRX cETH
     AllowFailures
-    Invariant Static (CToken cZRX ExchangeRateStored)
-    Invariant Static (CToken cETH ExchangeRateStored)
+    Invariant Static (XToken cZRX ExchangeRateStored)
+    Invariant Static (XToken cETH ExchangeRateStored)
     Invariant Static (Comptroller Liquidity Geoff)
     Invariant Static (EtherBalance Geoff)
     BorrowEth Geoff 1e18 cETH
@@ -35,7 +35,7 @@ Test "Borrow some ETH fails when no ETH available"
 
 Test "Borrow some ETH from excess cash"
     NewComptroller price:1.0
-    ListedCToken ZRX cZRX
+    ListedXToken ZRX cZRX
     ListedEtherToken cETH initialExchangeRate:0.005e9
     SetCollateralFactor cZRX collateralFactor:0.5
     SetCollateralFactor cETH collateralFactor:0.5

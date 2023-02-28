@@ -968,7 +968,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -1013,7 +1013,7 @@
               "type": "uint256"
             }
           ],
-          "internalType": "struct CompoundLens.CTokenBalances",
+          "internalType": "struct CompoundLens.XTokenBalances",
           "name": "",
           "type": "tuple"
         }
@@ -1026,7 +1026,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "cTokens",
           "type": "address[]"
         },
@@ -1071,7 +1071,7 @@
               "type": "uint256"
             }
           ],
-          "internalType": "struct CompoundLens.CTokenBalances[]",
+          "internalType": "struct CompoundLens.XTokenBalances[]",
           "name": "",
           "type": "tuple[]"
         }
@@ -1084,7 +1084,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -1174,7 +1174,7 @@
               "type": "uint256"
             }
           ],
-          "internalType": "struct CompoundLens.CTokenMetadata",
+          "internalType": "struct CompoundLens.XTokenMetadata",
           "name": "",
           "type": "tuple"
         }
@@ -1187,7 +1187,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "cTokens",
           "type": "address[]"
         }
@@ -1277,7 +1277,7 @@
               "type": "uint256"
             }
           ],
-          "internalType": "struct CompoundLens.CTokenMetadata[]",
+          "internalType": "struct CompoundLens.XTokenMetadata[]",
           "name": "",
           "type": "tuple[]"
         }
@@ -1290,7 +1290,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -1310,7 +1310,7 @@
               "type": "uint256"
             }
           ],
-          "internalType": "struct CompoundLens.CTokenUnderlyingPrice",
+          "internalType": "struct CompoundLens.XTokenUnderlyingPrice",
           "name": "",
           "type": "tuple"
         }
@@ -1323,7 +1323,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "cTokens",
           "type": "address[]"
         }
@@ -1343,7 +1343,7 @@
               "type": "uint256"
             }
           ],
-          "internalType": "struct CompoundLens.CTokenUnderlyingPrice[]",
+          "internalType": "struct CompoundLens.XTokenUnderlyingPrice[]",
           "name": "",
           "type": "tuple[]"
         }
@@ -1371,7 +1371,7 @@
         {
           "components": [
             {
-              "internalType": "contract CToken[]",
+              "internalType": "contract XToken[]",
               "name": "markets",
               "type": "address[]"
             },
@@ -2705,7 +2705,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -2724,7 +2724,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -2743,7 +2743,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -2775,7 +2775,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -2912,7 +2912,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -3001,7 +3001,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -3035,7 +3035,7 @@
       "name": "accountAssets",
       "outputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "",
           "type": "address"
         }
@@ -3124,7 +3124,7 @@
           "type": "address"
         },
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -3256,7 +3256,7 @@
       "name": "getAssetsIn",
       "outputs": [
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "",
           "type": "address[]"
         }
@@ -4873,7 +4873,7 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "isCToken",
+      "name": "isXToken",
       "outputs": [
         {
           "internalType": "bool",
@@ -4899,7 +4899,7 @@
           "type": "uint256"
         },
         {
-          "internalType": "contract CTokenInterface",
+          "internalType": "contract XTokenInterface",
           "name": "cTokenCollateral",
           "type": "address"
         }
@@ -8610,7 +8610,7 @@
           "type": "address"
         }
       ],
-      "name": "getTokenConfigByCToken",
+      "name": "getTokenConfigByXToken",
       "outputs": [
         {
           "components": [
@@ -9133,7 +9133,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -9158,7 +9158,7 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -9177,7 +9177,7 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -9208,7 +9208,7 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -9264,7 +9264,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -9283,7 +9283,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -9302,7 +9302,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -9321,7 +9321,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -9353,7 +9353,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -9587,7 +9587,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -9634,7 +9634,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -9717,7 +9717,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -9827,7 +9827,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -9861,7 +9861,7 @@
       "name": "accountAssets",
       "outputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "",
           "type": "address"
         }
@@ -9897,7 +9897,7 @@
       "name": "allMarkets",
       "outputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "",
           "type": "address"
         }
@@ -9992,7 +9992,7 @@
           "type": "address"
         },
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -10018,7 +10018,7 @@
           "type": "address"
         },
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "cTokens",
           "type": "address[]"
         }
@@ -10038,7 +10038,7 @@
           "type": "address[]"
         },
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "cTokens",
           "type": "address[]"
         },
@@ -10374,7 +10374,7 @@
       "name": "getAllMarkets",
       "outputs": [
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "",
           "type": "address[]"
         }
@@ -10395,7 +10395,7 @@
       "name": "getAssetsIn",
       "outputs": [
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "",
           "type": "address[]"
         }
@@ -13253,7 +13253,7 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "isCToken",
+      "name": "isXToken",
       "outputs": [
         {
           "internalType": "bool",
@@ -13279,7 +13279,7 @@
           "type": "uint256"
         },
         {
-          "internalType": "contract CTokenInterface",
+          "internalType": "contract XTokenInterface",
           "name": "cTokenCollateral",
           "type": "address"
         }
@@ -14932,7 +14932,7 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "isCToken",
+      "name": "isXToken",
       "outputs": [
         {
           "internalType": "bool",
@@ -14958,7 +14958,7 @@
           "type": "uint256"
         },
         {
-          "internalType": "contract CTokenInterface",
+          "internalType": "contract XTokenInterface",
           "name": "cTokenCollateral",
           "type": "address"
         }
@@ -16365,7 +16365,7 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "isCToken",
+      "name": "isXToken",
       "outputs": [
         {
           "internalType": "bool",
@@ -16391,7 +16391,7 @@
           "type": "uint256"
         },
         {
-          "internalType": "contract CTokenInterface",
+          "internalType": "contract XTokenInterface",
           "name": "cTokenCollateral",
           "type": "address"
         }
@@ -17829,7 +17829,7 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "isCToken",
+      "name": "isXToken",
       "outputs": [
         {
           "internalType": "bool",
@@ -17855,7 +17855,7 @@
           "type": "uint256"
         },
         {
-          "internalType": "contract CTokenInterface",
+          "internalType": "contract XTokenInterface",
           "name": "cTokenCollateral",
           "type": "address"
         }
@@ -19262,7 +19262,7 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "isCToken",
+      "name": "isXToken",
       "outputs": [
         {
           "internalType": "bool",
@@ -19288,7 +19288,7 @@
           "type": "uint256"
         },
         {
-          "internalType": "contract CTokenInterface",
+          "internalType": "contract XTokenInterface",
           "name": "cTokenCollateral",
           "type": "address"
         }
@@ -20629,7 +20629,7 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "isCToken",
+      "name": "isXToken",
       "outputs": [
         {
           "internalType": "bool",
@@ -20650,7 +20650,7 @@
           "type": "address"
         },
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cTokenCollateral",
           "type": "address"
         }
@@ -22001,7 +22001,7 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "isCToken",
+      "name": "isXToken",
       "outputs": [
         {
           "internalType": "bool",
@@ -22027,7 +22027,7 @@
           "type": "uint256"
         },
         {
-          "internalType": "contract CTokenInterface",
+          "internalType": "contract XTokenInterface",
           "name": "cTokenCollateral",
           "type": "address"
         }
@@ -23434,7 +23434,7 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "isCToken",
+      "name": "isXToken",
       "outputs": [
         {
           "internalType": "bool",
@@ -23460,7 +23460,7 @@
           "type": "uint256"
         },
         {
-          "internalType": "contract CTokenInterface",
+          "internalType": "contract XTokenInterface",
           "name": "cTokenCollateral",
           "type": "address"
         }
@@ -24867,7 +24867,7 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "isCToken",
+      "name": "isXToken",
       "outputs": [
         {
           "internalType": "bool",
@@ -24893,7 +24893,7 @@
           "type": "uint256"
         },
         {
-          "internalType": "contract CTokenInterface",
+          "internalType": "contract XTokenInterface",
           "name": "cTokenCollateral",
           "type": "address"
         }
@@ -26401,7 +26401,7 @@
     {
       "inputs": [
         {
-          "internalType": "contract CEther",
+          "internalType": "contract XEther",
           "name": "cEther_",
           "type": "address"
         }
@@ -26416,7 +26416,7 @@
       "name": "cEther",
       "outputs": [
         {
-          "internalType": "contract CEther",
+          "internalType": "contract XEther",
           "name": "",
           "type": "address"
         }
@@ -26449,7 +26449,7 @@
           "type": "address"
         },
         {
-          "internalType": "contract CEther",
+          "internalType": "contract XEther",
           "name": "cEther_",
           "type": "address"
         }
@@ -27533,7 +27533,7 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "isCToken",
+      "name": "isXToken",
       "outputs": [
         {
           "internalType": "bool",
@@ -27559,7 +27559,7 @@
           "type": "uint256"
         },
         {
-          "internalType": "contract CTokenInterface",
+          "internalType": "contract XTokenInterface",
           "name": "cTokenCollateral",
           "type": "address"
         }
@@ -27956,7 +27956,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -28006,7 +28006,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -28025,7 +28025,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -28044,7 +28044,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -28076,7 +28076,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -28221,7 +28221,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -28268,7 +28268,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -28336,7 +28336,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -28446,7 +28446,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -28480,7 +28480,7 @@
       "name": "accountAssets",
       "outputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "",
           "type": "address"
         }
@@ -28590,7 +28590,7 @@
           "type": "address"
         },
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -28722,7 +28722,7 @@
       "name": "getAssetsIn",
       "outputs": [
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "",
           "type": "address[]"
         }
@@ -29938,7 +29938,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -29963,7 +29963,7 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -29982,7 +29982,7 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -30013,7 +30013,7 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -30069,7 +30069,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -30088,7 +30088,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -30107,7 +30107,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -30126,7 +30126,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -30158,7 +30158,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -30352,7 +30352,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -30399,7 +30399,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -30482,7 +30482,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -30592,7 +30592,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -30626,7 +30626,7 @@
       "name": "accountAssets",
       "outputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "",
           "type": "address"
         }
@@ -30662,7 +30662,7 @@
       "name": "allMarkets",
       "outputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "",
           "type": "address"
         }
@@ -30757,7 +30757,7 @@
           "type": "address"
         },
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -30783,7 +30783,7 @@
           "type": "address"
         },
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "cTokens",
           "type": "address[]"
         }
@@ -30803,7 +30803,7 @@
           "type": "address[]"
         },
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "cTokens",
           "type": "address[]"
         },
@@ -31139,7 +31139,7 @@
       "name": "getAllMarkets",
       "outputs": [
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "",
           "type": "address[]"
         }
@@ -31160,7 +31160,7 @@
       "name": "getAssetsIn",
       "outputs": [
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "",
           "type": "address[]"
         }
@@ -34809,7 +34809,7 @@
       "constant": true,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -34865,7 +34865,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -35295,7 +35295,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -35320,7 +35320,7 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -35339,7 +35339,7 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -35370,7 +35370,7 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -35426,7 +35426,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -35445,7 +35445,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -35464,7 +35464,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -35483,7 +35483,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -35515,7 +35515,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -35709,7 +35709,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -35756,7 +35756,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -35839,7 +35839,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -35949,7 +35949,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -35983,7 +35983,7 @@
       "name": "accountAssets",
       "outputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "",
           "type": "address"
         }
@@ -36019,7 +36019,7 @@
       "name": "allMarkets",
       "outputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "",
           "type": "address"
         }
@@ -36114,7 +36114,7 @@
           "type": "address"
         },
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -36140,7 +36140,7 @@
           "type": "address"
         },
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "cTokens",
           "type": "address[]"
         }
@@ -36160,7 +36160,7 @@
           "type": "address[]"
         },
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "cTokens",
           "type": "address[]"
         },
@@ -36496,7 +36496,7 @@
       "name": "getAllMarkets",
       "outputs": [
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "",
           "type": "address[]"
         }
@@ -36517,7 +36517,7 @@
       "name": "getAssetsIn",
       "outputs": [
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "",
           "type": "address[]"
         }
@@ -37276,7 +37276,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -37301,7 +37301,7 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -37320,7 +37320,7 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -37351,7 +37351,7 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -37407,7 +37407,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -37426,7 +37426,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -37445,7 +37445,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -37464,7 +37464,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -37477,7 +37477,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -37534,7 +37534,7 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -37743,7 +37743,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -37790,7 +37790,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -37852,7 +37852,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -37899,7 +37899,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -38009,7 +38009,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -38043,7 +38043,7 @@
       "name": "accountAssets",
       "outputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "",
           "type": "address"
         }
@@ -38079,7 +38079,7 @@
       "name": "allMarkets",
       "outputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "",
           "type": "address"
         }
@@ -38195,7 +38195,7 @@
           "type": "address"
         },
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -38221,7 +38221,7 @@
           "type": "address"
         },
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "cTokens",
           "type": "address[]"
         }
@@ -38241,7 +38241,7 @@
           "type": "address[]"
         },
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "cTokens",
           "type": "address[]"
         },
@@ -38577,7 +38577,7 @@
       "name": "getAllMarkets",
       "outputs": [
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "",
           "type": "address[]"
         }
@@ -38598,7 +38598,7 @@
       "name": "getAssetsIn",
       "outputs": [
         {
-          "internalType": "contract CToken[]",
+          "internalType": "contract XToken[]",
           "name": "",
           "type": "address[]"
         }
@@ -39389,7 +39389,7 @@
       "constant": true,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -39445,7 +39445,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },
@@ -39519,7 +39519,7 @@
       "constant": true,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         }
@@ -39575,7 +39575,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract CToken",
+          "internalType": "contract XToken",
           "name": "cToken",
           "type": "address"
         },

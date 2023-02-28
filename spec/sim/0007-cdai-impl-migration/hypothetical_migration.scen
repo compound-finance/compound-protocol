@@ -26,18 +26,18 @@ Governor GovernorAlpha Proposal LastProposal Execute
 Assert Equal (Erc20 Dai TokenBalance cDai) (284058478303890709049107567)
 
 -- IRM changed correctly
-Assert Equal (CToken cDai InterestRateModel) (Address CUsdtIRM)
+Assert Equal (XToken cDai InterestRateModel) (Address CUsdtIRM)
 
 -- Ensure accrue interest works
-CToken cDai AccrueInterest
+XToken cDai AccrueInterest
 
 -- Mint Test
 From DaiHolder (Erc20 Dai Approve (Address cDai) 10000000)
-From DaiHolder (CToken cDai Mint 10000000)
+From DaiHolder (XToken cDai Mint 10000000)
 Assert Equal (Erc20 Dai TokenBalance cDai) (284058478303890709059107567)
 
 -- Borrow Test
-From CUSDCHolder (CToken cDai Borrow 10000000)
+From CUSDCHolder (XToken cDai Borrow 10000000)
 Assert Equal (Erc20 Dai TokenBalance CUSDCHolder) (4235678125976069)
 Assert Equal (Erc20 Dai TokenBalance cDai) (284058478303890709049107567)
 

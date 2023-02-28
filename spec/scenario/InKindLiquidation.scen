@@ -2,7 +2,7 @@
 Macro InKindBorrow borrowAmount borrowRate user=Geoff borrowPrice=1.0 mintAmount=100e18 giveAmount=0e18 borrowTokenType=Standard
     PricedComptroller
     Comptroller LiquidationIncentive 1.1
-    NewCToken BAT cBAT borrowRate 2e9 8 borrowTokenType -- note: cannot use macros with named args right now
+    NewXToken BAT cBAT borrowRate 2e9 8 borrowTokenType -- note: cannot use macros with named args right now
     Give cBAT giveAmount BAT -- Faucet some bat
     PriceOracle SetPrice cBAT borrowPrice
     Support cBAT collateralFactor:0.5
@@ -13,8 +13,8 @@ Macro InKindBorrow borrowAmount borrowRate user=Geoff borrowPrice=1.0 mintAmount
 
 Test "Insufficient in-kind shortfall"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cBAT TotalBorrows) 1e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 99e18
     Assert Equal (Comptroller Liquidity Geoff) 49e18 -- ( ( 1.0 * 100e18 * 0.5 ) - ( 1.0 * 51e18 ) ) / 1e18
@@ -30,8 +30,8 @@ Test "Insufficient in-kind shortfall"
     FastForward 19600000 Blocks -- 1e18 * (1 + 19600000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
-    Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 99e18
-    Assert Equal (CToken cBAT TotalBorrows) 99e18
+    Assert Equal (XToken cBAT BorrowBalanceStored Geoff) 99e18
+    Assert Equal (XToken cBAT TotalBorrows) 99e18
     -- Check user liquidity and verify equals 0
     Assert Equal (Comptroller Liquidity Geoff) 0e18 -- ( ( 1.0 * ( 100e18 + 98e18 ) * 0.5 ) - ( ( 98 + 1 ) * 1e18 ) ) / 1e18
     -- At exactly zero, should not be able to liquidate
@@ -42,8 +42,8 @@ Test "Insufficient in-kind shortfall"
 
 Test "Cannot self-in-kind-liquidate"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cBAT TotalBorrows) 1e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 99e18
     Assert Equal (Comptroller Liquidity Geoff) 49e18 -- ( ( 1.0 * 100e18 * 0.5 ) - ( 1.0 * 51e18 ) ) / 1e18
@@ -59,8 +59,8 @@ Test "Cannot self-in-kind-liquidate"
     FastForward 20000000 Blocks -- 1e18 * (1 + 20000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
-    Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 101e18
-    Assert Equal (CToken cBAT TotalBorrows) 101e18
+    Assert Equal (XToken cBAT BorrowBalanceStored Geoff) 101e18
+    Assert Equal (XToken cBAT TotalBorrows) 101e18
     -- Check user liquidity and verify < 0
     Assert Equal (Comptroller Liquidity Geoff) -1e18
     -- Okay, so we should be able to liquidate, so let's do that.
@@ -71,8 +71,8 @@ Test "Cannot self-in-kind-liquidate"
 
 Test "Liqidate in-kind beyond max close"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cBAT TotalBorrows) 1e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 99e18
     Assert Equal (Comptroller Liquidity Geoff) 49e18 -- ( ( 1.0 * 100e18 * 0.5 ) - ( 1.0 * 51e18 ) ) / 1e18
@@ -88,8 +88,8 @@ Test "Liqidate in-kind beyond max close"
     FastForward 20000000 Blocks -- 1e18 * (1 + 20000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
-    Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 101e18
-    Assert Equal (CToken cBAT TotalBorrows) 101e18
+    Assert Equal (XToken cBAT BorrowBalanceStored Geoff) 101e18
+    Assert Equal (XToken cBAT TotalBorrows) 101e18
     -- Check user liquidity and verify < 0
     Assert Equal (Comptroller Liquidity Geoff) -1e18
     -- Okay, so we should be able to liquidate, so let's do that.
@@ -100,8 +100,8 @@ Test "Liqidate in-kind beyond max close"
 
 Test "Proper In-Kind Liquidation"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cBAT TotalBorrows) 1e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 99e18
     Assert Equal (Comptroller Liquidity Geoff) 49e18 -- ( ( 1.0 * 100e18 * 0.5 ) - ( 1.0 * 1e18 ) ) / 1e18
@@ -117,8 +117,8 @@ Test "Proper In-Kind Liquidation"
     FastForward 20000000 Blocks -- 1e18 * (1 + 20000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
-    Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 101e18
-    Assert Equal (CToken cBAT TotalBorrows) 101e18
+    Assert Equal (XToken cBAT BorrowBalanceStored Geoff) 101e18
+    Assert Equal (XToken cBAT TotalBorrows) 101e18
     -- Check user liquidity and verify < 0
     Assert Equal (Comptroller Liquidity Geoff) -1e18 -- ( ( 1.0 * ( 100e18 + 100e18 ) * 0.5 ) - ( 101 * 1e18 ) ) / 1e18
     -- Okay, so we should be able to liquidate, so let's do that.
@@ -132,21 +132,21 @@ Test "Proper In-Kind Liquidation"
     Assert Equal (Erc20 cBAT TokenBalance Geoff) 50e9 -- from minting
     Assert Equal (Erc20 cBAT TokenBalance Torrey) 0e9 -- never had any
     Invariant Remains (Erc20 BAT TokenBalance Geoff) 1e18 -- original amount borrowed
-    Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 101e18 -- all that interest
-    Assert Equal (CToken cBAT TotalBorrows) 101e18 -- all those borrowers
-    Assert Equal (CToken cBAT ExchangeRate) 4e9 --- XXX: Verify this
+    Assert Equal (XToken cBAT BorrowBalanceStored Geoff) 101e18 -- all that interest
+    Assert Equal (XToken cBAT TotalBorrows) 101e18 -- all those borrowers
+    Assert Equal (XToken cBAT ExchangeRate) 4e9 --- XXX: Verify this
     -- Do the liquidation
     Liquidate Torrey "->" Geoff 2e18 cBAT "Seizing" cBAT -- should now take twice as much collateral
     --
     -- And see what they are now
-    Assert Equal (CToken cBAT ExchangeRate) 4e9 --- XXX: Verify this
+    Assert Equal (XToken cBAT ExchangeRate) 4e9 --- XXX: Verify this
     -- effective liquidation incentive after deducting protocolSeizeShare is 1.1 * (1-.028) = 1.0692
     Assert Equal (Erc20 cBAT TokenBalance Geoff) 49.45e9 -- 1:1 -> 1 x 2e18 x 1.0692 ÷ 4e9 [exchange rate] = 0.55e9 -> Torrey
     Assert Equal (Erc20 cBAT TokenBalance Torrey) 0.5346e9 -- didn't have any beforehand XXX
     Assert Equal (Erc20 BAT TokenBalance Torrey) 0e18 -- repaid
     Assert Equal (Erc20 BAT TokenBalance cBAT) 101e18 -- had 100e18, lent 1e18 to geoff, repaid 2
-    Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 99e18 -- less closed amount
-    Assert Equal (CToken cBAT TotalBorrows) 99e18 --
+    Assert Equal (XToken cBAT BorrowBalanceStored Geoff) 99e18 -- less closed amount
+    Assert Equal (XToken cBAT TotalBorrows) 99e18 --
     -- Prices are 1:1 and collateral factor is 0.5
     -- User now has 49.45e9 outstanding supply (yielding 98.9 borrowing capacity due
     -- to the collateral factor (0.5) and exchange rate (4e9)).
@@ -156,8 +156,8 @@ Test "Proper In-Kind Liquidation"
 
 Test "Liquidate exactly zero"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cBAT TotalBorrows) 1e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 99e18
     Assert Equal (Comptroller Liquidity Geoff) 49e18 -- ( ( 1.0 * 100e18 * 0.5 ) - ( 1.0 * 1e18 ) ) / 1e18
@@ -173,8 +173,8 @@ Test "Liquidate exactly zero"
     FastForward 20000000 Blocks -- 1e18 * (1 + 20000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
-    Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 101e18
-    Invariant Remains (CToken cBAT TotalBorrows) 101e18
+    Invariant Remains (XToken cBAT BorrowBalanceStored Geoff) 101e18
+    Invariant Remains (XToken cBAT TotalBorrows) 101e18
     -- Check user liquidity and verify < 0
     Invariant Remains (Comptroller Liquidity Geoff) -1e18
     -- Okay, so we should be able to liquidate, so let's do that.
@@ -185,8 +185,8 @@ Test "Liquidate exactly zero"
 
 Test "When price oracle for collateral token is zero"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cBAT TotalBorrows) 1e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 99e18
     Assert Equal (Comptroller Liquidity Geoff) 49e18 -- ( ( 1.0 * 100e18 * 0.5 ) - ( 1.0 * 1e18 ) ) / 1e18
@@ -202,8 +202,8 @@ Test "When price oracle for collateral token is zero"
     FastForward 20000000 Blocks -- 1e18 * (1 + 20000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
-    Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 101e18
-    Invariant Remains (CToken cBAT TotalBorrows) 101e18
+    Invariant Remains (XToken cBAT BorrowBalanceStored Geoff) 101e18
+    Invariant Remains (XToken cBAT TotalBorrows) 101e18
     -- Check user liquidity and verify < 0
     Assert Equal (Comptroller Liquidity Geoff) -1e18
     -- Okay, so we should be able to liquidate, so let's do that.
@@ -215,8 +215,8 @@ Test "When price oracle for collateral token is zero"
 
 Test "When price oracle for collateral token is whack"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cBAT TotalBorrows) 1e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 99e18
     Assert Equal (Comptroller Liquidity Geoff) 49e18 -- ( ( 1.0 * 100e18 * 0.5 ) - ( 1.0 * 1e18 ) ) / 1e18
@@ -232,8 +232,8 @@ Test "When price oracle for collateral token is whack"
     FastForward 20000000 Blocks -- 1e18 * (1 + 20000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
-    Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 101e18
-    Invariant Remains (CToken cBAT TotalBorrows) 101e18
+    Invariant Remains (XToken cBAT BorrowBalanceStored Geoff) 101e18
+    Invariant Remains (XToken cBAT TotalBorrows) 101e18
     -- Check user liquidity and verify < 0
     Assert Equal (Comptroller Liquidity Geoff) -1e18
     -- Okay, so we should be able to liquidate, so let's do that.
@@ -245,8 +245,8 @@ Test "When price oracle for collateral token is whack"
 
 Test "When repay borrow fails"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cBAT TotalBorrows) 1e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 99e18
     Assert Equal (Comptroller Liquidity Geoff) 49e18 -- ( ( 1.0 * 100e18 * 0.5 ) - ( 1.0 * 1e18 ) ) / 1e18
@@ -262,8 +262,8 @@ Test "When repay borrow fails"
     FastForward 20000000 Blocks -- 1e18 * (1 + 20000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
-    Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 101e18
-    Invariant Remains (CToken cBAT TotalBorrows) 101e18
+    Invariant Remains (XToken cBAT BorrowBalanceStored Geoff) 101e18
+    Invariant Remains (XToken cBAT TotalBorrows) 101e18
     -- Check user liquidity and verify < 0
     Invariant Remains (Comptroller Liquidity Geoff) -1e18
     -- Okay, so we should be able to liquidate, so let's do that.
@@ -274,8 +274,8 @@ Test "When repay borrow fails"
 
 Test "Proper liquidation of paused WBTC as collateral"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005 borrowTokenType:WBTC
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cBAT TotalBorrows) 1e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 99e18
     Assert Equal (Comptroller Liquidity Geoff) 49e18 -- ( ( 1.0 * 100e18 * 0.5 ) - ( 1.0 * 1e18 ) ) / 1e18
@@ -291,8 +291,8 @@ Test "Proper liquidation of paused WBTC as collateral"
     FastForward 20000000 Blocks -- 1e18 * (1 + 20000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
-    Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 101e18
-    Assert Equal (CToken cBAT TotalBorrows) 101e18
+    Assert Equal (XToken cBAT BorrowBalanceStored Geoff) 101e18
+    Assert Equal (XToken cBAT TotalBorrows) 101e18
     -- Check user liquidity and verify < 0
     Assert Equal (Comptroller Liquidity Geoff) -1e18 -- recheck
     -- Okay, so we should be able to liquidate, so let's do that.
@@ -306,9 +306,9 @@ Test "Proper liquidation of paused WBTC as collateral"
     Assert Equal (Erc20 cBAT TokenBalance Geoff) 50e9 -- from minting
     Assert Equal (Erc20 cBAT TokenBalance Torrey) 0e9 -- never had any
     Invariant Remains (Erc20 BAT TokenBalance Geoff) 1e18 -- original amount borrowed
-    Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 101e18 -- all that interest
-    Assert Equal (CToken cBAT TotalBorrows) 101e18 -- all those borrowers
-    Assert Equal (CToken cBAT ExchangeRate) 4e9 --- XXX: Verify this
+    Assert Equal (XToken cBAT BorrowBalanceStored Geoff) 101e18 -- all that interest
+    Assert Equal (XToken cBAT TotalBorrows) 101e18 -- all those borrowers
+    Assert Equal (XToken cBAT ExchangeRate) 4e9 --- XXX: Verify this
     --
     -- Pause "WBTC"
     Erc20 BAT Pause -- Actually a WBTC token
@@ -319,8 +319,8 @@ Test "Proper liquidation of paused WBTC as collateral"
 
 Test "When seize not allowed due to unlisted collateral"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cBAT TotalBorrows) 1e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 99e18
     Assert Equal (Comptroller Liquidity Geoff) 49e18 -- ( ( 1.0 * 100e18 * 0.5 ) - ( 1.0 * 1e18 ) ) / 1e18
@@ -336,8 +336,8 @@ Test "When seize not allowed due to unlisted collateral"
     FastForward 20000000 Blocks -- 1e18 * (1 + 20000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
-    Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 101e18
-    Invariant Remains (CToken cBAT TotalBorrows) 101e18
+    Invariant Remains (XToken cBAT BorrowBalanceStored Geoff) 101e18
+    Invariant Remains (XToken cBAT TotalBorrows) 101e18
     -- Okay, so we should be able to liquidate, so let's do that.
     Prep Torrey 10e18 BAT cBAT
     Comptroller UnList cBAT -- Mock unlist collateral
@@ -347,8 +347,8 @@ Test "When seize not allowed due to unlisted collateral"
 
 Test "When seize not allowed due to unlisted borrow"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cBAT TotalBorrows) 1e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 99e18
     Assert Equal (Comptroller Liquidity Geoff) 49e18 -- ( ( 1.0 * 100e18 * 0.5 ) - ( 1.0 * 1e18 ) ) / 1e18
@@ -364,8 +364,8 @@ Test "When seize not allowed due to unlisted borrow"
     FastForward 20000000 Blocks -- 1e18 * (1 + 20000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
-    Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 101e18
-    Invariant Remains (CToken cBAT TotalBorrows) 101e18
+    Invariant Remains (XToken cBAT BorrowBalanceStored Geoff) 101e18
+    Invariant Remains (XToken cBAT TotalBorrows) 101e18
     -- Okay, so we should be able to liquidate, so let's do that.
     Prep Torrey 10e18 BAT cBAT
     Comptroller UnList cBAT -- Mock unlist borrow
@@ -377,8 +377,8 @@ Test "When there's insufficient collateral"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
     Comptroller SetCloseFactor 0.9
     Comptroller LiquidationIncentive 1.5
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cBAT TotalBorrows) 1e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 99e18
     Assert Equal (Comptroller Liquidity Geoff) 49e18 -- ( ( 1.0 * 100e18 * 0.5 ) - ( 1.0 * 1e18 ) ) / 1e18
@@ -394,8 +394,8 @@ Test "When there's insufficient collateral"
     FastForward 200000000 Blocks -- 1e18 * (1 + 200000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
-    Invariant Remains (CToken cBAT BorrowBalanceStored Geoff) 1001e18
-    Invariant Remains (CToken cBAT TotalBorrows) 1001e18
+    Invariant Remains (XToken cBAT BorrowBalanceStored Geoff) 1001e18
+    Invariant Remains (XToken cBAT TotalBorrows) 1001e18
     Comptroller SetCollateralFactor cBAT 0
     -- Check user liquidity and verify < 0
     Invariant Remains (Comptroller Liquidity Geoff) -1001e18
@@ -407,8 +407,8 @@ Test "When there's insufficient collateral"
 
 Test "when seize is paused"
     InKindBorrow borrowAmount:1e18 borrowRate:0.000005
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cBAT TotalBorrows) 1e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cBAT TotalBorrows) 1e18
     Assert Equal (Erc20 BAT TokenBalance Geoff) 1e18
     Assert Equal (Erc20 BAT TokenBalance cBAT) 99e18
     Assert Equal (Comptroller Liquidity Geoff) 49e18 -- ( ( 1.0 * 100e18 * 0.5 ) - ( 1.0 * 1e18 ) ) / 1e18
@@ -424,8 +424,8 @@ Test "when seize is paused"
     FastForward 20000000 Blocks -- 1e18 * (1 + 20000000 * 0.000005)
     AccrueInterest cBAT -- Note: we have to accrue interest
                         -- since it's not automatic for liquidity
-    Assert Equal (CToken cBAT BorrowBalanceStored Geoff) 101e18
-    Assert Equal (CToken cBAT TotalBorrows) 101e18
+    Assert Equal (XToken cBAT BorrowBalanceStored Geoff) 101e18
+    Assert Equal (XToken cBAT TotalBorrows) 101e18
     -- Check user liquidity and verify < 0
     Assert Equal (Comptroller Liquidity Geoff) -1e18
     -- Okay, so we should be able to liquidate, so let's do that.

@@ -1,8 +1,8 @@
 
 Test "Attempt to borrow over set cap ERC20"
     NewComptroller price:1.0
-    NewCToken ZRX cZRX
-    NewCToken BAT cBAT
+    NewXToken ZRX cZRX
+    NewXToken BAT cBAT
     Comptroller SetMarketBorrowCaps (cBAT) (0.5e18)
     Assert Equal (Comptroller BorrowCaps cBAT) (Exactly 0.5e18)
     Give cBAT 10e18 BAT -- Faucet some bat to borrow
@@ -20,8 +20,8 @@ Test "Attempt to borrow over set cap ERC20"
 
 Test "Attempt to borrow at set cap ERC20"
     NewComptroller price:1.0
-    NewCToken ZRX cZRX
-    NewCToken BAT cBAT
+    NewXToken ZRX cZRX
+    NewXToken BAT cBAT
     Comptroller SetMarketBorrowCaps (cBAT) (1000000000000000001)
     Give cBAT 10e18 BAT -- Faucet some bat to borrow
     Support cZRX collateralFactor:0.5
@@ -39,8 +39,8 @@ Test "Attempt to borrow at set cap ERC20"
 
 Test "Attempt to borrow below set cap ERC20"
     NewComptroller price:1.0
-    NewCToken ZRX cZRX
-    NewCToken BAT cBAT
+    NewXToken ZRX cZRX
+    NewXToken BAT cBAT
     Comptroller SetMarketBorrowCaps (cBAT) (10e18)
     Give cBAT 10e18 BAT -- Faucet some bat to borrow
     Support cZRX collateralFactor:0.5
@@ -58,7 +58,7 @@ Test "Attempt to borrow below set cap ERC20"
 
 Test "Borrow some Eth over cap"
     NewComptroller price:1.0
-    ListedCToken ZRX cZRX
+    ListedXToken ZRX cZRX
     ListedEtherToken cETH initialExchangeRate:0.005e9
     SetCollateralFactor cZRX collateralFactor:0.5
     SetCollateralFactor cETH collateralFactor:0.5
@@ -74,7 +74,7 @@ Test "Borrow some Eth over cap"
 
 Test "Borrow some Eth enters Eth and succeeds when Eth not entered. At borrow cap"
     NewComptroller price:1.0
-    ListedCToken ZRX cZRX
+    ListedXToken ZRX cZRX
     ListedEtherToken cETH initialExchangeRate:0.005e9
     SetCollateralFactor cZRX collateralFactor:0.5
     SetCollateralFactor cETH collateralFactor:0.5
@@ -92,7 +92,7 @@ Test "Borrow some Eth enters Eth and succeeds when Eth not entered. At borrow ca
 
 Test "Borrow some Eth enters Eth and succeeds when Eth not entered. At under borrow cap"
     NewComptroller price:1.0
-    ListedCToken ZRX cZRX
+    ListedXToken ZRX cZRX
     ListedEtherToken cETH initialExchangeRate:0.005e9
     SetCollateralFactor cZRX collateralFactor:0.5
     SetCollateralFactor cETH collateralFactor:0.5
@@ -110,7 +110,7 @@ Test "Borrow some Eth enters Eth and succeeds when Eth not entered. At under bor
 
 Test "Setting borrow cap restricted to admin"
     NewComptroller price:1.0
-    ListedCToken ZRX cZRX
+    ListedXToken ZRX cZRX
     ListedEtherToken cETH initialExchangeRate:0.005e9
     SetCollateralFactor cZRX collateralFactor:0.5
     SetCollateralFactor cETH collateralFactor:0.5
@@ -120,7 +120,7 @@ Test "Setting borrow cap restricted to admin"
 
 Test "Borrow cap guardian can set borrow caps"
     NewComptroller price:1.0
-    ListedCToken ZRX cZRX
+    ListedXToken ZRX cZRX
     ListedEtherToken cETH initialExchangeRate:0.005e9
     SetCollateralFactor cZRX collateralFactor:0.5
     SetCollateralFactor cETH collateralFactor:0.5
@@ -142,9 +142,9 @@ Test "Only admin can set Borrow Cap Guardian"
 
 Test "SetBorrowCaps works correctly too"
     NewComptroller price:1.0
-    NewCToken ZRX cZRX
-    NewCToken BAT cBAT
-    NewCToken USDC cUSDC
+    NewXToken ZRX cZRX
+    NewXToken BAT cBAT
+    NewXToken USDC cUSDC
     Comptroller SetMarketBorrowCaps (cBAT cUSDC) (0.5e18 1000001)
     Assert Equal (Comptroller BorrowCaps cBAT) (Exactly 0.5e18)
     Assert Equal (Comptroller BorrowCaps cUSDC) (Exactly 1000001)

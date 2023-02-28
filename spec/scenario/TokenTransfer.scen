@@ -1,7 +1,7 @@
 
 Test "Simple cToken Transfer"
     NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
+    ListedXToken ZRX cZRX initialExchangeRate:1e9
     Prep Geoff Some ZRX cZRX
     Mint Geoff 50e18 cZRX
     -- Just to be sure, check initial balances
@@ -14,7 +14,7 @@ Test "Simple cToken Transfer"
 
 Test "Simple cToken Transfer When Underlying Paused"
     NewComptroller
-    ListedCToken WBTC cWBTC initialExchangeRate:0.1 tokenType:WBTC
+    ListedXToken WBTC cWBTC initialExchangeRate:0.1 tokenType:WBTC
     Prep Geoff Some WBTC cWBTC
     Mint Geoff 50e8 cWBTC
     -- Just to be sure, check initial balances
@@ -28,7 +28,7 @@ Test "Simple cToken Transfer When Underlying Paused"
 
 Test "Simple cToken Transfer 1:1 Rate"
     NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e0
+    ListedXToken ZRX cZRX initialExchangeRate:1e0
     Prep Geoff Some ZRX cZRX
     Mint Geoff 50e18 cZRX
     -- Just to be sure, check initial balances
@@ -41,7 +41,7 @@ Test "Simple cToken Transfer 1:1 Rate"
 
 Test "Simple cToken Transfer Not Allowed by Comptroller"
     NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e0
+    ListedXToken ZRX cZRX initialExchangeRate:1e0
     Comptroller SetCollateralFactor cZRX 0.1
     EnterMarkets Geoff cZRX
     Prep Geoff Some ZRX cZRX
@@ -56,7 +56,7 @@ Test "Simple cToken Transfer Not Allowed by Comptroller"
 
 Test "Simple cToken Transfer From"
     NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
+    ListedXToken ZRX cZRX initialExchangeRate:1e9
     Prep Geoff Some ZRX cZRX
     Mint Geoff 50e18 cZRX
     -- Just to be sure, check initial balances
@@ -74,7 +74,7 @@ Test "Simple cToken Transfer From"
 
 Test "cToken Transfer From Not Allowed"
     NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
+    ListedXToken ZRX cZRX initialExchangeRate:1e9
     Prep Geoff Some ZRX cZRX
     Mint Geoff 50e18 cZRX
     --
@@ -86,7 +86,7 @@ Test "cToken Transfer From Not Allowed"
 
 Test "cToken Transfer paused"
     NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
+    ListedXToken ZRX cZRX initialExchangeRate:1e9
     Prep Geoff Some ZRX cZRX
     Mint Geoff 50e18 cZRX
     -- Just to be sure, check initial balances

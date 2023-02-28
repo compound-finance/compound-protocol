@@ -12,8 +12,8 @@ Macro DeployComptroller price=1.0
     Comptroller LiquidationIncentive 1.1
 
 Macro SetupMarkets
-    NewCToken ZRX cZRX
-    NewCToken BAT cBAT
+    NewXToken ZRX cZRX
+    NewXToken BAT cBAT
     Support cZRX collateralFactor:0.5
     Support cBAT collateralFactor:0.5
 

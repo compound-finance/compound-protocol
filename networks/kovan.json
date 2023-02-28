@@ -305,7 +305,7 @@
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x162c44e53097e7B5aaE939b297ffFD6Bf90D1EE3",
-      "contract": "CErc20Immutable"
+      "contract": "XErc20Immutable"
     },
     "cWBTC": {
       "name": "Compound WBTC",
@@ -315,7 +315,7 @@
       "initial_exchange_rate_mantissa": "20000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0xd3A691C852CDB01E281545A27064741F0B7f6825",
-      "contract": "CErc20Immutable"
+      "contract": "XErc20Immutable"
     },
     "cUSDT": {
       "name": "Compound USDT",
@@ -325,7 +325,7 @@
       "initial_exchange_rate_mantissa": "200000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x07de306FF27a2B630B1141956844eB1552B956B5",
-      "contract": "CErc20Delegator"
+      "contract": "XErc20Delegator"
     },
     "cUSDC": {
       "name": "Compound USDC",
@@ -335,7 +335,7 @@
       "initial_exchange_rate_mantissa": "200000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0xb7a4F3E9097C08dA09517b5aB877F7a917224ede",
-      "contract": "CErc20Immutable"
+      "contract": "XErc20Immutable"
     },
     "cETH": {
       "name": "Compound ETH",
@@ -345,7 +345,7 @@
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "",
-      "contract": "CEther"
+      "contract": "XEther"
     },
     "cSAI": {
       "name": "Compound SAI",
@@ -355,7 +355,7 @@
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0xD1308F63823221518Ec88EB209CBaa1ac182105f",
-      "contract": "CErc20Immutable"
+      "contract": "XErc20Immutable"
     },
     "cREP": {
       "name": "Compound REP",
@@ -365,7 +365,7 @@
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x50DD65531676F718B018De3dc48F92B53D756996",
-      "contract": "CErc20Immutable"
+      "contract": "XErc20Immutable"
     },
     "cBAT": {
       "name": "Compound BAT",
@@ -375,7 +375,7 @@
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x482dC9bB08111CB875109B075A40881E48aE02Cd",
-      "contract": "CErc20Immutable"
+      "contract": "XErc20Immutable"
     },
     "cDAI": {
       "name": "Compound DAI",
@@ -385,7 +385,7 @@
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa",
-      "contract": "CErc20Delegator"
+      "contract": "XErc20Delegator"
     },
     "KNC": {
       "name": "Kyber Network Crystal",
@@ -408,11 +408,11 @@
       "address": "0x0000000000000000000000000000000000000000"
     }
   },
-  "CTokenDelegate": {
+  "XTokenDelegate": {
     "undefined": {
       "address": "0xC8016288dB9dFE5a1cA2503879dCDE8807377186",
-      "contract": "CErc20Delegate",
-      "description": "Delegate CErc20Delegate"
+      "contract": "XErc20Delegate",
+      "description": "Delegate XErc20Delegate"
     }
   },
   "cTokens": {
@@ -424,7 +424,7 @@
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x162c44e53097e7B5aaE939b297ffFD6Bf90D1EE3",
-      "contract": "CErc20Immutable"
+      "contract": "XErc20Immutable"
     },
     "cWBTC": {
       "name": "Compound WBTC",
@@ -434,7 +434,7 @@
       "initial_exchange_rate_mantissa": "20000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0xd3A691C852CDB01E281545A27064741F0B7f6825",
-      "contract": "CErc20Immutable"
+      "contract": "XErc20Immutable"
     },
     "cUSDT": {
       "name": "Compound USDT",
@@ -444,7 +444,7 @@
       "initial_exchange_rate_mantissa": "200000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x07de306FF27a2B630B1141956844eB1552B956B5",
-      "contract": "CErc20Delegator"
+      "contract": "XErc20Delegator"
     },
     "cUSDC": {
       "name": "Compound USDC",
@@ -454,7 +454,7 @@
       "initial_exchange_rate_mantissa": "200000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0xb7a4F3E9097C08dA09517b5aB877F7a917224ede",
-      "contract": "CErc20Immutable"
+      "contract": "XErc20Immutable"
     },
     "cETH": {
       "name": "Compound ETH",
@@ -464,7 +464,7 @@
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "",
-      "contract": "CEther"
+      "contract": "XEther"
     },
     "cSAI": {
       "name": "Compound SAI",
@@ -474,7 +474,7 @@
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0xD1308F63823221518Ec88EB209CBaa1ac182105f",
-      "contract": "CErc20Immutable"
+      "contract": "XErc20Immutable"
     },
     "cREP": {
       "name": "Compound REP",
@@ -484,7 +484,7 @@
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x50DD65531676F718B018De3dc48F92B53D756996",
-      "contract": "CErc20Immutable"
+      "contract": "XErc20Immutable"
     },
     "cBAT": {
       "name": "Compound BAT",
@@ -494,7 +494,7 @@
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x482dC9bB08111CB875109B075A40881E48aE02Cd",
-      "contract": "CErc20Immutable"
+      "contract": "XErc20Immutable"
     },
     "cDAI": {
       "name": "Compound DAI",
@@ -504,7 +504,7 @@
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa",
-      "contract": "CErc20Delegator"
+      "contract": "XErc20Delegator"
     }
   },
   "InterestRateModel": {

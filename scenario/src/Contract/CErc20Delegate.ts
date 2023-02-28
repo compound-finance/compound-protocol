@@ -1,23 +1,23 @@
-import { Contract } from '../Contract';
-import { Sendable } from '../Invokation';
-import { CTokenMethods, CTokenScenarioMethods } from './CToken';
+import { Contract } from "../Contract";
+import { Sendable } from "../Invokation";
+import { XTokenMethods, XTokenScenarioMethods } from "./XToken";
 
-interface CErc20DelegateMethods extends CTokenMethods {
+interface XErc20DelegateMethods extends XTokenMethods {
   _becomeImplementation(data: string): Sendable<void>;
   _resignImplementation(): Sendable<void>;
 }
 
-interface CErc20DelegateScenarioMethods extends CTokenScenarioMethods {
+interface XErc20DelegateScenarioMethods extends XTokenScenarioMethods {
   _becomeImplementation(data: string): Sendable<void>;
   _resignImplementation(): Sendable<void>;
 }
 
-export interface CErc20Delegate extends Contract {
-  methods: CErc20DelegateMethods;
+export interface XErc20Delegate extends Contract {
+  methods: XErc20DelegateMethods;
   name: string;
 }
 
-export interface CErc20DelegateScenario extends Contract {
-  methods: CErc20DelegateScenarioMethods;
+export interface XErc20DelegateScenario extends Contract {
+  methods: XErc20DelegateScenarioMethods;
   name: string;
 }

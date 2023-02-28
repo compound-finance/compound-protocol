@@ -25,7 +25,7 @@ IncreaseTime 604910
 Governor GovernorAlpha Proposal LastProposal Execute
 
 -- Check model
-Assert Equal (CToken cDAI InterestRateModel) (InterestRateModel UpdateableDaiInterestRateModel Address)
+Assert Equal (XToken cDAI InterestRateModel) (InterestRateModel UpdateableDaiInterestRateModel Address)
 
 -- Propose to apply the update
 From CompHolder (Governor GovernorAlpha Propose "DAI IRM v3 update" [(Address UpdateableDaiInterestRateModel)] [0] ["updateJumpRateModel(uint256,uint256,uint256,uint256)"] [[0 (Exp 0.4) (Exp 1.1) (Exp 0.7)]])

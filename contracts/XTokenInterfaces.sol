@@ -6,7 +6,7 @@ import "./InterestRateModel.sol";
 import "./EIP20NonStandardInterface.sol";
 import "./ErrorReporter.sol";
 
-contract CTokenStorage {
+contract XTokenStorage {
     /**
      * @dev Guard variable for re-entrancy checks
      */
@@ -53,7 +53,7 @@ contract CTokenStorage {
      */
     InterestRateModel public interestRateModel;
 
-    // Initial exchange rate used when minting the first CTokens (used when totalSupply = 0)
+    // Initial exchange rate used when minting the first XTokens (used when totalSupply = 0)
     uint internal initialExchangeRateMantissa;
 
     /**
@@ -111,11 +111,11 @@ contract CTokenStorage {
     uint public constant protocolSeizeShareMantissa = 2.8e16; //2.8%
 }
 
-abstract contract CTokenInterface is CTokenStorage {
+abstract contract XTokenInterface is XTokenStorage {
     /**
-     * @notice Indicator that this is a CToken contract (for inspection)
+     * @notice Indicator that this is a XToken contract (for inspection)
      */
-    bool public constant isCToken = true;
+    bool public constant isXToken = true;
 
 
     /*** Market Events ***/
@@ -230,14 +230,14 @@ abstract contract CTokenInterface is CTokenStorage {
     function _setInterestRateModel(InterestRateModel newInterestRateModel) virtual external returns (uint);
 }
 
-contract CErc20Storage {
+contract XErc20Storage {
     /**
-     * @notice Underlying asset for this CToken
+     * @notice Underlying asset for this XToken
      */
     address public underlying;
 }
 
-abstract contract CErc20Interface is CErc20Storage {
+abstract contract XErc20Interface is XErc20Storage {
 
     /*** User Interface ***/
 
@@ -247,7 +247,7 @@ abstract contract CErc20Interface is CErc20Storage {
     function borrow(uint borrowAmount) virtual external returns (uint);
     function repayBorrow(uint repayAmount) virtual external returns (uint);
     function repayBorrowBehalf(address borrower, uint repayAmount) virtual external returns (uint);
-    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) virtual external returns (uint);
+    function liquidateBorrow(address borrower, uint repayAmount, XTokenInterface cTokenCollateral) virtual external returns (uint);
     function sweepToken(EIP20NonStandardInterface token) virtual external;
 
 
@@ -278,7 +278,7 @@ abstract contract CDelegatorInterface is CDelegationStorage {
     function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) virtual external;
 }
 
-abstract contract CDelegateInterface is CDelegationStorage {
+abstract contract XDelegateInterface is CDelegationStorage {
     /**
      * @notice Called by the delegator on a delegate to initialize it for duty
      * @dev Should revert if any issues arise which make it unfit for delegation

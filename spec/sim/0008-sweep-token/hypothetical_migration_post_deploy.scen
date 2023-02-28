@@ -27,16 +27,16 @@ Assert Equal (Erc20 (Address cUNI) TokenBalance Timelock) (179874258721489)
 
 -- Ensure accrue interest works
 MineBlock
-CToken cUNI AccrueInterest
+XToken cUNI AccrueInterest
 
 -- Mint Test
 Assert Equal (Erc20 Uni TokenBalance cUNI) (9213234645306032140780326)
 From UniHolder (Erc20 Uni Approve cUNI 10000000)
-From UniHolder (CToken cUNI Mint 10000000)
+From UniHolder (XToken cUNI Mint 10000000)
 Assert Equal (Erc20 Uni TokenBalance cUNI) (9213234645306032150780326)
 
 -- Borrow Test
-From CUSDCHolder (CToken cUNI Borrow 10000000)
+From CUSDCHolder (XToken cUNI Borrow 10000000)
 Assert Equal (Erc20 Uni TokenBalance CUSDCHolder) (10000000)
 
 Print "cUNI implementation migration ok" 

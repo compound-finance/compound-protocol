@@ -19,7 +19,7 @@ description "Break borrow with result=$result borrower=$borrower borrowAmount=$b
       - no *other* storage should change - XXX can we specify this?
 
       |----------+--------+----------+-------|
-      |          | CToken | Borrower | Other |
+      |          | XToken | Borrower | Other |
       |----------+--------+----------+-------|
       | cash     |   -A   |    +A    |   0   |
       | borrows  |   +A   |    +A    |   0   |
@@ -123,7 +123,7 @@ description "Break repay borrow with realRepayAmount=$realRepayAmount borrowerBo
 
     /*
       |----------+--------+-------+----------+-------|
-      |          | CToken | Payer | Borrower | Other |
+      |          | XToken | Payer | Borrower | Other |
       |----------+--------+-------+----------+-------|
       | cash     |   +A   |  -A   |   -A/0   |   0   |
       | borrows  |   -A   | -A/0  |    -A    |   0   |

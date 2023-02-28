@@ -26,23 +26,23 @@ IncreaseTime 604910
 Governor GovernorAlpha Proposal LastProposal Execute
 
 -- Check expected values
-Assert Equal (CToken cUNI Implementation) (Address NewcUNIImplementation)
+Assert Equal (XToken cUNI Implementation) (Address NewcUNIImplementation)
 Assert Equal (Erc20 (Address cUNI) TokenBalance (Address Timelock)) (17987425872149)
 Assert Equal (Erc20 (Address cUNI) TokenBalance cUNISender) (161886832849341)
 Assert Equal (Erc20 (Address COMP) TokenBalance (Address Arr00)) (30040000000000000000)
 
 -- Ensure accrue interest works
 MineBlock
-CToken cUNI AccrueInterest
+XToken cUNI AccrueInterest
 
 -- Mint Test
 Assert Equal (Erc20 Uni TokenBalance cUNI) (8974517540659969962306996)
 From UniHolder (Erc20 Uni Approve cUNI 10000000)
-From UniHolder (CToken cUNI Mint 10000000)
+From UniHolder (XToken cUNI Mint 10000000)
 Assert Equal (Erc20 Uni TokenBalance cUNI) (8974517540659969972306996)
 
 -- Borrow Test
-From CUSDCHolder (CToken cUNI Borrow 10000000)
+From CUSDCHolder (XToken cUNI Borrow 10000000)
 Assert Equal (Erc20 Uni TokenBalance CUSDCHolder) (10000000)
 
 Print "cUNI implementation migration ok" 

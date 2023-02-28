@@ -46,3 +46,4 @@ node_modules_tmp
 artifacts
 .vscode
 cache
+conf.json

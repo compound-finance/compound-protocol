@@ -19,10 +19,10 @@ Macro SetupPriceOracleProxy
     Unitroller SetPendingImpl ScenComptroller
     ComptrollerImpl ScenComptroller Become
     NewEtherToken cETH
-    NewCToken USDC cUSDC
-    NewCToken SAI cSAI
-    NewCToken DAI cDAI
-    NewCToken USDT cUSDT
+    NewXToken USDC cUSDC
+    NewXToken SAI cSAI
+    NewXToken DAI cDAI
+    NewXToken USDT cUSDT
     Comptroller SupportMarket cETH
     Comptroller SupportMarket cUSDC
     Comptroller SupportMarket cSAI

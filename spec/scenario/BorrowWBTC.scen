@@ -2,8 +2,8 @@
 Test "Borrow some WBTC enters WBTC and succeeds when not entered"
     Invariant Success
     NewComptroller price:1.0
-    NewCToken ZRX cZRX
-    NewCToken WBTC cWBTC tokenType:WBTC
+    NewXToken ZRX cZRX
+    NewXToken WBTC cWBTC tokenType:WBTC
     Give cWBTC 10e8 WBTC -- Faucet some WBTC to borrow
     Support cZRX collateralFactor:0.5
     Support cWBTC collateralFactor:0.5
@@ -17,29 +17,29 @@ Test "Borrow some WBTC enters WBTC and succeeds when not entered"
 
 Test "Borrow some WBTC fails when no WBTC available"
     NewComptroller price:1.0
-    NewCToken ZRX cZRX
-    NewCToken WBTC cWBTC tokenType:WBTC
+    NewXToken ZRX cZRX
+    NewXToken WBTC cWBTC tokenType:WBTC
     Support cZRX collateralFactor:0.5
     Support cWBTC collateralFactor:0.5
     Prep Geoff Some ZRX cZRX
     Mint Geoff 100e18 cZRX
     EnterMarkets Geoff cZRX cWBTC
-    Invariant Static (CToken cZRX ExchangeRateStored)
+    Invariant Static (XToken cZRX ExchangeRateStored)
     AllowFailures
     Borrow Geoff 1e8 cWBTC
     Assert RevertCustomError BorrowCashNotAvailable
 
 Test "Borrow some WBTC fails when WBTC paused"
     NewComptroller price:1.0
-    NewCToken ZRX cZRX
-    NewCToken WBTC cWBTC tokenType:WBTC
+    NewXToken ZRX cZRX
+    NewXToken WBTC cWBTC tokenType:WBTC
     Give cWBTC 10e8 WBTC -- Faucet some WBTC to borrow
     Support cZRX collateralFactor:0.5
     Support cWBTC collateralFactor:0.5
     Prep Geoff Some ZRX cZRX
     Mint Geoff 100e18 cZRX
     EnterMarkets Geoff cZRX cWBTC
-    Invariant Static (CToken cZRX ExchangeRateStored)
+    Invariant Static (XToken cZRX ExchangeRateStored)
     Erc20 WBTC Pause
     AllowFailures
     Borrow Geoff 1e8 cWBTC
@@ -48,8 +48,8 @@ Test "Borrow some WBTC fails when WBTC paused"
 Test "Borrow some WBTC from Excess Cash"
     Invariant Success
     NewComptroller price:1.0
-    NewCToken ZRX cZRX
-    NewCToken WBTC cWBTC tokenType:WBTC
+    NewXToken ZRX cZRX
+    NewXToken WBTC cWBTC tokenType:WBTC
     Give cWBTC 10e8 WBTC -- Faucet some WBTC to borrow
     Support cZRX collateralFactor:0.5
     Support cWBTC collateralFactor:0.5

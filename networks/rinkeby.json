@@ -142,7 +142,7 @@
       "symbol": "cUSDC",
       "decimals": 8,
       "underlying": "0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b",
-      "contract": "CErc20",
+      "contract": "XErc20",
       "initial_exchange_rate_mantissa": "200000000000000",
       "address": "0x5B281A6DdA0B271e91ae35DE655Ad301C976edb1"
     },
@@ -151,7 +151,7 @@
       "symbol": "cDAI",
       "decimals": 8,
       "underlying": "0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa",
-      "contract": "CErc20",
+      "contract": "XErc20",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "address": "0x6D7F0754FFeb405d23C51CE938289d4835bE3b14"
     },
@@ -174,7 +174,7 @@
       "symbol": "cUSDT",
       "decimals": 8,
       "underlying": "0xD9BA894E0097f8cC2BBc9D24D308b98e36dc6D02",
-      "contract": "CErc20Delegator",
+      "contract": "XErc20Delegator",
       "initial_exchange_rate_mantissa": "200000000000000",
       "admin": "0xe4cD9a61431FbD268ea842D68533561262C17513",
       "address": "0x2fB298BDbeF468638AD6653FF8376575ea41e768"
@@ -184,7 +184,7 @@
       "symbol": "cBAT",
       "decimals": 8,
       "underlying": "0xbF7A7169562078c96f0eC1A8aFD6aE50f12e5A99",
-      "contract": "CErc20",
+      "contract": "XErc20",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "address": "0xEBf1A11532b93a529b5bC942B4bAA98647913002"
     },
@@ -199,7 +199,7 @@
       "symbol": "cETH",
       "decimals": 8,
       "underlying": "",
-      "contract": "CEther",
+      "contract": "XEther",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "address": "0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e"
     },
@@ -208,7 +208,7 @@
       "symbol": "cREP",
       "decimals": 8,
       "underlying": "0x6e894660985207feb7cf89Faf048998c71E8EE89",
-      "contract": "CErc20",
+      "contract": "XErc20",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "address": "0xEBe09eB3411D18F4FF8D859e096C533CAC5c6B60"
     },
@@ -217,7 +217,7 @@
       "name": "Wrapped BTC",
       "symbol": "WBTC",
       "decimals": 8,
-      "contract": "WBTCToken",
+      "contract": "WBTXToken",
       "address": "0x577D296678535e4903D59A4C929B718e1D575e0A"
     },
     "REP": {
@@ -231,7 +231,7 @@
       "symbol": "cZRX",
       "decimals": 8,
       "underlying": "0xddea378A6dDC8AfeC82C36E9b0078826bf9e68B6",
-      "contract": "CErc20",
+      "contract": "XErc20",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "address": "0x52201ff1720134bBbBB2f6BC97Bf3715490EC19B"
     },
@@ -240,7 +240,7 @@
       "symbol": "cWBTC",
       "decimals": 8,
       "underlying": "0x577D296678535e4903D59A4C929B718e1D575e0A",
-      "contract": "CErc20",
+      "contract": "XErc20",
       "initial_exchange_rate_mantissa": "20000000000000000",
       "address": "0x0014F450B8Ae7708593F4A46F8fa6E5D50620F96"
     },
@@ -253,11 +253,11 @@
       "contract": "FaucetToken"
     }
   },
-  "CTokenDelegate": {
+  "XTokenDelegate": {
     "cUsdtDelegate": {
       "address": "0x98394a121D26F90F4841e7BFE9dD4Aba05E666E4",
-      "contract": "CErc20Delegate",
-      "description": "Standard CErc20 Delegate"
+      "contract": "XErc20Delegate",
+      "description": "Standard XErc20 Delegate"
     }
   },
   "cTokens": {
@@ -266,7 +266,7 @@
       "symbol": "cZRX",
       "decimals": 8,
       "underlying": "0xddea378A6dDC8AfeC82C36E9b0078826bf9e68B6",
-      "contract": "CErc20",
+      "contract": "XErc20",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "address": "0x52201ff1720134bBbBB2f6BC97Bf3715490EC19B"
     },
@@ -275,7 +275,7 @@
       "symbol": "cBAT",
       "decimals": 8,
       "underlying": "0xbF7A7169562078c96f0eC1A8aFD6aE50f12e5A99",
-      "contract": "CErc20",
+      "contract": "XErc20",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "address": "0xEBf1A11532b93a529b5bC942B4bAA98647913002"
     },
@@ -284,7 +284,7 @@
       "symbol": "cDAI",
       "decimals": 8,
       "underlying": "0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa",
-      "contract": "CErc20",
+      "contract": "XErc20",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "address": "0x6D7F0754FFeb405d23C51CE938289d4835bE3b14"
     },
@@ -293,7 +293,7 @@
       "symbol": "cREP",
       "decimals": 8,
       "underlying": "0x6e894660985207feb7cf89Faf048998c71E8EE89",
-      "contract": "CErc20",
+      "contract": "XErc20",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "address": "0xEBe09eB3411D18F4FF8D859e096C533CAC5c6B60"
     },
@@ -302,7 +302,7 @@
       "symbol": "cETH",
       "decimals": 8,
       "underlying": "",
-      "contract": "CEther",
+      "contract": "XEther",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "address": "0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e"
     },
@@ -311,7 +311,7 @@
       "symbol": "cUSDC",
       "decimals": 8,
       "underlying": "0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b",
-      "contract": "CErc20",
+      "contract": "XErc20",
       "initial_exchange_rate_mantissa": "200000000000000",
       "address": "0x5B281A6DdA0B271e91ae35DE655Ad301C976edb1"
     },
@@ -320,7 +320,7 @@
       "symbol": "cWBTC",
       "decimals": 8,
       "underlying": "0x577D296678535e4903D59A4C929B718e1D575e0A",
-      "contract": "CErc20",
+      "contract": "XErc20",
       "initial_exchange_rate_mantissa": "20000000000000000",
       "address": "0x0014F450B8Ae7708593F4A46F8fa6E5D50620F96"
     },
@@ -329,7 +329,7 @@
       "symbol": "cUSDT",
       "decimals": 8,
       "underlying": "0xD9BA894E0097f8cC2BBc9D24D308b98e36dc6D02",
-      "contract": "CErc20Delegator",
+      "contract": "XErc20Delegator",
       "initial_exchange_rate_mantissa": "200000000000000",
       "admin": "0xe4cD9a61431FbD268ea842D68533561262C17513",
       "address": "0x2fB298BDbeF468638AD6653FF8376575ea41e768"

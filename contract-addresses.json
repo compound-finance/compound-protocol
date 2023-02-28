@@ -1,0 +1,8 @@
+{
+    "200101": {
+        "Unitroller": "0x4386BA4f96Fc67b492171cB0C4C6009D87Afa676",
+        "Comptroller": "0x3B0DDA9d2dc0b7a98272b216ff88369d60A81435",
+        "SimplePriceOracle": "0xAfd086d74297892212A1bCfBAe08b35100e1278c",
+        "WhitePaperInterestRateModel": "0x3998d771496ccF2BbC752C8E674da2966433a46c"
+    }
+}

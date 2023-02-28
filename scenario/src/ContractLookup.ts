@@ -1,22 +1,22 @@
-import { Map } from 'immutable';
+import { Map } from "immutable";
 
-import { Event } from './Event';
-import { World } from './World';
-import { Contract } from './Contract';
-import { mustString } from './Utils';
+import { Event } from "./Event";
+import { World } from "./World";
+import { Contract } from "./Contract";
+import { mustString } from "./Utils";
 
-import { CErc20Delegate } from './Contract/CErc20Delegate';
-import { Comp } from './Contract/Comp';
-import { Comptroller } from './Contract/Comptroller';
-import { ComptrollerImpl } from './Contract/ComptrollerImpl';
-import { CToken } from './Contract/CToken';
-import { Governor } from './Contract/Governor';
-import { GovernorBravo } from './Contract/GovernorBravo'
-import { Erc20 } from './Contract/Erc20';
-import { InterestRateModel } from './Contract/InterestRateModel';
-import { PriceOracle } from './Contract/PriceOracle';
-import { Timelock } from './Contract/Timelock';
-import { AnchoredView } from './Contract/AnchoredView';
+import { XErc20Delegate } from "./Contract/XErc20Delegate";
+import { Comp } from "./Contract/Comp";
+import { Comptroller } from "./Contract/Comptroller";
+import { ComptrollerImpl } from "./Contract/ComptrollerImpl";
+import { XToken } from "./Contract/XToken";
+import { Governor } from "./Contract/Governor";
+import { GovernorBravo } from "./Contract/GovernorBravo";
+import { Erc20 } from "./Contract/Erc20";
+import { InterestRateModel } from "./Contract/InterestRateModel";
+import { PriceOracle } from "./Contract/PriceOracle";
+import { Timelock } from "./Contract/Timelock";
+import { AnchoredView } from "./Contract/AnchoredView";
 
 type ContractDataEl = string | Map<string, object> | undefined;
 
@@ -30,10 +30,12 @@ function getContractData(world: World, indices: string[][]): ContractDataEl {
 
         if (!data) {
           return;
-        } else if (typeof data === 'string') {
+        } else if (typeof data === "string") {
           return data;
         } else {
-          return (data as Map<string, ContractDataEl>).find((_v, key) => key.toLowerCase().trim() === lowerEl.trim());
+          return (data as Map<string, ContractDataEl>).find(
+            (_v, key) => key.toLowerCase().trim() === lowerEl.trim()
+          );
         }
       }, world.contractData);
     }
@@ -43,7 +45,7 @@ function getContractData(world: World, indices: string[][]): ContractDataEl {
 function getContractDataString(world: World, indices: string[][]): string {
   const value: ContractDataEl = getContractData(world, indices);
 
-  if (!value || typeof value !== 'string') {
+  if (!value || typeof value !== "string") {
     throw new Error(
       `Failed to find string value by index (got ${value}): ${JSON.stringify(
         indices
@@ -75,62 +77,72 @@ export function getWorldContractByAddress<T>(world: World, address: string): T {
 }
 
 export async function getTimelock(world: World): Promise<Timelock> {
-  return getWorldContract(world, [['Contracts', 'Timelock']]);
+  return getWorldContract(world, [["Contracts", "Timelock"]]);
 }
 
 export async function getUnitroller(world: World): Promise<Comptroller> {
-  return getWorldContract(world, [['Contracts', 'Unitroller']]);
+  return getWorldContract(world, [["Contracts", "Unitroller"]]);
 }
 
 export async function getMaximillion(world: World): Promise<Comptroller> {
-  return getWorldContract(world, [['Contracts', 'Maximillion']]);
+  return getWorldContract(world, [["Contracts", "Maximillion"]]);
 }
 
 export async function getComptroller(world: World): Promise<Comptroller> {
-  return getWorldContract(world, [['Contracts', 'Comptroller']]);
+  return getWorldContract(world, [["Contracts", "Comptroller"]]);
 }
 
-export async function getComptrollerImpl(world: World, comptrollerImplArg: Event): Promise<ComptrollerImpl> {
-  return getWorldContract(world, [['Comptroller', mustString(comptrollerImplArg), 'address']]);
+export async function getComptrollerImpl(
+  world: World,
+  comptrollerImplArg: Event
+): Promise<ComptrollerImpl> {
+  return getWorldContract(world, [
+    ["Comptroller", mustString(comptrollerImplArg), "address"],
+  ]);
 }
 
-export function getCTokenAddress(world: World, cTokenArg: string): string {
-  return getContractDataString(world, [['cTokens', cTokenArg, 'address']]);
+export function getXTokenAddress(world: World, cTokenArg: string): string {
+  return getContractDataString(world, [["cTokens", cTokenArg, "address"]]);
 }
 
-export function getCTokenDelegateAddress(world: World, cTokenDelegateArg: string): string {
-  return getContractDataString(world, [['CTokenDelegate', cTokenDelegateArg, 'address']]);
+export function getXTokenDelegateAddress(
+  world: World,
+  cTokenDelegateArg: string
+): string {
+  return getContractDataString(world, [
+    ["XTokenDelegate", cTokenDelegateArg, "address"],
+  ]);
 }
 
 export function getErc20Address(world: World, erc20Arg: string): string {
-  return getContractDataString(world, [['Tokens', erc20Arg, 'address']]);
+  return getContractDataString(world, [["Tokens", erc20Arg, "address"]]);
 }
 
 export function getGovernorAddress(world: World, governorArg: string): string {
-  return getContractDataString(world, [['Contracts', governorArg]]);
+  return getContractDataString(world, [["Contracts", governorArg]]);
 }
 
-export function getGovernorBravo(world: World, governoBravoArg: string): Promise<GovernorBravo> {
-  return getWorldContract(world, [['Contracts', 'GovernorBravo']])
+export function getGovernorBravo(
+  world: World,
+  governoBravoArg: string
+): Promise<GovernorBravo> {
+  return getWorldContract(world, [["Contracts", "GovernorBravo"]]);
 }
 
 export async function getPriceOracleProxy(world: World): Promise<PriceOracle> {
-  return getWorldContract(world, [['Contracts', 'PriceOracleProxy']]);
+  return getWorldContract(world, [["Contracts", "PriceOracleProxy"]]);
 }
 
 export async function getAnchoredView(world: World): Promise<AnchoredView> {
-  return getWorldContract(world, [['Contracts', 'AnchoredView']]);
+  return getWorldContract(world, [["Contracts", "AnchoredView"]]);
 }
 
 export async function getPriceOracle(world: World): Promise<PriceOracle> {
-  return getWorldContract(world, [['Contracts', 'PriceOracle']]);
+  return getWorldContract(world, [["Contracts", "PriceOracle"]]);
 }
 
-export async function getComp(
-  world: World,
-  compArg: Event
-): Promise<Comp> {
-  return getWorldContract(world, [['COMP', 'address']]);
+export async function getComp(world: World, compArg: Event): Promise<Comp> {
+  return getWorldContract(world, [["COMP", "address"]]);
 }
 
 export async function getCompData(
@@ -138,7 +150,7 @@ export async function getCompData(
   compArg: string
 ): Promise<[Comp, string, Map<string, string>]> {
   let contract = await getComp(world, <Event>(<any>compArg));
-  let data = getContractData(world, [['Comp', compArg]]);
+  let data = getContractData(world, [["Comp", compArg]]);
 
   return [contract, compArg, <Map<string, string>>(<any>data)];
 }
@@ -147,8 +159,10 @@ export async function getGovernorData(
   world: World,
   governorArg: string
 ): Promise<[Governor, string, Map<string, string>]> {
-  let contract = getWorldContract<Governor>(world, [['Governor', governorArg, 'address']]);
-  let data = getContractData(world, [['Governor', governorArg]]);
+  let contract = getWorldContract<Governor>(world, [
+    ["Governor", governorArg, "address"],
+  ]);
+  let data = getContractData(world, [["Governor", governorArg]]);
 
   return [contract, governorArg, <Map<string, string>>(<any>data)];
 }
@@ -157,15 +171,22 @@ export async function getInterestRateModel(
   world: World,
   interestRateModelArg: Event
 ): Promise<InterestRateModel> {
-  return getWorldContract(world, [['InterestRateModel', mustString(interestRateModelArg), 'address']]);
+  return getWorldContract(world, [
+    ["InterestRateModel", mustString(interestRateModelArg), "address"],
+  ]);
 }
 
 export async function getInterestRateModelData(
   world: World,
   interestRateModelArg: string
 ): Promise<[InterestRateModel, string, Map<string, string>]> {
-  let contract = await getInterestRateModel(world, <Event>(<any>interestRateModelArg));
-  let data = getContractData(world, [['InterestRateModel', interestRateModelArg]]);
+  let contract = await getInterestRateModel(
+    world,
+    <Event>(<any>interestRateModelArg)
+  );
+  let data = getContractData(world, [
+    ["InterestRateModel", interestRateModelArg],
+  ]);
 
   return [contract, interestRateModelArg, <Map<string, string>>(<any>data)];
 }
@@ -174,28 +195,34 @@ export async function getErc20Data(
   world: World,
   erc20Arg: string
 ): Promise<[Erc20, string, Map<string, string>]> {
-  let contract = getWorldContract<Erc20>(world, [['Tokens', erc20Arg, 'address']]);
-  let data = getContractData(world, [['Tokens', erc20Arg]]);
+  let contract = getWorldContract<Erc20>(world, [
+    ["Tokens", erc20Arg, "address"],
+  ]);
+  let data = getContractData(world, [["Tokens", erc20Arg]]);
 
   return [contract, erc20Arg, <Map<string, string>>(<any>data)];
 }
 
-export async function getCTokenData(
+export async function getXTokenData(
   world: World,
   cTokenArg: string
-): Promise<[CToken, string, Map<string, string>]> {
-  let contract = getWorldContract<CToken>(world, [['cTokens', cTokenArg, 'address']]);
-  let data = getContractData(world, [['CTokens', cTokenArg]]);
+): Promise<[XToken, string, Map<string, string>]> {
+  let contract = getWorldContract<XToken>(world, [
+    ["cTokens", cTokenArg, "address"],
+  ]);
+  let data = getContractData(world, [["XTokens", cTokenArg]]);
 
   return [contract, cTokenArg, <Map<string, string>>(<any>data)];
 }
 
-export async function getCTokenDelegateData(
+export async function getXTokenDelegateData(
   world: World,
   cTokenDelegateArg: string
-): Promise<[CErc20Delegate, string, Map<string, string>]> {
-  let contract = getWorldContract<CErc20Delegate>(world, [['CTokenDelegate', cTokenDelegateArg, 'address']]);
-  let data = getContractData(world, [['CTokenDelegate', cTokenDelegateArg]]);
+): Promise<[XErc20Delegate, string, Map<string, string>]> {
+  let contract = getWorldContract<XErc20Delegate>(world, [
+    ["XTokenDelegate", cTokenDelegateArg, "address"],
+  ]);
+  let data = getContractData(world, [["XTokenDelegate", cTokenDelegateArg]]);
 
   return [contract, cTokenDelegateArg, <Map<string, string>>(<any>data)];
 }
@@ -204,18 +231,21 @@ export async function getComptrollerImplData(
   world: World,
   comptrollerImplArg: string
 ): Promise<[ComptrollerImpl, string, Map<string, string>]> {
-  let contract = await getComptrollerImpl(world, <Event>(<any>comptrollerImplArg));
-  let data = getContractData(world, [['Comptroller', comptrollerImplArg]]);
+  let contract = await getComptrollerImpl(
+    world,
+    <Event>(<any>comptrollerImplArg)
+  );
+  let data = getContractData(world, [["Comptroller", comptrollerImplArg]]);
 
   return [contract, comptrollerImplArg, <Map<string, string>>(<any>data)];
 }
 
 export function getAddress(world: World, addressArg: string): string {
-  if (addressArg.toLowerCase() === 'zero') {
-    return '0x0000000000000000000000000000000000000000';
+  if (addressArg.toLowerCase() === "zero") {
+    return "0x0000000000000000000000000000000000000000";
   }
 
-  if (addressArg.startsWith('0x')) {
+  if (addressArg.startsWith("0x")) {
     return addressArg;
   }
 
@@ -226,20 +256,22 @@ export function getAddress(world: World, addressArg: string): string {
     return alias[1];
   }
 
-  let account = world.accounts.find(account => account.name.toLowerCase() === addressArg.toLowerCase());
+  let account = world.accounts.find(
+    (account) => account.name.toLowerCase() === addressArg.toLowerCase()
+  );
   if (account) {
     return account.address;
   }
 
   return getContractDataString(world, [
-    ['Contracts', addressArg],
-    ['cTokens', addressArg, 'address'],
-    ['CTokenDelegate', addressArg, 'address'],
-    ['Tokens', addressArg, 'address'],
-    ['Comptroller', addressArg, 'address']
+    ["Contracts", addressArg],
+    ["cTokens", addressArg, "address"],
+    ["XTokenDelegate", addressArg, "address"],
+    ["Tokens", addressArg, "address"],
+    ["Comptroller", addressArg, "address"],
   ]);
 }
 
 export function getContractByName(world: World, name: string): Contract {
-  return getWorldContract(world, [['Contracts', name]]);
+  return getWorldContract(world, [["Contracts", name]]);
 }

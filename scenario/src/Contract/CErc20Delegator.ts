@@ -1,9 +1,9 @@
-import { Contract } from '../Contract';
-import { Callable, Sendable } from '../Invokation';
-import { CTokenMethods } from './CToken';
-import { encodedNumber } from '../Encoding';
+import { Contract } from "../Contract";
+import { Callable, Sendable } from "../Invokation";
+import { XTokenMethods } from "./XToken";
+import { encodedNumber } from "../Encoding";
 
-interface CErc20DelegatorMethods extends CTokenMethods {
+interface XErc20DelegatorMethods extends XTokenMethods {
   implementation(): Callable<string>;
   _setImplementation(
     implementation_: string,
@@ -12,17 +12,17 @@ interface CErc20DelegatorMethods extends CTokenMethods {
   ): Sendable<void>;
 }
 
-interface CErc20DelegatorScenarioMethods extends CErc20DelegatorMethods {
+interface XErc20DelegatorScenarioMethods extends XErc20DelegatorMethods {
   setTotalBorrows(amount: encodedNumber): Sendable<void>;
   setTotalReserves(amount: encodedNumber): Sendable<void>;
 }
 
-export interface CErc20Delegator extends Contract {
-  methods: CErc20DelegatorMethods;
+export interface XErc20Delegator extends Contract {
+  methods: XErc20DelegatorMethods;
   name: string;
 }
 
-export interface CErc20DelegatorScenario extends Contract {
-  methods: CErc20DelegatorMethods;
+export interface XErc20DelegatorScenario extends Contract {
+  methods: XErc20DelegatorMethods;
   name: string;
 }

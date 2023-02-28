@@ -1,4 +1,4 @@
-let { loadAddress, loadConf } = require('./support/tokenConfig');
+let { loadAddress, loadConf } = require("./support/tokenConfig");
 
 function printUsage() {
   console.log(`
@@ -31,7 +31,7 @@ npx saddle -n rinkeby script token:verify 0x19B674715cD20626415C738400FDd0d32D68
   if (!conf) {
     return printUsage();
   }
-  let etherscanApiKey = env['ETHERSCAN_API_KEY'];
+  let etherscanApiKey = env["ETHERSCAN_API_KEY"];
   if (!etherscanApiKey) {
     console.error("Missing required $ETHERSCAN_API_KEY env variable.");
     return printUsage();
@@ -39,15 +39,33 @@ npx saddle -n rinkeby script token:verify 0x19B674715cD20626415C738400FDd0d32D68
 
   console.log(`Verifying cToken at ${address} with ${JSON.stringify(conf)}`);
 
-  let deployArgs = [conf.underlying, conf.comptroller, conf.interestRateModel, conf.initialExchangeRateMantissa.toString(), conf.name, conf.symbol, conf.decimals, conf.admin];
+  let deployArgs = [
+    conf.underlying,
+    conf.comptroller,
+    conf.interestRateModel,
+    conf.initialExchangeRateMantissa.toString(),
+    conf.name,
+    conf.symbol,
+    conf.decimals,
+    conf.admin,
+  ];
 
   // TODO: Make sure we match optimizations count, etc
-  await saddle.verify(etherscanApiKey, address, 'CErc20Immutable', deployArgs, 200, undefined);
+  await saddle.verify(
+    etherscanApiKey,
+    address,
+    "XErc20Immutable",
+    deployArgs,
+    200,
+    undefined
+  );
 
-  console.log(`Contract verified at https://${network}.etherscan.io/address/${address}`);
+  console.log(
+    `Contract verified at https://${network}.etherscan.io/address/${address}`
+  );
 
   return {
     ...conf,
-    address
+    address,
   };
 })();

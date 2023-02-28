@@ -60,10 +60,10 @@ contract ComptrollerHarness is Comptroller {
      * @notice Recalculate and update COMP speeds for all COMP markets
      */
     function harnessRefreshCompSpeeds() public {
-        CToken[] memory allMarkets_ = allMarkets;
+        XToken[] memory allMarkets_ = allMarkets;
 
         for (uint i = 0; i < allMarkets_.length; i++) {
-            CToken cToken = allMarkets_[i];
+            XToken cToken = allMarkets_[i];
             Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
             updateCompSupplyIndex(address(cToken));
             updateCompBorrowIndex(address(cToken), borrowIndex);
@@ -72,7 +72,7 @@ contract ComptrollerHarness is Comptroller {
         Exp memory totalUtility = Exp({mantissa: 0});
         Exp[] memory utilities = new Exp[](allMarkets_.length);
         for (uint i = 0; i < allMarkets_.length; i++) {
-            CToken cToken = allMarkets_[i];
+            XToken cToken = allMarkets_[i];
             if (compSupplySpeeds[address(cToken)] > 0 || compBorrowSpeeds[address(cToken)] > 0) {
                 Exp memory assetPrice = Exp({mantissa: oracle.getUnderlyingPrice(cToken)});
                 Exp memory utility = mul_(assetPrice, cToken.totalBorrows());
@@ -82,7 +82,7 @@ contract ComptrollerHarness is Comptroller {
         }
 
         for (uint i = 0; i < allMarkets_.length; i++) {
-            CToken cToken = allMarkets[i];
+            XToken cToken = allMarkets[i];
             uint newSpeed = totalUtility.mantissa > 0 ? mul_(compRate, div_(utilities[i], totalUtility)) : 0;
             setCompSpeedInternal(cToken, newSpeed, newSpeed);
         }
@@ -132,7 +132,7 @@ contract ComptrollerHarness is Comptroller {
     function harnessAddCompMarkets(address[] memory cTokens) public {
         for (uint i = 0; i < cTokens.length; i++) {
             // temporarily set compSpeed to 1 (will be fixed by `harnessRefreshCompSpeeds`)
-            setCompSpeedInternal(CToken(cTokens[i]), 1, 1);
+            setCompSpeedInternal(XToken(cTokens[i]), 1, 1);
         }
     }
 

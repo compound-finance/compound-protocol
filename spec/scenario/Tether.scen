@@ -32,22 +32,22 @@ Pending "TODO: Add Back Tether Tests"
 --     ForkTether
 --     NewComptroller price:1.0
 --     Erc20 Deploy ExistingTether USDT TetherAddress
---     NewCTokenBringERC20 USDT cUSDT
+--     NewXTokenBringERC20 USDT cUSDT
 --     From TetherAdmin (Erc20 USDT SetFee 10 10)
---     Invariant Static (CToken cUSDT ExchangeRate)
+--     Invariant Static (XToken cUSDT ExchangeRate)
 --     Support cUSDT
 --     From TetherHolder (Erc20 USDT Approve cUSDT 1e8)
 --     Mint TetherHolder 1e8 cUSDT
 --     Assert Equal (ERC20 USDT TokenBalance cUSDT) 0.999e8
 
--- Test "Should be able to redeem a fee CToken, exchange Rate should not change"
+-- Test "Should be able to redeem a fee XToken, exchange Rate should not change"
 --     ForkTether
 --     NewComptroller price:1.0
 --     Erc20 Deploy ExistingTether USDT TetherAddress
---     NewCTokenBringERC20 USDT cUSDT
+--     NewXTokenBringERC20 USDT cUSDT
 --     From TetherAdmin (Erc20 USDT SetFee 10 10)
 --     Support cUSDT
---     Invariant Static (CToken cUSDT ExchangeRate)
+--     Invariant Static (XToken cUSDT ExchangeRate)
 --     From TetherHolder (Erc20 USDT Approve cUSDT 1e8)
 --     Mint TetherHolder 1e8 cUSDT
 --     Redeem Torrey (Erc20 cUSDT TokenBalance TetherHolder) cUSDT
@@ -56,13 +56,13 @@ Pending "TODO: Add Back Tether Tests"
 --     ForkTether
 --     PricedComptroller
 --     Erc20 Deploy ExistingTether USDT TetherAddress
---     NewCTokenBringERC20 USDT cUSDT
---     NewCToken ZRX cZRX 0.000005 2e9 8 Standard
+--     NewXTokenBringERC20 USDT cUSDT
+--     NewXToken ZRX cZRX 0.000005 2e9 8 Standard
 --     PriceOracle SetPrice cZRX 1.0
 --     PriceOracle SetPrice cUSDT 1.0
 --     Support cZRX 0.5
 --     Support cUSDT 0.5
---     Invariant Static (CToken cUSDT ExchangeRate)
+--     Invariant Static (XToken cUSDT ExchangeRate)
 --     --
 --     From TetherHolder (Erc20 USDT Approve cUSDT 1e8)
 --     Mint TetherHolder 1e8 cUSDT
@@ -75,12 +75,12 @@ Pending "TODO: Add Back Tether Tests"
 --     Borrow Torrey 1e8 cUSDT -- we only received 0.999e8 tether bc of fee
 --     Assert Equal (ERC20 USDT TokenBalance Torrey) 0.999e8
 --     FastForward 199600 Blocks -- 1e8 * 199800 * 0.000005 = 0.998e8 interest accrued
---     Assert Equal (CToken cUSDT TotalBorrowsCurrent) 1.998e8
+--     Assert Equal (XToken cUSDT TotalBorrowsCurrent) 1.998e8
 --     From TetherHolder (Erc20 USDT Transfer Torrey 2e8)
 --     From Torrey (Erc20 USDT Approve cUSDT 2e8)
 --     RepayBorrow Torrey 2e8 cUSDT -- repay more than we owe to account for fee
---     Assert Equal (CToken cUSDT BorrowBalance Torrey) 0
---     Assert Equal (CToken cUSDT TotalBorrowsCurrent) 0
+--     Assert Equal (XToken cUSDT BorrowBalance Torrey) 0
+--     Assert Equal (XToken cUSDT TotalBorrowsCurrent) 0
 --     --Assert Equal (ERC20 USDT TokenBalance Torrey) 0
 
 -- Test "Should be able to liquidate Tether token borrow"
@@ -88,13 +88,13 @@ Pending "TODO: Add Back Tether Tests"
 --     PricedComptroller
 --     Comptroller LiquidationIncentive 1.1
 --     Erc20 Deploy ExistingTether USDT TetherAddress-- FYI tether is 6 decimals
---     NewCTokenBringERC20 USDT cUSDT
---     NewCToken ZRX cZRX 0.000005 2e9 8 Standard
+--     NewXTokenBringERC20 USDT cUSDT
+--     NewXToken ZRX cZRX 0.000005 2e9 8 Standard
 --     PriceOracle SetPrice cZRX 1.0
 --     PriceOracle SetPrice cUSDT 1e12
 --     Support cZRX 0.5
 --     Support cUSDT 0.5
---     Invariant Static (CToken cUSDT ExchangeRate)
+--     Invariant Static (XToken cUSDT ExchangeRate)
 --     -- Give some Tether to cUSDT
 --     From TetherHolder (Erc20 USDT Approve cUSDT 2e8)
 --     Mint TetherHolder 2e8 cUSDT
@@ -107,11 +107,11 @@ Pending "TODO: Add Back Tether Tests"
 --     Borrow Torrey 1e6 cUSDT -- fyi we only received 0.999e8 tether bc of fee
 --     Assert Equal (ERC20 USDT TokenBalance Torrey) 0.999e6
 --     FastForward 199600 Blocks -- 1e6 * 199800 * 0.000005 = 0.998e6 interest accrued
---     Assert Equal (CToken cUSDT TotalBorrowsCurrent) 1.998e6
+--     Assert Equal (XToken cUSDT TotalBorrowsCurrent) 1.998e6
 --     -- ok.. ready the liquidator
 --     From TetherHolder (Erc20 USDT Transfer Coburn 2e6) -- should give 1.001001001
 --     From Coburn (Erc20 USDT Approve cUSDT 2e6)
 --     Liquidate Coburn "->" Torrey 0.1e6 cUSDT "Seizing" cZRX
 --     -- 5.4945e7 = (1e18 / 1e6) * 0.1e6 (amt liquidated) * 1.1 (liq discount) * .999 (fee) / 2e9 (exchange rate)
 --     Assert Equal (Erc20 cZRX TokenBalance Coburn) 5.4945e7
---     Assert Equal (CToken cUSDT BorrowBalance Torrey) 1.8981e6 -- 1.998 - (.1 * .999) was liquidated
+--     Assert Equal (XToken cUSDT BorrowBalance Torrey) 1.8981e6 -- 1.998 - (.1 * .999) was liquidated

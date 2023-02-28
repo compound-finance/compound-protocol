@@ -2,14 +2,14 @@
 Test "Calculates hypothetical account liquidity"
     -- Note, this comes a bit from `EnterExitMarkets` Scenario
     PricedComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
+    ListedXToken ZRX cZRX initialExchangeRate:1e9
     SetPriceCF cZRX 0.002 0.4
     ListedEtherToken cETH initialExchangeRate:1e9
     Comptroller SetCollateralFactor cEth 0.8
-    ListedCToken BAT cBAT initialExchangeRate:1e9
+    ListedXToken BAT cBAT initialExchangeRate:1e9
     SetPriceCF cBAT 0.0015 0.3
-    ListedCToken OMG cOMG initialExchangeRate:1e9
-    NewCToken REP cREP
+    ListedXToken OMG cOMG initialExchangeRate:1e9
+    NewXToken REP cREP
     -- Mint some cZRX and cETH
     Prep Geoff 1250e18 ZRX cZRX
     Mint Geoff 1250e18 cZRX -- Liquidity -> 0.4 * 0.002 * 1250e18 = 1.0e18

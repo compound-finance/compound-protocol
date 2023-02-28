@@ -1,8 +1,8 @@
 
 Test "Fail to seize calling directly"
     NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
-    ListedCToken BAT cBAT initialExchangeRate:1e9
+    ListedXToken ZRX cZRX initialExchangeRate:1e9
+    ListedXToken BAT cBAT initialExchangeRate:1e9
     Prep Geoff Some ZRX cZRX
     Mint Geoff 50e18 cZRX
     Invariant Remains (Erc20 cZRX TokenBalance Geoff) 50e9
@@ -13,8 +13,8 @@ Test "Fail to seize calling directly"
 
 Test "Seize tokens with a paused WBTC cToken-- like normal"
     NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
-    ListedCToken WBTC cWBTC initialExchangeRate:0.1 tokenType:WBTC
+    ListedXToken ZRX cZRX initialExchangeRate:1e9
+    ListedXToken WBTC cWBTC initialExchangeRate:0.1 tokenType:WBTC
     Prep Geoff Some ZRX cZRX
     Mint Geoff 50e18 cZRX
     Erc20 WBTC Pause
@@ -26,8 +26,8 @@ Test "Seize tokens with a paused WBTC cToken-- like normal"
 
 Test "Not able to seize tokens with a malicious unlisted cToken"
     NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
-    NewCTokenImmutable EVL cEVL initialExchangeRate:1e9 cTokenType:CEvil
+    ListedXToken ZRX cZRX initialExchangeRate:1e9
+    NewXTokenImmutable EVL cEVL initialExchangeRate:1e9 cTokenType:CEvil
     Prep Geoff Some ZRX cZRX
     Mint Geoff 50e18 cZRX
     Invariant Remains (Erc20 cZRX TokenBalance Geoff) 50e9
@@ -40,8 +40,8 @@ Test "Not able to seize tokens with a malicious unlisted cToken"
 
 Test "Able to seize tokens with a malicious listed cToken"
     NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9
-    ListedCTokenImmutable EVL cEVL initialExchangeRate:1e9 cTokenType:CEvil
+    ListedXToken ZRX cZRX initialExchangeRate:1e9
+    ListedXTokenImmutable EVL cEVL initialExchangeRate:1e9 cTokenType:CEvil
     Prep Geoff Some ZRX cZRX
     Mint Geoff 50e18 cZRX
     Assert Equal (Erc20 cZRX TokenBalance Geoff) 50e9

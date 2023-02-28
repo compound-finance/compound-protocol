@@ -17,9 +17,9 @@ Assert Equal (Comptroller CompSpeed cUSDC) 5.3786477206671197e16
 
 -- Mint tokens
 From DAIWhale (Trx GasPrice 0 (Erc20 DAI Approve cDAI UInt256Max))
-From DAIWhale (Trx GasPrice 0 (CToken cDAI Mint 10000e6))
+From DAIWhale (Trx GasPrice 0 (XToken cDAI Mint 10000e6))
 From USDCWhale (Trx GasPrice 0 (Erc20 USDC Approve cUSDC UInt256Max))
-From USDCWhale (Trx GasPrice 0 (CToken cUSDC Mint 10000e6))
+From USDCWhale (Trx GasPrice 0 (XToken cUSDC Mint 10000e6))
 
 -- Baseline COMP claim speed
 Assert Equal (Comptroller CheckIsComped cDAI) True
@@ -57,7 +57,7 @@ Comptroller ClaimComp DAIWhale
 AdvanceBlocks 1000000
 From USDCWhale (Trx GasPrice 0 (Erc20 USDC Approve cUSDC UInt256Max))
 Expect Changes (Erc20 Comp TokenBalance USDCWhale) 0
-From USDCWhale (Trx GasPrice 0 (CToken cUSDC Mint 10000e6))
+From USDCWhale (Trx GasPrice 0 (XToken cUSDC Mint 10000e6))
 
 -- Prepare second proposal
 From CompHolder (Governor GovernorAlpha Propose "Remove USDC market by setting comp speed to 0" [(Address Unitroller)] [0] ["_setCompSpeed(address,uint256)"] [[(Address cUSDC) 0]])

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "../../contracts/CEther.sol";
+import "../../contracts/XEther.sol";
 import "./ComptrollerScenario.sol";
 
-contract CEtherHarness is CEther {
+contract XEtherHarness is XEther {
     uint harnessExchangeRate;
     uint public blockNumber = 100000;
 
@@ -17,7 +17,7 @@ contract CEtherHarness is CEther {
                 string memory symbol_,
                 uint8 decimals_,
                 address payable admin_)
-    CEther(
+    XEther(
     comptroller_,
     interestRateModel_,
     initialExchangeRateMantissa,
@@ -117,7 +117,7 @@ contract CEtherHarness is CEther {
         return NO_ERROR;
     }
 
-    function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, CToken cTokenCollateral) public returns (uint) {
+    function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, XToken cTokenCollateral) public returns (uint) {
         liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
         return NO_ERROR;
     }
@@ -155,7 +155,7 @@ contract CEtherHarness is CEther {
     }
 }
 
-contract CEtherScenario is CEther {
+contract XEtherScenario is XEther {
     uint reserveFactor;
 
     constructor(string memory name_,
@@ -165,7 +165,7 @@ contract CEtherScenario is CEther {
                 ComptrollerInterface comptroller_,
                 InterestRateModel interestRateModel_,
                 uint initialExchangeRateMantissa)
-        CEther(comptroller_,
+        XEther(comptroller_,
                interestRateModel_,
                initialExchangeRateMantissa,
                name_,

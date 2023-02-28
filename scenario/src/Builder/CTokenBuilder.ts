@@ -1,24 +1,32 @@
-import { Event } from '../Event';
-import { World } from '../World';
-import { CErc20Delegator, CErc20DelegatorScenario } from '../Contract/CErc20Delegator';
-import { CToken } from '../Contract/CToken';
-import { Invokation, invoke } from '../Invokation';
-import { getAddressV, getExpNumberV, getNumberV, getStringV } from '../CoreValue';
-import { AddressV, NumberV, StringV } from '../Value';
-import { Arg, Fetcher, getFetcherValue } from '../Command';
-import { storeAndSaveContract } from '../Networks';
-import { getContract, getTestContract } from '../Contract';
+import { Event } from "../Event";
+import { World } from "../World";
+import {
+  XErc20Delegator,
+  XErc20DelegatorScenario,
+} from "../Contract/XErc20Delegator";
+import { XToken } from "../Contract/XToken";
+import { Invokation, invoke } from "../Invokation";
+import {
+  getAddressV,
+  getExpNumberV,
+  getNumberV,
+  getStringV,
+} from "../CoreValue";
+import { AddressV, NumberV, StringV } from "../Value";
+import { Arg, Fetcher, getFetcherValue } from "../Command";
+import { storeAndSaveContract } from "../Networks";
+import { getContract, getTestContract } from "../Contract";
 
-const CErc20Contract = getContract('CErc20Immutable');
-const CErc20Delegator = getContract('CErc20Delegator');
-const CErc20DelegatorScenario = getTestContract('CErc20DelegatorScenario');
-const CEtherContract = getContract('CEther');
-const CErc20ScenarioContract = getTestContract('CErc20Scenario');
-const CEtherScenarioContract = getTestContract('CEtherScenario');
-const CEvilContract = getTestContract('CEvil');
+const XErc20Contract = getContract("XErc20Immutable");
+const XErc20Delegator = getContract("XErc20Delegator");
+const XErc20DelegatorScenario = getTestContract("XErc20DelegatorScenario");
+const XEtherContract = getContract("XEther");
+const XErc20ScenarioContract = getTestContract("XErc20Scenario");
+const XEtherScenarioContract = getTestContract("XEtherScenario");
+const CEvilContract = getTestContract("CEvil");
 
 export interface TokenData {
-  invokation: Invokation<CToken>;
+  invokation: Invokation<XToken>;
   name: string;
   symbol: string;
   decimals?: number;
@@ -29,11 +37,11 @@ export interface TokenData {
   admin?: string;
 }
 
-export async function buildCToken(
+export async function buildXToken(
   world: World,
   from: string,
   params: Event
-): Promise<{ world: World; cToken: CToken; tokenData: TokenData }> {
+): Promise<{ world: World; cToken: XToken; tokenData: TokenData }> {
   const fetchers = [
     new Fetcher<
       {
@@ -50,24 +58,24 @@ export async function buildCToken(
       },
       TokenData
     >(
-    `
-      #### CErc20Delegator
+      `
+      #### XErc20Delegator
 
-      * "CErc20Delegator symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - The real deal CToken
-        * E.g. "CToken Deploy CErc20Delegator cDAI \"Compound DAI\" (Erc20 DAI Address) (Comptroller Address) (InterestRateModel Address) 1.0 8 Geoff (CToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
+      * "XErc20Delegator symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - The real deal XToken
+        * E.g. "XToken Deploy XErc20Delegator cDAI \"Compound DAI\" (Erc20 DAI Address) (Comptroller Address) (InterestRateModel Address) 1.0 8 Geoff (XToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
     `,
-      'CErc20Delegator',
+      "XErc20Delegator",
       [
-        new Arg('symbol', getStringV),
-        new Arg('name', getStringV),
-        new Arg('underlying', getAddressV),
-        new Arg('comptroller', getAddressV),
-        new Arg('interestRateModel', getAddressV),
-        new Arg('initialExchangeRate', getExpNumberV),
-        new Arg('decimals', getNumberV),
-        new Arg('admin', getAddressV),
-        new Arg('implementation', getAddressV),
-        new Arg('becomeImplementationData', getStringV)
+        new Arg("symbol", getStringV),
+        new Arg("name", getStringV),
+        new Arg("underlying", getAddressV),
+        new Arg("comptroller", getAddressV),
+        new Arg("interestRateModel", getAddressV),
+        new Arg("initialExchangeRate", getExpNumberV),
+        new Arg("decimals", getNumberV),
+        new Arg("admin", getAddressV),
+        new Arg("implementation", getAddressV),
+        new Arg("becomeImplementationData", getStringV),
       ],
       async (
         world,
@@ -81,29 +89,35 @@ export async function buildCToken(
           decimals,
           admin,
           implementation,
-          becomeImplementationData
+          becomeImplementationData,
         }
       ) => {
         return {
-          invokation: await CErc20Delegator.deploy<CErc20Delegator>(world, from, [
-            underlying.val,
-            comptroller.val,
-            interestRateModel.val,
-            initialExchangeRate.val,
-            name.val,
-            symbol.val,
-            decimals.val,
-            admin.val,
-            implementation.val,
-            becomeImplementationData.val
-          ]),
+          invokation: await XErc20Delegator.deploy<XErc20Delegator>(
+            world,
+            from,
+            [
+              underlying.val,
+              comptroller.val,
+              interestRateModel.val,
+              initialExchangeRate.val,
+              name.val,
+              symbol.val,
+              decimals.val,
+              admin.val,
+              implementation.val,
+              becomeImplementationData.val,
+            ]
+          ),
           name: name.val,
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'CErc20Delegator',
-          initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
-          admin: admin.val
+          contract: "XErc20Delegator",
+          initial_exchange_rate_mantissa: initialExchangeRate
+            .encode()
+            .toString(),
+          admin: admin.val,
         };
       }
     ),
@@ -123,24 +137,24 @@ export async function buildCToken(
       },
       TokenData
     >(
-    `
-      #### CErc20DelegatorScenario
+      `
+      #### XErc20DelegatorScenario
 
-      * "CErc20DelegatorScenario symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - A CToken Scenario for local testing
-        * E.g. "CToken Deploy CErc20DelegatorScenario cDAI \"Compound DAI\" (Erc20 DAI Address) (Comptroller Address) (InterestRateModel Address) 1.0 8 Geoff (CToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
+      * "XErc20DelegatorScenario symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - A XToken Scenario for local testing
+        * E.g. "XToken Deploy XErc20DelegatorScenario cDAI \"Compound DAI\" (Erc20 DAI Address) (Comptroller Address) (InterestRateModel Address) 1.0 8 Geoff (XToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
     `,
-      'CErc20DelegatorScenario',
+      "XErc20DelegatorScenario",
       [
-        new Arg('symbol', getStringV),
-        new Arg('name', getStringV),
-        new Arg('underlying', getAddressV),
-        new Arg('comptroller', getAddressV),
-        new Arg('interestRateModel', getAddressV),
-        new Arg('initialExchangeRate', getExpNumberV),
-        new Arg('decimals', getNumberV),
-        new Arg('admin', getAddressV),
-        new Arg('implementation', getAddressV),
-        new Arg('becomeImplementationData', getStringV)
+        new Arg("symbol", getStringV),
+        new Arg("name", getStringV),
+        new Arg("underlying", getAddressV),
+        new Arg("comptroller", getAddressV),
+        new Arg("interestRateModel", getAddressV),
+        new Arg("initialExchangeRate", getExpNumberV),
+        new Arg("decimals", getNumberV),
+        new Arg("admin", getAddressV),
+        new Arg("implementation", getAddressV),
+        new Arg("becomeImplementationData", getStringV),
       ],
       async (
         world,
@@ -154,11 +168,13 @@ export async function buildCToken(
           decimals,
           admin,
           implementation,
-          becomeImplementationData
+          becomeImplementationData,
         }
       ) => {
         return {
-          invokation: await CErc20DelegatorScenario.deploy<CErc20DelegatorScenario>(world, from, [
+          invokation: await XErc20DelegatorScenario.deploy<
+            XErc20DelegatorScenario
+          >(world, from, [
             underlying.val,
             comptroller.val,
             interestRateModel.val,
@@ -168,24 +184,39 @@ export async function buildCToken(
             decimals.val,
             admin.val,
             implementation.val,
-            becomeImplementationData.val
+            becomeImplementationData.val,
           ]),
           name: name.val,
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'CErc20DelegatorScenario',
-          initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
-          admin: admin.val
+          contract: "XErc20DelegatorScenario",
+          initial_exchange_rate_mantissa: initialExchangeRate
+            .encode()
+            .toString(),
+          admin: admin.val,
         };
       }
     ),
 
-    new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV, underlying: AddressV, comptroller: AddressV, interestRateModel: AddressV, initialExchangeRate: NumberV, admin: AddressV}, TokenData>(`
+    new Fetcher<
+      {
+        symbol: StringV;
+        name: StringV;
+        decimals: NumberV;
+        underlying: AddressV;
+        comptroller: AddressV;
+        interestRateModel: AddressV;
+        initialExchangeRate: NumberV;
+        admin: AddressV;
+      },
+      TokenData
+    >(
+      `
         #### Scenario
 
-        * "Scenario symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A CToken Scenario for local testing
-          * E.g. "CToken Deploy Scenario cZRX \"Compound ZRX\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
+        * "Scenario symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A XToken Scenario for local testing
+          * E.g. "XToken Deploy Scenario cZRX \"Compound ZRX\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
       `,
       "Scenario",
       [
@@ -196,29 +227,64 @@ export async function buildCToken(
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
-        new Arg("admin", getAddressV)
+        new Arg("admin", getAddressV),
       ],
-      async (world, {symbol, name, underlying, comptroller, interestRateModel, initialExchangeRate, decimals, admin}) => {
+      async (
+        world,
+        {
+          symbol,
+          name,
+          underlying,
+          comptroller,
+          interestRateModel,
+          initialExchangeRate,
+          decimals,
+          admin,
+        }
+      ) => {
         return {
-          invokation: await CErc20ScenarioContract.deploy<CToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
+          invokation: await XErc20ScenarioContract.deploy<XToken>(world, from, [
+            underlying.val,
+            comptroller.val,
+            interestRateModel.val,
+            initialExchangeRate.val,
+            name.val,
+            symbol.val,
+            decimals.val,
+            admin.val,
+          ]),
           name: name.val,
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'CErc20Scenario',
-          initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
-          admin: admin.val
+          contract: "XErc20Scenario",
+          initial_exchange_rate_mantissa: initialExchangeRate
+            .encode()
+            .toString(),
+          admin: admin.val,
         };
       }
     ),
 
-    new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV, admin: AddressV, comptroller: AddressV, interestRateModel: AddressV, initialExchangeRate: NumberV}, TokenData>(`
-        #### CEtherScenario
+    new Fetcher<
+      {
+        symbol: StringV;
+        name: StringV;
+        decimals: NumberV;
+        admin: AddressV;
+        comptroller: AddressV;
+        interestRateModel: AddressV;
+        initialExchangeRate: NumberV;
+      },
+      TokenData
+    >(
+      `
+        #### XEtherScenario
 
-        * "CEtherScenario symbol:<String> name:<String> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A CToken Scenario for local testing
-          * E.g. "CToken Deploy CEtherScenario cETH \"Compound Ether\" (Comptroller Address) (InterestRateModel Address) 1.0 8"
+        * "XEtherScenario symbol:<String> name:<String> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A XToken Scenario for local testing
+          * E.g. "XToken Deploy XEtherScenario cETH \"Compound Ether\" (Comptroller Address) (InterestRateModel Address) 1.0 8"
       `,
-      "CEtherScenario",
+      "XEtherScenario",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
@@ -226,29 +292,62 @@ export async function buildCToken(
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
-        new Arg("admin", getAddressV)
+        new Arg("admin", getAddressV),
       ],
-      async (world, {symbol, name, comptroller, interestRateModel, initialExchangeRate, decimals, admin}) => {
+      async (
+        world,
+        {
+          symbol,
+          name,
+          comptroller,
+          interestRateModel,
+          initialExchangeRate,
+          decimals,
+          admin,
+        }
+      ) => {
         return {
-          invokation: await CEtherScenarioContract.deploy<CToken>(world, from, [name.val, symbol.val, decimals.val, admin.val, comptroller.val, interestRateModel.val, initialExchangeRate.val]),
+          invokation: await XEtherScenarioContract.deploy<XToken>(world, from, [
+            name.val,
+            symbol.val,
+            decimals.val,
+            admin.val,
+            comptroller.val,
+            interestRateModel.val,
+            initialExchangeRate.val,
+          ]),
           name: name.val,
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: "",
-          contract: 'CEtherScenario',
-          initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
-          admin: admin.val
+          contract: "XEtherScenario",
+          initial_exchange_rate_mantissa: initialExchangeRate
+            .encode()
+            .toString(),
+          admin: admin.val,
         };
       }
     ),
 
-    new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV, admin: AddressV, comptroller: AddressV, interestRateModel: AddressV, initialExchangeRate: NumberV}, TokenData>(`
-        #### CEther
+    new Fetcher<
+      {
+        symbol: StringV;
+        name: StringV;
+        decimals: NumberV;
+        admin: AddressV;
+        comptroller: AddressV;
+        interestRateModel: AddressV;
+        initialExchangeRate: NumberV;
+      },
+      TokenData
+    >(
+      `
+        #### XEther
 
-        * "CEther symbol:<String> name:<String> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A CToken Scenario for local testing
-          * E.g. "CToken Deploy CEther cETH \"Compound Ether\" (Comptroller Address) (InterestRateModel Address) 1.0 8"
+        * "XEther symbol:<String> name:<String> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A XToken Scenario for local testing
+          * E.g. "XToken Deploy XEther cETH \"Compound Ether\" (Comptroller Address) (InterestRateModel Address) 1.0 8"
       `,
-      "CEther",
+      "XEther",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
@@ -256,29 +355,63 @@ export async function buildCToken(
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
-        new Arg("admin", getAddressV)
+        new Arg("admin", getAddressV),
       ],
-      async (world, {symbol, name, comptroller, interestRateModel, initialExchangeRate, decimals, admin}) => {
+      async (
+        world,
+        {
+          symbol,
+          name,
+          comptroller,
+          interestRateModel,
+          initialExchangeRate,
+          decimals,
+          admin,
+        }
+      ) => {
         return {
-          invokation: await CEtherContract.deploy<CToken>(world, from, [comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
+          invokation: await XEtherContract.deploy<XToken>(world, from, [
+            comptroller.val,
+            interestRateModel.val,
+            initialExchangeRate.val,
+            name.val,
+            symbol.val,
+            decimals.val,
+            admin.val,
+          ]),
           name: name.val,
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: "",
-          contract: 'CEther',
-          initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
-          admin: admin.val
+          contract: "XEther",
+          initial_exchange_rate_mantissa: initialExchangeRate
+            .encode()
+            .toString(),
+          admin: admin.val,
         };
       }
     ),
 
-    new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV, admin: AddressV, underlying: AddressV, comptroller: AddressV, interestRateModel: AddressV, initialExchangeRate: NumberV}, TokenData>(`
-        #### CErc20
+    new Fetcher<
+      {
+        symbol: StringV;
+        name: StringV;
+        decimals: NumberV;
+        admin: AddressV;
+        underlying: AddressV;
+        comptroller: AddressV;
+        interestRateModel: AddressV;
+        initialExchangeRate: NumberV;
+      },
+      TokenData
+    >(
+      `
+        #### XErc20
 
-        * "CErc20 symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A official CToken contract
-          * E.g. "CToken Deploy CErc20 cZRX \"Compound ZRX\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
+        * "XErc20 symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A official XToken contract
+          * E.g. "XToken Deploy XErc20 cZRX \"Compound ZRX\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
       `,
-      "CErc20",
+      "XErc20",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
@@ -287,28 +420,63 @@ export async function buildCToken(
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
-        new Arg("admin", getAddressV)
+        new Arg("admin", getAddressV),
       ],
-      async (world, {symbol, name, underlying, comptroller, interestRateModel, initialExchangeRate, decimals, admin}) => {
-
+      async (
+        world,
+        {
+          symbol,
+          name,
+          underlying,
+          comptroller,
+          interestRateModel,
+          initialExchangeRate,
+          decimals,
+          admin,
+        }
+      ) => {
         return {
-          invokation: await CErc20Contract.deploy<CToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
+          invokation: await XErc20Contract.deploy<XToken>(world, from, [
+            underlying.val,
+            comptroller.val,
+            interestRateModel.val,
+            initialExchangeRate.val,
+            name.val,
+            symbol.val,
+            decimals.val,
+            admin.val,
+          ]),
           name: name.val,
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'CErc20',
-          initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
-          admin: admin.val
+          contract: "XErc20",
+          initial_exchange_rate_mantissa: initialExchangeRate
+            .encode()
+            .toString(),
+          admin: admin.val,
         };
       }
     ),
 
-    new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV, admin: AddressV, underlying: AddressV, comptroller: AddressV, interestRateModel: AddressV, initialExchangeRate: NumberV}, TokenData>(`
+    new Fetcher<
+      {
+        symbol: StringV;
+        name: StringV;
+        decimals: NumberV;
+        admin: AddressV;
+        underlying: AddressV;
+        comptroller: AddressV;
+        interestRateModel: AddressV;
+        initialExchangeRate: NumberV;
+      },
+      TokenData
+    >(
+      `
         #### CEvil
 
-        * "CEvil symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A malicious CToken contract
-          * E.g. "CToken Deploy CEvil cEVL \"Compound EVL\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
+        * "CEvil symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A malicious XToken contract
+          * E.g. "XToken Deploy CEvil cEVL \"Compound EVL\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
       `,
       "CEvil",
       [
@@ -319,27 +487,63 @@ export async function buildCToken(
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
-        new Arg("admin", getAddressV)
+        new Arg("admin", getAddressV),
       ],
-      async (world, {symbol, name, underlying, comptroller, interestRateModel, initialExchangeRate, decimals, admin}) => {
+      async (
+        world,
+        {
+          symbol,
+          name,
+          underlying,
+          comptroller,
+          interestRateModel,
+          initialExchangeRate,
+          decimals,
+          admin,
+        }
+      ) => {
         return {
-          invokation: await CEvilContract.deploy<CToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
+          invokation: await CEvilContract.deploy<XToken>(world, from, [
+            underlying.val,
+            comptroller.val,
+            interestRateModel.val,
+            initialExchangeRate.val,
+            name.val,
+            symbol.val,
+            decimals.val,
+            admin.val,
+          ]),
           name: name.val,
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'CEvil',
-          initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
-          admin: admin.val
+          contract: "CEvil",
+          initial_exchange_rate_mantissa: initialExchangeRate
+            .encode()
+            .toString(),
+          admin: admin.val,
         };
       }
     ),
 
-    new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV, admin: AddressV, underlying: AddressV, comptroller: AddressV, interestRateModel: AddressV, initialExchangeRate: NumberV}, TokenData>(`
+    new Fetcher<
+      {
+        symbol: StringV;
+        name: StringV;
+        decimals: NumberV;
+        admin: AddressV;
+        underlying: AddressV;
+        comptroller: AddressV;
+        interestRateModel: AddressV;
+        initialExchangeRate: NumberV;
+      },
+      TokenData
+    >(
+      `
         #### Standard
 
-        * "symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A official CToken contract
-          * E.g. "CToken Deploy Standard cZRX \"Compound ZRX\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
+        * "symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A official XToken contract
+          * E.g. "XToken Deploy Standard cZRX \"Compound ZRX\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
       `,
       "Standard",
       [
@@ -350,39 +554,82 @@ export async function buildCToken(
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
-        new Arg("admin", getAddressV)
+        new Arg("admin", getAddressV),
       ],
-      async (world, {symbol, name, underlying, comptroller, interestRateModel, initialExchangeRate, decimals, admin}) => {
+      async (
+        world,
+        {
+          symbol,
+          name,
+          underlying,
+          comptroller,
+          interestRateModel,
+          initialExchangeRate,
+          decimals,
+          admin,
+        }
+      ) => {
         // Note: we're going to use the scenario contract as the standard deployment on local networks
         if (world.isLocalNetwork()) {
           return {
-            invokation: await CErc20ScenarioContract.deploy<CToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
+            invokation: await XErc20ScenarioContract.deploy<XToken>(
+              world,
+              from,
+              [
+                underlying.val,
+                comptroller.val,
+                interestRateModel.val,
+                initialExchangeRate.val,
+                name.val,
+                symbol.val,
+                decimals.val,
+                admin.val,
+              ]
+            ),
             name: name.val,
             symbol: symbol.val,
             decimals: decimals.toNumber(),
             underlying: underlying.val,
-            contract: 'CErc20Scenario',
-            initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
-            admin: admin.val
+            contract: "XErc20Scenario",
+            initial_exchange_rate_mantissa: initialExchangeRate
+              .encode()
+              .toString(),
+            admin: admin.val,
           };
         } else {
           return {
-            invokation: await CErc20Contract.deploy<CToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
+            invokation: await XErc20Contract.deploy<XToken>(world, from, [
+              underlying.val,
+              comptroller.val,
+              interestRateModel.val,
+              initialExchangeRate.val,
+              name.val,
+              symbol.val,
+              decimals.val,
+              admin.val,
+            ]),
             name: name.val,
             symbol: symbol.val,
             decimals: decimals.toNumber(),
             underlying: underlying.val,
-            contract: 'CErc20Immutable',
-            initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
-            admin: admin.val
+            contract: "XErc20Immutable",
+            initial_exchange_rate_mantissa: initialExchangeRate
+              .encode()
+              .toString(),
+            admin: admin.val,
           };
         }
       },
-      {catchall: true}
-    )
+      { catchall: true }
+    ),
   ];
 
-  let tokenData = await getFetcherValue<any, TokenData>("DeployCToken", fetchers, world, params);
+  let tokenData = await getFetcherValue<any, TokenData>(
+    "DeployXToken",
+    fetchers,
+    world,
+    params
+  );
   let invokation = tokenData.invokation;
   delete tokenData.invokation;
 
@@ -399,10 +646,10 @@ export async function buildCToken(
     tokenData.symbol,
     invokation,
     [
-      { index: ['cTokens', tokenData.symbol], data: tokenData },
-      { index: ['Tokens', tokenData.symbol], data: tokenData }
+      { index: ["cTokens", tokenData.symbol], data: tokenData },
+      { index: ["Tokens", tokenData.symbol], data: tokenData },
     ]
   );
 
-  return {world, cToken, tokenData};
+  return { world, cToken, tokenData };
 }

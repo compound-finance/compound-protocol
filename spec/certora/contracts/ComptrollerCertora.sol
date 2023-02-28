@@ -8,7 +8,7 @@ contract ComptrollerCertora is Comptroller {
 
     function getHypotheticalAccountLiquidityInternal(
         address account,
-        CToken cTokenModify,
+        XToken cTokenModify,
         uint redeemTokens,
         uint borrowAmount) override internal view returns (Error, uint, uint) {
         if (switcher == 0)

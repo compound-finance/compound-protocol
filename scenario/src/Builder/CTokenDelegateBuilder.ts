@@ -1,131 +1,136 @@
-import { Event } from '../Event';
-import { World } from '../World';
-import { CErc20Delegate, CErc20DelegateScenario } from '../Contract/CErc20Delegate';
-import { CToken } from '../Contract/CToken';
-import { Invokation } from '../Invokation';
-import { getStringV } from '../CoreValue';
-import { AddressV, NumberV, StringV } from '../Value';
-import { Arg, Fetcher, getFetcherValue } from '../Command';
-import { storeAndSaveContract } from '../Networks';
-import { getContract, getTestContract } from '../Contract';
+import { Event } from "../Event";
+import { World } from "../World";
+import {
+  XErc20Delegate,
+  XErc20DelegateScenario,
+} from "../Contract/XErc20Delegate";
+import { XToken } from "../Contract/XToken";
+import { Invokation } from "../Invokation";
+import { getStringV } from "../CoreValue";
+import { AddressV, NumberV, StringV } from "../Value";
+import { Arg, Fetcher, getFetcherValue } from "../Command";
+import { storeAndSaveContract } from "../Networks";
+import { getContract, getTestContract } from "../Contract";
 
-const CDaiDelegateContract = getContract('CDaiDelegate');
-const CDaiDelegateScenarioContract = getTestContract('CDaiDelegateScenario');
-const CErc20DelegateContract = getContract('CErc20Delegate');
-const CErc20DelegateScenarioContract = getTestContract('CErc20DelegateScenario');
+const CDaiDelegateContract = getContract("CDaiDelegate");
+const CDaiDelegateScenarioContract = getTestContract("CDaiDelegateScenario");
+const XErc20DelegateContract = getContract("XErc20Delegate");
+const XErc20DelegateScenarioContract = getTestContract(
+  "XErc20DelegateScenario"
+);
 
-
-export interface CTokenDelegateData {
-  invokation: Invokation<CErc20Delegate>;
+export interface XTokenDelegateData {
+  invokation: Invokation<XErc20Delegate>;
   name: string;
   contract: string;
   description?: string;
 }
 
-export async function buildCTokenDelegate(
+export async function buildXTokenDelegate(
   world: World,
   from: string,
   params: Event
-): Promise<{ world: World; cTokenDelegate: CErc20Delegate; delegateData: CTokenDelegateData }> {
+): Promise<{
+  world: World;
+  cTokenDelegate: XErc20Delegate;
+  delegateData: XTokenDelegateData;
+}> {
   const fetchers = [
-    new Fetcher<{ name: StringV; }, CTokenDelegateData>(
+    new Fetcher<{ name: StringV }, XTokenDelegateData>(
       `
         #### CDaiDelegate
 
         * "CDaiDelegate name:<String>"
-          * E.g. "CTokenDelegate Deploy CDaiDelegate cDAIDelegate"
+          * E.g. "XTokenDelegate Deploy CDaiDelegate cDAIDelegate"
       `,
-      'CDaiDelegate',
-      [
-        new Arg('name', getStringV)
-      ],
-      async (
-        world,
-        { name }
-      ) => {
+      "CDaiDelegate",
+      [new Arg("name", getStringV)],
+      async (world, { name }) => {
         return {
-          invokation: await CDaiDelegateContract.deploy<CErc20Delegate>(world, from, []),
+          invokation: await CDaiDelegateContract.deploy<XErc20Delegate>(
+            world,
+            from,
+            []
+          ),
           name: name.val,
-          contract: 'CDaiDelegate',
-          description: 'Standard CDai Delegate'
+          contract: "CDaiDelegate",
+          description: "Standard CDai Delegate",
         };
       }
     ),
 
-    new Fetcher<{ name: StringV; }, CTokenDelegateData>(
+    new Fetcher<{ name: StringV }, XTokenDelegateData>(
       `
         #### CDaiDelegateScenario
 
         * "CDaiDelegateScenario name:<String>" - A CDaiDelegate Scenario for local testing
-          * E.g. "CTokenDelegate Deploy CDaiDelegateScenario cDAIDelegate"
+          * E.g. "XTokenDelegate Deploy CDaiDelegateScenario cDAIDelegate"
       `,
-      'CDaiDelegateScenario',
-      [
-        new Arg('name', getStringV)
-      ],
-      async (
-        world,
-        { name }
-      ) => {
+      "CDaiDelegateScenario",
+      [new Arg("name", getStringV)],
+      async (world, { name }) => {
         return {
-          invokation: await CDaiDelegateScenarioContract.deploy<CErc20DelegateScenario>(world, from, []),
+          invokation: await CDaiDelegateScenarioContract.deploy<
+            XErc20DelegateScenario
+          >(world, from, []),
           name: name.val,
-          contract: 'CDaiDelegateScenario',
-          description: 'Scenario CDai Delegate'
+          contract: "CDaiDelegateScenario",
+          description: "Scenario CDai Delegate",
         };
       }
     ),
 
-    new Fetcher<{ name: StringV; }, CTokenDelegateData>(
+    new Fetcher<{ name: StringV }, XTokenDelegateData>(
       `
-        #### CErc20Delegate
+        #### XErc20Delegate
 
-        * "CErc20Delegate name:<String>"
-          * E.g. "CTokenDelegate Deploy CErc20Delegate cDAIDelegate"
+        * "XErc20Delegate name:<String>"
+          * E.g. "XTokenDelegate Deploy XErc20Delegate cDAIDelegate"
       `,
-      'CErc20Delegate',
-      [
-        new Arg('name', getStringV)
-      ],
-      async (
-        world,
-        { name }
-      ) => {
+      "XErc20Delegate",
+      [new Arg("name", getStringV)],
+      async (world, { name }) => {
         return {
-          invokation: await CErc20DelegateContract.deploy<CErc20Delegate>(world, from, []),
+          invokation: await XErc20DelegateContract.deploy<XErc20Delegate>(
+            world,
+            from,
+            []
+          ),
           name: name.val,
-          contract: 'CErc20Delegate',
-          description: 'Standard CErc20 Delegate'
+          contract: "XErc20Delegate",
+          description: "Standard XErc20 Delegate",
         };
       }
     ),
 
-    new Fetcher<{ name: StringV; }, CTokenDelegateData>(
+    new Fetcher<{ name: StringV }, XTokenDelegateData>(
       `
-        #### CErc20DelegateScenario
+        #### XErc20DelegateScenario
 
-        * "CErc20DelegateScenario name:<String>" - A CErc20Delegate Scenario for local testing
-          * E.g. "CTokenDelegate Deploy CErc20DelegateScenario cDAIDelegate"
+        * "XErc20DelegateScenario name:<String>" - A XErc20Delegate Scenario for local testing
+          * E.g. "XTokenDelegate Deploy XErc20DelegateScenario cDAIDelegate"
       `,
-      'CErc20DelegateScenario',
-      [
-        new Arg('name', getStringV),
-      ],
-      async (
-        world,
-        { name }
-      ) => {
+      "XErc20DelegateScenario",
+      [new Arg("name", getStringV)],
+      async (world, { name }) => {
         return {
-          invokation: await CErc20DelegateScenarioContract.deploy<CErc20DelegateScenario>(world, from, []),
+          invokation: await XErc20DelegateScenarioContract.deploy<
+            XErc20DelegateScenario
+          >(world, from, []),
           name: name.val,
-          contract: 'CErc20DelegateScenario',
-          description: 'Scenario CErc20 Delegate'
+          contract: "XErc20DelegateScenario",
+          description: "Scenario XErc20 Delegate",
         };
       }
-    )
+    ),
   ];
 
-  let delegateData = await getFetcherValue<any, CTokenDelegateData>("DeployCToken", fetchers, world, params);
+  let delegateData = await getFetcherValue<any, XTokenDelegateData>(
+    "DeployXToken",
+    fetchers,
+    world,
+    params
+  );
   let invokation = delegateData.invokation;
   delete delegateData.invokation;
 
@@ -142,13 +147,13 @@ export async function buildCTokenDelegate(
     invokation,
     [
       {
-        index: ['CTokenDelegate', delegateData.name],
+        index: ["XTokenDelegate", delegateData.name],
         data: {
           address: cTokenDelegate._address,
           contract: delegateData.contract,
-          description: delegateData.description
-        }
-      }
+          description: delegateData.description,
+        },
+      },
     ]
   );
 

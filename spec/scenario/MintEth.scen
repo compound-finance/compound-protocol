@@ -4,7 +4,7 @@ GasTest "Send Mint 1 cETH"
     NewComptroller
     ListedEtherTokenMinted cETH initialExchangeRate:0.005e9
     Expect Changes (EtherBalance Geoff) -0.005e18
-    Expect Changes (CToken cETH UnderlyingBalance Geoff) +0.005e18
+    Expect Changes (XToken cETH UnderlyingBalance Geoff) +0.005e18
     SendMintEth Geoff 0.005e18 cETH
     Assert Equal (Erc20 cETH TokenBalance Geoff) 10e8
     Assert LastGas LessThan 1.2e5
@@ -13,7 +13,7 @@ GasTest "Call Mint 1 cETH"
     NewComptroller
     ListedEtherTokenMinted cETH initialExchangeRate:0.005e9
     Expect Changes (EtherBalance Geoff) -0.005e18
-    Expect Changes (CToken cETH UnderlyingBalance Geoff) +0.005e18
+    Expect Changes (XToken cETH UnderlyingBalance Geoff) +0.005e18
     CallMintEth Geoff 0.005e18 cETH
     Assert Equal (Erc20 cETH TokenBalance Geoff) 10e8
     Assert LastGas LessThan 1.2e5
@@ -22,7 +22,7 @@ Test "Mint with insufficient eth balance"
     NewComptroller
     ListedEtherTokenMinted cETH initialExchangeRate:0.005e9
     AllowFailures
-    Invariant Remains (CToken cETH UnderlyingBalance Geoff) 0e18
+    Invariant Remains (XToken cETH UnderlyingBalance Geoff) 0e18
     Invariant Remains (Erc20 cETH TokenBalance Geoff) 0e8
     Invariant Static (EtherBalance Geoff)
     CallMintEth Geoff 1e20 cETH

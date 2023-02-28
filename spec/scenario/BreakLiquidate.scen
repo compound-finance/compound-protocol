@@ -2,8 +2,8 @@
 Macro NewBorrow borrowAmount mintAmount borrowRate=0.000005 user=Geoff collateralPrice=1.0 borrowPrice=1.0 liquidationIncentive=1.1
     PricedComptroller closeFactor:0.9 -- Set the close factor high to reduce number of steps to demonstrate
     Comptroller LiquidationIncentive liquidationIncentive
-    NewCToken ZRX cZRX
-    NewCToken BAT cBAT borrowRate
+    NewXToken ZRX cZRX
+    NewXToken BAT cBAT borrowRate
     Give cBAT 10e18 BAT -- Faucet some bat to borrow
     PriceOracle SetPrice cZRX collateralPrice
     Support cZRX collateralFactor:0.7
@@ -24,8 +24,8 @@ Test "When account goes further underwater than the liquidation incentive and ca
     NewBorrow borrowAmount:1e18 mintAmount:1.43e18 liquidationIncentive:1.1
     --
     -- Verify that the borrow results in the correct state
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) 1.43e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cZRX UnderlyingBalance Geoff) 1.43e18
     --
     -- Put the account underwater s.t. 0.91 < Borrow/Supply
     --      i.e. (1 / liquidationIncentive) < Borrow/Supply
@@ -34,13 +34,13 @@ Test "When account goes further underwater than the liquidation incentive and ca
     -- Pay back a bunch of debt by liquidating
     Prep Jared 10e18 BAT cBAT
     Liquidate Jared "->" Geoff 0.9e18 cBAT "Seizing" cZRX
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 0.1e18
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) 0.127368422e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 0.1e18
+    Assert Equal (XToken cZRX UnderlyingBalance Geoff) 0.127368422e18
     -- Do it again, and note that the collateral is gone but borrows remain
     --  if we had set the close factor lower, it would just take more steps
     Liquidate Jared "->" Geoff 0.0880000008e18 cBAT "Seizing" cZRX
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 0.0119999992e18
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) 0
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 0.0119999992e18
+    Assert Equal (XToken cZRX UnderlyingBalance Geoff) 0
 
 Test "When liquidation incentive is too high to be effective"
     -- Happens whenever liquidation discount < collateral factor
@@ -49,8 +49,8 @@ Test "When liquidation incentive is too high to be effective"
     NewBorrow borrowAmount:1e18 mintAmount:1.43e18 liquidationIncentive:1.5
     --
     -- Verify that the borrow results in the correct state
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 1e18
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) 1.43e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 1e18
+    Assert Equal (XToken cZRX UnderlyingBalance Geoff) 1.43e18
     --
     -- Put the account underwater s.t. 0.7 < Borrow/Supply
     --              i.e. collateral factor < Borrow/Supply
@@ -70,8 +70,8 @@ Test "When liquidation incentive is too high to be effective"
     Liquidate Jared "->" Geoff 0.5e18 cBAT "Seizing" cZRX
     --
     -- Verify that the liquidation went through
-    Assert Equal (CToken cBAT BorrowBalance Geoff) 0.5e18
-    Assert Equal (CToken cZRX UnderlyingBalance Geoff) 0.567931036e18
+    Assert Equal (XToken cBAT BorrowBalance Geoff) 0.5e18
+    Assert Equal (XToken cZRX UnderlyingBalance Geoff) 0.567931036e18
     --
     -- Test succeeded which means our expectation was correct
     --  liquidity went down after a liquidation!

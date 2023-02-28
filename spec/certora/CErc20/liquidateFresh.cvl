@@ -28,7 +28,7 @@ description "Break liquidate" {
       - no effect on exchange rate
       - self-liquidate has no effect
       |---------------------+--------+------------+----------+-------|
-      |                     | CToken | Liquidator | Borrower | Other |
+      |                     | XToken | Liquidator | Borrower | Other |
       |---------------------+--------+------------+----------+-------|
       | cash                |   +A   |     -A     |     0    |   0   |
       | borrows             |   -A   |      0     |    -A    |   0   |
@@ -219,7 +219,7 @@ description "Break seize" {
     /*
       - no effect on exchange rate
       |----------+--------+------------+----------+-------|
-      |          | CToken | Liquidator | Borrower | Other |
+      |          | XToken | Liquidator | Borrower | Other |
       |----------+--------+------------+----------+-------|
       | cash     |    0   |      0     |     0    |   0   |
       | borrows  |    0   |      0     |     0    |   0   |

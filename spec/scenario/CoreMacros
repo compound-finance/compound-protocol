@@ -50,33 +50,33 @@ Macro NewComptroller price=1.0 closeFactor=0.1 maxAssets=20
     Unitroller SetPendingImpl ComptrollerScen
     ComptrollerImpl ComptrollerScen Become
 
-Macro NewCToken erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard delegatorType=CErc20DelegatorScenario cTokenType=CErc20DelegateScenario admin=Admin becomeImplementationData="0x0"
+Macro NewXToken erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard delegatorType=XErc20DelegatorScenario cTokenType=XErc20DelegateScenario admin=Admin becomeImplementationData="0x0"
     Erc20 Deploy tokenType erc20 erc20
     InterestRateModel Deploy Fixed StdInterest borrowRate -- Note: interest rate model probably shouldn't be global
-    CTokenDelegate Deploy cTokenType cErc20Delegate
-    CToken Deploy delegatorType cToken cToken (Erc20 erc20 Address) (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin (CTokenDelegate cErc20Delegate Address) becomeImplementationData
+    XTokenDelegate Deploy cTokenType cErc20Delegate
+    XToken Deploy delegatorType cToken cToken (Erc20 erc20 Address) (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin (XTokenDelegate cErc20Delegate Address) becomeImplementationData
 
--- Same as NewCToken but does not deploy an ERC20. Used for special ERC20s that are initialized differently
-Macro NewCTokenBringERC20 erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 delegatorType=CErc20DelegatorScenario cTokenType=CErc20DelegateScenario admin=Admin becomeImplementationData="0x0"
+-- Same as NewXToken but does not deploy an ERC20. Used for special ERC20s that are initialized differently
+Macro NewXTokenBringERC20 erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 delegatorType=XErc20DelegatorScenario cTokenType=XErc20DelegateScenario admin=Admin becomeImplementationData="0x0"
     InterestRateModel Deploy Fixed StdInterest borrowRate -- Note: interest rate model probably shouldn't be global
-    CTokenDelegate Deploy cTokenType cErc20Delegate
-    CToken Deploy delegatorType cToken cToken (Erc20 erc20 Address) (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin (CTokenDelegate cErc20Delegate Address) becomeImplementationData
+    XTokenDelegate Deploy cTokenType cErc20Delegate
+    XToken Deploy delegatorType cToken cToken (Erc20 erc20 Address) (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin (XTokenDelegate cErc20Delegate Address) becomeImplementationData
 
-Macro NewCTokenImmutable erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard cTokenType=Scenario admin=Admin
+Macro NewXTokenImmutable erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard cTokenType=Scenario admin=Admin
     Erc20 Deploy tokenType erc20 erc20
     InterestRateModel Deploy Fixed StdInterest borrowRate -- Note: interest rate model probably shouldn't be global
-    CToken Deploy cTokenType cToken cToken (Erc20 erc20 Address) (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin
+    XToken Deploy cTokenType cToken cToken (Erc20 erc20 Address) (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin
 
 Macro NewEtherToken cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin
     InterestRateModel Deploy Fixed StdInterest borrowRate -- Note: interest rate model probably shouldn't be global
-    CToken Deploy CEtherScenario cToken cToken (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin
+    XToken Deploy XEtherScenario cToken cToken (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin
 
-Macro ListedCToken erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard delegatorType=CErc20DelegatorScenario cTokenType=CErc20DelegateScenario admin=Admin
-    NewCToken erc20 cToken borrowRate initialExchangeRate decimals tokenType delegatorType cTokenType admin
+Macro ListedXToken erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard delegatorType=XErc20DelegatorScenario cTokenType=XErc20DelegateScenario admin=Admin
+    NewXToken erc20 cToken borrowRate initialExchangeRate decimals tokenType delegatorType cTokenType admin
     Comptroller SupportMarket cToken
 
-Macro ListedCTokenImmutable erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard cTokenType=Scenario admin=Admin
-    NewCTokenImmutable erc20 cToken borrowRate initialExchangeRate decimals tokenType cTokenType admin
+Macro ListedXTokenImmutable erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard cTokenType=Scenario admin=Admin
+    NewXTokenImmutable erc20 cToken borrowRate initialExchangeRate decimals tokenType cTokenType admin
     Comptroller SupportMarket cToken
 
 Macro ListedEtherToken cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin
@@ -98,74 +98,74 @@ Macro Give user amount erc20
     Erc20 erc20 Faucet user amount
 
 Macro Donate token amount
-    (Trx Value amount (CToken token Donate))
+    (Trx Value amount (XToken token Donate))
 
 Macro Prep user amount erc20 token allowanceAmount=Nothing
     Erc20 erc20 Faucet user amount
     From user (Erc20 erc20 Approve token (Default allowanceAmount amount))
 
 Macro Allow user token
-    From user (Erc20 (CToken token Underlying) Approve token UInt256Max)
+    From user (Erc20 (XToken token Underlying) Approve token UInt256Max)
 
 Macro AccrueInterest token
-    CToken token AccrueInterest
+    XToken token AccrueInterest
 
 Macro Mint user amount token
-    From user (CToken token Mint amount)
+    From user (XToken token Mint amount)
 
 Macro SendMintEth user amount token
     From user (Trx GasPrice 0 (Trx Value amount (Send token amount)))
 
 Macro CallMintEth user amount token
-    From user (Trx GasPrice 0 (Trx Value amount (CToken token Mint)))
+    From user (Trx GasPrice 0 (Trx Value amount (XToken token Mint)))
 
 Macro Redeem user amount token
-    From user (CToken token Redeem amount)
+    From user (XToken token Redeem amount)
 
 Macro RedeemEth user amount token
-    Trx GasPrice 0 (From user (CToken token Redeem amount))
+    Trx GasPrice 0 (From user (XToken token Redeem amount))
 
 Macro RedeemUnderlying user amount token
-    From user (CToken token RedeemUnderlying amount)
+    From user (XToken token RedeemUnderlying amount)
 
 Macro RedeemUnderlyingEth user amount token
-    Trx GasPrice 0 (From user (CToken token RedeemUnderlying amount))
+    Trx GasPrice 0 (From user (XToken token RedeemUnderlying amount))
 
 Macro BorrowEth user amount token
-    Trx GasPrice 0 (From user (CToken token Borrow amount))
+    Trx GasPrice 0 (From user (XToken token Borrow amount))
 
 Macro Borrow user amount token
-    From user (CToken token Borrow amount)
+    From user (XToken token Borrow amount)
 
 Macro RepayBorrow user amount token
-    From user (CToken token RepayBorrow amount)
+    From user (XToken token RepayBorrow amount)
 
 Macro RepayBorrowEth user amount token
-    From user (Trx GasPrice 0 (Trx Value amount (CToken token RepayBorrow)))
+    From user (Trx GasPrice 0 (Trx Value amount (XToken token RepayBorrow)))
 
 Macro RepayBorrowEthMax user amount token
     From user (Trx GasPrice 0 (Trx Value amount (Maximillion RepayBehalf user)))
 
 Macro RepayBorrowBehalf user behalf amount token
-    From user (CToken token RepayBorrowBehalf behalf amount)
+    From user (XToken token RepayBorrowBehalf behalf amount)
 
 Macro RepayBorrowEthBehalf user behalf amount token
-    From user (Trx GasPrice 0 (Trx Value amount (CToken token RepayBorrowBehalf behalf)))
+    From user (Trx GasPrice 0 (Trx Value amount (XToken token RepayBorrowBehalf behalf)))
 
 Macro Liquidate liquidator _ borrower amount token _ collateral
-    From liquidator (CToken token Liquidate borrower collateral amount)
+    From liquidator (XToken token Liquidate borrower collateral amount)
 
 Macro LiquidateEthColl liquidator _ borrower amount token _ collateral
-    From liquidator (Trx GasPrice 0 (CToken token Liquidate borrower collateral amount))
+    From liquidator (Trx GasPrice 0 (XToken token Liquidate borrower collateral amount))
 
 Macro LiquidateEthBorrow liquidator _ borrower amount token _ collateral
-    From liquidator (Trx GasPrice 0 (Trx Value amount (CToken token Liquidate borrower collateral)))
+    From liquidator (Trx GasPrice 0 (Trx Value amount (XToken token Liquidate borrower collateral)))
 
 Macro Seize amount token caller liquidator borrower
-    From caller (CToken token Seize liquidator borrower amount)
+    From caller (XToken token Seize liquidator borrower amount)
 
 Macro EvilSeize token amount treasure seizer seizee
-    CToken token EvilSeize treasure seizer seizee amount
+    XToken token EvilSeize treasure seizer seizee amount
 
 Macro Support cToken collateralFactor=0.5
     Comptroller SupportMarket cToken
@@ -175,10 +175,10 @@ Macro SetCollateralFactor cToken collateralFactor=0.5
     Comptroller SetCollateralFactor cToken collateralFactor
 
 Macro AddReserves amount token user=Root
-    From user (CToken token AddReserves amount)
+    From user (XToken token AddReserves amount)
 
 Macro ReduceReserves amount token
-    CToken token ReduceReserves amount
+    XToken token ReduceReserves amount
 
 Macro FastForward n blocks
     Comptroller FastForward n blocks
@@ -193,17 +193,17 @@ Macro Transfer from to amount token
     From from (Erc20 token Transfer to amount)
 
 Macro Cash cToken
-    Read Erc20 (CToken cToken Underlying) TokenBalance cToken
+    Read Erc20 (XToken cToken Underlying) TokenBalance cToken
 
 Macro QuickMint amount cToken from=Me
-    Give from amount (CToken cToken Underlying)
+    Give from amount (XToken cToken Underlying)
     Allow from cToken
-    From from (CToken cToken Mint amount)
+    From from (XToken cToken Mint amount)
 
 Macro QuickBorrow amount cToken ...collateral
     From Me (Comptroller EnterMarkets collateral)
     From Me (Comptroller EnterMarkets (cToken))
-    From Me (CToken cToken Borrow amount)
+    From Me (XToken cToken Borrow amount)
 
 -- Macro for performing a borrow with the sole
 -- purpose of adding interest to the erc20 market
@@ -211,9 +211,9 @@ Macro BorrowAndRepayWithInterest erc20 cToken amount interestAmount interestRate
     -- TODO: Make invariant success for these?
     -- TODO: Named args as macros
     InterestRateModel Deploy Fixed Std interestRate
-    CToken cToken SetInterestRateModel (InterestRateModel Std Address)
-    CToken cToken SetReserveFactor reserveRate
-    ListedCToken COLLAT cCOLLAT
+    XToken cToken SetInterestRateModel (InterestRateModel Std Address)
+    XToken cToken SetReserveFactor reserveRate
+    ListedXToken COLLAT cCOLLAT
     Comptroller SetCollateralFactor cCOLLAT 0.9
     Prep Torrey 1e30 COLLAT cCOLLAT
     Mint Torrey 1e30 cCOLLAT
@@ -223,13 +223,13 @@ Macro BorrowAndRepayWithInterest erc20 cToken amount interestAmount interestRate
     Borrow Torrey amount cToken
     -- Cool, we've borrowed, now let's accrue interest then repay all
     FastForward blocks Blocks
-    -- RepayBorrow Torrey (CToken BorrowBalance Torrey) cToken
+    -- RepayBorrow Torrey (XToken BorrowBalance Torrey) cToken
     From Torrey (Erc20 erc20 Approve cToken amount)
     RepayBorrow Torrey amount cToken
     From Torrey (Erc20 erc20 Approve cToken interestAmount)
     Give Torrey interestAmount erc20
     RepayBorrow Torrey interestAmount cToken
-    Assert Equal (CToken cToken BorrowBalance Torrey) Zero
+    Assert Equal (XToken cToken BorrowBalance Torrey) Zero
 
 -- Macro for performing a borrow with the sole
 -- purpose of adding interest to the ether market
@@ -237,9 +237,9 @@ Macro BorrowAndRepayEthWithInterest cEther amount interestAmount interestRate bl
     -- TODO: Make invariant success for these?
     -- TODO: Named args as macros
     InterestRateModel Deploy Fixed Std interestRate
-    CToken cEther SetInterestRateModel (InterestRateModel Std Address)
-    CToken cEther SetReserveFactor reserveRate
-    ListedCToken COLLAT cCOLLAT
+    XToken cEther SetInterestRateModel (InterestRateModel Std Address)
+    XToken cEther SetReserveFactor reserveRate
+    ListedXToken COLLAT cCOLLAT
     Comptroller SetCollateralFactor cCOLLAT 0.9
     Prep Torrey 1e30 COLLAT cCOLLAT
     Mint Torrey 1e30 cCOLLAT
@@ -249,7 +249,7 @@ Macro BorrowAndRepayEthWithInterest cEther amount interestAmount interestRate bl
     Borrow Torrey amount cEther
     -- Cool, we've borrowed, now let's accrue interest then repay all
     FastForward blocks Blocks
-    -- RepayBorrow Torrey (CToken BorrowBalance Torrey) cEther
+    -- RepayBorrow Torrey (XToken BorrowBalance Torrey) cEther
     RepayBorrowEth Torrey amount cEther
     RepayBorrowEth Torrey interestAmount cEther
-    Assert Equal (CToken cEther BorrowBalance Torrey) Zero
+    Assert Equal (XToken cEther BorrowBalance Torrey) Zero

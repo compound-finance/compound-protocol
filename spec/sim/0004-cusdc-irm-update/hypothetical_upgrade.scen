@@ -23,8 +23,8 @@ IncreaseTime 604910
 Governor GovernorAlpha Proposal LastProposal Execute
 
 
-Assert Equal (Address (CToken cUSDC InterestRateModel)) (Address MyInterestRateModel)
-CToken cUSDC AccrueInterest
+Assert Equal (Address (XToken cUSDC InterestRateModel)) (Address MyInterestRateModel)
+XToken cUSDC AccrueInterest
 
 
 Print "cUSDC interest rate model upgrade ok" 

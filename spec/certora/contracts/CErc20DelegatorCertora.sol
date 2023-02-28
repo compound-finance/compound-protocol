@@ -1,12 +1,12 @@
 pragma solidity ^0.8.10;
 
-import "../../../contracts/CErc20Delegator.sol";
+import "../../../contracts/XErc20Delegator.sol";
 import "../../../contracts/EIP20Interface.sol";
 
-import "./CTokenCollateral.sol";
+import "./XTokenCollateral.sol";
 
-contract CErc20DelegatorCertora is CErc20Delegator {
-    CTokenCollateral public otherToken;
+contract XErc20DelegatorCertora is XErc20Delegator {
+    XTokenCollateral public otherToken;
 
     constructor(address underlying_,
                 ComptrollerInterface comptroller_,
@@ -17,7 +17,7 @@ contract CErc20DelegatorCertora is CErc20Delegator {
                 uint8 decimals_,
                 address payable admin_,
                 address implementation_,
-                bytes memory becomeImplementationData) public CErc20Delegator(underlying_, comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, admin_, implementation_, becomeImplementationData) {
+                bytes memory becomeImplementationData) public XErc20Delegator(underlying_, comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, admin_, implementation_, becomeImplementationData) {
         comptroller;       // touch for Certora slot deduction
         interestRateModel; // touch for Certora slot deduction
     }
