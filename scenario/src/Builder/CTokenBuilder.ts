@@ -20,9 +20,9 @@ import { getContract, getTestContract } from "../Contract";
 const XErc20Contract = getContract("XErc20Immutable");
 const XErc20Delegator = getContract("XErc20Delegator");
 const XErc20DelegatorScenario = getTestContract("XErc20DelegatorScenario");
-const XEtherContract = getContract("XEther");
+const XMadaContract = getContract(" XMada");
 const XErc20ScenarioContract = getTestContract("XErc20Scenario");
-const XEtherScenarioContract = getTestContract("XEtherScenario");
+const XMadaScenarioContract = getTestContract(" XMadaScenario");
 const CEvilContract = getTestContract("CEvil");
 
 export interface TokenData {
@@ -279,12 +279,12 @@ export async function buildXToken(
       TokenData
     >(
       `
-        #### XEtherScenario
+        ####  XMadaScenario
 
-        * "XEtherScenario symbol:<String> name:<String> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A XToken Scenario for local testing
-          * E.g. "XToken Deploy XEtherScenario cETH \"Compound Ether\" (Comptroller Address) (InterestRateModel Address) 1.0 8"
+        * " XMadaScenario symbol:<String> name:<String> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A XToken Scenario for local testing
+          * E.g. "XToken Deploy  XMadaScenario cETH \"Compound Ether\" (Comptroller Address) (InterestRateModel Address) 1.0 8"
       `,
-      "XEtherScenario",
+      " XMadaScenario",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
@@ -307,7 +307,7 @@ export async function buildXToken(
         }
       ) => {
         return {
-          invokation: await XEtherScenarioContract.deploy<XToken>(world, from, [
+          invokation: await XMadaScenarioContract.deploy<XToken>(world, from, [
             name.val,
             symbol.val,
             decimals.val,
@@ -320,7 +320,7 @@ export async function buildXToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: "",
-          contract: "XEtherScenario",
+          contract: " XMadaScenario",
           initial_exchange_rate_mantissa: initialExchangeRate
             .encode()
             .toString(),
@@ -342,12 +342,12 @@ export async function buildXToken(
       TokenData
     >(
       `
-        #### XEther
+        ####  XMada
 
-        * "XEther symbol:<String> name:<String> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A XToken Scenario for local testing
-          * E.g. "XToken Deploy XEther cETH \"Compound Ether\" (Comptroller Address) (InterestRateModel Address) 1.0 8"
+        * " XMada symbol:<String> name:<String> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A XToken Scenario for local testing
+          * E.g. "XToken Deploy  XMada cETH \"Compound Ether\" (Comptroller Address) (InterestRateModel Address) 1.0 8"
       `,
-      "XEther",
+      " XMada",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
@@ -370,7 +370,7 @@ export async function buildXToken(
         }
       ) => {
         return {
-          invokation: await XEtherContract.deploy<XToken>(world, from, [
+          invokation: await XMadaContract.deploy<XToken>(world, from, [
             comptroller.val,
             interestRateModel.val,
             initialExchangeRate.val,
@@ -383,7 +383,7 @@ export async function buildXToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: "",
-          contract: "XEther",
+          contract: " XMada",
           initial_exchange_rate_mantissa: initialExchangeRate
             .encode()
             .toString(),

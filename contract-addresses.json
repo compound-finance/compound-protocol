@@ -1,8 +1,12 @@
 {
     "200101": {
-        "Unitroller": "0x4386BA4f96Fc67b492171cB0C4C6009D87Afa676",
-        "Comptroller": "0x3B0DDA9d2dc0b7a98272b216ff88369d60A81435",
-        "SimplePriceOracle": "0xAfd086d74297892212A1bCfBAe08b35100e1278c",
-        "WhitePaperInterestRateModel": "0x3998d771496ccF2BbC752C8E674da2966433a46c"
+        "SimplePriceOracle": "0xc5Dd467f0a30423b944E0B8b67422219EC06dB38",
+        "WhitePaperInterestRateModel_USDC": "0xaCe11f5D6C58fBB599eb0679e724Fc35f7b6Ebc7",
+        "WhitePaperInterestRateModel_MADA": "0xcB4852b76076D5fBDA6f71748e244859b0759ad3",
+        "Comptroller": "0x8Cda8f2A8C334a3D34529150d351DE4259f60b5a",
+        "Unitroller": "0xD08444e92243d548C8Fe3ad45F61C10b464685b5",
+        "XMada": "0xdD37e0fdE61c902cb9c33A765D7667Fb61b888AF",
+        "XErc20Delegate": "0xfAbB458B78A5b43bF865DeB82C1Bd54eA3C0ca04",
+        "XErc20Delegator_USDC": "0x0d392529434164155fA2306f1D82ce3FFB5ecAfE"
     }
 }

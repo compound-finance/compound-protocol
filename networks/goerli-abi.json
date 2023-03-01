@@ -2183,8 +2183,8 @@
     {
       "inputs": [
         {
-          "internalType": "contract XEther",
-          "name": "cEther_",
+          "internalType": "contract  XMada",
+          "name": "  xMada_",
           "type": "address"
         }
       ],
@@ -2196,10 +2196,10 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "cEther",
+      "name": "  xMada",
       "outputs": [
         {
-          "internalType": "contract XEther",
+          "internalType": "contract  XMada",
           "name": "",
           "type": "address"
         }
@@ -2234,8 +2234,8 @@
           "type": "address"
         },
         {
-          "internalType": "contract XEther",
-          "name": "cEther_",
+          "internalType": "contract  XMada",
+          "name": "  xMada_",
           "type": "address"
         }
       ],

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "../../contracts/XEther.sol";
+import "../../contracts/ XMada.sol";
 import "./ComptrollerScenario.sol";
 
-contract XEtherHarness is XEther {
+contract  XMadaHarness is  XMada {
     uint harnessExchangeRate;
     uint public blockNumber = 100000;
 
@@ -17,7 +17,7 @@ contract XEtherHarness is XEther {
                 string memory symbol_,
                 uint8 decimals_,
                 address payable admin_)
-    XEther(
+     XMada(
     comptroller_,
     interestRateModel_,
     initialExchangeRateMantissa,
@@ -155,7 +155,7 @@ contract XEtherHarness is XEther {
     }
 }
 
-contract XEtherScenario is XEther {
+contract  XMadaScenario is  XMada {
     uint reserveFactor;
 
     constructor(string memory name_,
@@ -165,7 +165,7 @@ contract XEtherScenario is XEther {
                 ComptrollerInterface comptroller_,
                 InterestRateModel interestRateModel_,
                 uint initialExchangeRateMantissa)
-        XEther(comptroller_,
+         XMada(comptroller_,
                interestRateModel_,
                initialExchangeRateMantissa,
                name_,

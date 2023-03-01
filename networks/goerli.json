@@ -80,7 +80,7 @@
   },
   "Maximillion": {
     "description": "Maximillion",
-    "cEtherAddress": "0x20572e4c090f15667cF7378e16FaD2eA0e2f3EfF",
+    "  xMadaAddress": "0x20572e4c090f15667cF7378e16FaD2eA0e2f3EfF",
     "address": "0x73d3F01b8aC5063f4601C7C45DA5Fdf1b5240C92"
   },
   "CompoundLens": {
@@ -222,7 +222,7 @@
       "symbol": "cETH",
       "decimals": 8,
       "underlying": "",
-      "contract": "XEther",
+      "contract": " XMada",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0x513c1Ff435ECCEdD0fDA5edD2Ad5E5461F0E8726",
       "address": "0x20572e4c090f15667cF7378e16FaD2eA0e2f3EfF"
@@ -359,7 +359,7 @@
       "symbol": "cETH",
       "decimals": 8,
       "underlying": "",
-      "contract": "XEther",
+      "contract": " XMada",
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0x513c1Ff435ECCEdD0fDA5edD2Ad5E5461F0E8726",
       "address": "0x20572e4c090f15667cF7378e16FaD2eA0e2f3EfF"

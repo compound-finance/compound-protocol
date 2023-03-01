@@ -60,7 +60,7 @@ async function redeemUnderlying(cToken, redeemer, redeemTokens, redeemAmount) {
   return send(cToken, "redeemUnderlying", [redeemAmount], { from: redeemer });
 }
 
-describe("XEther", () => {
+describe(" XMada", () => {
   let root, minter, redeemer, accounts;
   let cToken;
 

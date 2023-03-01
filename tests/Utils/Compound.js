@@ -145,7 +145,7 @@ async function makeXToken(opts = {}) {
 
   switch (kind) {
     case "cether":
-      cToken = await deploy("XEtherHarness", [
+      cToken = await deploy(" XMadaHarness", [
         comptroller._address,
         interestRateModel._address,
         exchangeRate,

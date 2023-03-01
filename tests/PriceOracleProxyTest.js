@@ -61,8 +61,8 @@ describe("PriceOracleProxy", () => {
     });
 
     it("sets address of cEth", async () => {
-      let configuredXEther = await call(oracle, "cEthAddress");
-      expect(configuredXEther).toEqual(cEth._address);
+      let configured XMada = await call(oracle, "cEthAddress");
+      expect(configured XMada).toEqual(cEth._address);
     });
 
     it("sets address of cUSDC", async () => {

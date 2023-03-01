@@ -69,7 +69,7 @@ Macro NewXTokenImmutable erc20 cToken borrowRate=0.000005 initialExchangeRate=2e
 
 Macro NewEtherToken cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin
     InterestRateModel Deploy Fixed StdInterest borrowRate -- Note: interest rate model probably shouldn't be global
-    XToken Deploy XEtherScenario cToken cToken (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin
+    XToken Deploy  XMadaScenario cToken cToken (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin
 
 Macro ListedXToken erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard delegatorType=XErc20DelegatorScenario cTokenType=XErc20DelegateScenario admin=Admin
     NewXToken erc20 cToken borrowRate initialExchangeRate decimals tokenType delegatorType cTokenType admin

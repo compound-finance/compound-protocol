@@ -140,7 +140,7 @@ Test "Reduce reserves for XErc20 from Timelock and send reserves to external add
     Assert Equal (Erc20 ZRX TokenBalance (Timelock Address)) (Exactly 0e18)
     Assert Equal (Erc20 ZRX TokenBalance "0x0000000000000000000000000000000000000001") (Exactly 1e18)
 
-Test "Reduce reserves for XEther from Timelock and send reserves to external address"
+Test "Reduce reserves for  XMada from Timelock and send reserves to external address"
     NewComptroller
     ListedEtherToken cETH initialExchangeRate:1e9
     CallMintEth Geoff 50e18 cETH

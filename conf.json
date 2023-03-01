@@ -1,0 +1,38 @@
+{
+  "WhitePaperInterestRateModel": {
+    "USDC": {
+      "baseRatePerYear": "2",
+      "multiplierPerYear": "5"
+    },
+    "MADA": {
+      "baseRatePerYear": "2",
+      "multiplierPerYear": "5"
+    },
+    "IOTX": {
+      "baseRatePerYear": "0.02",
+      "multiplierPerYear": "0.35",
+      "jumpMultiplierPerYear": "2.50",
+      "kink": "0.7",
+      "roof": "1"
+    }
+  },
+  "XErc20Delegator": {
+    "USDC": {
+      "underlying": "0x8c214Fa17D0167675C238F4d4142C4eEeC04f54f",
+      "initialExchangeRateMantissa": "1",
+      "name": "xUSD Coin",
+      "symbol": "xUSDC",
+      "decimals": 18,
+      "admin": "0xa1c4E23fcA8f2cff13749b9136ff30945ae5203B",
+      "becomeImplementationData": "0x"
+    }
+  },
+  "MADA": {
+    "initialExchangeRateMantissa": "0.38",
+    "name": "cMada Token",
+    "symbol": "cMada",
+    "decimals": 18,
+    "admin": "0xa1c4E23fcA8f2cff13749b9136ff30945ae5203B"
+  },
+  "SimplePriceOracle": "0xc5Dd467f0a30423b944E0B8b67422219EC06dB38"
+}

@@ -35,14 +35,14 @@ task("deploy-wpirm")
 
     saveContractAddress(
       network.config.chainId,
-      contractName,
+      `${contractName}_${taskArgs.token}`,
       whitePaperInterestRateModel.address
     );
 
     console.log(
-      `${contractName} deployed to address:`,
+      `${contractName}_${taskArgs.token} deployed to address:`,
       whitePaperInterestRateModel.address
     );
 
-    return whitePaperInterestRateModel.address;
+    return whitePaperInterestRateModel;
   });

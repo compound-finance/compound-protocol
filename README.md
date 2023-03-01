@@ -22,8 +22,8 @@ Contributing to the Compound protocol is a bit different than most open-source p
 We detail a few of the core contracts in the Compound protocol.
 
 <dl>
-  <dt>XToken, XErc20 and XEther</dt>
-  <dd>The Compound cTokens, which are self-contained borrowing and lending contracts. XToken contains the core logic and XErc20 and XEther add public interfaces for Erc20 tokens and ether, respectively. Each XToken is assigned an interest rate and risk model (see InterestRateModel and Comptroller sections), and allows accounts to *mint* (supply capital), *redeem* (withdraw capital), *borrow* and *repay a borrow*. Each XToken is an ERC-20 compliant token where balances represent ownership of the market.</dd>
+  <dt>XToken, XErc20 and  XMada</dt>
+  <dd>The Compound cTokens, which are self-contained borrowing and lending contracts. XToken contains the core logic and XErc20 and  XMada add public interfaces for Erc20 tokens and ether, respectively. Each XToken is assigned an interest rate and risk model (see InterestRateModel and Comptroller sections), and allows accounts to *mint* (supply capital), *redeem* (withdraw capital), *borrow* and *repay a borrow*. Each XToken is an ERC-20 compliant token where balances represent ownership of the market.</dd>
 </dl>
 
 <dl>

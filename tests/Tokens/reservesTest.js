@@ -229,13 +229,13 @@ describe("XToken", function() {
     });
   });
 
-  describe("XEther addReserves", () => {
+  describe(" XMada addReserves", () => {
     let cToken;
     beforeEach(async () => {
       cToken = await makeXToken({ kind: "cether" });
     });
 
-    it("add reserves for XEther", async () => {
+    it("add reserves for  XMada", async () => {
       const balanceBefore = await getBalances([cToken], []);
       const reservedAdded = etherExp(1);
       const result = await send(cToken, "_addReserves", {

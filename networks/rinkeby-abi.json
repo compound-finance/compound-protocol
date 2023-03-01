@@ -3559,7 +3559,7 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "cEther",
+      "name": "  xMada",
       "outputs": [
         {
           "name": "",
@@ -3579,7 +3579,7 @@
           "type": "address"
         },
         {
-          "name": "cEther_",
+          "name": "  xMada_",
           "type": "address"
         }
       ],
@@ -3608,7 +3608,7 @@
     {
       "inputs": [
         {
-          "name": "cEther_",
+          "name": "  xMada_",
           "type": "address"
         }
       ],

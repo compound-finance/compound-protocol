@@ -125,7 +125,7 @@
   "PriceFeed": {},
   "Maximillion": {
     "description": "Maximillion",
-    "cEtherAddress": "0x41B5844f4680a8C38fBb695b7F9CFd1F64474a72",
+    "  xMadaAddress": "0x41B5844f4680a8C38fBb695b7F9CFd1F64474a72",
     "address": "0xC363f83902Ac614F318b04771d21D25aC0d73be5"
   },
   "CompoundLens": {
@@ -345,7 +345,7 @@
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "",
-      "contract": "XEther"
+      "contract": " XMada"
     },
     "cSAI": {
       "name": "Compound SAI",
@@ -464,7 +464,7 @@
       "initial_exchange_rate_mantissa": "200000000000000000000000000",
       "admin": "0xE3e07F4F3E2F5A5286a99b9b8DEed08B8e07550B",
       "underlying": "",
-      "contract": "XEther"
+      "contract": " XMada"
     },
     "cSAI": {
       "name": "Compound SAI",

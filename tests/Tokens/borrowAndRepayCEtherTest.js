@@ -78,7 +78,7 @@ async function repayBorrowBehalf(cToken, payer, borrower, repayAmount) {
   });
 }
 
-describe("XEther", function() {
+describe(" XMada", function() {
   let cToken, root, borrower, benefactor, accounts;
   beforeEach(async () => {
     [root, borrower, benefactor, ...accounts] = saddle.accounts;

@@ -45,5 +45,5 @@ node_modules_tmp
 .idea
 artifacts
 .vscode
-cache
-conf.json
+.env.development
+.env.production

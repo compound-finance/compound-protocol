@@ -6,7 +6,7 @@ const {
 
 const exchangeRate = 5;
 
-describe("XEther", function() {
+describe(" XMada", function() {
   let root, nonRoot, accounts;
   let cToken;
   beforeEach(async () => {
@@ -18,7 +18,7 @@ describe("XEther", function() {
   });
 
   describe("getCashPrior", () => {
-    it("returns the amount of ether held by the cEther contract before the current message", async () => {
+    it("returns the amount of ether held by the   xMada contract before the current message", async () => {
       expect(
         await call(cToken, "harnessGetCashPrior", [], { value: 100 })
       ).toEqualNumber(0);

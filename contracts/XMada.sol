@@ -4,13 +4,13 @@ pragma solidity ^0.8.10;
 import "./XToken.sol";
 
 /**
- * @title Compound's XEther Contract
+ * @title Compound's  XMada Contract
  * @notice XToken which wraps Ether
  * @author Compound
  */
-contract XEther is XToken {
+contract XMada is XToken {
     /**
-     * @notice Construct a new XEther money market
+     * @notice Construct a new  XMada money market
      * @param comptroller_ The address of the Comptroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
@@ -115,7 +115,7 @@ contract XEther is XToken {
     }
 
     /**
-     * @notice Send Ether to XEther to mint
+     * @notice Send Ether to  XMada to mint
      */
     receive() external payable {
         mintInternal(msg.value);

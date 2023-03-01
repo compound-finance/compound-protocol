@@ -14,5 +14,5 @@ task("deploy-simple-oracle").setAction(async (taskArgs, { ethers }) => {
     priceOracle.address
   );
 
-  return priceOracle.address;
+  return priceOracle;
 });

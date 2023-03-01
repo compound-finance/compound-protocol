@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "./XEther.sol";
+import "./XMada.sol";
 
 /**
  * @title Compound's Maximillion Contract
@@ -9,40 +9,40 @@ import "./XEther.sol";
  */
 contract Maximillion {
     /**
-     * @notice The default cEther market to repay in
+     * @notice The default   xMada market to repay in
      */
-    XEther public cEther;
+     XMada public   xMada;
 
     /**
-     * @notice Construct a Maximillion to repay max in a XEther market
+     * @notice Construct a Maximillion to repay max in a  XMada market
      */
-    constructor(XEther cEther_) public {
-        cEther = cEther_;
+    constructor( XMada  xMada_) public {
+          xMada =  xMada_;
     }
 
     /**
-     * @notice msg.sender sends Ether to repay an account's borrow in the cEther market
+     * @notice msg.sender sends Ether to repay an account's borrow in the   xMada market
      * @dev The provided Ether is applied towards the borrow balance, any excess is refunded
      * @param borrower The address of the borrower account to repay on behalf of
      */
     function repayBehalf(address borrower) public payable {
-        repayBehalfExplicit(borrower, cEther);
+        repayBehalfExplicit(borrower,   xMada);
     }
 
     /**
-     * @notice msg.sender sends Ether to repay an account's borrow in a cEther market
+     * @notice msg.sender sends Ether to repay an account's borrow in a   xMada market
      * @dev The provided Ether is applied towards the borrow balance, any excess is refunded
      * @param borrower The address of the borrower account to repay on behalf of
-     * @param cEther_ The address of the cEther contract to repay in
+     * @param  xMada_ The address of the   xMada contract to repay in
      */
-    function repayBehalfExplicit(address borrower, XEther cEther_) public payable {
+    function repayBehalfExplicit(address borrower,  XMada  xMada_) public payable {
         uint received = msg.value;
-        uint borrows = cEther_.borrowBalanceCurrent(borrower);
+        uint borrows =  xMada_.borrowBalanceCurrent(borrower);
         if (received > borrows) {
-            cEther_.repayBorrowBehalf{value: borrows}(borrower);
+             xMada_.repayBorrowBehalf{value: borrows}(borrower);
             payable(msg.sender).transfer(received - borrows);
         } else {
-            cEther_.repayBorrowBehalf{value: received}(borrower);
+             xMada_.repayBorrowBehalf{value: received}(borrower);
         }
     }
 }
