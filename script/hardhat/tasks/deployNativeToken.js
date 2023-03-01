@@ -24,9 +24,9 @@ task("deploy-mada")
     const decimals = constructorArguements["decimals"];
     const admin = constructorArguements["admin"];
 
-    const CEther = await hre.ethers.getContractFactory(contractName);
+    const XMada = await hre.ethers.getContractFactory(contractName);
 
-    const xMada = await CEther.deploy(
+    const xMada = await XMada.deploy(
       taskArgs.comptroller,
       taskArgs.interestRateModel,
       initialExchangeRateMantissa,

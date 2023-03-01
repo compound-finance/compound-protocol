@@ -1,4 +1,5 @@
-require("dotenv").config();
+require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
+
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
 require("hardhat-abi-exporter");
@@ -34,7 +35,7 @@ module.exports = {
       // }
     },
     testnet: {
-      url: process.env.MILKOMEDA_C1_TESTNET,
+      url: process.env.RPC_URL,
       accounts: [`0x${process.env.PK}`],
       chainId: 200101,
       gas: "auto",

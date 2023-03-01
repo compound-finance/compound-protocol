@@ -29,10 +29,10 @@
   },
   "MADA": {
     "initialExchangeRateMantissa": "0.38",
-    "name": "cMada Token",
-    "symbol": "cMada",
+    "name": "xMADA Token",
+    "symbol": "xMADA",
     "decimals": 18,
     "admin": "0xa1c4E23fcA8f2cff13749b9136ff30945ae5203B"
   },
-  "SimplePriceOracle": "0xc5Dd467f0a30423b944E0B8b67422219EC06dB38"
+  "SimplePriceOracle": "0x9bbcB32a16D1132eC2ea25F48f717cc37543F1A6"
 }

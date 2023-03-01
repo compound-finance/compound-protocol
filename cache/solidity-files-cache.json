@@ -782,6 +782,52 @@
         "ComptrollerG7"
       ]
     },
+    "/Users/kifen/Dev/DcSpark/forks/compound-protocol/contracts/Unitroller.sol": {
+      "lastModificationDate": 1677621280715,
+      "contentHash": "2e4eff91286e2ce31345863c13b63f11",
+      "sourceName": "contracts/Unitroller.sol",
+      "solcConfig": {
+        "version": "0.8.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "devdoc",
+                "userdoc",
+                "storageLayout",
+                "evm.gasEstimates",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "metadata": {
+            "useLiteralContent": true
+          }
+        }
+      },
+      "imports": [
+        "./ErrorReporter.sol",
+        "./ComptrollerStorage.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.10"
+      ],
+      "artifacts": [
+        "Unitroller"
+      ]
+    },
     "/Users/kifen/Dev/DcSpark/forks/compound-protocol/contracts/ComptrollerStorage.sol": {
       "lastModificationDate": 1677621280715,
       "contentHash": "a2eedc4aef4d0bbd8976734fa477e3ab",
@@ -835,10 +881,10 @@
         "UnitrollerAdminStorage"
       ]
     },
-    "/Users/kifen/Dev/DcSpark/forks/compound-protocol/contracts/Unitroller.sol": {
-      "lastModificationDate": 1677621280715,
-      "contentHash": "2e4eff91286e2ce31345863c13b63f11",
-      "sourceName": "contracts/Unitroller.sol",
+    "/Users/kifen/Dev/DcSpark/forks/compound-protocol/contracts/Comptroller.sol": {
+      "lastModificationDate": 1677621288876,
+      "contentHash": "1ea1f041822f661622ac54828f36b2f0",
+      "sourceName": "contracts/Comptroller.sol",
       "solcConfig": {
         "version": "0.8.10",
         "settings": {
@@ -871,19 +917,24 @@
         }
       },
       "imports": [
+        "./XToken.sol",
         "./ErrorReporter.sol",
-        "./ComptrollerStorage.sol"
+        "./PriceOracle.sol",
+        "./ComptrollerInterface.sol",
+        "./ComptrollerStorage.sol",
+        "./Unitroller.sol",
+        "./Governance/Comp.sol"
       ],
       "versionPragmas": [
         "^0.8.10"
       ],
       "artifacts": [
-        "Unitroller"
+        "Comptroller"
       ]
     },
     "/Users/kifen/Dev/DcSpark/forks/compound-protocol/contracts/SimplePriceOracle.sol": {
-      "lastModificationDate": 1677621387582,
-      "contentHash": "21787a96bd6228635719eb89ba1d1ac7",
+      "lastModificationDate": 1677659046285,
+      "contentHash": "8a00f9af88924081902bafc330e77747",
       "sourceName": "contracts/SimplePriceOracle.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -1064,57 +1115,6 @@
         "PotLike",
         "VatLike",
         "XDaiDelegate"
-      ]
-    },
-    "/Users/kifen/Dev/DcSpark/forks/compound-protocol/contracts/Comptroller.sol": {
-      "lastModificationDate": 1677621288876,
-      "contentHash": "1ea1f041822f661622ac54828f36b2f0",
-      "sourceName": "contracts/Comptroller.sol",
-      "solcConfig": {
-        "version": "0.8.10",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "devdoc",
-                "userdoc",
-                "storageLayout",
-                "evm.gasEstimates",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          },
-          "metadata": {
-            "useLiteralContent": true
-          }
-        }
-      },
-      "imports": [
-        "./XToken.sol",
-        "./ErrorReporter.sol",
-        "./PriceOracle.sol",
-        "./ComptrollerInterface.sol",
-        "./ComptrollerStorage.sol",
-        "./Unitroller.sol",
-        "./Governance/Comp.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.10"
-      ],
-      "artifacts": [
-        "Comptroller"
       ]
     },
     "/Users/kifen/Dev/DcSpark/forks/compound-protocol/contracts/XMada.sol": {

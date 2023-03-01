@@ -8,22 +8,22 @@ contract SimplePriceOracle is PriceOracle {
     mapping(address => uint) prices;
     event PricePosted(address asset, uint previousPriceMantissa, uint requestedPriceMantissa, uint newPriceMantissa);
 
-    function _getUnderlyingAddress(XToken cToken) private view returns (address) {
+    function _getUnderlyingAddress(XToken xToken) public view returns (address) {
         address asset;
-        if (compareStrings(cToken.symbol(), "cETH")) {
+        if (compareStrings(xToken.symbol(), "xMADA")) {
             asset = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
         } else {
-            asset = address(XErc20(address(cToken)).underlying());
+            asset = address(XErc20(address(xToken)).underlying());
         }
         return asset;
     }
 
-    function getUnderlyingPrice(XToken cToken) public override view returns (uint) {
-        return prices[_getUnderlyingAddress(cToken)];
+    function getUnderlyingPrice(XToken xToken) public override view returns (uint) {
+        return prices[_getUnderlyingAddress(xToken)];
     }
 
-    function setUnderlyingPrice(XToken cToken, uint underlyingPriceMantissa) public {
-        address asset = _getUnderlyingAddress(cToken);
+    function setUnderlyingPrice(XToken xToken, uint underlyingPriceMantissa) public {
+        address asset = _getUnderlyingAddress(xToken);
         emit PricePosted(asset, prices[asset], underlyingPriceMantissa, underlyingPriceMantissa);
         prices[asset] = underlyingPriceMantissa;
     }

@@ -41,11 +41,12 @@ task("deploy-all").setAction(async (taskArgs, { run, ethers }) => {
   const signer = new ethers.Wallet(process.env.PK);
 
   const signer_provider = await signer.connect(
-    new ethers.providers.JsonRpcProvider(network.config.url)
+    new ethers.providers.JsonRpcProvider(process.env.RPC_URL)
   );
+
   const oracleContract = new ethers.Contract(
     oracle,
-    OracleABI,
+    OracleABI.abi,
     signer_provider
   );
 
@@ -61,20 +62,19 @@ task("deploy-all").setAction(async (taskArgs, { run, ethers }) => {
   // );
 
   await oracleContract.setUnderlyingPrice(xrc20Delegator.address, toBN("1"), {
-    gasLimit: 1000000,
-    gasPrice: 900000,
+    gasPrice: 800000,
+    gasLimit: 30000000,
   });
 
-  console.log("HERE");
-  // gasLimit = await oracleContract.estimateGas.setUnderlyingPrice(
-  //   mada.address,
-  //   toBN("0.38")
-  // );
+  gasLimit = await oracleContract.estimateGas.setUnderlyingPrice(
+    mada.address,
+    toBN("0.38")
+  );
 
   await (
     await oracleContract.setUnderlyingPrice(mada.address, toBN("0.38"), {
-      gasLimit: 1000000,
-      gasPrice: 900000,
+      gasPrice: 800000,
+      gasLimit: 30000000,
     })
   ).wait(3);
 
