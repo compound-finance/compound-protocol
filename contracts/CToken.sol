@@ -983,7 +983,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
 
         // We fail gracefully unless market's block number equals current block number
         if (accrualBlockNumber != getBlockNumber()) {
-            revert AddReservesFactorFreshCheck(actualAddAmount);
+            revert AddReservesFactorFreshCheck(addAmount);
         }
 
         /////////////////////////
