@@ -82,8 +82,8 @@ contract DAIInterestRateModelV4 is JumpRateModelV2 {
      */
     function dsrPerBlock() public view returns (uint) {
         return (pot.dsr() - RAY_BASE) // scaled RAY_BASE aka RAY, and includes an extra "ONE" before subtraction
-            / RAY_TO_BASE_SCALE // descale to BASE
             * SECONDS_PER_BLOCK; // seconds per block
+            / RAY_TO_BASE_SCALE // descale to BASE
     }
 
     /**
@@ -91,7 +91,7 @@ contract DAIInterestRateModelV4 is JumpRateModelV2 {
      */
     function poke() public {
         (uint duty, ) = jug.ilks("ETH-B");
-        uint stabilityFeePerBlock = (duty + jug.base() - RAY_BASE) / RAY_TO_BASE_SCALE * SECONDS_PER_BLOCK;
+        uint stabilityFeePerBlock = (duty + jug.base() - RAY_BASE) * SECONDS_PER_BLOCK / RAY_TO_BASE_SCALE;
 
         // We ensure the minimum borrow rate >= DSR / (1 - reserve factor)
         baseRatePerBlock = dsrPerBlock() * BASE / assumedOneMinusReserveFactorMantissa;
