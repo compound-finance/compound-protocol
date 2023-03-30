@@ -20,7 +20,8 @@ contract DAIInterestRateModelV4 is JumpRateModelV2 {
     uint public gapPerBlock;
 
     /**
-     * @notice The assumed (1 - reserve factor) used to calculate the minimum borrow rate (reserve factor = 0.05)
+     * @notice The assumed (1 - reserve factor) used to calculate the minimum borrow rate (reserve factor = 0.15)
+     * @dev This reflects the reserve factor on the DAI market at the time of implementation.
      */
     uint public constant assumedOneMinusReserveFactorMantissa = 0.85e18;
 
