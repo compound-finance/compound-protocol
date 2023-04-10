@@ -83,8 +83,8 @@ contract DAIInterestRateModelV4 is JumpRateModelV2 {
      */
     function dsrPerBlock() public view returns (uint) {
         return (pot.dsr() - RAY_BASE) // scaled RAY_BASE aka RAY, and includes an extra "ONE" before subtraction
-            * SECONDS_PER_BLOCK; // seconds per block
-            / RAY_TO_BASE_SCALE // descale to BASE
+            * SECONDS_PER_BLOCK // seconds per block
+            / RAY_TO_BASE_SCALE; // descale to BASE
     }
 
     /**
