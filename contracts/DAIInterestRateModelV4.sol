@@ -1,6 +1,6 @@
 pragma solidity ^0.8.10;
 
-import "./JumpRateModelV2.sol";
+import "./JumpRateModelV3.sol";
 
 /**
   * @title Compound's DAIInterestRateModel Contract (version 4)
@@ -8,7 +8,7 @@ import "./JumpRateModelV2.sol";
   * @notice Version 4 modifies the number of seconds per block to 12,
   * and takes the stability fee of ETH-B as a reference.
   */
-contract DAIInterestRateModelV4 is JumpRateModelV2 {
+contract DAIInterestRateModelV4 is JumpRateModelV3 {
     uint256 private constant BASE = 1e18;
     uint256 private constant RAY_BASE = 1e27;
     uint256 private constant RAY_TO_BASE_SCALE = 1e9;
