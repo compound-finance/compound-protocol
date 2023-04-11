@@ -1,20 +1,18 @@
-// SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "./JumpRateModelV2.sol";
+import "./JumpRateModelV3.sol";
 
 /**
-  * @title Compound's DAIInterestRateModel Contract (version 3)
-  * @author Compound (modified by Dharma Labs)
-  * @notice The parameterized model described in section 2.4 of the original Compound Protocol whitepaper.
-  * Version 3 modifies the interest rate model in Version 2 by increasing the initial "gap" or slope of
-  * the model prior to the "kink" from 2% to 4%, and enabling updateable parameters.
+  * @title Compound's DAIInterestRateModel Contract (version 4)
+  * @author Compound, Dharma (modified by Maker Growth)
+  * @notice Version 4 modifies the number of seconds per block to 12,
+  * and takes the stability fee of ETH-B as a reference.
   */
-contract DAIInterestRateModelV3 is JumpRateModelV2 {
+contract DAIInterestRateModelV4 is JumpRateModelV3 {
     uint256 private constant BASE = 1e18;
     uint256 private constant RAY_BASE = 1e27;
     uint256 private constant RAY_TO_BASE_SCALE = 1e9;
-    uint256 private constant SECONDS_PER_BLOCK = 15;
+    uint256 private constant SECONDS_PER_BLOCK = 12;
 
     /**
      * @notice The additional margin per block separating the base borrow rate from the roof.
@@ -22,9 +20,10 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
     uint public gapPerBlock;
 
     /**
-     * @notice The assumed (1 - reserve factor) used to calculate the minimum borrow rate (reserve factor = 0.05)
+     * @notice The assumed (1 - reserve factor) used to calculate the minimum borrow rate (reserve factor = 0.15)
+     * @dev This reflects the reserve factor on the DAI market at the time of implementation.
      */
-    uint public constant assumedOneMinusReserveFactorMantissa = 0.95e18;
+    uint public constant assumedOneMinusReserveFactorMantissa = 0.85e18;
 
     PotLike pot;
     JugLike jug;
@@ -84,16 +83,16 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
      */
     function dsrPerBlock() public view returns (uint) {
         return (pot.dsr() - RAY_BASE) // scaled RAY_BASE aka RAY, and includes an extra "ONE" before subtraction
-            / RAY_TO_BASE_SCALE // descale to BASE
-            * SECONDS_PER_BLOCK; // seconds per block
+            * SECONDS_PER_BLOCK // seconds per block
+            / RAY_TO_BASE_SCALE; // descale to BASE
     }
 
     /**
      * @notice Resets the baseRate and multiplier per block based on the stability fee and Dai savings rate
      */
     function poke() public {
-        (uint duty, ) = jug.ilks("ETH-A");
-        uint stabilityFeePerBlock = (duty + jug.base() - RAY_BASE) / RAY_TO_BASE_SCALE * SECONDS_PER_BLOCK;
+        (uint duty, ) = jug.ilks("ETH-B");
+        uint stabilityFeePerBlock = (duty + jug.base() - RAY_BASE) * SECONDS_PER_BLOCK / RAY_TO_BASE_SCALE;
 
         // We ensure the minimum borrow rate >= DSR / (1 - reserve factor)
         baseRatePerBlock = dsrPerBlock() * BASE / assumedOneMinusReserveFactorMantissa;

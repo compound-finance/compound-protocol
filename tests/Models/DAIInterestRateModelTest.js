@@ -7,6 +7,7 @@ const {
   getSupplyRate
 } = require('../Utils/Compound');
 
+const assumedSecondsPerBlock = 12;
 const blocksPerYear = 2102400;
 const secondsPerYear = 60 * 60 * 24 * 365;
 
@@ -16,8 +17,8 @@ function utilizationRate(cash, borrows, reserves) {
 
 function baseRoofRateFn(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves) {
   const assumedOneMinusReserveFactor = 0.95;
-  const stabilityFeePerBlock = (duty + mkrBase - 1) * 15;
-  const dsrPerBlock = (dsr - 1) * 15;
+  const stabilityFeePerBlock = (duty + mkrBase - 1) * assumedSecondsPerBlock;
+  const dsrPerBlock = (dsr - 1) * assumedSecondsPerBlock;
   const gapPerBlock = 0.04 / blocksPerYear;
   const jumpPerBlock = jump / blocksPerYear;
 
@@ -39,7 +40,7 @@ function baseRoofRateFn(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves)
 }
 
 function daiSupplyRate(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves, reserveFactor = 0.1) {
-  const dsrPerBlock = (dsr - 1) * 15;
+  const dsrPerBlock = (dsr - 1) * assumedSecondsPerBlock;
   const ur = utilizationRate(cash, borrows, reserves);
   const borrowRate = baseRoofRateFn(dsr, duty, mkrBase, jump, kink, cash, borrows, reserves);
   const underlying = cash + borrows - reserves;
@@ -68,7 +69,7 @@ async function getKovanFork() {
   return {kovan, root, accounts};
 }
 
-describe('DAIInterestRateModelV3', () => {
+describe('DAIInterestRateModelV4', () => {
   describe("constructor", () => {
     it("sets jug and ilk address and pokes", async () => {
       // NB: Going back a certain distance requires an archive node, currently that add-on is $250/mo
@@ -76,7 +77,7 @@ describe('DAIInterestRateModelV3', () => {
       const {kovan, root, accounts} = await getKovanFork();
 
       // TODO: Get contract craz
-      let {contract: model} = await saddle.deployFull('DAIInterestRateModelV3', [
+      let {contract: model} = await saddle.deployFull('DAIInterestRateModelV4', [
         etherUnsigned(0.8e18),
         etherUnsigned(0.9e18),
         "0xea190dbdc7adf265260ec4da6e9675fd4f5a78bb",
@@ -152,7 +153,7 @@ describe('DAIInterestRateModelV3', () => {
             etherUnsigned(perSecondBase)
           ]);
 
-          const daiIRM = await deploy('DAIInterestRateModelV3', [
+          const daiIRM = await deploy('DAIInterestRateModelV4', [
             etherUnsigned(jump),
             etherUnsigned(kink),
             pot._address,
@@ -229,7 +230,7 @@ describe('DAIInterestRateModelV3', () => {
             etherUnsigned(perSecondBase)
           ]);
 
-          const daiIRM = await deploy('DAIInterestRateModelV3', [
+          const daiIRM = await deploy('DAIInterestRateModelV4', [
             etherUnsigned(jump),
             etherUnsigned(kink),
             pot._address,
