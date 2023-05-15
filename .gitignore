@@ -43,3 +43,8 @@ junit.xml
 .saddle_history
 node_modules_tmp
 .idea
+artifacts
+cache
+.vscode
+.env.development
+.env.production
