@@ -20,12 +20,21 @@
   "author": "Compound Finance",
   "license": "UNLICENSED",
   "devDependencies": {
+    "@matterlabs/hardhat-zksync-deploy": "^0.6.3",
+    "@matterlabs/hardhat-zksync-solc": "^0.4.1",
+    "@matterlabs/hardhat-zksync-verify": "^0.2.0",
+    "@nomicfoundation/hardhat-verify": "^1.0.3",
     "bignumber.js": "9.0.0",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.16.1",
     "jest-diff": "^26.4.2",
     "jest-junit": "^11.1.0",
     "prettier": "^1.19.0",
     "solhint": "^3.3.7",
-    "solparse": "^2.2.8"
+    "solparse": "^2.2.8",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6",
+    "zksync-web3": "^0.14.3"
   },
   "dependencies": {
     "@solidity-parser/parser": "^0.13.2",
