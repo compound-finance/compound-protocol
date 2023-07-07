@@ -25,6 +25,7 @@
     "@matterlabs/hardhat-zksync-verify": "^0.2.0",
     "@nomicfoundation/hardhat-verify": "^1.0.3",
     "bignumber.js": "9.0.0",
+    "dotenv": "^16.3.1",
     "ethers": "^5.7.2",
     "hardhat": "^2.16.1",
     "jest-diff": "^26.4.2",
