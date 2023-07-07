@@ -62,6 +62,18 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   ];
   await deployContract(deployer, "JumpRateModelV2", interestRateArgs);
 
+  const initialAmount = ethers.utils.parseEther("10000000");
+  const tokenName = "TestUSD";
+  const decimalUnits = 18;
+  const tokenSymbol = "TEST";
+  const testUsdArgs:Array = [
+      initialAmount,
+      tokenName,
+      decimalUnits,
+      tokenSymbol,
+  ];
+  await deployContract(deployer, "contracts/test/ERC20.sol:StandardToken", testUsdArgs);
+
   // Verify contract programmatically 
   //
   // Contract MUST be fully qualified name (e.g. path/sourceName:contractName)
