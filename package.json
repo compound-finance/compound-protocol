@@ -32,7 +32,7 @@
     "eth-saddle": "^0.1.25"
   },
   "resolutions": {
-    "scrypt.js": "https://registry.npmjs.org/@compound-finance/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz",
-    "**/ganache-core": "github:compound-finance/ganache-core.git#jflatow/unbreak-fork"
-  }
+    "scrypt.js": "https://registry.npmjs.org/@compound-finance/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz"
+  },
+  "packageManager": "yarn@1.22.19"
 }
