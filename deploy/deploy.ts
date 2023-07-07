@@ -20,6 +20,64 @@ async function deployContract(deployer: Deployer, name:string, args:Array) {
   // Show the contract info.
   const contractAddress = contract.address;
   console.log(`${artifact.contractName} was deployed to ${contractAddress}`);
+
+  return contract;
+}
+
+async function deployInterestRate(deployer: Deployer, owner:string) {
+  // 5% base rate and 20% + 5% interest at kink and 200% multiplier starting at the kink of 90% utilization
+  const baseRatePerYear:BigNumber = ethers.utils.parseEther("0.05");
+  const multiplierPerYear:BigNumber = ethers.utils.parseEther("0.2");
+  const jumpMultiplierPerYear:BigNumber = ethers.utils.parseEther("2");
+  const kink:BigNumber = ethers.utils.parseEther("0.9");
+
+  const interestRateArgs:Array = [
+      baseRatePerYear,
+      multiplierPerYear,
+      jumpMultiplierPerYear,
+      kink,
+      owner,
+  ];
+  const jumpRate = await deployContract(deployer, "JumpRateModelV2", interestRateArgs);
+
+  return jumpRate;
+}
+
+async function deployTestUsd(deployer: Deployer) {
+  const initialAmount = ethers.utils.parseEther("10000000");
+  const tokenName = "TestUSD";
+  const decimalUnits = 18;
+  const tokenSymbol = "TEST";
+  const testUsdArgs:Array = [
+      initialAmount,
+      tokenName,
+      decimalUnits,
+      tokenSymbol,
+  ];
+  const tUsd = await deployContract(deployer, "contracts/test/ERC20.sol:StandardToken", testUsdArgs);
+
+  return tUsd;
+}
+
+async function deployCTestUsd(deployer: Deployer, underlying:string, comptrollerAddress:string, interestRateModel:string) {
+  const initialExchangeRateMantissa:number = ethers.utils.parseEther("1");
+  const name:string = "Zoro TestUSD";
+  const symbol:string = "zTEST";
+  const decimals:number = 18;
+  const admin = wallet.address;
+  const ctUsdArgs = [
+      underlying,
+      comptrollerAddress,
+      interestRateModel,
+      initialExchangeRateMantissa,
+      name,
+      symbol,
+      decimals,
+      admin,
+  ];
+  const ctUsd = await deployContract(deployer, "CErc20Immutable", ctUsdArgs);
+
+  return ctUsd;
 }
 
 // An example of a deploy script that will deploy and call a simple contract.
@@ -44,35 +102,16 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   // Deploy this contract. The returned object will be of a `Contract` type, similarly to ones in `ethers`.
   // `greeting` is an argument for contract constructor.
 
-  await deployContract(deployer, "Comptroller", []);
+  const priceOracle = await deployContract(deployer, "SimplePriceOracle", []);
 
-  // 5% base rate and 20% + 5% interest at kink and 200% multiplier starting at the kink of 90% utilization
-  const baseRatePerYear:BigNumber = ethers.utils.parseEther("0.05");
-  const multiplierPerYear:BigNumber = ethers.utils.parseEther("0.2");
-  const jumpMultiplierPerYear:BigNumber = ethers.utils.parseEther("2");
-  const kink:BigNumber = ethers.utils.parseEther("0.9");
-  const owner:string = wallet.address;
+  const comptroller = await deployContract(deployer, "Comptroller", []);
+  await comptroller._setPriceOracle(priceOracle.address);
 
-  const interestRateArgs:Array = [
-      baseRatePerYear,
-      multiplierPerYear,
-      jumpMultiplierPerYear,
-      kink,
-      owner,
-  ];
-  await deployContract(deployer, "JumpRateModelV2", interestRateArgs);
+  const jumpRate = await deployInterestRate(deployer, wallet.address);
 
-  const initialAmount = ethers.utils.parseEther("10000000");
-  const tokenName = "TestUSD";
-  const decimalUnits = 18;
-  const tokenSymbol = "TEST";
-  const testUsdArgs:Array = [
-      initialAmount,
-      tokenName,
-      decimalUnits,
-      tokenSymbol,
-  ];
-  await deployContract(deployer, "contracts/test/ERC20.sol:StandardToken", testUsdArgs);
+  const tUsd = await deployTestUsd(deployer);
+
+  await deployCTestUsd(deployer, tUsd.address, comptroller.address, jumpRate.address);
 
   // Verify contract programmatically 
   //
