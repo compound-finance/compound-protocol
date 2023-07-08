@@ -90,6 +90,13 @@ async function configureComptroller(comptroller: Contract) {
   await comptroller._setLiquidationIncentive(liquidationIncentive);
 }
 
+async function addCTokenToMarket(comptroller: Contract, ctoken: Contract) {
+  await comptroller._supportMarket(ctoken.address);
+
+  const collateralFactor:BigNumber = ethers.utils.parseEther("0.5");
+  await comptroller._setCollateralFactor(ctoken.address, collateralFactor);
+}
+
 // An example of a deploy script that will deploy and call a simple contract.
 export default async function (hre: HardhatRuntimeEnvironment) {
   console.log(`Running deploy script for Zoro Protocol`);
@@ -122,7 +129,8 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 
   const tUsd = await deployTestUsd(deployer);
 
-  await deployCTestUsd(deployer, tUsd.address, comptroller.address, jumpRate.address);
+  const ctUsd = await deployCTestUsd(deployer, tUsd.address, comptroller.address, jumpRate.address);
+  await addCTokenToMarket(comptroller, ctUsd);
 
   // Verify contract programmatically 
   //
