@@ -3,6 +3,7 @@ import 'dotenv/config';
 import { HardhatUserConfig } from 'hardhat/config';
 import { Wallet, Provider } from "zksync-web3";
 
+import "@nomiclabs/hardhat-ethers";
 import "@matterlabs/hardhat-zksync-deploy";
 import "@matterlabs/hardhat-zksync-solc";
 import "@matterlabs/hardhat-zksync-verify";

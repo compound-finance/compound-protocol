@@ -24,6 +24,7 @@
     "@matterlabs/hardhat-zksync-solc": "^0.4.1",
     "@matterlabs/hardhat-zksync-verify": "^0.2.0",
     "@nomicfoundation/hardhat-verify": "^1.0.3",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
     "bignumber.js": "9.0.0",
     "dotenv": "^16.3.1",
     "ethers": "^5.7.2",
