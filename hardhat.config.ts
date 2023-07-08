@@ -50,7 +50,9 @@ const config: HardhatUserConfig = {
 };
 
 extendEnvironment((hre) => {
-  const wallet = new Wallet(ETH_PK);
+  const zkSyncProvider = new Provider(hre.network.config.url);
+  const ethProvider = new hre.ethers.getDefaultProvider(hre.network.config.ethNetwork);
+  const wallet = new Wallet(ETH_PK, zkSyncProvider, ethProvider);
   hre.zkWallet = wallet;
 });
 
