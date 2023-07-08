@@ -80,6 +80,16 @@ async function deployCTestUsd(deployer: Deployer, underlying:string, comptroller
   return ctUsd;
 }
 
+async function configureComptroller(comptroller: Contract) {
+  await comptroller._setPriceOracle(priceOracle.address);
+
+  const closeFactor = ethers.utils.parseEther("0.5");
+  await comptroller._setCloseFactor(closeFactor)
+
+  const liquidationIncentive = ethers.utils.parseEther("1.1");
+  await comptroller._setLiquidationIncentive(liquidationIncentive);
+}
+
 // An example of a deploy script that will deploy and call a simple contract.
 export default async function (hre: HardhatRuntimeEnvironment) {
   console.log(`Running deploy script for Zoro Protocol`);
@@ -105,7 +115,8 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   const priceOracle = await deployContract(deployer, "SimplePriceOracle", []);
 
   const comptroller = await deployContract(deployer, "Comptroller", []);
-  await comptroller._setPriceOracle(priceOracle.address);
+
+  await configureComptroller(comptroller);
 
   const jumpRate = await deployInterestRate(deployer, wallet.address);
 
