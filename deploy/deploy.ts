@@ -24,12 +24,13 @@ async function deployContract(deployer: Deployer, name:string, args:Array) {
   return contract;
 }
 
-async function deployInterestRate(deployer: Deployer, owner:string) {
+async function deployInterestRate(deployer: Deployer) {
   // 5% base rate and 20% + 5% interest at kink and 200% multiplier starting at the kink of 90% utilization
   const baseRatePerYear:BigNumber = ethers.utils.parseEther("0.05");
   const multiplierPerYear:BigNumber = ethers.utils.parseEther("0.2");
   const jumpMultiplierPerYear:BigNumber = ethers.utils.parseEther("2");
   const kink:BigNumber = ethers.utils.parseEther("0.9");
+  const owner:string = deployer.zkWallet.address;
 
   const interestRateArgs:Array = [
       baseRatePerYear,
@@ -64,7 +65,7 @@ async function deployCTestUsd(deployer: Deployer, underlying:string, comptroller
   const name:string = "Zoro TestUSD";
   const symbol:string = "zTEST";
   const decimals:number = 18;
-  const admin = wallet.address;
+  const admin = deployer.zkWallet.address;
   const ctUsdArgs = [
       underlying,
       comptrollerAddress,
@@ -80,8 +81,8 @@ async function deployCTestUsd(deployer: Deployer, underlying:string, comptroller
   return ctUsd;
 }
 
-async function configureComptroller(comptroller: Contract) {
-  await comptroller._setPriceOracle(priceOracle.address);
+async function configureComptroller(comptroller: Contract, priceOracleAddress:string) {
+  await comptroller._setPriceOracle(priceOracleAddress);
 
   const closeFactor = ethers.utils.parseEther("0.5");
   await comptroller._setCloseFactor(closeFactor)
@@ -90,11 +91,11 @@ async function configureComptroller(comptroller: Contract) {
   await comptroller._setLiquidationIncentive(liquidationIncentive);
 }
 
-async function addCTokenToMarket(comptroller: Contract, ctoken: Contract) {
-  await comptroller._supportMarket(ctoken.address);
+async function addCTokenToMarket(comptroller: Contract, ctokenAddress:string) {
+  await comptroller._supportMarket(ctokenAddress);
 
   const collateralFactor:BigNumber = ethers.utils.parseEther("0.5");
-  await comptroller._setCollateralFactor(ctoken.address, collateralFactor);
+  await comptroller._setCollateralFactor(ctokenAddress, collateralFactor);
 }
 
 // An example of a deploy script that will deploy and call a simple contract.
@@ -123,14 +124,14 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 
   const comptroller = await deployContract(deployer, "Comptroller", []);
 
-  await configureComptroller(comptroller);
+  await configureComptroller(comptroller, priceOracle.address);
 
-  const jumpRate = await deployInterestRate(deployer, wallet.address);
+  const jumpRate = await deployInterestRate(deployer);
 
   const tUsd = await deployTestUsd(deployer);
 
   const ctUsd = await deployCTestUsd(deployer, tUsd.address, comptroller.address, jumpRate.address);
-  await addCTokenToMarket(comptroller, ctUsd);
+  await addCTokenToMarket(comptroller, ctUsd.address);
 
   // Verify contract programmatically 
   //
