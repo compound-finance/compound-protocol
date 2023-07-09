@@ -177,6 +177,9 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   const ctUsd = await deployCTestUsd(deployer, tUsd.address, comptroller.address, jumpRate.address);
   recordCTokenAddress("test", ctUsd.address);
 
+  const lens = await deployContract(deployer, "CompoundLens", []);
+  recordMainAddress("zoroLens", lens.address);
+
   // If price is zero, the comptroller will fail to set the collateral factor
   await configurePriceOracle(priceOracle, ctUsd.address);
 
