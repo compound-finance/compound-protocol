@@ -1,7 +1,23 @@
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import { utils } from "zksync-web3";
 import * as ethers from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
+
+function recordAddress(path:string, chainId:number, name:string, address:string) {
+  let addresses = {};
+
+  if (existsSync(path)) {
+    const json = readFileSync(path);
+    addresses = JSON.parse(json);
+  }
+
+  const newAddresses = { [name]: { [chainId]: address } };
+  const updatedAddresses = Object.assign(addresses, newAddresses);
+
+  const newJson = JSON.stringify(updatedAddresses, null, 2);
+  writeFileSync(path, newJson);
+}
 
 async function deployContract(deployer: Deployer, name:string, args:Array) {
   const artifact = await deployer.loadArtifact(name);
@@ -123,6 +139,11 @@ async function addCTokenToMarket(comptroller: Contract, ctokenAddress:string) {
 
 // An example of a deploy script that will deploy and call a simple contract.
 export default async function (hre: HardhatRuntimeEnvironment) {
+  const chainId = hre.network.config.chainId;
+  const recordMainAddress = recordAddress.bind(null, "deploy/main.json", chainId);
+  const recordTokenAddress = recordAddress.bind(null, "deploy/tokens.json", chainId);
+  const recordCTokenAddress = recordAddress.bind(null, "deploy/zTokens.json", chainId);
+
   console.log(`Running deploy script for Zoro Protocol`);
 
   const wallet = hre.zkWallet;
@@ -141,20 +162,23 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   // await depositHandle.wait();
 
   const priceOracle = await deployContract(deployer, "SimplePriceOracle", []);
+  recordMainAddress("oracle", priceOracle.address);
 
   const comptroller = await deployContract(deployer, "Comptroller", []);
+  recordMainAddress("comptroller", comptroller.address);
 
   await configureComptroller(comptroller, priceOracle.address);
 
   const jumpRate = await deployInterestRate(deployer);
 
   const tUsd = await deployTestUsd(deployer);
+  recordTokenAddress("test", tUsd.address);
 
   const ctUsd = await deployCTestUsd(deployer, tUsd.address, comptroller.address, jumpRate.address);
+  recordCTokenAddress("test", ctUsd.address);
 
   // If price is zero, the comptroller will fail to set the collateral factor
   await configurePriceOracle(priceOracle, ctUsd.address);
 
   await addCTokenToMarket(comptroller, ctUsd.address);
 }
-

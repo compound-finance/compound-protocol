@@ -34,11 +34,13 @@ const config: HardhatUserConfig = {
     zkSyncLocal: {
       url: "http://localhost:3050",
       ethNetwork: "http://localhost:8545",
+      chainId: 270,
       zksync: true,
     },
     zkSyncTestnet: {
       url: "https://testnet.era.zksync.dev",
       ethNetwork: "goerli", // RPC URL of the network (e.g. `https://goerli.infura.io/v3/<API_KEY>`)
+      chainId: 280,
       zksync: true,
       verifyURL: "https://zksync2-testnet-explorer.zksync.dev/contract_verification"  // Verification endpoint
     },
