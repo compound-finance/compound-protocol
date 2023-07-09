@@ -21,6 +21,18 @@ async function deployContract(deployer: Deployer, name:string, args:Array) {
   const contractAddress = contract.address;
   console.log(`${artifact.contractName} was deployed to ${contractAddress}`);
 
+  // Verify contract programmatically 
+  //
+  // Contract MUST be fully qualified name (e.g. path/sourceName:contractName)
+  // const contractFullyQualifedName = "contracts/Comptroller.sol:Comptroller";
+  // const verificationId = await hre.run("verify:verify", {
+  //   address: contractAddress,
+  //   contract: contractFullyQualifedName,
+  //   constructorArguments: [],
+  //   bytecode: artifact.bytecode,
+  // });
+  // console.log(`${contractFullyQualifedName} verified! VerificationId: ${verificationId}`)
+
   return contract;
 }
 
@@ -82,18 +94,22 @@ async function deployCTestUsd(deployer: Deployer, underlying:string, comptroller
 }
 
 async function configureComptroller(comptroller: Contract, priceOracleAddress:string) {
-  await comptroller._setPriceOracle(priceOracleAddress);
+  const oracleTx = await comptroller._setPriceOracle(priceOracleAddress);
+  await oracleTx.wait();
 
   const closeFactor = ethers.utils.parseEther("0.5");
-  await comptroller._setCloseFactor(closeFactor)
+  const closeFactorTx = await comptroller._setCloseFactor(closeFactor)
+  await closeFactorTx.wait();
 
   const liquidationIncentive = ethers.utils.parseEther("1.1");
-  await comptroller._setLiquidationIncentive(liquidationIncentive);
+  const incentiveTx = await comptroller._setLiquidationIncentive(liquidationIncentive);
+  await incentiveTx.wait();
 }
 
 async function configurePriceOracle(priceOracle: Contract, ctokenAddress:string) {
   const price = ethers.utils.parseEther("1");
-  await priceOracle.setUnderlyingPrice(ctokenAddress, price);
+  const setPriceTx = await priceOracle.setUnderlyingPrice(ctokenAddress, price);
+  await setPriceTx.wait();
 }
 
 async function addCTokenToMarket(comptroller: Contract, ctokenAddress:string) {
@@ -101,7 +117,8 @@ async function addCTokenToMarket(comptroller: Contract, ctokenAddress:string) {
 
   // If the ctoken isn't a supported market, it will fail to set the collateral factor
   const collateralFactor:BigNumber = ethers.utils.parseEther("0.5");
-  await comptroller._setCollateralFactor(ctokenAddress, collateralFactor);
+  const collateralTx = await comptroller._setCollateralFactor(ctokenAddress, collateralFactor);
+  await collateralTx.wait();
 }
 
 // An example of a deploy script that will deploy and call a simple contract.
@@ -123,9 +140,6 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   // Wait until the deposit is processed on zkSync
   // await depositHandle.wait();
 
-  // Deploy this contract. The returned object will be of a `Contract` type, similarly to ones in `ethers`.
-  // `greeting` is an argument for contract constructor.
-
   const priceOracle = await deployContract(deployer, "SimplePriceOracle", []);
 
   const comptroller = await deployContract(deployer, "Comptroller", []);
@@ -142,17 +156,5 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   await configurePriceOracle(priceOracle, ctUsd.address);
 
   await addCTokenToMarket(comptroller, ctUsd.address);
-
-  // Verify contract programmatically 
-  //
-  // Contract MUST be fully qualified name (e.g. path/sourceName:contractName)
-  // const contractFullyQualifedName = "contracts/Comptroller.sol:Comptroller";
-  // const verificationId = await hre.run("verify:verify", {
-  //   address: contractAddress,
-  //   contract: contractFullyQualifedName,
-  //   constructorArguments: [],
-  //   bytecode: artifact.bytecode,
-  // });
-  // console.log(`${contractFullyQualifedName} verified! VerificationId: ${verificationId}`)
 }
 

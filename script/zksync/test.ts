@@ -32,15 +32,18 @@ async function main() {
 
   const price = utils.parseEther("1");
   console.log(`Setting price oracle to ${utils.formatEther(price)}...`);
-  await priceOracle.setUnderlyingPrice(ctUsd.address, price);
+  const setPriceTx = await priceOracle.setUnderlyingPrice(ctUsd.address, price);
+  await setPriceTx.wait();
 
   const mintAmount = utils.parseEther("1");
 
   console.log(`Approving ${utils.formatEther(mintAmount)} TEST...`);
-  await testUsd.approve(ctUsd.address, mintAmount);
+  const approveTx = await testUsd.approve(ctUsd.address, mintAmount);
+  await approveTx.wait();
 
   console.log(`Minting ${utils.formatEther(mintAmount)} zTEST...`);
-  await ctUsd.mint(mintAmount);
+  const mintTx = await ctUsd.mint(mintAmount);
+  await mintTx.wait()
 
   const ctUsdBalance = await ctUsd.balanceOf(wallet.address);
   logBalance("zTEST", ctUsdBalance);
@@ -53,12 +56,14 @@ async function main() {
   };
 
   console.log(`Entering the ${Object.keys(ctokens).join(", ")} markets...`);
-  await comptroller.enterMarkets(Object.values(ctokens));
+  const marketTx = await comptroller.enterMarkets(Object.values(ctokens));
+  await marketTx.wait();
 
   const collateralFactor:BigNumber = utils.parseEther("0.5");
 
   console.log(`Setting collateral factor to ${utils.formatEther(collateralFactor)}...`);
-  const receipt = await comptroller._setCollateralFactor(ctUsd.address, collateralFactor);
+  const collateralTx = await comptroller._setCollateralFactor(ctUsd.address, collateralFactor);
+  await collateralTx.wait();
 
   const { isListed, collateralFactorMantissa, isComped } = await comptroller.markets(ctUsd.address);
   console.log(`TEST market is ${isListed ? "" : "not"} listed with a collateral factor of ${utils.formatEther(collateralFactorMantissa)}`);
@@ -69,7 +74,8 @@ async function main() {
   const borrowAmount = utils.parseEther("0.25");
 
   console.log(`Borrowing ${utils.formatEther(borrowAmount)} TEST...`);
-  await ctUsd.borrow(borrowAmount);
+  const borrowTx = await ctUsd.borrow(borrowAmount);
+  await borrowTx.wait();
 
   logBalance("TEST", testUsdBalance);
 
