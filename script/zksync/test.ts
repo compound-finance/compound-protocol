@@ -1,6 +1,10 @@
 import hre from "hardhat";
 const utils = hre.ethers.utils;
 
+import mainAddresses from "../../deploy/main.json";
+import tokenAddresses from "../../deploy/tokens.json";
+import ctokenAddresses from "../../deploy/zTokens.json";
+
 function logBalance(symbol:string, balance:hre.ethers.BigNumber) {
   console.log(`Wallet balance (${symbol}): ${utils.formatEther(balance)}`);
 }
@@ -8,9 +12,11 @@ function logBalance(symbol:string, balance:hre.ethers.BigNumber) {
 async function main() {
   console.log(`Running test script for Zoro Protocol on zkSync`);
 
+  const chainId = hre.network.config.chainId;
+
   const wallet = hre.zkWallet;
 
-  const testUsdAddress = "0xd4567AA4Fd1B32A16c16CBFF9D9a69e51CF72293";
+  const testUsdAddress = tokenAddresses["test"][chainId];
   const testUsd = await hre.ethers.getContractAt(
     "contracts/test/ERC20.sol:StandardToken",
     testUsdAddress,
@@ -20,14 +26,14 @@ async function main() {
   const testUsdBalance = await testUsd.balanceOf(wallet.address);
   logBalance("TEST", testUsdBalance);
 
-  const ctUsdAddress = "0xcFDE18a0f130bBAfe0037072407F83899D49414f";
+  const ctUsdAddress = ctokenAddresses["test"][chainId];
   const ctUsd = await hre.ethers.getContractAt(
     "CErc20Immutable",
     ctUsdAddress,
     wallet
   );
 
-  const priceOracleAddress = "0x1F0151386fB0AbBF0273238dF5E9bc519DE5e20B";
+  const priceOracleAddress = mainAddresses["oracle"][chainId];
   const priceOracle = await hre.ethers.getContractAt("SimplePriceOracle", priceOracleAddress, wallet);
 
   const price = utils.parseEther("1");
@@ -48,7 +54,7 @@ async function main() {
   const ctUsdBalance = await ctUsd.balanceOf(wallet.address);
   logBalance("zTEST", ctUsdBalance);
 
-  const comptrollerAddress = "0x5B11c36bf87ED2EAc102C42E9528eC99D77f7aFd";
+  const comptrollerAddress = mainAddresses["comptroller"][chainId];
   const comptroller = await hre.ethers.getContractAt("Comptroller", comptrollerAddress, wallet);
 
   const ctokens = {
@@ -77,9 +83,8 @@ async function main() {
   const borrowTx = await ctUsd.borrow(borrowAmount);
   await borrowTx.wait();
 
-  logBalance("TEST", testUsdBalance);
-
-  const interestRateModelAddress = "0x29c6fF2E3D04a9f37e7af1fF9b38C9E2e9079FfA";
+  const newTestUsdBalance = await testUsd.balanceOf(wallet.address);
+  logBalance("TEST", newTestUsdBalance);
 }
 
 main().catch((error) => {
