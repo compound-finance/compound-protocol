@@ -91,9 +91,15 @@ async function configureComptroller(comptroller: Contract, priceOracleAddress:st
   await comptroller._setLiquidationIncentive(liquidationIncentive);
 }
 
+async function configurePriceOracle(priceOracle: Contract, ctokenAddress:string) {
+  const price = ethers.utils.parseEther("1");
+  await priceOracle.setUnderlyingPrice(ctokenAddress, price);
+}
+
 async function addCTokenToMarket(comptroller: Contract, ctokenAddress:string) {
   await comptroller._supportMarket(ctokenAddress);
 
+  // If the ctoken isn't a supported market, it will fail to set the collateral factor
   const collateralFactor:BigNumber = ethers.utils.parseEther("0.5");
   await comptroller._setCollateralFactor(ctokenAddress, collateralFactor);
 }
@@ -131,6 +137,10 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   const tUsd = await deployTestUsd(deployer);
 
   const ctUsd = await deployCTestUsd(deployer, tUsd.address, comptroller.address, jumpRate.address);
+
+  // If price is zero, the comptroller will fail to set the collateral factor
+  await configurePriceOracle(priceOracle, ctUsd.address);
+
   await addCTokenToMarket(comptroller, ctUsd.address);
 
   // Verify contract programmatically 
