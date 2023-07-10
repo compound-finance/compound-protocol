@@ -180,6 +180,9 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   const lens = await deployContract(deployer, "CompoundLens", []);
   recordMainAddress("zoroLens", lens.address);
 
+  const multicall = await deployContract(deployer, "Multicall3", []);
+  recordMainAddress("multicall", lens.address);
+
   // If price is zero, the comptroller will fail to set the collateral factor
   await configurePriceOracle(priceOracle, ctUsd.address);
 
