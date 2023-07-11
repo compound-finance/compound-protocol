@@ -72,6 +72,26 @@ async function deployInterestRate(deployer: Deployer) {
   return jumpRate;
 }
 
+async function deployCEther(deployer: Deployer, comptrollerAddress:string, interestRateModel:string) {
+  const initialExchangeRateMantissa:number = ethers.utils.parseEther("1");
+  const name:string = "Zoro Ether";
+  const symbol:string = "zETH";
+  const decimals:number = 18;
+  const admin = deployer.zkWallet.address;
+  const cetherArgs = [
+      comptrollerAddress,
+      interestRateModel,
+      initialExchangeRateMantissa,
+      name,
+      symbol,
+      decimals,
+      admin,
+  ];
+  const cether = await deployContract(deployer, "CEther", cetherArgs);
+
+  return cether;
+}
+
 async function deployTestUsd(deployer: Deployer) {
   const initialAmount = ethers.utils.parseEther("10000000");
   const tokenName = "TestUSD";
@@ -171,10 +191,22 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 
   const jumpRate = await deployInterestRate(deployer);
 
+  const cether = await deployCEther(
+    deployer,
+    comptroller.address,
+    jumpRate.address
+  );
+  recordCTokenAddress("eth", cether.address);
+
   const tUsd = await deployTestUsd(deployer);
   recordTokenAddress("test", tUsd.address);
 
-  const ctUsd = await deployCTestUsd(deployer, tUsd.address, comptroller.address, jumpRate.address);
+  const ctUsd = await deployCTestUsd(
+    deployer,
+    tUsd.address,
+    comptroller.address,
+    jumpRate.address
+  );
   recordCTokenAddress("test", ctUsd.address);
 
   const lens = await deployContract(deployer, "CompoundLens", []);
