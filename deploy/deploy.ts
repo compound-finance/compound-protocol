@@ -213,6 +213,9 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   const lens = await deployContract(deployer, "CompoundLens", []);
   recordMainAddress("zoroLens", lens.address);
 
+  const maxi = await deployContract(deployer, "Maximillion", [cether.address]);
+  recordMainAddress("maximillion", maxi.address);
+
   const multicall = await deployContract(deployer, "Multicall3", []);
   recordMainAddress("multicall", multicall.address);
 
