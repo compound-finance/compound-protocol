@@ -75,7 +75,7 @@ async function deployInterestRate(deployer: Deployer) {
 async function deployCEther(deployer: Deployer, comptrollerAddress:string, interestRateModel:string) {
   const initialExchangeRateMantissa:number = ethers.utils.parseEther("1");
   const name:string = "Zoro Ether";
-  const symbol:string = "zETH";
+  const symbol:string = "cETH";
   const decimals:number = 18;
   const admin = deployer.zkWallet.address;
   const cetherArgs = [
