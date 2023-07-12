@@ -149,7 +149,8 @@ async function configurePriceOracle(priceOracle: Contract, ctokenAddress:string)
 }
 
 async function addCTokenToMarket(comptroller: Contract, ctokenAddress:string) {
-  await comptroller._supportMarket(ctokenAddress);
+  const addMarketTx = await comptroller._supportMarket(ctokenAddress);
+  await addMarketTx.wait();
 
   // If the ctoken isn't a supported market, it will fail to set the collateral factor
   const collateralFactor:BigNumber = ethers.utils.parseEther("0.5");
