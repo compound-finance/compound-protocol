@@ -218,6 +218,8 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 
   // If price is zero, the comptroller will fail to set the collateral factor
   await configurePriceOracle(priceOracle, ctUsd.address);
+  await configurePriceOracle(priceOracle, cether.address);
 
   await addCTokenToMarket(comptroller, ctUsd.address);
+  await addCTokenToMarket(comptroller, cether.address);
 }
