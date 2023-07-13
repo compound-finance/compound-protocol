@@ -429,6 +429,17 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
          */
 
         uint mintTokens = div_(actualMintAmount, exchangeRate);
+        
+        if (totalSupply == 0) {
+            // if this is our first mint, burn a small amount
+            if (mintTokens < MINIMUM_FIRST_MINT) {
+                revert MinimumMintCheck();
+            }
+            accountTokens[minter] = accountTokens[minter] + mintTokens - MINIMUM_FIRST_MINT;
+            accountTokens[address(0)] = accountTokens[address(0)] + MINIMUM_FIRST_MINT;
+        } else {
+            accountTokens[minter] = accountTokens[minter] + mintTokens;
+        }
 
         /*
          * We calculate the new total supply of cTokens and minter token balance, checking for overflow:
@@ -437,7 +448,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
          * And write them into storage
          */
         totalSupply = totalSupply + mintTokens;
-        accountTokens[minter] = accountTokens[minter] + mintTokens;
+
 
         /* We emit a Mint event, and a Transfer event */
         emit Mint(minter, actualMintAmount, mintTokens);

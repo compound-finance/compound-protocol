@@ -33,6 +33,9 @@ contract CTokenStorage {
     // Maximum fraction of interest that can be set aside for reserves
     uint internal constant reserveFactorMaxMantissa = 1e18;
 
+    // Minimum amount of cToken we burn on the first mint
+    uint internal constant MINIMUM_FIRST_MINT = 1_000;
+
     /**
      * @notice Administrator for this contract
      */

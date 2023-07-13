@@ -81,6 +81,7 @@ contract TokenErrorReporter {
 
     error MintComptrollerRejection(uint256 errorCode);
     error MintFreshnessCheck();
+    error MinimumMintCheck();
 
     error RedeemComptrollerRejection(uint256 errorCode);
     error RedeemFreshnessCheck();
