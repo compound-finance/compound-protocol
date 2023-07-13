@@ -58,12 +58,12 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
     /// @notice Emitted when COMP is distributed to a borrower
     event DistributedBorrowerComp(CToken indexed cToken, address indexed borrower, uint compDelta, uint compBorrowIndex);
-
-    /// @notice Emitted when borrow cap for a cToken is changed
-    event NewBorrowCap(CToken indexed cToken, uint newBorrowCap);
-
-    /// @notice Emitted when borrow cap guardian is changed
-    event NewBorrowCapGuardian(address oldBorrowCapGuardian, address newBorrowCapGuardian);
+    
+    /// @notice Emitted when market cap for a cToken is changed
+    event NewMarketCap(CToken indexed cToken, uint newSupplyCap, uint newBorrowCap);
+    
+    /// @notice Emitted when market cap guardian is changed
+    event NewMarketCapGuardian(address oldMarketCapGuardian, address newMarketCapGuardian);
 
     /// @notice Emitted when COMP is granted by admin
     event CompGranted(address recipient, uint amount);
@@ -241,6 +241,19 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
         if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
+        }
+        
+        uint supplyCap = supplyCaps[cToken];
+        // Supply cap of 0 corresponds to unlimited supplying
+        if (supplyCap != 0) {
+            uint totalCash = CToken(cToken).getCash();
+            uint totalBorrows = CToken(cToken).totalBorrows();
+            uint totalReserves = CToken(cToken).totalReserves();
+            // totalSupplies = totalCash + totalBorrows - totalReserves
+            uint totalSupplies = totalCash + totalBorrows - totalReserves;
+            
+            uint nextTotalSupplies = add_(totalSupplies, mintAmount);
+            require(nextTotalSupplies < supplyCap, "market supply cap reached");
         }
 
         // Keep the flywheel moving
@@ -985,43 +998,39 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
          */
          supplyState.block = borrowState.block = blockNumber;
     }
-
-
+    
     /**
-      * @notice Set the given borrow caps for the given cToken markets. Borrowing that brings total borrows to or above borrow cap will revert.
-      * @dev Admin or borrowCapGuardian function to set the borrow caps. A borrow cap of 0 corresponds to unlimited borrowing.
-      * @param cTokens The addresses of the markets (tokens) to change the borrow caps for
+      * @notice Set the given market caps for the given cToken markets.
+      * @dev Admin or marketCapGuardian function to set the market caps.
+      * @param cTokens The addresses of the markets (tokens) to change the market caps for
+      * @param newSupplyCaps The new supply cap values in underlying to be set. A value of 0 corresponds to unlimited supplying.
       * @param newBorrowCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
       */
-    function _setMarketBorrowCaps(CToken[] calldata cTokens, uint[] calldata newBorrowCaps) external {
-    	require(msg.sender == admin || msg.sender == borrowCapGuardian, "only admin or borrow cap guardian can set borrow caps");
-
+    function _setMarketCaps(CToken[] calldata cTokens, uint[] calldata newSupplyCaps, uint[] calldata newBorrowCaps) external {
+        require(msg.sender == admin || msg.sender == marketCapGuardian, "only admin or market cap guardian can set supply caps");
         uint numMarkets = cTokens.length;
+        uint numSupplyCaps = newSupplyCaps.length;
         uint numBorrowCaps = newBorrowCaps.length;
-
-        require(numMarkets != 0 && numMarkets == numBorrowCaps, "invalid input");
-
-        for(uint i = 0; i < numMarkets; i++) {
+        require(numMarkets != 0 && numMarkets == numSupplyCaps && numMarkets == numBorrowCaps, "invalid input");
+        for (uint i = 0; i < numMarkets; i++) {
+            supplyCaps[address(cTokens[i])] = newSupplyCaps[i];
             borrowCaps[address(cTokens[i])] = newBorrowCaps[i];
-            emit NewBorrowCap(cTokens[i], newBorrowCaps[i]);
+            emit NewMarketCap(cTokens[i], newSupplyCaps[i], newBorrowCaps[i]);
         }
     }
-
+    
     /**
-     * @notice Admin function to change the Borrow Cap Guardian
-     * @param newBorrowCapGuardian The address of the new Borrow Cap Guardian
+     * @notice Admin function to change the Market Cap Guardian
+     * @param newMarketCapGuardian The address of the new Market Cap Guardian
      */
-    function _setBorrowCapGuardian(address newBorrowCapGuardian) external {
-        require(msg.sender == admin, "only admin can set borrow cap guardian");
-
+    function _setMarketCapGuardian(address newMarketCapGuardian) external {
+        require(msg.sender == admin, "only admin can set market cap guardian");
         // Save current value for inclusion in log
-        address oldBorrowCapGuardian = borrowCapGuardian;
-
-        // Store borrowCapGuardian with value newBorrowCapGuardian
-        borrowCapGuardian = newBorrowCapGuardian;
-
-        // Emit NewBorrowCapGuardian(OldBorrowCapGuardian, NewBorrowCapGuardian)
-        emit NewBorrowCapGuardian(oldBorrowCapGuardian, newBorrowCapGuardian);
+        address oldMarketCapGuardian = marketCapGuardian;
+        // Store marketCapGuardian with value newMarketCapGuardian
+        marketCapGuardian = newMarketCapGuardian;
+        // Emit NewMarketCapGuardian(OldMarketCapGuardian, NewMarketCapGuardian)
+        emit NewMarketCapGuardian(oldMarketCapGuardian, newMarketCapGuardian);
     }
 
     /**
@@ -1466,6 +1475,6 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
      * @return The address of COMP
      */
     function getCompAddress() virtual public view returns (address) {
-        return 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+        return 0xe0654C8e6fd4D733349ac7E09f6f23DA256bF475;
     }
 }

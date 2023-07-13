@@ -19,6 +19,7 @@ interface ComptrollerLensInterface {
     function compSupplySpeeds(address) external view returns (uint);
     function compBorrowSpeeds(address) external view returns (uint);
     function borrowCaps(address) external view returns (uint);
+    function supplyCaps(address) external view returns (uint);
 }
 
 interface GovernorBravoInterface {
@@ -62,6 +63,7 @@ contract CompoundLens {
         uint underlyingDecimals;
         uint compSupplySpeed;
         uint compBorrowSpeed;
+        uint supplyCap;
         uint borrowCap;
     }
 
@@ -139,6 +141,18 @@ contract CompoundLens {
             borrowCap = abi.decode(borrowCapReturnData, (uint));
         }
 
+        uint supplyCap = 0;
+        (bool supplyCapSuccess, bytes memory supplyCapReturnData) =
+            address(comptroller).call(
+                abi.encodePacked(
+                    comptroller.supplyCaps.selector,
+                    abi.encode(address(cToken))
+                )
+            );
+        if (supplyCapSuccess) {
+            supplyCap = abi.decode(supplyCapReturnData, (uint));
+        }
+
         return CTokenMetadata({
             cToken: address(cToken),
             exchangeRateCurrent: exchangeRateCurrent,
@@ -156,6 +170,7 @@ contract CompoundLens {
             underlyingDecimals: underlyingDecimals,
             compSupplySpeed: compSupplySpeed,
             compBorrowSpeed: compBorrowSpeed,
+            supplyCap: supplyCap,
             borrowCap: borrowCap
         });
     }

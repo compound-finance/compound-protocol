@@ -128,9 +128,12 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
 }
 
 contract ComptrollerV4Storage is ComptrollerV3Storage {
-    // @notice The borrowCapGuardian can set borrowCaps to any number for any market. Lowering the borrow cap could disable borrowing on the given market.
-    address public borrowCapGuardian;
-
+    // @notice The marketCapGuardian can set marketCaps to any number for any market.
+    address public marketCapGuardian;
+    
+    // @notice Supply caps enforced by mintAllowed for each cToken address. Defaults to zero which corresponds to unlimited supplying.
+    mapping(address => uint) public supplyCaps;
+    
     // @notice Borrow caps enforced by borrowAllowed for each cToken address. Defaults to zero which corresponds to unlimited borrowing.
     mapping(address => uint) public borrowCaps;
 }
