@@ -108,14 +108,30 @@ async function deployTestUsd(deployer: Deployer) {
   return tUsd;
 }
 
-async function deployCTestUsd(deployer: Deployer, underlying:string, comptrollerAddress:string, interestRateModel:string) {
+async function deployCToken(
+    deployer: Deployer,
+    underlyingAddr:string,
+    comptrollerAddress:string,
+    interestRateModel:string
+) {
+  const underlying = await deployer.hre.ethers.getContractAt(
+    "EIP20Interface",
+    underlyingAddr,
+    deployer.zkWallet
+  );
+
+  const underlyingName = await underlying.name();
+  const name:string = `Zoro ${underlyingName}`;
+
+  const underlyingSymbol = await underlying.symbol();
+  const symbol:string = `z${underlyingSymbol}`;
+
   const initialExchangeRateMantissa:number = ethers.utils.parseEther("1");
-  const name:string = "Zoro TestUSD";
-  const symbol:string = "zTEST";
   const decimals:number = 18;
   const admin = deployer.zkWallet.address;
-  const ctUsdArgs = [
-      underlying,
+
+  const cTokenArgs = [
+      underlyingAddr,
       comptrollerAddress,
       interestRateModel,
       initialExchangeRateMantissa,
@@ -124,9 +140,10 @@ async function deployCTestUsd(deployer: Deployer, underlying:string, comptroller
       decimals,
       admin,
   ];
-  const ctUsd = await deployContract(deployer, "CErc20Immutable", ctUsdArgs);
 
-  return ctUsd;
+  const cToken = await deployContract(deployer, "CErc20Immutable", cTokenArgs);
+
+  return cToken;
 }
 
 async function configureComptroller(comptroller: Contract, priceOracleAddress:string) {
@@ -202,7 +219,7 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   const tUsd = await deployTestUsd(deployer);
   recordTokenAddress("test", tUsd.address);
 
-  const ctUsd = await deployCTestUsd(
+  const ctUsd = await deployCToken(
     deployer,
     tUsd.address,
     comptroller.address,
