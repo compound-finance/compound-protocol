@@ -105,13 +105,17 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 
   const lens = await deployLens(deployer);
 
-  const multicall = await deployMulticall(deployer);
-
   const cether = await deployCEther(deployer, priceOracle, comptroller, jumpRate);
 
   const maxi = await deployMaximillion(deployer, cether);
 
-  const tUsd = await deployTestUsd(deployer);
+  if (chainId === 270) {
+    console.log("Deploying contracts for local test network");
+
+    const multicall = await deployMulticall(deployer);
+
+    const tUsd = await deployTestUsd(deployer);
+  }
 
   await deployCTokenAll(deployer, priceOracle, comptroller, jumpRate);
 }
