@@ -35,13 +35,13 @@ export async function getWalletFromKeystore() {
   const password = await prompt("Password: ", { "method": "hide" });
 
   const keystoreJson = readFileSync(KEYSTORE_PATH);
-  const wallet = await Wallet.fromEncryptedJson(keystoreJson, password);
+  let wallet = await Wallet.fromEncryptedJson(keystoreJson, password);
 
   const zkSyncProvider = new Provider(hre.network.config.url);
-  wallet.connect(zkSyncProvider);
+  wallet = wallet.connect(zkSyncProvider);
 
   const ethProvider = new hre.ethers.getDefaultProvider(hre.network.config.ethNetwork);
-  wallet.connectToL1(ethProvider);
+  wallet = wallet.connectToL1(ethProvider);
 
   return wallet;
 }
