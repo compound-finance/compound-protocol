@@ -94,4 +94,6 @@ extendEnvironment(async (hre) => {
   hre.getWallet = getWallet;
 });
 
+import "./script/zksync/addToMarket";
+
 module.exports = config;
