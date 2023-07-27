@@ -82,7 +82,7 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 
   console.log(`Running deploy script for Zoro Protocol`);
 
-  const wallet = await hre.getWalletFromKeystore();
+  const wallet = await hre.getWallet();
 
   // Create deployer object and load the artifact of the contract you want to deploy.
   const deployer = new Deployer(hre, wallet);
