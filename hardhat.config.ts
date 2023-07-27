@@ -1,15 +1,17 @@
 import 'dotenv/config';
+import { readFileSync } from "fs";
 
 import { HardhatUserConfig } from 'hardhat/config';
 import { Wallet, Provider } from "zksync-web3";
 
 import "@nomiclabs/hardhat-ethers";
+import prompt from "password-prompt";
 import "@matterlabs/hardhat-zksync-deploy";
 import "@matterlabs/hardhat-zksync-solc";
 import "@matterlabs/hardhat-zksync-verify";
 
 /* note: boolean environment variables are imported as strings */
-const { ETH_PK = "", } = process.env;
+const { ETH_PK = "", KEYSTORE_PATH = "" } = process.env;
 
 export function requireEnv(varName, msg?: string): string {
   const varVal = process.env[varName];
@@ -19,8 +21,24 @@ export function requireEnv(varName, msg?: string): string {
   return varVal;
 }
 
-[ "ETH_PK" ].map(v => requireEnv(v));
+["ETH_PK", "KEYSTORE_PATH"].map(v => requireEnv(v));
 
+export async function getWalletFromKeystore() {
+    const password = await prompt("Password: ", { "method": "hide" });
+
+    const keystoreJson = readFileSync(KEYSTORE_PATH);
+    const wallet = await Wallet.fromEncryptedJson(keystoreJson, password);
+
+    const zkSyncProvider = new Provider(hre.network.config.url);
+    wallet.connect(zkSyncProvider);
+
+    const ethProvider = new hre.ethers.getDefaultProvider(hre.network.config.ethNetwork);
+    wallet.connectToL1(ethProvider);
+
+    hre.zkWallet = wallet;
+
+    return wallet;
+}
 
 const config: HardhatUserConfig = {
   zksolc: {
@@ -51,11 +69,8 @@ const config: HardhatUserConfig = {
   },
 };
 
-extendEnvironment((hre) => {
-  const zkSyncProvider = new Provider(hre.network.config.url);
-  const ethProvider = new hre.ethers.getDefaultProvider(hre.network.config.ethNetwork);
-  const wallet = new Wallet(ETH_PK, zkSyncProvider, ethProvider);
-  hre.zkWallet = wallet;
+extendEnvironment(async (hre) => {
+  hre.walletFromJson = walletFromJson;
 });
 
 module.exports = config;
