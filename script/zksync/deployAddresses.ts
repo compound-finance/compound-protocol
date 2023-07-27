@@ -26,6 +26,7 @@ function recordAddress(path:string, chainId:number, name:string, address:string)
 }
 
 export const getUnderlyingTokens = getAddressAll.bind(null, TOKEN_ADDRESSES_PATH);
+export const getMainAddresses = getAddressAll.bind(null, MAIN_ADDRESSES_PATH);
 
 export const recordMainAddress = recordAddress.bind(null, MAIN_ADDRESSES_PATH);
 export const recordTokenAddress = recordAddress.bind(null, TOKEN_ADDRESSES_PATH);
