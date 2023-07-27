@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
+import _ from "lodash";
 
 const MAIN_ADDRESSES_PATH:string = "deploy/main.json";
 const TOKEN_ADDRESSES_PATH:string = "deploy/tokens.json";
@@ -18,7 +19,7 @@ function recordAddress(path:string, chainId:number, name:string, address:string)
   let addresses = getAddressAll(path);
 
   const newAddresses = { [name]: { [chainId]: address } };
-  const updatedAddresses = Object.assign(addresses, newAddresses);
+  const updatedAddresses = _.merge(addresses, newAddresses);
 
   const newJson = JSON.stringify(updatedAddresses, null, 2);
   writeFileSync(path, newJson);
