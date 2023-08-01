@@ -95,5 +95,6 @@ extendEnvironment(async (hre) => {
 });
 
 import "./tasks/addCTokenToMarket";
+import "./tasks/deployCToken";
 
 module.exports = config;
