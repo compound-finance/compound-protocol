@@ -1,7 +1,10 @@
 import * as ethers from "ethers";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import deployContract from "./deployContract";
-import { getUnderlyingTokens, recordCTokenAddress } from "./deployAddresses";
+import {
+  getUnderlyingTokens,
+  recordCTokenAddress
+} from "./deployAddresses";
 import {
   configurePriceOracle,
   addCTokenToMarket
@@ -11,7 +14,8 @@ export async function deployCToken(
   deployer: Deployer,
   underlyingAddr:string,
   comptrollerAddress:string,
-  interestRateModel:string
+  interestRateModel:string,
+  exchangeRateDecimals: number = 28
 ) {
   const underlying = await deployer.hre.ethers.getContractAt(
     "EIP20Interface",
@@ -25,8 +29,8 @@ export async function deployCToken(
   const underlyingSymbol = await underlying.symbol();
   const symbol:string = `z${underlyingSymbol}`;
 
-  const initialExchangeRateMantissa:number = ethers.utils.parseEther("1");
-  const decimals:number = 18;
+  const initialExchangeRateMantissa:number = ethers.utils.parseUnits("1", exchangeRateDecimals);
+  const decimals:number = 8;
   const admin = deployer.zkWallet.address;
 
   const cTokenArgs = [
