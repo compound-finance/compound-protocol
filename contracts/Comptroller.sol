@@ -13,7 +13,7 @@ import "./Governance/Comp.sol";
  * @title Compound's Comptroller Contract
  * @author Compound
  */
-contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError {
+contract Comptroller is ComptrollerV8Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError {
     /// @notice Emitted when an admin supports a market
     event MarketListed(CToken cToken);
 
@@ -58,12 +58,18 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
 
     /// @notice Emitted when COMP is distributed to a borrower
     event DistributedBorrowerComp(CToken indexed cToken, address indexed borrower, uint compDelta, uint compBorrowIndex);
-    
-    /// @notice Emitted when market cap for a cToken is changed
-    event NewMarketCap(CToken indexed cToken, uint newSupplyCap, uint newBorrowCap);
-    
-    /// @notice Emitted when market cap guardian is changed
-    event NewMarketCapGuardian(address oldMarketCapGuardian, address newMarketCapGuardian);
+
+    /// @notice Emitted when borrow cap for a cToken is changed
+    event NewBorrowCap(CToken indexed cToken, uint newBorrowCap);
+
+    /// @notice Emitted when borrow cap guardian is changed
+    event NewBorrowCapGuardian(address oldBorrowCapGuardian, address newBorrowCapGuardian);
+
+    /// @notice Emitted when supply cap for a cToken is changed
+    event NewSupplyCap(CToken indexed cToken, uint newSupplyCap);
+
+    /// @notice Emitted when supply cap guardian is changed
+    event NewSupplyCapGuardian(address oldSupplyCapGuardian, address newSupplyCapGuardian);
 
     /// @notice Emitted when COMP is granted by admin
     event CompGranted(address recipient, uint amount);

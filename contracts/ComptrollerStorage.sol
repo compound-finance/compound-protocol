@@ -128,12 +128,9 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
 }
 
 contract ComptrollerV4Storage is ComptrollerV3Storage {
-    // @notice The marketCapGuardian can set marketCaps to any number for any market.
-    address public marketCapGuardian;
-    
-    // @notice Supply caps enforced by mintAllowed for each cToken address. Defaults to zero which corresponds to unlimited supplying.
-    mapping(address => uint) public supplyCaps;
-    
+    // @notice The borrowCapGuardian can set borrowCaps to any number for any market. Lowering the borrow cap could disable borrowing on the given market.
+    address public borrowCapGuardian;
+
     // @notice Borrow caps enforced by borrowAllowed for each cToken address. Defaults to zero which corresponds to unlimited borrowing.
     mapping(address => uint) public borrowCaps;
 }
@@ -160,4 +157,12 @@ contract ComptrollerV7Storage is ComptrollerV6Storage {
 
     /// @notice Accounting storage mapping account addresses to how much COMP they owe the protocol.
     mapping(address => uint) public compReceivable;
+}
+
+contract ComptrollerV8Storage is ComptrollerV7Storage {
+    // @notice The supplyCapGuardian can set supplyCaps to any number for any market. Lowering the supply cap could disable supplying on the given market.
+    address public supplyCapGuardian;
+
+    // @notice Supply caps enforced by supplyAllowed for each cToken address. Defaults to zero which corresponds to unlimited supplying.
+    mapping(address => uint) public supplyCaps;
 }
