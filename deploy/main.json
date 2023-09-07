@@ -1,0 +1,22 @@
+{
+  "oracle": {
+    "280": "0x0d6A287D3501ce6A253Be2C866c14a83bAA06391"
+  },
+  "comptroller": {
+    "280": "0xbecBDD88E1aa068E626Eb06fA9bD679b0A536Ee1"
+  },
+  "zoroLens": {
+    "280": "0x74426f50627eb84298506e74d989eD27b3C757E9"
+  },
+  "multicall": {
+    "280": "0xF9cda624FBC7e059355ce98a31693d299FACd963",
+    "324": "0xF9cda624FBC7e059355ce98a31693d299FACd963",
+    "270": "0x715E98261094420492386Af6BE76ef809a08Af3B"
+  },
+  "maximillion": {
+    "280": "0x0Ad04f2912D427DdEAE431Ee7f6CAC992F145C37"
+  },
+  "interest": {
+    "280": "0x4513a8BE9591106b4215b99532D8f9CEC2040CE2"
+  }
+}
