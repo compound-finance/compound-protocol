@@ -24,10 +24,7 @@ export function requireEnv(varName, msg?: string): string {
 ["ETH_PK", "KEYSTORE_PATH"].map(v => requireEnv(v));
 
 export async function getWalletFromPk() {
-  const zkSyncProvider = new Provider(hre.network.config.url);
-  const ethProvider = new hre.ethers.getDefaultProvider(hre.network.config.ethNetwork);
-  const wallet = new Wallet(ETH_PK, zkSyncProvider, ethProvider);
-
+  const wallet = new Wallet(ETH_PK);
   return wallet;
 }
 
@@ -36,12 +33,6 @@ export async function getWalletFromKeystore() {
 
   const keystoreJson = readFileSync(KEYSTORE_PATH);
   let wallet = await Wallet.fromEncryptedJson(keystoreJson, password);
-
-  const zkSyncProvider = new Provider(hre.network.config.url);
-  wallet = wallet.connect(zkSyncProvider);
-
-  const ethProvider = new hre.ethers.getDefaultProvider(hre.network.config.ethNetwork);
-  wallet = wallet.connectToL1(ethProvider);
 
   return wallet;
 }
@@ -53,6 +44,12 @@ export async function getWallet() {
   };
 
   const wallet = await walletFuncs[hre.network.config.wallet]();
+
+  const zkSyncProvider = new Provider(hre.network.config.url);
+  wallet = wallet.connect(zkSyncProvider);
+
+  const ethProvider = new hre.ethers.getDefaultProvider(hre.network.config.ethNetwork);
+  wallet = wallet.connectToL1(ethProvider);
 
   hre.zkWallet = wallet;
 
