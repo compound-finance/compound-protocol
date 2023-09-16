@@ -10294,11 +10294,10 @@ solhint@^3.3.7:
   optionalDependencies:
     prettier "^2.8.3"
 
-"solidity-parser-antlr@https://github.com/solidity-parser/parser":
-  version "0.16.1"
-  resolved "https://github.com/solidity-parser/parser#2d1dbb9db165660d0b4abb44c5a3b7340fcb9763"
-  dependencies:
-    antlr4ts "^0.5.0-alpha.4"
+solidity-parser-antlr@0.4.11, "solidity-parser-antlr@https://github.com/solidity-parser/parser":
+  version "0.4.11"
+  resolved "https://registry.yarnpkg.com/solidity-parser-antlr/-/solidity-parser-antlr-0.4.11.tgz#af43e1f13b3b88309a875455f5d6e565b05ee5f1"
+  integrity sha512-4jtxasNGmyC0midtjH/lTFPZYvTTUMy6agYcF+HoMnzW8+cqo3piFrINb4ZCzpPW+7tTVFCGa5ubP34zOzeuMg==
 
 solparse@^2.2.8:
   version "2.2.8"
