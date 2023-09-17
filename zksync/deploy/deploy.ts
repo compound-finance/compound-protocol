@@ -1,16 +1,12 @@
-import { existsSync, readFileSync, writeFileSync } from "fs";
-import { utils } from "zksync-web3";
 import * as ethers from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
-import deployContract from "../script/zksync/deployContract";
-import { deployCTokenAll } from "../script/zksync/deployCToken";
+import deployContract from "../script/deployContract";
+import { deployCTokenAll } from "../script/deployCToken";
 import {
-  getUnderlyingTokens,
-  recordMainAddress,
   recordTokenAddress,
   recordCTokenAddress
-} from "../script/zksync/deployAddresses";
+} from "../script/deployAddresses";
 import {
   deployOracle,
   deployComptroller,
@@ -18,10 +14,9 @@ import {
   deployLens,
   deployMaximillion,
   deployMulticall,
-  configureComptroller,
   configurePriceOracle,
   addCTokenToMarket
-} from "../script/zksync/deployCore";
+} from "../script/deployCore";
 
 async function deployCEther(
   deployer: Deployer,
@@ -31,19 +26,19 @@ async function deployCEther(
 ) {
   const chainId = deployer.hre.network.config.chainId;
 
-  const initialExchangeRateMantissa:number = ethers.utils.parseEther("1");
-  const name:string = "Zoro Ether";
-  const symbol:string = "cETH";
-  const decimals:number = 18;
+  const initialExchangeRateMantissa: number = ethers.utils.parseEther("1");
+  const name: string = "Zoro Ether";
+  const symbol: string = "cETH";
+  const decimals: number = 18;
   const admin = deployer.zkWallet.address;
   const cetherArgs = [
-      comptroller.address,
-      interestRateModel.address,
-      initialExchangeRateMantissa,
-      name,
-      symbol,
-      decimals,
-      admin,
+    comptroller.address,
+    interestRateModel.address,
+    initialExchangeRateMantissa,
+    name,
+    symbol,
+    decimals,
+    admin
   ];
   const cether = await deployContract(deployer, "CEther", cetherArgs);
 
@@ -62,14 +57,18 @@ async function deployTestUsd(deployer: Deployer) {
   const tokenName = "TestUSD";
   const decimalUnits = 18;
   const tokenSymbol = "TEST";
-  const testUsdArgs:Array = [
-      initialAmount,
-      tokenName,
-      decimalUnits,
-      tokenSymbol,
+  const testUsdArgs: Array = [
+    initialAmount,
+    tokenName,
+    decimalUnits,
+    tokenSymbol
   ];
 
-  const tUsd = await deployContract(deployer, "contracts/test/ERC20.sol:StandardToken", testUsdArgs);
+  const tUsd = await deployContract(
+    deployer,
+    "contracts/test/ERC20.sol:StandardToken",
+    testUsdArgs
+  );
 
   recordTokenAddress(chainId, "test", tUsd.address);
 
@@ -77,7 +76,7 @@ async function deployTestUsd(deployer: Deployer) {
 }
 
 // An example of a deploy script that will deploy and call a simple contract.
-export default async function (hre: HardhatRuntimeEnvironment) {
+export default async function(hre: HardhatRuntimeEnvironment) {
   const chainId = hre.network.config.chainId;
 
   console.log(`Running deploy script for Zoro Protocol`);
@@ -105,7 +104,12 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 
   const lens = await deployLens(deployer);
 
-  const cether = await deployCEther(deployer, priceOracle, comptroller, jumpRate);
+  const cether = await deployCEther(
+    deployer,
+    priceOracle,
+    comptroller,
+    jumpRate
+  );
 
   const maxi = await deployMaximillion(deployer, cether);
 

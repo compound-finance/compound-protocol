@@ -34,7 +34,7 @@ yarn zksync-deploy
 ### Run tests
 
 ```bash
-yarn hardhat run scipts/zksync/test.ts
+yarn hardhat run script/test.ts
 ```
 
 ## Deployment
