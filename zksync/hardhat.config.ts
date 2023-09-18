@@ -89,6 +89,10 @@ const config: HardhatUserConfig = {
 
   solidity: {
     version: "0.8.10"
+  },
+
+  paths: {
+    root: "../"
   }
 };
 
@@ -96,6 +100,7 @@ extendEnvironment(async hre => {
   hre.getWallet = getWallet;
 });
 
+import "./tasks/compileAux";
 import "./tasks/addCTokenToMarket";
 import "./tasks/deployCToken";
 
