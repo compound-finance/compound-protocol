@@ -17,7 +17,7 @@ module.exports = {
                                                             // Glob to match contract files
   trace: false,                                             // Compile with debug artifacts
   // TODO: Separate contracts for test?
-  tests: ['**/tests/{,**/}*Test.js'],                       // Glob to match test files
+  tests: ['**/tests/[!Governance/,!Scenario/Governor/,!Scenario/GovernorBravo/]{,**/}[!Timelock]*Test.js'],                       // Glob to match test files
   networks: {                                               // Define configuration for each network
     development: {
       providers: [

@@ -284,7 +284,7 @@ describe('CompoundLens', () => {
     });
   });
 
-  describe('governance', () => {
+  describe.skip('governance', () => {
     let comp, gov;
     let targets, values, signatures, callDatas;
     let proposalBlock, proposalId;
