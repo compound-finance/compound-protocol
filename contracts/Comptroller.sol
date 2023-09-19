@@ -1457,8 +1457,11 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         ;
     }
 
+    /**
+     * @dev Switched to timestamp for use with zkSync network
+     */
     function getBlockNumber() virtual public view returns (uint) {
-        return block.number;
+        return block.timestamp;
     }
 
     /**
