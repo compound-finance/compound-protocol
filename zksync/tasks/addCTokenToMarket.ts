@@ -1,13 +1,9 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { Wallet } from "zksync-web3";
-import {
-  configurePriceOracle,
-  addCTokenToMarket
-} from "../script/zksync/deployCore";
+import { configurePriceOracle, addCTokenToMarket } from "../script/deployCore";
 import {
   getMainAddresses,
   getCTokenAddresses
-} from "../script/zksync/deployAddresses";
+} from "../script/deployAddresses";
 
 export async function main(hre: HardhatRuntimeEnvironment, cToken: string) {
   const wallet = await hre.getWallet();
@@ -39,7 +35,10 @@ export async function main(hre: HardhatRuntimeEnvironment, cToken: string) {
   await addCTokenToMarket(comptroller, cTokenAddress);
 }
 
-task("addCTokenToMarket", "Add a ZToken to the market and set it's oracle price")
+task(
+  "addCTokenToMarket",
+  "Add a ZToken to the market and set it's oracle price"
+)
   .addPositionalParam("cToken", "CToken name from zTokens.json, e.g. wbtc")
   .setAction(async ({ cToken }, hre) => {
     console.log("Adding CToken to market...");

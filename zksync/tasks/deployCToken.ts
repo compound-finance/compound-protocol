@@ -1,11 +1,10 @@
-import * as ethers from "ethers";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import {
   getMainAddresses,
   getUnderlyingTokens,
   recordCTokenAddress
-} from "../script/zksync/deployAddresses";
-import { deployCToken } from "../script/zksync/deployCToken";
+} from "../script/deployAddresses";
+import { deployCToken } from "../script/deployCToken";
 
 async function main(
   hre: HardhatRuntimeEnvironment,
