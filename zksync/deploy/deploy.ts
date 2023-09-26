@@ -9,7 +9,7 @@ import {
 } from "../script/deployAddresses";
 import {
   deployOracle,
-  deployComptroller,
+  deployUnitroller,
   deployInterestRate,
   deployLens,
   deployMaximillion,
@@ -66,7 +66,7 @@ async function deployTestUsd(deployer: Deployer) {
 
   const tUsd = await deployContract(
     deployer,
-    "contracts/test/ERC20.sol:StandardToken",
+    "contracts/core/tests/Contracts/ERC20.sol:StandardToken",
     testUsdArgs
   );
 
@@ -81,7 +81,7 @@ export default async function(hre: HardhatRuntimeEnvironment) {
 
   console.log(`Running deploy script for Zoro Protocol`);
 
-  const wallet = await hre.getWallet();
+  const wallet = await hre.getZkWallet();
 
   // Create deployer object and load the artifact of the contract you want to deploy.
   const deployer = new Deployer(hre, wallet);
@@ -98,7 +98,7 @@ export default async function(hre: HardhatRuntimeEnvironment) {
 
   const priceOracle = await deployOracle(deployer);
 
-  const comptroller = await deployComptroller(deployer, priceOracle);
+  const comptroller = await deployUnitroller(deployer, priceOracle);
 
   const jumpRate = await deployInterestRate(deployer);
 
