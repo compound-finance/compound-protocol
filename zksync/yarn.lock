@@ -1055,6 +1055,11 @@
     "@typescript-eslint/types" "6.7.2"
     eslint-visitor-keys "^3.4.1"
 
+"@zoroprotocol/hardhat-zksync-web3@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@zoroprotocol/hardhat-zksync-web3/-/hardhat-zksync-web3-1.0.0.tgz#45af8f07e564035d87d0bed2836a8ea895b3bb8a"
+  integrity sha512-WORiLuf2coTnjTgSD8ycqDNdm+/eL0TBedNX4mFtHrN3HU7xkwSNTCeyGNQKho+axvLPEUW6JSNtjlQVSgHhGw==
+
 JSONStream@1.3.2:
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/JSONStream/-/JSONStream-1.3.2.tgz#c102371b6ec3a7cf3b847ca00c20bb0fce4c6dea"
@@ -2262,12 +2267,6 @@ graphemer@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/graphemer/-/graphemer-1.4.0.tgz#fb2f1d55e0e3a1849aeffc90c4fa0dd53a0e66c6"
   integrity sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==
-
-"hardhat-zksync-wallet@file:../../hardhat-zksync-wallet":
-  version "1.0.0"
-
-"hardhat-zksync-wallet@file:../../hardhat-zksync-wallet/":
-  version "1.0.0"
 
 hardhat@^2.16.1:
   version "2.17.3"
