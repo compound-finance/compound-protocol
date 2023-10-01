@@ -56,7 +56,7 @@ function makeUtilization(util) {
   }
 }
 
-const blocksPerYear = 2102400;
+const blocksPerYear = 31536000;
 
 describe('InterestRateModel', () => {
   let root, accounts;
@@ -122,7 +122,8 @@ describe('InterestRateModel', () => {
         });
 
         it('handles overflow utilization rate times slope + base', async () => {
-          const badModel = await makeInterestRateModel({ kind, baseRate: -1, multiplier: 1e48, jump: 1e48 });
+          // Increase multiplier and jump to overflow when using timestamps instead of blocks for zkSync
+          const badModel = await makeInterestRateModel({ kind, baseRate: -1, multiplier: 1e49, jump: 1e49 });
           await expect(getBorrowRate(badModel, 0, 1, 0)).rejects.toRevert();
         });
       }

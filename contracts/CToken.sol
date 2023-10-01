@@ -195,9 +195,10 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     /**
      * @dev Function to simply retrieve block number
      *  This exists mainly for inheriting test contracts to stub this result.
+     * @dev Switched to timestamp for use with zkSync network
      */
     function getBlockNumber() virtual internal view returns (uint) {
-        return block.number;
+        return block.timestamp;
     }
 
     /**
