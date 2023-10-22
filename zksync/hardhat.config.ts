@@ -6,7 +6,7 @@ import "@nomiclabs/hardhat-ethers";
 import "@matterlabs/hardhat-zksync-deploy";
 import "@matterlabs/hardhat-zksync-solc";
 import "@matterlabs/hardhat-zksync-verify";
-import "hardhat-zksync-wallet";
+import "@zoroprotocol/hardhat-zksync-web3";
 
 import richWallets from "./rich-wallets.json";
 
