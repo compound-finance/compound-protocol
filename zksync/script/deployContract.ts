@@ -1,5 +1,5 @@
 import path from "path";
-import * as ethers from "ethers";
+import { ethers } from "ethers";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { TaskArguments } from "hardhat/types";
 import { ZkSyncArtifact } from "@matterlabs/hardhat-zksync-deploy/dist/types";

@@ -1,9 +1,9 @@
-import * as ethers from "ethers";
+import { ethers } from "ethers";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import deployContract from "./deployContract";
 import { getUnderlyingTokens, recordCTokenAddress } from "./deployAddresses";
-import { configurePriceOracle, addCTokenToMarket } from "./deployCore";
 import { getChainId } from "./utils";
+import { TransactionResponse } from "ethers/providers";
 import { AddressConfig, CErc20ImmutableConstructorArgs } from "./types";
 
 export async function deployCToken(
@@ -54,10 +54,9 @@ export async function deployCToken(
 
 export async function deployCTokenAll(
   deployer: Deployer,
-  priceOracle: ethers.Contract,
   comptroller: ethers.Contract,
   interestRateModel: ethers.Contract
-): Promise<void> {
+): Promise<ethers.Contract[]> {
   const chainId: number = getChainId(deployer.hre);
 
   const underlyingTokens: AddressConfig = getUnderlyingTokens();
@@ -83,13 +82,21 @@ export async function deployCTokenAll(
     )
   );
 
-  // If price is zero, the comptroller will fail to set the collateral factor
-  await Promise.all(
-    cTokens.map(
-      async (cToken: ethers.Contract): Promise<void> => {
-        await configurePriceOracle(priceOracle, cToken.address);
-        await addCTokenToMarket(comptroller, cToken.address);
-      }
-    )
+  return cTokens;
+}
+
+export async function addCTokenToMarket(
+  comptroller: ethers.Contract,
+  ctokenAddress: string
+) {
+  const addMarketTx: TransactionResponse = await comptroller._supportMarket(ctokenAddress);
+  await addMarketTx.wait();
+
+  // If the ctoken isn't a supported market, it will fail to set the collateral factor
+  const collateralFactor: ethers.BigNumber = ethers.utils.parseEther("0.5");
+  const collateralTx: TransactionResponse = await comptroller._setCollateralFactor(
+    ctokenAddress,
+    collateralFactor
   );
+  await collateralTx.wait();
 }
