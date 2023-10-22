@@ -14,8 +14,8 @@ const { ETH_KEYSTORE = "" } = process.env;
 
 const config: HardhatUserConfig = {
   zksolc: {
-    version: "latest", // Uses latest available in https://github.com/matter-labs/zksolc-bin/
-    settings: {}
+    version: "1.3.13", // Uses latest available in https://github.com/matter-labs/zksolc-bin/
+      settings: {}
   },
 
   defaultNetwork: "zkSyncLocal",
