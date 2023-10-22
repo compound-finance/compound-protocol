@@ -1,6 +1,8 @@
 import * as ethers from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
+import { Wallet } from "zksync-web3";
+import { getChainId } from "../script/utils";
 import deployContract from "../script/deployContract";
 import { deployCTokenAll } from "../script/deployCToken";
 import {
@@ -17,21 +19,25 @@ import {
   configurePriceOracle,
   addCTokenToMarket
 } from "../script/deployCore";
+import {
+  CEtherConstructorArgs,
+  Erc20ConstructorArgs
+} from "../script/types";
 
 async function deployCEther(
   deployer: Deployer,
   priceOracle: ethers.Contract,
   comptroller: ethers.Contract,
   interestRateModel: ethers.Contract
-) {
-  const chainId = deployer.hre.network.config.chainId;
+): Promise<ethers.Contract> {
+  const chainId: number = getChainId(deployer.hre);
 
-  const initialExchangeRateMantissa: number = ethers.utils.parseEther("1");
+  const initialExchangeRateMantissa: ethers.BigNumber = ethers.utils.parseEther("1");
   const name: string = "Zoro Ether";
   const symbol: string = "cETH";
   const decimals: number = 18;
-  const admin = deployer.zkWallet.address;
-  const cetherArgs = [
+  const admin: string = deployer.zkWallet.address;
+  const cetherArgs: CEtherConstructorArgs = [
     comptroller.address,
     interestRateModel.address,
     initialExchangeRateMantissa,
@@ -40,7 +46,7 @@ async function deployCEther(
     decimals,
     admin
   ];
-  const cether = await deployContract(deployer, "CEther", cetherArgs);
+  const cether: ethers.Contract = await deployContract(deployer, "CEther", cetherArgs);
 
   recordCTokenAddress(chainId, "eth", cether.address);
 
@@ -50,21 +56,21 @@ async function deployCEther(
   return cether;
 }
 
-async function deployTestUsd(deployer: Deployer) {
-  const chainId = deployer.hre.network.config.chainId;
+async function deployTestUsd(deployer: Deployer): Promise<ethers.Contract> {
+  const chainId: number = getChainId(deployer.hre);
 
-  const initialAmount = ethers.utils.parseEther("10000000");
-  const tokenName = "TestUSD";
-  const decimalUnits = 18;
-  const tokenSymbol = "TEST";
-  const testUsdArgs: Array = [
+  const initialAmount: ethers.BigNumber = ethers.utils.parseEther("10000000");
+  const tokenName: string = "TestUSD";
+  const decimalUnits: number = 18;
+  const tokenSymbol: string = "TEST";
+  const testUsdArgs: Erc20ConstructorArgs = [
     initialAmount,
     tokenName,
     decimalUnits,
     tokenSymbol
   ];
 
-  const tUsd = await deployContract(
+  const tUsd: ethers.Contract = await deployContract(
     deployer,
     "contracts/core/tests/Contracts/ERC20.sol:StandardToken",
     testUsdArgs
@@ -77,14 +83,14 @@ async function deployTestUsd(deployer: Deployer) {
 
 // An example of a deploy script that will deploy and call a simple contract.
 export default async function(hre: HardhatRuntimeEnvironment) {
-  const chainId = hre.network.config.chainId;
+  const chainId: number = getChainId(hre);
 
   console.log(`Running deploy script for Zoro Protocol`);
 
-  const wallet = await hre.getZkWallet();
+  const wallet: Wallet = await hre.getZkWallet();
 
   // Create deployer object and load the artifact of the contract you want to deploy.
-  const deployer = new Deployer(hre, wallet);
+  const deployer: Deployer = new Deployer(hre, wallet);
 
   // OPTIONAL: Deposit funds to L2
   // Comment this block if you already have funds on zkSync.
@@ -96,29 +102,29 @@ export default async function(hre: HardhatRuntimeEnvironment) {
   // Wait until the deposit is processed on zkSync
   // await depositHandle.wait();
 
-  const priceOracle = await deployOracle(deployer);
+  const priceOracle: ethers.Contract = await deployOracle(deployer);
 
-  const comptroller = await deployUnitroller(deployer, priceOracle);
+  const comptroller: ethers.Contract = await deployUnitroller(deployer, priceOracle);
 
-  const jumpRate = await deployInterestRate(deployer);
+  const jumpRate: ethers.Contract = await deployInterestRate(deployer);
 
-  const lens = await deployLens(deployer);
+  await deployLens(deployer);
 
-  const cether = await deployCEther(
+  const cether: ethers.Contract = await deployCEther(
     deployer,
     priceOracle,
     comptroller,
     jumpRate
   );
 
-  const maxi = await deployMaximillion(deployer, cether);
+  await deployMaximillion(deployer, cether);
 
   if (chainId === 270) {
     console.log("Deploying contracts for local test network");
 
-    const multicall = await deployMulticall(deployer);
+    await deployMulticall(deployer);
 
-    const tUsd = await deployTestUsd(deployer);
+    await deployTestUsd(deployer);
   }
 
   await deployCTokenAll(deployer, priceOracle, comptroller, jumpRate);
