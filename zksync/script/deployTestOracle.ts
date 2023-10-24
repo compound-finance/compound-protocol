@@ -25,6 +25,7 @@ export async function setTestOraclePrice(
   ctokenAddress: string,
   price: ethers.BigNumber = ethers.utils.parseEther("1")
 ): Promise<void> {
+  console.log(`Setting price for ${ctokenAddress}`);
   const setPriceTx: TransactionResponse = await priceOracle.setUnderlyingPrice(ctokenAddress, price);
   await setPriceTx.wait();
 }

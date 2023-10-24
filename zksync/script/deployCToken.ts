@@ -89,7 +89,9 @@ export async function deployCTokenAll(
 export async function addCTokenToMarket(
   comptroller: ethers.Contract,
   ctokenAddress: string
-) {
+): Promise<void> {
+  console.log(`Adding ${ctokenAddress} to comptroller`);
+
   const addMarketTx: TransactionResponse = await comptroller._supportMarket(ctokenAddress);
   await addMarketTx.wait();
 
