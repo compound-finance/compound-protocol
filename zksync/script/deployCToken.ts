@@ -61,6 +61,8 @@ export async function deployCTokenAll(
 
   const underlyingTokens: AddressConfig = getUnderlyingTokens();
 
+  delete underlyingTokens["eth"];
+
   const tokensOnChain: string[] = Object.keys(underlyingTokens).filter(
     (key: string): boolean => underlyingTokens[key][chainId] !== undefined
   );
