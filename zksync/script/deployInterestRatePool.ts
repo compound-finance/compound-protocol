@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import { getChainId } from "./utils";
-import { deployMulticall } from "./deployMulticall";
 import { deployTestToken } from "./deployTestToken";
 import { deployTestOracle, setTestOraclePrice } from "./deployTestOracle";
 import { deployUnitroller } from "./deployComptroller";
@@ -25,7 +24,7 @@ export async function deployCore(deployer: Deployer, oracleAddress: string): Pro
     comptroller,
     jumpRate
   );
-
+  
   await deployMaximillion(deployer, cEther);
 
   const cTokens: ethers.Contract[] = await deployCTokenAll(deployer, comptroller, jumpRate);
@@ -34,8 +33,6 @@ export async function deployCore(deployer: Deployer, oracleAddress: string): Pro
 }
 
 export async function deployTestInterestRatePool(deployer: Deployer): Promise<void> {
-  await deployMulticall(deployer);
-
   await deployTestToken(deployer);
 
   const priceOracle: ethers.Contract = await deployTestOracle(deployer);
