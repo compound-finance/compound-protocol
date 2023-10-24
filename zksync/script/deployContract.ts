@@ -1,4 +1,3 @@
-import path from "path";
 import { ethers } from "ethers";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { TaskArguments } from "hardhat/types";
@@ -32,12 +31,7 @@ export default async function deployContract(
   if ("verifyURL" in deployer.hre.network.config) {
     // Verify contract programmatically
 
-    // Contract MUST be fully qualified name (e.g. path/sourceName:contractName)
-    const contractPath: string = path.join(
-      deployer.hre.config.paths.sources,
-      artifact.sourceName
-    );
-    const contractFullyQualifedName: string = `${contractPath}:${artifact.contractName}`;
+    const contractFullyQualifedName: string = `${artifact.sourceName}:${artifact.contractName}`;
 
     const verificationArgs: TaskArguments = {
       address: contract.address,
