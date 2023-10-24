@@ -44,14 +44,11 @@ export async function deployTestInterestRatePool(deployer: Deployer): Promise<vo
   await setTestOraclePrice(priceOracle, cEther.address);
   await addCTokenToMarket(comptroller, cEther.address);
 
-  await Promise.all(
-    cTokens.map(
-      async (cToken: ethers.Contract): Promise<void> => {
-        await setTestOraclePrice(priceOracle, cToken.address);
-        await addCTokenToMarket(comptroller, cToken.address);
-      }
-    )
-  );
+  // Must complete txs sequentially for correct nonce
+  for (const cToken of cTokens) {
+    await setTestOraclePrice(priceOracle, cToken.address);
+    await addCTokenToMarket(comptroller, cToken.address);
+  }
 }
 
 export async function deployInterestRatePool(deployer: Deployer): Promise<void> {

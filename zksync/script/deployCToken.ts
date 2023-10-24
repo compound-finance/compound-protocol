@@ -67,22 +67,21 @@ export async function deployCTokenAll(
     (key: string): boolean => underlyingTokens[key][chainId] !== undefined
   );
 
-  const cTokens: ethers.Contract[] = await Promise.all(
-    tokensOnChain.map(
-      async (key: string): Promise<ethers.Contract> => {
-        const cToken: ethers.Contract = await deployCToken(
-          deployer,
-          underlyingTokens[key][chainId],
-          comptroller.address,
-          interestRateModel.address
-        );
+  const cTokens: ethers.Contract[] = [];
 
-        recordCTokenAddress(chainId, key, cToken.address);
+  // Must complete txs sequentially for correct nonce
+  for (const key of tokensOnChain) {
+    const cToken: ethers.Contract = await deployCToken(
+      deployer,
+      underlyingTokens[key][chainId],
+      comptroller.address,
+      interestRateModel.address
+    );
 
-        return cToken;
-      }
-    )
-  );
+    recordCTokenAddress(chainId, key, cToken.address);
+
+    cTokens.push(cToken);
+  }
 
   return cTokens;
 }
