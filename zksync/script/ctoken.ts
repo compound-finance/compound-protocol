@@ -11,7 +11,6 @@ export async function deployCToken(
   underlyingAddr: string,
   comptrollerAddress: string,
   interestRateModel: string,
-  exchangeRateDecimals: number = 28
 ): Promise<ethers.Contract> {
   const underlying: ethers.Contract = await deployer.hre.ethers.getContractAt(
     "EIP20Interface",
@@ -25,11 +24,14 @@ export async function deployCToken(
   const underlyingSymbol: string = await underlying.symbol();
   const symbol: string = `z${underlyingSymbol}`;
 
+  const decimals: number = 8;
+  const underlyingDecimals: number = await underlying.decimals();
+  const initialExchangeRateDecimals: number = underlyingDecimals + 18 - decimals;
   const initialExchangeRateMantissa: ethers.BigNumber = ethers.utils.parseUnits(
     "1",
-    exchangeRateDecimals
+    initialExchangeRateDecimals
   );
-  const decimals: number = 8;
+
   const admin: string = deployer.zkWallet.address;
 
   const cTokenArgs: CErc20ImmutableConstructorArgs = [
