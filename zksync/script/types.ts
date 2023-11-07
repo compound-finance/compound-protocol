@@ -1,4 +1,4 @@
-import * as ethers from "ethers";
+import { ethers } from "ethers";
 
 export interface AddressConfig {
   [contract: string]: { [chainId: number]: string };
@@ -53,3 +53,9 @@ export type InterestRateArgs = [
   ethers.BigNumber,
   string
 ];
+
+export type DeployReturn = {
+  comptroller: ethers.Contract,
+  cEther: ethers.Contract,
+  cTokens: ethers.Contract[]
+};

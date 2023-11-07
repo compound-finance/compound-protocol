@@ -1,5 +1,6 @@
 import * as ethers from "ethers";
-import { configurePriceOracle, addCTokenToMarket } from "../script/deployCore";
+import { setTestOraclePrice } from "../script/deployTestOracle";
+import { addCTokenToMarket } from "../script/deployCToken";
 import {
   getMainAddresses,
   getCTokenAddresses
@@ -30,7 +31,7 @@ export async function main(
   const cTokenAddress: string = cTokens[cToken][chainId];
 
   console.log("Configuring Price Oracle...");
-  await configurePriceOracle(oracle, cTokenAddress);
+  await setTestOraclePrice(oracle, cTokenAddress);
 
   const comptrollerAddress: string = addresses["comptroller"][chainId];
   const comptroller: ethers.Contract = await hre.ethers.getContractAt(
