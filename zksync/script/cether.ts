@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { getChainId } from "./utils";
-import deployContract from "./deployContract";
-import { recordCTokenAddress } from "../script/deployAddresses";
+import deployContract from "./contract";
+import { recordCTokenAddress } from "../script/addresses";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { CEtherConstructorArgs } from "../script/types";
 

@@ -1,14 +1,14 @@
 import { ethers } from "ethers";
 import { getChainId } from "./utils";
-import { deployTestToken } from "./deployTestToken";
-import { deployTestOracle, setTestOraclePrice } from "./deployTestOracle";
-import { deployUnitroller } from "./deployComptroller";
-import { deployInterestRate } from "./deployInterestRate";
-import { deployLens } from "./deployLens";
-import { deployCEther } from "./deployCEther";
-import { deployMaximillion } from "./deployMaximillion";
-import { addCTokenToMarket, deployCTokenAll } from "./deployCToken";
-import { getMainAddresses } from "../script/deployAddresses";
+import { deployTestToken } from "./testToken";
+import { deployTestOracle, setTestOraclePrice } from "./simpleOracle";
+import { deployUnitroller } from "./comptroller";
+import { deployInterestRate } from "./interestRateModel";
+import { deployLens } from "./lens";
+import { deployCEther } from "./cether";
+import { deployMaximillion } from "./maximillion";
+import { addCTokenToMarket, deployCTokenAll } from "./ctoken";
+import { getMainAddresses } from "../script/addresses";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { DeployReturn } from "./types";
 

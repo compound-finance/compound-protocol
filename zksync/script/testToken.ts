@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { getChainId } from "./utils";
-import deployContract from "./deployContract";
-import { recordTokenAddress } from "../script/deployAddresses";
+import deployContract from "./contract";
+import { recordTokenAddress } from "../script/addresses";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { Erc20ConstructorArgs } from "../script/types";
 
