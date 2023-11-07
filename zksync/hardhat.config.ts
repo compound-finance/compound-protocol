@@ -50,5 +50,6 @@ const config: HardhatUserConfig = {
 
 import "./tasks/addCTokenToMarket";
 import "./tasks/deployCToken";
+import "./tasks/deprecateCToken";
 
 export default config;

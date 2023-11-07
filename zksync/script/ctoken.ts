@@ -103,3 +103,19 @@ export async function addCTokenToMarket(
   );
   await collateralTx.wait();
 }
+
+export async function deprecateCToken(
+  comptroller: ethers.Contract,
+  cToken: ethers.Contract
+): Promise<void> {
+  const collateralFactor: ethers.BigNumber = ethers.BigNumber.from("0");
+  const collateralTx: TransactionResponse = await comptroller._setCollateralFactor(cToken.address, collateralFactor);
+  await collateralTx.wait();
+
+  const borrowPauseTx: TransactionResponse = await comptroller._setBorrowPaused(cToken.address, true);
+  await borrowPauseTx.wait();
+
+  const reserveFactor: ethers.BigNumber = ethers.utils.parseEther("1");
+  const reserveTx: TransactionResponse = await cToken._setReserveFactor(reserveFactor);
+  await reserveTx.wait();
+}

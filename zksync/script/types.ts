@@ -13,6 +13,10 @@ export interface AddCTokenToMarketParams {
   cToken: string;
 }
 
+export interface DeprecateCTokenParams {
+  cToken: string;
+}
+
 export interface VerifyContractParams {
   contractName: string;
   address: string;
