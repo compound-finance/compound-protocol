@@ -2,8 +2,8 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { Wallet } from "zksync-web3";
 import { getChainId } from "../script/utils";
-import { deployMulticall } from "../script/deployMulticall";
-import { deployInterestRatePool, deployTestInterestRatePool } from "../script/deployInterestRatePool";
+import { deployMulticall } from "../script/multicall";
+import { deployInterestRatePool, deployTestInterestRatePool } from "../script/isolatedPool";
 
 // An example of a deploy script that will deploy and call a simple contract.
 export default async function(hre: HardhatRuntimeEnvironment) {

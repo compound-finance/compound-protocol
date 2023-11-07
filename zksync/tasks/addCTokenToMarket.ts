@@ -1,10 +1,10 @@
 import * as ethers from "ethers";
-import { setTestOraclePrice } from "../script/deployTestOracle";
-import { addCTokenToMarket } from "../script/deployCToken";
+import { setTestOraclePrice } from "../script/simpleOracle";
+import { addCTokenToMarket } from "../script/ctoken";
 import {
   getMainAddresses,
   getCTokenAddresses
-} from "../script/deployAddresses";
+} from "../script/addresses";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { task } from "hardhat/config";
 import { getChainId } from "../script/utils";

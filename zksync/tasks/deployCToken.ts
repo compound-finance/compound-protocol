@@ -6,8 +6,8 @@ import {
   getMainAddresses,
   getUnderlyingTokens,
   recordCTokenAddress
-} from "../script/deployAddresses";
-import { deployCToken } from "../script/deployCToken";
+} from "../script/addresses";
+import { deployCToken } from "../script/ctoken";
 import { getChainId } from "../script/utils";
 import { Wallet } from "zksync-web3";
 import { AddressConfig, DeployCTokenParams } from "../script/types";

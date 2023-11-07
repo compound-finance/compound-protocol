@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { getChainId } from "./utils";
-import deployContract from "./deployContract";
-import { recordMainAddress } from "./deployAddresses";
+import deployContract from "./contract";
+import { recordMainAddress } from "./addresses";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 
 export async function deployLens(deployer: Deployer): Promise<ethers.Contract> {
