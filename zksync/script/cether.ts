@@ -12,10 +12,12 @@ export async function deployCEther(
 ): Promise<ethers.Contract> {
   const chainId: number = getChainId(deployer.hre);
 
-  const initialExchangeRateMantissa: ethers.BigNumber = ethers.utils.parseEther("1");
+  const underlyingDecimals = 18;
+  const decimals: number = 8;
+  const initialExchangeRateDecimals = underlyingDecimals + 18 - decimals;
+  const initialExchangeRateMantissa: ethers.BigNumber = ethers.utils.parseUnits("1", initialExchangeRateDecimals);
   const name: string = "Zoro Ether";
   const symbol: string = "cETH";
-  const decimals: number = 8;
   const admin: string = deployer.zkWallet.address;
   const cetherArgs: CEtherConstructorArgs = [
     comptroller.address,
