@@ -1,3 +1,6 @@
+import * as ethers from "ethers";
+import { task } from "hardhat/config";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import {
   getMainAddresses,
@@ -5,26 +8,30 @@ import {
   recordCTokenAddress
 } from "../script/deployAddresses";
 import { deployCToken } from "../script/deployCToken";
+import { getChainId } from "../script/utils";
+import { Wallet } from "zksync-web3";
+import { AddressConfig, DeployCTokenParams } from "../script/types";
 
 async function main(
   hre: HardhatRuntimeEnvironment,
   underlying: string,
   exchangeRateDecimals: number
-) {
-  const wallet = await hre.getWallet();
+): Promise<void> {
+  const wallet: Wallet = await hre.getZkWallet();
 
-  const deployer = new Deployer(hre, wallet);
+  const deployer: Deployer = new Deployer(hre, wallet);
 
-  const addresses = getMainAddresses();
-  const chainId = hre.network.config.chainId;
+  const addresses: AddressConfig = getMainAddresses();
 
-  const comptrollerAddress = addresses["comptroller"][chainId];
-  const interestRateModel = addresses["interest"][chainId];
+  const chainId: number = getChainId(deployer.hre);
 
-  const underlyingTokens = getUnderlyingTokens();
-  const underlyingAddr = underlyingTokens[underlying][chainId];
+  const comptrollerAddress: string = addresses["comptroller"][chainId];
+  const interestRateModel: string = addresses["interest"][chainId];
 
-  const cToken = await deployCToken(
+  const underlyingTokens: AddressConfig = getUnderlyingTokens();
+  const underlyingAddr: string = underlyingTokens[underlying][chainId];
+
+  const cToken: ethers.Contract = await deployCToken(
     deployer,
     underlyingAddr,
     comptrollerAddress,
@@ -36,13 +43,18 @@ async function main(
 }
 
 task("deployCToken", "Deploy a new CToken")
-  .addPositionalParam("underlying", "Token name from tokens.json, e.g. wbtc")
-  .addPositionalParam(
-    "exchangeRateDecimals",
-    "Price decimals (18) - CToken decimals (8) + underlying decimals"
-  )
-  .setAction(async ({ underlying, exchangeRateDecimals }, hre) => {
+.addPositionalParam("underlying", "Token name from tokens.json, e.g. wbtc")
+.addPositionalParam(
+  "exchangeRateDecimals",
+  "Price decimals (18) - CToken decimals (8) + underlying decimals"
+)
+.setAction(
+  async (
+    { underlying, exchangeRateDecimals }: DeployCTokenParams,
+    hre: HardhatRuntimeEnvironment
+  ) => {
     console.log("Deploying a new ZToken...");
 
     await main(hre, underlying, exchangeRateDecimals);
-  });
+  }
+);

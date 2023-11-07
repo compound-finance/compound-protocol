@@ -1,35 +1,59 @@
+import path from "path";
 import * as ethers from "ethers";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
+import { TaskArguments } from "hardhat/types";
+import { ZkSyncArtifact } from "@matterlabs/hardhat-zksync-deploy/dist/types";
 
-export default async function deployContract(deployer: Deployer, name:string, args:Array) {
-  const artifact = await deployer.loadArtifact(name);
+export default async function deployContract(
+  deployer: Deployer,
+  name: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  args: any[]
+): Promise<ethers.Contract> {
+  const artifact: ZkSyncArtifact = await deployer.loadArtifact(name);
 
   // Estimate contract deployment fee
-  const deploymentFee = await deployer.estimateDeployFee(artifact, args);
+  const deploymentFee: ethers.BigNumber = await deployer.estimateDeployFee(
+    artifact,
+    args
+  );
 
-  const parsedFee = ethers.utils.formatEther(deploymentFee.toString());
+  const parsedFee: string = ethers.utils.formatEther(deploymentFee.toString());
   console.log(`The deployment is estimated to cost ${parsedFee} ETH`);
 
-  const contract = await deployer.deploy(artifact, args);
+  const contract: ethers.Contract = await deployer.deploy(artifact, args);
 
   //obtain the Constructor Arguments
   console.log("constructor args:" + contract.interface.encodeDeploy(args));
 
   // Show the contract info.
-  const contractAddress = contract.address;
-  console.log(`${artifact.contractName} was deployed to ${contractAddress}`);
+  console.log(`${artifact.contractName} was deployed to ${contract.address}`);
 
-  // Verify contract programmatically 
-  //
-  // Contract MUST be fully qualified name (e.g. path/sourceName:contractName)
-  // const contractFullyQualifedName = "contracts/Comptroller.sol:Comptroller";
-  // const verificationId = await hre.run("verify:verify", {
-  //   address: contractAddress,
-  //   contract: contractFullyQualifedName,
-  //   constructorArguments: [],
-  //   bytecode: artifact.bytecode,
-  // });
-  // console.log(`${contractFullyQualifedName} verified! VerificationId: ${verificationId}`)
+  if ("verifyURL" in deployer.hre.network.config) {
+    // Verify contract programmatically
+
+    // Contract MUST be fully qualified name (e.g. path/sourceName:contractName)
+    const contractPath: string = path.join(
+      deployer.hre.config.paths.sources,
+      artifact.sourceName
+    );
+    const contractFullyQualifedName: string = `${contractPath}:${artifact.contractName}`;
+
+    const verificationArgs: TaskArguments = {
+      address: contract.address,
+      contract: contractFullyQualifedName,
+      constructorArguments: args
+    };
+
+    const verificationId: number = await deployer.hre.run(
+      "verify:verify",
+      verificationArgs
+    );
+
+    console.log(
+      `${contractFullyQualifedName} verified! VerificationId: ${verificationId}`
+    );
+  }
 
   return contract;
 }
