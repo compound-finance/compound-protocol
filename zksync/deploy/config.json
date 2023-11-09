@@ -1,0 +1,76 @@
+{
+  "interestRateModels": [
+    {
+      "name": "eth",
+      "baseRatePerYear": "0.02",
+      "multiplierPerYear": "0.04",
+      "jumpMultiplierPerYear": "2",
+      "kink": "0.85"
+    },
+    {
+      "name": "stablecoin",
+      "baseRatePerYear": "0.02",
+      "multiplierPerYear": "0.05",
+      "jumpMultiplierPerYear": "2.5",
+      "kink": "80"
+    },
+    {
+      "name": "wbtc",
+      "baseRatePerYear": "0.02",
+      "multiplierPerYear": "0.09",
+      "jumpMultiplierPerYear": "2",
+      "kink": "75"
+    },
+      "name": "blue-chip-alt",
+      "baseRatePerYear": "0.02",
+      "multiplierPerYear": "0.15",
+      "jumpMultiplierPerYear": "4",
+      "kink": "60"
+    },
+    {
+      "name": "altcoin",
+      "baseRatePerYear": "0.02",
+      "multiplierPerYear": "0.2",
+      "jumpMultiplierPerYear": "3",
+      "kink": "0.50"
+    }
+  ],
+  "pools": [
+    {
+      "markets": [
+        {
+          "underlying": "eth",
+          "interestRateModel": "eth"
+        },
+        {
+          "underlying": "wbtc",
+          "interestRateModel": "wbtc"
+        },
+        {
+          "underlying": "usdc",
+          "interestRateModel": "stablecoin"
+        },
+        {
+          "underlying": "usdt",
+          "interestRateModel": "stablecoin"
+        }
+      ]
+    },
+    {
+      "markets": [
+        {
+          "underlying": "eth",
+          "interestRateModel": "eth"
+        },
+        {
+          "underlying": "usdc",
+          "interestRateModel": "stablecoin"
+        },
+        {
+          "underlying": "mute",
+          "interestRateModel": "altcoin"
+        }
+      ]
+    }
+  ]
+}
