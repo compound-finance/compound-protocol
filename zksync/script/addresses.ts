@@ -2,9 +2,9 @@ import { existsSync, readFileSync, writeFileSync } from "fs";
 import _ from "lodash";
 import { AddressConfig } from "./types";
 
-const MAIN_ADDRESSES_PATH: string = "deploy/main.json";
-const TOKEN_ADDRESSES_PATH: string = "deploy/tokens.json";
-const ZTOKEN_ADDRESSES_PATH: string = "deploy/zTokens.json";
+const MAIN_ADDRESSES_PATH: string = "deploy/addresses/main.json";
+const TOKEN_ADDRESSES_PATH: string = "deploy/addresses/tokens.json";
+const ZTOKEN_ADDRESSES_PATH: string = "deploy/addresses/zTokens.json";
 
 function getAddressAll(path: string): AddressConfig {
   let addresses: AddressConfig = {};
