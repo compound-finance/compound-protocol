@@ -40,19 +40,27 @@
       "markets": [
         {
           "underlying": "eth",
-          "interestRateModel": "eth"
+          "interestRateModel": "eth",
+          "collateralFactor": "0.8",
+          "reserveFactor": "0.2"
         },
         {
           "underlying": "wbtc",
-          "interestRateModel": "wbtc"
+          "interestRateModel": "wbtc",
+          "collateralFactor": "0.8",
+          "reserveFactor": "0.2"
         },
         {
           "underlying": "usdc",
-          "interestRateModel": "stablecoin"
+          "interestRateModel": "stablecoin",
+          "collateralFactor": "0.825",
+          "reserveFactor": "0.1"
         },
         {
           "underlying": "usdt",
-          "interestRateModel": "stablecoin"
+          "interestRateModel": "stablecoin",
+          "collateralFactor": "0.8",
+          "reserveFactor": "0.1"
         }
       ]
     },
@@ -60,15 +68,21 @@
       "markets": [
         {
           "underlying": "eth",
-          "interestRateModel": "eth"
+          "interestRateModel": "eth",
+          "collateralFactor": "0.8",
+          "reserveFactor": "0.2"
         },
         {
           "underlying": "usdc",
-          "interestRateModel": "stablecoin"
+          "interestRateModel": "stablecoin",
+          "collateralFactor": "0.825",
+          "reserveFactor": "0.1"
         },
         {
           "underlying": "mute",
-          "interestRateModel": "altcoin"
+          "interestRateModel": "altcoin",
+          "collateralFactor": "0.4",
+          "reserveFactor": "0.25"
         }
       ]
     }
