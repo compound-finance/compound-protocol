@@ -2,15 +2,9 @@ import * as ethers from "ethers";
 import { task } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
-import {
-  getMainAddresses,
-  getUnderlyingTokens,
-  recordCTokenAddress
-} from "../script/addresses";
 import { deployCToken } from "../script/ctoken";
-import { getChainId } from "../script/utils";
 import { Wallet } from "zksync-web3";
-import { AddressConfig, DeployCTokenParams } from "../script/types";
+import { DeployCTokenParams } from "../script/types";
 
 async function main(
   hre: HardhatRuntimeEnvironment,
@@ -21,15 +15,10 @@ async function main(
 
   const deployer: Deployer = new Deployer(hre, wallet);
 
-  const addresses: AddressConfig = getMainAddresses();
+  const comptrollerAddress: string = hre.getMainAddress("comptroller");
+  const interestRateModel: string = hre.getMainAddress("interest");
 
-  const chainId: number = getChainId(deployer.hre);
-
-  const comptrollerAddress: string = addresses["comptroller"][chainId];
-  const interestRateModel: string = addresses["interest"][chainId];
-
-  const underlyingTokens: AddressConfig = getUnderlyingTokens();
-  const underlyingAddr: string = underlyingTokens[underlying][chainId];
+  const underlyingAddr: string = hre.getUnderlyingToken(underlying);
 
   const cToken: ethers.Contract = await deployCToken(
     deployer,
@@ -39,7 +28,7 @@ async function main(
     exchangeRateDecimals
   );
 
-  recordCTokenAddress(chainId, underlying, cToken.address);
+  hre.recordCTokenAddress(underlying, cToken.address);
 }
 
 task("deployCToken", "Deploy a new CToken")

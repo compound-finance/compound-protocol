@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import { getChainId } from "./utils";
 import { deployTestToken } from "./testToken";
 import { deployTestOracle, setTestOraclePrice } from "./simpleOracle";
 import { deployUnitroller } from "./comptroller";
@@ -8,7 +7,6 @@ import { deployLens } from "./lens";
 import { deployCEther } from "./cether";
 import { deployMaximillion } from "./maximillion";
 import { addCTokenToMarket, deployCTokenAll } from "./ctoken";
-import { getMainAddresses } from "../script/addresses";
 import { config } from "../deploy/config";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import {
@@ -81,8 +79,7 @@ export async function deployTestInterestRatePool(deployer: Deployer): Promise<vo
 }
 
 export async function deployInterestRatePool(deployer: Deployer): Promise<void> {
-  const chainId: number = getChainId(deployer.hre);
-  const oracleAddress: string = getMainAddresses()["oracle"][chainId];
+  const oracleAddress: string = deployer.hre.getMainAddress("oracle");
 
   await deployCore(deployer, oracleAddress);
 }

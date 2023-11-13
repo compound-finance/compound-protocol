@@ -1,7 +1,5 @@
 import { ethers } from "ethers";
-import { getChainId } from "./utils";
 import deployContract from "./contract";
-import { recordMainAddress } from "./addresses";
 import { config } from "../deploy/config";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import {
@@ -12,8 +10,6 @@ import {
 } from "./types";
 
 export async function deployInterestRate(deployer: Deployer, config: InterestRateConfig): Promise<[string, ethers.Contract]> {
-  const chainId: number = getChainId(deployer.hre);
-
   const { name, baseRatePerYear, multiplierPerYear, jumpMultiplierPerYear, kink } = config;
 
   const owner: string = deployer.zkWallet.address;
@@ -32,7 +28,7 @@ export async function deployInterestRate(deployer: Deployer, config: InterestRat
     interestRateArgs
   );
 
-  recordMainAddress(chainId, "interest", jumpRate.address);
+  deployer.hre.recordMainAddress("interest", jumpRate.address);
 
   return [name, jumpRate];
 }

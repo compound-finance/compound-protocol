@@ -1,15 +1,10 @@
 import * as ethers from "ethers";
 import { setTestOraclePrice } from "../script/simpleOracle";
 import { addCTokenToMarket } from "../script/ctoken";
-import {
-  getMainAddresses,
-  getCTokenAddresses
-} from "../script/addresses";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { task } from "hardhat/config";
-import { getChainId } from "../script/utils";
 import { Wallet } from "zksync-web3";
-import { AddCTokenToMarketParams, AddressConfig } from "../script/types";
+import { AddCTokenToMarketParams } from "../script/types";
 
 export async function main(
   hre: HardhatRuntimeEnvironment,
@@ -17,23 +12,19 @@ export async function main(
 ): Promise<void> {
   const wallet: Wallet = await hre.getZkWallet();
 
-  const addresses: AddressConfig = getMainAddresses();
-  const chainId: number = getChainId(hre);
-
-  const oracleAddress: string = addresses["oracle"][chainId];
+  const oracleAddress: string = hre.getMainAddress("oracle");
   const oracle: ethers.Contract = await hre.ethers.getContractAt(
     "SimplePriceOracle",
     oracleAddress,
     wallet
   );
 
-  const cTokens: AddressConfig = getCTokenAddresses();
-  const cTokenAddress: string = cTokens[cToken][chainId];
+  const cTokenAddress: string = hre.getCTokenAddress(cToken);
 
   console.log("Configuring Price Oracle...");
   await setTestOraclePrice(oracle, cTokenAddress);
 
-  const comptrollerAddress: string = addresses["comptroller"][chainId];
+  const comptrollerAddress: string = hre.getMainAddress("oracle");
   const comptroller: ethers.Contract = await hre.ethers.getContractAt(
     "Comptroller",
     comptrollerAddress,

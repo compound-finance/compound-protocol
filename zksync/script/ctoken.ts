@@ -1,11 +1,8 @@
 import { ethers } from "ethers";
 import deployContract from "./contract";
-import { getUnderlyingTokens, recordCTokenAddress } from "./addresses";
-import { getChainId } from "./utils";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { TransactionResponse } from "ethers/providers";
 import {
-  AddressConfig,
   CErc20ImmutableConstructorArgs,
   CTokenCollection,
   CTokenConfig,
@@ -66,23 +63,21 @@ export async function deployCTokenAll(
   interestRates: InterestRateCollection,
   cTokenConfigs: CTokenConfig[]
 ): Promise<CTokenCollection> {
-  const chainId: number = getChainId(deployer.hre);
-
-  const underlyingTokens: AddressConfig = getUnderlyingTokens();
-
   const cTokens: CTokenCollection = {};
 
   // Must complete txs sequentially for correct nonce
   for (const config of cTokenConfigs) {
     const { underlying, interestRateModel } = config;
+    const underlyingAddress: string = deployer.hre.getUnderlyingToken(underlying);
+
     const cToken: ethers.Contract = await deployCToken(
       deployer,
-      underlyingTokens[underlying][chainId],
+      underlyingAddress,
       comptroller.address,
       interestRates[interestRateModel].address
     );
 
-    recordCTokenAddress(chainId, underlying, cToken.address);
+    deployer.hre.recordCTokenAddress(underlying, cToken.address);
 
     cTokens[underlying] = cToken;
   }

@@ -1,7 +1,5 @@
 import { ethers } from "ethers";
-import { getChainId } from "./utils";
 import deployContract from "./contract";
-import { recordMainAddress } from "./addresses";
 import { config } from "../deploy/config";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { TransactionResponse } from "ethers/providers";
@@ -12,15 +10,13 @@ export async function deployUnitroller(
   oracleAddress: string,
   config: PoolConfig
 ): Promise<ethers.Contract> {
-  const chainId: number = getChainId(deployer.hre);
-
   const unitroller: ethers.Contract = await deployContract(
     deployer,
     "Unitroller",
     []
   );
 
-  recordMainAddress(chainId, "comptroller", unitroller.address);
+  deployer.hre.recordMainAddress("comptroller", unitroller.address);
 
   await upgradeComptroller(deployer, unitroller);
 
@@ -40,14 +36,12 @@ export async function upgradeComptroller(
   deployer: Deployer,
   unitroller: ethers.Contract
 ): Promise<ethers.Contract> {
-  const chainId: number = getChainId(deployer.hre);
-
   const comptroller: ethers.Contract = await deployContract(
     deployer,
     "Comptroller",
     []
   );
-  recordMainAddress(chainId, "comptroller-impl", comptroller.address);
+  deployer.hre.recordMainAddress("comptroller-impl", comptroller.address);
 
   const setImplTx: TransactionResponse = await unitroller._setPendingImplementation(
     comptroller.address

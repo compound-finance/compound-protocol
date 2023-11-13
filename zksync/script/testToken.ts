@@ -1,13 +1,9 @@
 import { ethers } from "ethers";
-import { getChainId } from "./utils";
 import deployContract from "./contract";
-import { recordTokenAddress } from "../script/addresses";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { Erc20ConstructorArgs } from "../script/types";
 
 export async function deployTestToken(deployer: Deployer): Promise<ethers.Contract> {
-  const chainId: number = getChainId(deployer.hre);
-
   const initialAmount: ethers.BigNumber = ethers.utils.parseEther("10000000");
   const tokenName: string = "TestUSD";
   const decimalUnits: number = 18;
@@ -25,7 +21,7 @@ export async function deployTestToken(deployer: Deployer): Promise<ethers.Contra
     testUsdArgs
   );
 
-  recordTokenAddress(chainId, "test", tUsd.address);
+  deployer.hre.recordTokenAddress("test", tUsd.address);
 
   return tUsd;
 }
