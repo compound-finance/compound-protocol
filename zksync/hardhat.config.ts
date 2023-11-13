@@ -7,6 +7,7 @@ import "@matterlabs/hardhat-zksync-deploy";
 import "@matterlabs/hardhat-zksync-solc";
 import "@matterlabs/hardhat-zksync-verify";
 import "@zoroprotocol/hardhat-zksync-web3";
+import "./script/addresses";
 
 import richWallets from "./rich-wallets.json";
 
