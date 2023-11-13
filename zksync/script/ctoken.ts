@@ -1,10 +1,16 @@
 import { ethers } from "ethers";
-import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import deployContract from "./contract";
 import { getUnderlyingTokens, recordCTokenAddress } from "./addresses";
 import { getChainId } from "./utils";
+import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { TransactionResponse } from "ethers/providers";
-import { AddressConfig, CErc20ImmutableConstructorArgs } from "./types";
+import {
+  AddressConfig,
+  CErc20ImmutableConstructorArgs,
+  CTokenCollection,
+  CTokenConfig,
+  InterestRateCollection
+} from "./types";
 
 export async function deployCToken(
   deployer: Deployer,
@@ -57,32 +63,28 @@ export async function deployCToken(
 export async function deployCTokenAll(
   deployer: Deployer,
   comptroller: ethers.Contract,
-  interestRateModel: ethers.Contract
-): Promise<ethers.Contract[]> {
+  interestRates: InterestRateCollection,
+  cTokenConfigs: CTokenConfig[]
+): Promise<CTokenCollection> {
   const chainId: number = getChainId(deployer.hre);
 
   const underlyingTokens: AddressConfig = getUnderlyingTokens();
 
-  delete underlyingTokens["eth"];
-
-  const tokensOnChain: string[] = Object.keys(underlyingTokens).filter(
-    (key: string): boolean => underlyingTokens[key][chainId] !== undefined
-  );
-
-  const cTokens: ethers.Contract[] = [];
+  const cTokens: CTokenCollection = {};
 
   // Must complete txs sequentially for correct nonce
-  for (const key of tokensOnChain) {
+  for (const config of cTokenConfigs) {
+    const { underlying, interestRateModel } = config;
     const cToken: ethers.Contract = await deployCToken(
       deployer,
-      underlyingTokens[key][chainId],
+      underlyingTokens[underlying][chainId],
       comptroller.address,
-      interestRateModel.address
+      interestRates[interestRateModel].address
     );
 
-    recordCTokenAddress(chainId, key, cToken.address);
+    recordCTokenAddress(chainId, underlying, cToken.address);
 
-    cTokens.push(cToken);
+    cTokens[underlying] = cToken;
   }
 
   return cTokens;
@@ -90,20 +92,27 @@ export async function deployCTokenAll(
 
 export async function addCTokenToMarket(
   comptroller: ethers.Contract,
-  ctokenAddress: string
+  cToken: ethers.Contract,
+  config: CTokenConfig
 ): Promise<void> {
-  console.log(`Adding ${ctokenAddress} to comptroller`);
+  console.log(`Adding ${cToken.address} to comptroller`);
 
-  const addMarketTx: TransactionResponse = await comptroller._supportMarket(ctokenAddress);
+  const addMarketTx: TransactionResponse = await comptroller._supportMarket(cToken.address);
   await addMarketTx.wait();
 
+  const collateralFactor: ethers.BigNumber = ethers.utils.parseEther(config.collateralFactor);
+
   // If the ctoken isn't a supported market, it will fail to set the collateral factor
-  const collateralFactor: ethers.BigNumber = ethers.utils.parseEther("0.5");
+  // If the ctoken does not have an oracle price, it will fail to set the collateral factor
   const collateralTx: TransactionResponse = await comptroller._setCollateralFactor(
-    ctokenAddress,
+    cToken.address,
     collateralFactor
   );
   await collateralTx.wait();
+
+  const reserveFactor: ethers.BigNumber = ethers.utils.parseEther(config.reserveFactor);
+  const reserveTx: TransactionResponse = await cToken._setReserveFactor(reserveFactor);
+  await reserveTx.wait();
 }
 
 export async function deprecateCToken(
