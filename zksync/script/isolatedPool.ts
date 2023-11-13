@@ -23,17 +23,25 @@ async function deployIsolatedPool(
   interestRates: InterestRateCollection,
   config: PoolConfig
 ): Promise<DeployReturn> {
+  const prefix = config.name === "core" ? "" : `${config.name}:`;
+
   const comptroller: ethers.Contract = await deployUnitroller(deployer, oracleAddress, config);
+  deployer.hre.recordMainAddress(`${prefix}comptroller`, comptroller.address);
 
   const cEther: ethers.Contract = await deployCEther(
     deployer,
     comptroller,
     interestRates["eth"]
   );
+  deployer.hre.recordCTokenAddress(`${prefix}eth`, cEther.address);
 
-  await deployMaximillion(deployer, cEther);
+  const maximillion = await deployMaximillion(deployer, cEther);
+  deployer.hre.recordMainAddress(`${prefix}maximillion`, maximillion.address);
 
   const cTokens: CTokenCollection = await deployCTokenAll(deployer, comptroller, interestRates, config.markets);
+  for (const [name, cToken] of Object.entries(cTokens)) {
+    deployer.hre.recordCTokenAddress(`${prefix}${name}`, cToken.address);
+  }
 
   return { comptroller, cEther, cTokens };
 }

@@ -77,8 +77,6 @@ export async function deployCTokenAll(
       interestRates[interestRateModel].address
     );
 
-    deployer.hre.recordCTokenAddress(underlying, cToken.address);
-
     cTokens[underlying] = cToken;
   }
 

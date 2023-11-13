@@ -7,7 +7,5 @@ export async function deployMaximillion(
   cether: ethers.Contract
 ): Promise<ethers.Contract> {
   const maxi: ethers.Contract = await deployContract(deployer, "Maximillion", [cether.address]);
-  deployer.hre.recordMainAddress("maximillion", maxi.address);
-
   return maxi;
 }

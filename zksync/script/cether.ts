@@ -26,7 +26,5 @@ export async function deployCEther(
   ];
   const cether: ethers.Contract = await deployContract(deployer, "CEther", cetherArgs);
 
-  deployer.hre.recordCTokenAddress("eth", cether.address);
-
   return cether;
 }

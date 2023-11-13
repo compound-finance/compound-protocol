@@ -16,8 +16,6 @@ export async function deployUnitroller(
     []
   );
 
-  deployer.hre.recordMainAddress("comptroller", unitroller.address);
-
   await upgradeComptroller(deployer, unitroller);
 
   const comptroller: ethers.Contract = await deployer.hre.ethers.getContractAt(
@@ -41,7 +39,6 @@ export async function upgradeComptroller(
     "Comptroller",
     []
   );
-  deployer.hre.recordMainAddress("comptroller-impl", comptroller.address);
 
   const setImplTx: TransactionResponse = await unitroller._setPendingImplementation(
     comptroller.address
