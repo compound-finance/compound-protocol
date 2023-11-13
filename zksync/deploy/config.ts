@@ -1,4 +1,6 @@
-{
+import { DeployConfig } from "../script/types";
+
+export const config: DeployConfig = {
   "interestRateModels": [
     {
       "name": "eth",
@@ -21,6 +23,7 @@
       "jumpMultiplierPerYear": "2",
       "kink": "75"
     },
+    {
       "name": "blue-chip-alt",
       "baseRatePerYear": "0.02",
       "multiplierPerYear": "0.15",
@@ -37,6 +40,9 @@
   ],
   "pools": [
     {
+      "name": "core",
+      "closeFactor": "0.5",
+      "liquidationIncentive": "1.1",
       "markets": [
         {
           "underlying": "eth",
@@ -65,6 +71,9 @@
       ]
     },
     {
+      "name": "degen",
+      "closeFactor": "0.5",
+      "liquidationIncentive": "1.1",
       "markets": [
         {
           "underlying": "eth",
