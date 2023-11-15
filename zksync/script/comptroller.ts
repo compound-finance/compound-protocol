@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import deployContract from "./contract";
-import { config } from "../deploy/config";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { TransactionResponse } from "ethers/providers";
 import { PoolConfig } from "./types";
@@ -69,14 +68,4 @@ export async function configureComptroller(
     liquidationIncentiveMantissa
   );
   await incentiveTx.wait();
-}
-
-export async function deployUnitrollersAll(
-  deployer: Deployer,
-  oracleAddress: string
-): Promise<ethers.Contract[]> {
-  const comptrollerDeploys: Promise<ethers.Contract>[] = config.pools.map(deployUnitroller.bind(null, deployer, oracleAddress));
-  const comptrollers: ethers.Contract[] = await Promise.all(comptrollerDeploys);
-
-  return comptrollers;
 }
