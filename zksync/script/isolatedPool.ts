@@ -44,10 +44,15 @@ export async function deployCore(deployer: Deployer, oracleAddress: string): Pro
 
   await deployLens(deployer);
 
-  const poolDeploys: Promise<DeployReturn>[] = config.pools.map(deployIsolatedPool.bind(null,deployer, oracleAddress, interestRates));
-  const pools: DeployReturn[] = await Promise.all(poolDeploys);
+  const poolDeployAll: DeployReturn[] = [];
 
-  return pools;
+  // Must complete txs sequentially for correct nonce
+  for (const poolConfig of config.pools) {
+    const poolDeploy: DeployReturn = await deployIsolatedPool(deployer, oracleAddress, interestRates, poolConfig);
+    poolDeployAll.push(poolDeploy);
+  }
+
+  return poolDeployAll;
 }
 
 export async function deployTestInterestRatePool(deployer: Deployer): Promise<void> {

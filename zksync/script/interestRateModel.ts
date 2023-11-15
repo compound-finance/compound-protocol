@@ -3,14 +3,13 @@ import deployContract from "./contract";
 import { config } from "./config";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import {
-  ContractEntry,
   InterestRateArgs,
   InterestRateCollection,
   InterestRateConfig
 } from "./types";
 
-export async function deployInterestRate(deployer: Deployer, config: InterestRateConfig): Promise<[string, ethers.Contract]> {
-  const { name, baseRatePerYear, multiplierPerYear, jumpMultiplierPerYear, kink } = config;
+export async function deployInterestRate(deployer: Deployer, config: InterestRateConfig): Promise<ethers.Contract> {
+  const { baseRatePerYear, multiplierPerYear, jumpMultiplierPerYear, kink } = config;
 
   const owner: string = deployer.zkWallet.address;
 
@@ -28,16 +27,21 @@ export async function deployInterestRate(deployer: Deployer, config: InterestRat
     interestRateArgs
   );
 
-  deployer.hre.recordMainAddress("interest", jumpRate.address);
-
-  return [name, jumpRate];
+  return jumpRate;
 }
 
 export async function deployInterestRatesAll(deployer: Deployer): Promise<InterestRateCollection> {
-  const interestRateDeploys: Promise<ContractEntry>[] = config.interestRateModels.map(deployInterestRate.bind(null, deployer));
+  const interestRates: InterestRateCollection = {};
 
-  const interestRateEntries: ContractEntry[] = await Promise.all(interestRateDeploys);
-  const interestRates: InterestRateCollection = Object.fromEntries(interestRateEntries);
+  // Must complete txs sequentially for correct nonce
+  for (const interestRateConfig of config.interestRateModels) {
+    const interestRate: ethers.Contract = await deployInterestRate(deployer, interestRateConfig);
+
+    const { name } = interestRateConfig;
+    interestRates[name] = interestRate;
+
+    deployer.hre.recordMainAddress(`interest:${name}`, interestRate.address);
+  }
 
   return interestRates;
 }
