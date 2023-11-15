@@ -25,6 +25,10 @@ function getAddress(path: string, hre: HardhatRuntimeEnvironment, name: string):
 
   const address: string = addresses[name][chainId];
 
+  if (address === undefined) {
+    throw new Error(`Address for ${name} on chain ID ${chainId} not configured`);
+  }
+
   return address;
 }
 
