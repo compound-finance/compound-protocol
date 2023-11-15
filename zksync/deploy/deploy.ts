@@ -4,6 +4,7 @@ import { Wallet } from "zksync-web3";
 import { getChainId } from "../script/utils";
 import { deployMulticall } from "../script/multicall";
 import { deployInterestRatePool, deployTestInterestRatePool } from "../script/isolatedPool";
+import { deployTestTokenAll } from "../script/testToken";
 
 // An example of a deploy script that will deploy and call a simple contract.
 export default async function(hre: HardhatRuntimeEnvironment) {
@@ -29,6 +30,12 @@ export default async function(hre: HardhatRuntimeEnvironment) {
   if (chainId === 270) {
     console.log("Deploying contracts for local test network");
 
+    await deployMulticall(deployer);
+
+    await deployTestTokenAll(deployer);
+
+    await deployTestInterestRatePool(deployer);
+  } else if (chainId === 280) {
     await deployMulticall(deployer);
 
     await deployTestInterestRatePool(deployer);
