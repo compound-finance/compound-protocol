@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import deployContract from "./contract";
-import { config } from "../deploy/config";
+import { config } from "./config";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import {
   ContractEntry,

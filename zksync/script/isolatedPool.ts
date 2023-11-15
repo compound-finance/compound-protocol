@@ -6,7 +6,7 @@ import { deployInterestRatesAll } from "./interestRateModel";
 import { deployLens } from "./lens";
 import { deployMaximillion } from "./maximillion";
 import { addCTokenToMarket, deployCTokenAll } from "./ctoken";
-import { config } from "../deploy/config";
+import { config } from "./config";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import {
   DeployReturn,

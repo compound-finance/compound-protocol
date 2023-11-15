@@ -1,4 +1,4 @@
-import { DeployConfig } from "../script/types";
+import { DeployConfig } from "./types";
 
 export const config: DeployConfig = {
   "interestRateModels": [
