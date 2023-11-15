@@ -44,7 +44,7 @@ export async function upgradeComptroller(
   );
   await setImplTx.wait();
 
-  const acceptImplTx = await comptroller._become(unitroller.address);
+  const acceptImplTx: TransactionResponse = await comptroller._become(unitroller.address);
   await acceptImplTx.wait();
 
   return comptroller;
