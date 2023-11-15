@@ -5,8 +5,8 @@ import { CEtherConstructorArgs } from "../script/types";
 
 export async function deployCEther(
   deployer: Deployer,
-  comptroller: ethers.Contract,
-  interestRateModel: ethers.Contract
+  comptrollerAddress: string,
+  interestRateModel: string,
 ): Promise<ethers.Contract> {
   const underlyingDecimals = 18;
   const decimals: number = 8;
@@ -16,8 +16,8 @@ export async function deployCEther(
   const symbol: string = "cETH";
   const admin: string = deployer.zkWallet.address;
   const cetherArgs: CEtherConstructorArgs = [
-    comptroller.address,
-    interestRateModel.address,
+    comptrollerAddress,
+    interestRateModel,
     initialExchangeRateMantissa,
     name,
     symbol,

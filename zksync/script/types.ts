@@ -96,6 +96,5 @@ export type InterestRateArgs = [
 
 export type DeployReturn = {
   comptroller: ethers.Contract,
-  cEther: ethers.Contract,
   cTokens: CTokenCollection
 };
