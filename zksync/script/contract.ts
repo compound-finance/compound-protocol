@@ -7,7 +7,8 @@ export default async function deployContract(
   deployer: Deployer,
   name: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  args: any[]
+  args: any[],
+  verify: boolean = true
 ): Promise<ethers.Contract> {
   const artifact: ZkSyncArtifact = await deployer.loadArtifact(name);
 
@@ -28,7 +29,7 @@ export default async function deployContract(
   // Show the contract info.
   console.log(`${artifact.contractName} was deployed to ${contract.address}`);
 
-  if ("verifyURL" in deployer.hre.network.config) {
+  if (verify && "verifyURL" in deployer.hre.network.config) {
     // Verify contract programmatically
 
     const contractFullyQualifedName: string = `${artifact.sourceName}:${artifact.contractName}`;
