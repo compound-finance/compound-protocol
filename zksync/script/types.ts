@@ -63,8 +63,6 @@ export type Erc20ConstructorArgs = [
   tokenSymbol: string
 ];
 
-export type ContractEntry = [string, ethers.Contract];
-
 export type CErc20ImmutableConstructorArgs = [
   underlying: string,
   comptroller: string,
