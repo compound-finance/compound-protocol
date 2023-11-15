@@ -1,13 +1,11 @@
+import _ from "lodash";
 import { ethers } from "ethers";
-import { getChainId } from "./utils";
 import deployContract from "./contract";
-import { recordTokenAddress } from "../script/addresses";
+import { config } from "./config";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
-import { Erc20ConstructorArgs } from "../script/types";
+import { CTokenConfig, Erc20ConstructorArgs } from "./types";
 
 export async function deployTestToken(deployer: Deployer): Promise<ethers.Contract> {
-  const chainId: number = getChainId(deployer.hre);
-
   const initialAmount: ethers.BigNumber = ethers.utils.parseEther("10000000");
   const tokenName: string = "TestUSD";
   const decimalUnits: number = 18;
@@ -25,7 +23,41 @@ export async function deployTestToken(deployer: Deployer): Promise<ethers.Contra
     testUsdArgs
   );
 
-  recordTokenAddress(chainId, "test", tUsd.address);
+  deployer.hre.recordTokenAddress("test", tUsd.address);
 
   return tUsd;
+}
+
+export async function deployTestTokenAll(deployer: Deployer): Promise<ethers.Contract[]> {
+  const testTokens: ethers.Contract[] = [];
+
+  const cTokenConfigs: CTokenConfig[] = _.union(...config.pools.map((pool) => pool.markets));
+
+  // Must complete txs sequentially for correct nonce
+  for (const config of cTokenConfigs) {
+    const { underlying } = config;
+
+    const initialAmount: ethers.BigNumber = ethers.utils.parseEther("10000000");
+    const tokenName: string = `Test ${underlying.toUpperCase()}`;
+    const decimalUnits: number = 18;
+    const tokenSymbol: string = underlying.toUpperCase();
+    const testUsdArgs: Erc20ConstructorArgs = [
+        initialAmount,
+        tokenName,
+        decimalUnits,
+        tokenSymbol
+    ];
+
+    const testToken: ethers.Contract = await deployContract(
+        deployer,
+        "contracts/core/tests/Contracts/ERC20.sol:StandardToken",
+        testUsdArgs
+    );
+
+    testTokens.push(testToken);
+
+    deployer.hre.recordTokenAddress(underlying, testToken.address);
+  }
+
+  return testTokens;
 }

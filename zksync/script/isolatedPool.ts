@@ -1,35 +1,58 @@
 import { ethers } from "ethers";
-import { getChainId } from "./utils";
 import { deployTestToken } from "./testToken";
 import { deployTestOracle, setTestOraclePrice } from "./simpleOracle";
 import { deployUnitroller } from "./comptroller";
-import { deployInterestRate } from "./interestRateModel";
+import { deployInterestRatesAll } from "./interestRateModel";
 import { deployLens } from "./lens";
-import { deployCEther } from "./cether";
 import { deployMaximillion } from "./maximillion";
 import { addCTokenToMarket, deployCTokenAll } from "./ctoken";
-import { getMainAddresses } from "../script/addresses";
+import { config } from "./config";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
-import { DeployReturn } from "./types";
+import {
+  DeployReturn,
+  CTokenCollection,
+  CTokenConfig,
+  InterestRateCollection,
+  PoolConfig
+} from "./types";
 
-export async function deployCore(deployer: Deployer, oracleAddress: string): Promise<DeployReturn> {
-  const comptroller: ethers.Contract = await deployUnitroller(deployer, oracleAddress);
+async function deployIsolatedPool(
+  deployer: Deployer,
+  oracleAddress: string,
+  interestRates: InterestRateCollection,
+  config: PoolConfig
+): Promise<DeployReturn> {
+  const prefix = config.name === "core" ? "" : `${config.name}:`;
 
-  const jumpRate: ethers.Contract = await deployInterestRate(deployer);
+  const comptroller: ethers.Contract = await deployUnitroller(deployer, oracleAddress, config);
+  deployer.hre.recordMainAddress(`${prefix}comptroller`, comptroller.address);
+
+  const cTokens: CTokenCollection = await deployCTokenAll(deployer, comptroller, interestRates, config.markets);
+  for (const [name, cToken] of Object.entries(cTokens)) {
+    if (name === "eth") {
+      const maximillion = await deployMaximillion(deployer, cToken);
+      deployer.hre.recordMainAddress(`${prefix}maximillion`, maximillion.address);
+    }
+    deployer.hre.recordCTokenAddress(`${prefix}${name}`, cToken.address);
+  }
+
+  return { comptroller, cTokens };
+}
+
+export async function deployCore(deployer: Deployer, oracleAddress: string): Promise<DeployReturn[]> {
+  const interestRates: InterestRateCollection = await deployInterestRatesAll(deployer);
 
   await deployLens(deployer);
 
-  const cEther: ethers.Contract = await deployCEther(
-    deployer,
-    comptroller,
-    jumpRate
-  );
-  
-  await deployMaximillion(deployer, cEther);
+  const poolDeployAll: DeployReturn[] = [];
 
-  const cTokens: ethers.Contract[] = await deployCTokenAll(deployer, comptroller, jumpRate);
+  // Must complete txs sequentially for correct nonce
+  for (const poolConfig of config.pools) {
+    const poolDeploy: DeployReturn = await deployIsolatedPool(deployer, oracleAddress, interestRates, poolConfig);
+    poolDeployAll.push(poolDeploy);
+  }
 
-  return { comptroller, cEther, cTokens };
+  return poolDeployAll;
 }
 
 export async function deployTestInterestRatePool(deployer: Deployer): Promise<void> {
@@ -38,22 +61,26 @@ export async function deployTestInterestRatePool(deployer: Deployer): Promise<vo
   const priceOracle: ethers.Contract = await deployTestOracle(deployer);
   const oracleAddress: string = priceOracle.address;
 
-  const { comptroller, cEther, cTokens }: DeployReturn = await deployCore(deployer, oracleAddress);
+  const deployments: DeployReturn[] = await deployCore(deployer, oracleAddress);
 
-  // If price is zero, the comptroller will fail to set the collateral factor
-  await setTestOraclePrice(priceOracle, cEther.address);
-  await addCTokenToMarket(comptroller, cEther.address);
+  for (const i in deployments) {
+    const { comptroller, cTokens } = deployments[i];
 
-  // Must complete txs sequentially for correct nonce
-  for (const cToken of cTokens) {
-    await setTestOraclePrice(priceOracle, cToken.address);
-    await addCTokenToMarket(comptroller, cToken.address);
+    const markets: CTokenConfig[] = config.pools[i].markets;
+
+    // Must complete txs sequentially for correct nonce
+    for (const cTokenConfig of markets) {
+      const { underlying } = cTokenConfig;
+
+      // If price is zero, the comptroller will fail to set the collateral factor
+      await setTestOraclePrice(priceOracle, cTokens[underlying].address);
+      await addCTokenToMarket(comptroller, cTokens[underlying], cTokenConfig);
+    }
   }
 }
 
 export async function deployInterestRatePool(deployer: Deployer): Promise<void> {
-  const chainId: number = getChainId(deployer.hre);
-  const oracleAddress: string = getMainAddresses()["oracle"][chainId];
+  const oracleAddress: string = deployer.hre.getMainAddress("oracle");
 
   await deployCore(deployer, oracleAddress);
 }

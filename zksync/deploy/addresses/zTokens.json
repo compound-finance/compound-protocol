@@ -1,0 +1,26 @@
+{
+  "test": {
+    "280": "0xD2eCBd2455c80e23c7D73BCbE41cc3b3DaD25476"
+  },
+  "eth": {
+    "280": "0xb7cdeF6521EB451D67fB72fd42460f57EdD11101"
+  },
+  "wbtc": {
+    "280": "0xF118A201DC30372DAC77d449237E64D56Dcb08a6"
+  },
+  "usdt": {
+    "280": "0xbcbb6F0a82264db622a84888fB77c766C7Ef0459"
+  },
+  "usdc": {
+    "280": "0x526F502afd5cd880bF1AF694e3a7771637BC9b06"
+  },
+  "degen:eth": {
+    "280": "0xA408afd76eE8315F59004F227E4d0fB65a5330b7"
+  },
+  "degen:usdc": {
+    "280": "0xFA2E3E60Ab9a2A2462D5609baa7ECdF8A6cbe16C"
+  },
+  "degen:mute": {
+    "280": "0x8e1b1CD5f0FA48819dbf6AfF6b499462608834Fa"
+  }
+}

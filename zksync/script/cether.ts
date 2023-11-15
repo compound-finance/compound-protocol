@@ -1,17 +1,13 @@
 import { ethers } from "ethers";
-import { getChainId } from "./utils";
 import deployContract from "./contract";
-import { recordCTokenAddress } from "../script/addresses";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { CEtherConstructorArgs } from "../script/types";
 
 export async function deployCEther(
   deployer: Deployer,
-  comptroller: ethers.Contract,
-  interestRateModel: ethers.Contract
+  comptrollerAddress: string,
+  interestRateModel: string,
 ): Promise<ethers.Contract> {
-  const chainId: number = getChainId(deployer.hre);
-
   const underlyingDecimals = 18;
   const decimals: number = 8;
   const initialExchangeRateDecimals = underlyingDecimals + 18 - decimals;
@@ -20,8 +16,8 @@ export async function deployCEther(
   const symbol: string = "cETH";
   const admin: string = deployer.zkWallet.address;
   const cetherArgs: CEtherConstructorArgs = [
-    comptroller.address,
-    interestRateModel.address,
+    comptrollerAddress,
+    interestRateModel,
     initialExchangeRateMantissa,
     name,
     symbol,
@@ -29,8 +25,6 @@ export async function deployCEther(
     admin
   ];
   const cether: ethers.Contract = await deployContract(deployer, "CEther", cetherArgs);
-
-  recordCTokenAddress(chainId, "eth", cether.address);
 
   return cether;
 }

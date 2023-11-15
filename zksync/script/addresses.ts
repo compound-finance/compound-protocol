@@ -1,10 +1,12 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import _ from "lodash";
+import { getChainId } from "./utils";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { AddressConfig } from "./types";
 
-const MAIN_ADDRESSES_PATH: string = "deploy/main.json";
-const TOKEN_ADDRESSES_PATH: string = "deploy/tokens.json";
-const ZTOKEN_ADDRESSES_PATH: string = "deploy/zTokens.json";
+const MAIN_ADDRESSES_PATH: string = "deploy/addresses/main.json";
+const TOKEN_ADDRESSES_PATH: string = "deploy/addresses/tokens.json";
+const ZTOKEN_ADDRESSES_PATH: string = "deploy/addresses/zTokens.json";
 
 function getAddressAll(path: string): AddressConfig {
   let addresses: AddressConfig = {};
@@ -17,14 +19,28 @@ function getAddressAll(path: string): AddressConfig {
   return addresses;
 }
 
+function getAddress(path: string, hre: HardhatRuntimeEnvironment, name: string): string {
+  const addresses: AddressConfig = getAddressAll(path);
+  const chainId: number = getChainId(hre);
+
+  const address: string = addresses[name][chainId];
+
+  if (address === undefined) {
+    throw new Error(`Address for ${name} on chain ID ${chainId} not configured`);
+  }
+
+  return address;
+}
+
 function recordAddress(
   path: string,
-  chainId: number,
+  hre: HardhatRuntimeEnvironment,
   name: string,
   address: string
 ): void {
   const addresses: AddressConfig = getAddressAll(path);
 
+  const chainId: number = getChainId(hre);
   const newAddresses: AddressConfig = { [name]: { [chainId]: address } };
   const updatedAddresses: AddressConfig = _.merge(addresses, newAddresses);
 
@@ -32,22 +48,14 @@ function recordAddress(
   writeFileSync(path, newJson);
 }
 
-export const getUnderlyingTokens = getAddressAll.bind(
-  null,
-  TOKEN_ADDRESSES_PATH
-);
-export const getCTokenAddresses = getAddressAll.bind(
-  null,
-  ZTOKEN_ADDRESSES_PATH
-);
-export const getMainAddresses = getAddressAll.bind(null, MAIN_ADDRESSES_PATH);
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+extendEnvironment((hre: HardhatRuntimeEnvironment) => {
+  hre.getUnderlyingToken = getAddress.bind(null, TOKEN_ADDRESSES_PATH, hre);
+  hre.getCTokenAddress = getAddress.bind(null, ZTOKEN_ADDRESSES_PATH, hre);
+  hre.getMainAddress = getAddress.bind(null, MAIN_ADDRESSES_PATH, hre);
 
-export const recordMainAddress = recordAddress.bind(null, MAIN_ADDRESSES_PATH);
-export const recordTokenAddress = recordAddress.bind(
-  null,
-  TOKEN_ADDRESSES_PATH
-);
-export const recordCTokenAddress = recordAddress.bind(
-  null,
-  ZTOKEN_ADDRESSES_PATH
-);
+  hre.recordMainAddress = recordAddress.bind(null, MAIN_ADDRESSES_PATH, hre);
+  hre.recordTokenAddress = recordAddress.bind(null, TOKEN_ADDRESSES_PATH, hre);
+  hre.recordCTokenAddress = recordAddress.bind(null, ZTOKEN_ADDRESSES_PATH, hre);
+});

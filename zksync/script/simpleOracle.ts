@@ -1,21 +1,17 @@
 import { ethers } from "ethers";
-import { getChainId } from "./utils";
 import deployContract from "./contract";
-import { recordMainAddress } from "./addresses";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { TransactionResponse } from "ethers/providers";
 
 export async function deployTestOracle(
   deployer: Deployer
 ): Promise<ethers.Contract> {
-  const chainId: number = getChainId(deployer.hre);
-
   const priceOracle: ethers.Contract = await deployContract(
     deployer,
     "SimplePriceOracle",
     []
   );
-  recordMainAddress(chainId, "oracle", priceOracle.address);
+  deployer.hre.recordMainAddress("oracle", priceOracle.address);
 
   return priceOracle;
 }

@@ -1,14 +1,9 @@
 import * as ethers from "ethers";
 import { deprecateCToken } from "../script/ctoken";
-import {
-  getMainAddresses,
-  getCTokenAddresses
-} from "../script/addresses";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { task } from "hardhat/config";
-import { getChainId } from "../script/utils";
 import { Wallet } from "zksync-web3";
-import { DeprecateCTokenParams, AddressConfig } from "../script/types";
+import { DeprecateCTokenParams } from "../script/types";
 
 export async function main(
   hre: HardhatRuntimeEnvironment,
@@ -16,18 +11,14 @@ export async function main(
 ): Promise<void> {
   const wallet: Wallet = await hre.getZkWallet();
 
-  const addresses: AddressConfig = getMainAddresses();
-  const chainId: number = getChainId(hre);
-
-  const cTokens: AddressConfig = getCTokenAddresses();
-  const cTokenAddress: string = cTokens[cTokenKey][chainId];
+  const cTokenAddress: string = hre.getCTokenAddress(cTokenKey);
   const cToken: ethers.Contract = await hre.ethers.getContractAt(
     "CToken",
     cTokenAddress,
     wallet
   );
 
-  const comptrollerAddress: string = addresses["comptroller"][chainId];
+  const comptrollerAddress: string = hre.getMainAddress("comptroller");
   const comptroller: ethers.Contract = await hre.ethers.getContractAt(
     "Comptroller",
     comptrollerAddress,

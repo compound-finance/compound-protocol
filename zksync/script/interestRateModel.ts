@@ -1,25 +1,23 @@
 import { ethers } from "ethers";
-import { getChainId } from "./utils";
 import deployContract from "./contract";
-import { recordMainAddress } from "./addresses";
+import { config } from "./config";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
-import { InterestRateArgs } from "./types";
+import {
+  InterestRateArgs,
+  InterestRateCollection,
+  InterestRateConfig
+} from "./types";
 
-export async function deployInterestRate(deployer: Deployer): Promise<ethers.Contract> {
-  const chainId: number = getChainId(deployer.hre);
+export async function deployInterestRate(deployer: Deployer, config: InterestRateConfig): Promise<ethers.Contract> {
+  const { baseRatePerYear, multiplierPerYear, jumpMultiplierPerYear, kink } = config;
 
-  // 5% base rate and 20% + 5% interest at kink and 200% multiplier starting at the kink of 90% utilization
-  const baseRatePerYear: ethers.BigNumber = ethers.utils.parseEther("0.05");
-  const multiplierPerYear: ethers.BigNumber = ethers.utils.parseEther("0.2");
-  const jumpMultiplierPerYear: ethers.BigNumber = ethers.utils.parseEther("2");
-  const kink: ethers.BigNumber = ethers.utils.parseEther("0.9");
   const owner: string = deployer.zkWallet.address;
 
   const interestRateArgs: InterestRateArgs = [
-    baseRatePerYear,
-    multiplierPerYear,
-    jumpMultiplierPerYear,
-    kink,
+    ethers.utils.parseEther(baseRatePerYear),
+    ethers.utils.parseEther(multiplierPerYear),
+    ethers.utils.parseEther(jumpMultiplierPerYear),
+    ethers.utils.parseEther(kink),
     owner
   ];
 
@@ -29,7 +27,21 @@ export async function deployInterestRate(deployer: Deployer): Promise<ethers.Con
     interestRateArgs
   );
 
-  recordMainAddress(chainId, "interest", jumpRate.address);
-
   return jumpRate;
+}
+
+export async function deployInterestRatesAll(deployer: Deployer): Promise<InterestRateCollection> {
+  const interestRates: InterestRateCollection = {};
+
+  // Must complete txs sequentially for correct nonce
+  for (const interestRateConfig of config.interestRateModels) {
+    const interestRate: ethers.Contract = await deployInterestRate(deployer, interestRateConfig);
+
+    const { name } = interestRateConfig;
+    interestRates[name] = interestRate;
+
+    deployer.hre.recordMainAddress(`interest:${name}`, interestRate.address);
+  }
+
+  return interestRates;
 }

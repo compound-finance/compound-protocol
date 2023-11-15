@@ -1,88 +1,45 @@
 import { ethers } from "ethers";
+import { deployCErc20 } from "./cerc20";
+import { deployCEther } from "./cether";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
-import deployContract from "./contract";
-import { getUnderlyingTokens, recordCTokenAddress } from "./addresses";
-import { getChainId } from "./utils";
 import { TransactionResponse } from "ethers/providers";
-import { AddressConfig, CErc20ImmutableConstructorArgs } from "./types";
-
-export async function deployCToken(
-  deployer: Deployer,
-  underlyingAddr: string,
-  comptrollerAddress: string,
-  interestRateModel: string,
-): Promise<ethers.Contract> {
-  const underlying: ethers.Contract = await deployer.hre.ethers.getContractAt(
-    "EIP20Interface",
-    underlyingAddr,
-    deployer.zkWallet
-  );
-
-  const underlyingName: string = await underlying.name();
-  const name: string = `Zoro ${underlyingName}`;
-
-  const underlyingSymbol: string = await underlying.symbol();
-  const symbol: string = `z${underlyingSymbol}`;
-
-  const decimals: number = 8;
-  const underlyingDecimals: number = await underlying.decimals();
-  const initialExchangeRateDecimals: number = underlyingDecimals + 18 - decimals;
-  const initialExchangeRateMantissa: ethers.BigNumber = ethers.utils.parseUnits(
-    "1",
-    initialExchangeRateDecimals
-  );
-
-  const admin: string = deployer.zkWallet.address;
-
-  const cTokenArgs: CErc20ImmutableConstructorArgs = [
-    underlyingAddr,
-    comptrollerAddress,
-    interestRateModel,
-    initialExchangeRateMantissa,
-    name,
-    symbol,
-    decimals,
-    admin
-  ];
-
-  const cToken: ethers.Contract = await deployContract(
-    deployer,
-    "CErc20Immutable",
-    cTokenArgs
-  );
-
-  return cToken;
-}
+import {
+  CTokenCollection,
+  CTokenConfig,
+  InterestRateCollection
+} from "./types";
 
 export async function deployCTokenAll(
   deployer: Deployer,
   comptroller: ethers.Contract,
-  interestRateModel: ethers.Contract
-): Promise<ethers.Contract[]> {
-  const chainId: number = getChainId(deployer.hre);
-
-  const underlyingTokens: AddressConfig = getUnderlyingTokens();
-
-  delete underlyingTokens["eth"];
-
-  const tokensOnChain: string[] = Object.keys(underlyingTokens).filter(
-    (key: string): boolean => underlyingTokens[key][chainId] !== undefined
-  );
-
-  const cTokens: ethers.Contract[] = [];
+  interestRates: InterestRateCollection,
+  cTokenConfigs: CTokenConfig[]
+): Promise<CTokenCollection> {
+  const cTokens: CTokenCollection = {};
 
   // Must complete txs sequentially for correct nonce
-  for (const key of tokensOnChain) {
-    const cToken: ethers.Contract = await deployCToken(
-      deployer,
-      underlyingTokens[key][chainId],
-      comptroller.address,
-      interestRateModel.address
-    );
+  for (const config of cTokenConfigs) {
+    const { underlying, interestRateModel } = config;
+    const underlyingAddress: string = deployer.hre.getUnderlyingToken(underlying);
 
-    recordCTokenAddress(chainId, key, cToken.address);
+    let cToken: ethers.Contract;
 
-    cTokens.push(cToken);
+    if (underlying === "eth") {
+      cToken = await deployCEther(
+        deployer,
+        comptroller.address,
+        interestRates[interestRateModel].address
+      );
+    } else {
+      cToken = await deployCErc20(
+        deployer,
+        underlyingAddress,
+        comptroller.address,
+        interestRates[interestRateModel].address
+      );
+    }
+
+    cTokens[underlying] = cToken;
   }
 
   return cTokens;
@@ -90,20 +47,27 @@ export async function deployCTokenAll(
 
 export async function addCTokenToMarket(
   comptroller: ethers.Contract,
-  ctokenAddress: string
+  cToken: ethers.Contract,
+  config: CTokenConfig
 ): Promise<void> {
-  console.log(`Adding ${ctokenAddress} to comptroller`);
+  console.log(`Adding ${cToken.address} to comptroller`);
 
-  const addMarketTx: TransactionResponse = await comptroller._supportMarket(ctokenAddress);
+  const addMarketTx: TransactionResponse = await comptroller._supportMarket(cToken.address);
   await addMarketTx.wait();
 
+  const collateralFactor: ethers.BigNumber = ethers.utils.parseEther(config.collateralFactor);
+
   // If the ctoken isn't a supported market, it will fail to set the collateral factor
-  const collateralFactor: ethers.BigNumber = ethers.utils.parseEther("0.5");
+  // If the ctoken does not have an oracle price, it will fail to set the collateral factor
   const collateralTx: TransactionResponse = await comptroller._setCollateralFactor(
-    ctokenAddress,
+    cToken.address,
     collateralFactor
   );
   await collateralTx.wait();
+
+  const reserveFactor: ethers.BigNumber = ethers.utils.parseEther(config.reserveFactor);
+  const reserveTx: TransactionResponse = await cToken._setReserveFactor(reserveFactor);
+  await reserveTx.wait();
 }
 
 export async function deprecateCToken(

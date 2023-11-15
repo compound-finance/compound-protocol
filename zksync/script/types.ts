@@ -1,5 +1,32 @@
 import { ethers } from "ethers";
 
+export interface DeployConfig {
+  interestRateModels: InterestRateConfig[];
+  pools: PoolConfig[];
+}
+
+export interface InterestRateConfig {
+  name: string;
+  baseRatePerYear: string;
+  multiplierPerYear: string;
+  jumpMultiplierPerYear: string;
+  kink: string;
+}
+
+export interface PoolConfig {
+  name: string;
+  closeFactor: string;
+  liquidationIncentive: string;
+  markets: CTokenConfig[];
+}
+
+export interface CTokenConfig {
+  underlying: string;
+  interestRateModel: string;
+  collateralFactor: string;
+  reserveFactor: string;
+}
+
 export interface AddressConfig {
   [contract: string]: { [chainId: number]: string };
 }
@@ -21,6 +48,13 @@ export interface VerifyContractParams {
   contractName: string;
   address: string;
 }
+
+export interface ContractCollection {
+  [name: string]: ethers.Contract;
+}
+
+export interface InterestRateCollection extends ContractCollection {}
+export interface CTokenCollection extends ContractCollection {}
 
 export type Erc20ConstructorArgs = [
   initialAmount: ethers.BigNumber,
@@ -60,6 +94,5 @@ export type InterestRateArgs = [
 
 export type DeployReturn = {
   comptroller: ethers.Contract,
-  cEther: ethers.Contract,
-  cTokens: ethers.Contract[]
+  cTokens: CTokenCollection
 };
