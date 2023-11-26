@@ -64,13 +64,13 @@ export async function deployTestInterestRatePool(deployer: Deployer): Promise<vo
   const deployments: DeployReturn[] = await deployCore(deployer, oracleAddress);
 
   for (const i in deployments) {
-    const { comptroller, cTokens } = deployments[i];
+    const { comptroller, cTokens }: DeployReturn = deployments[i];
 
     const markets: CTokenConfig[] = config.pools[i].markets;
 
     // Must complete txs sequentially for correct nonce
     for (const cTokenConfig of markets) {
-      const { underlying } = cTokenConfig;
+      const { underlying }: CTokenConfig = cTokenConfig;
 
       // If price is zero, the comptroller will fail to set the collateral factor
       await setTestOraclePrice(priceOracle, cTokens[underlying].address);

@@ -3,47 +3,48 @@ import { task } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { deployCToken } from "../script/ctoken";
+import { config } from "../script/config";
+import { getCTokenConfig } from "../script/utils";
 import { Wallet } from "zksync-web3";
-import { DeployCTokenParams } from "../script/types";
+import { CTokenConfig, DeployConfig, DeployCTokenParams } from "../script/types";
 
 async function main(
   hre: HardhatRuntimeEnvironment,
-  underlying: string,
-  exchangeRateDecimals: number
+  pool: string,
+  cTokenKey: string,
+  config: DeployConfig
 ): Promise<void> {
   const wallet: Wallet = await hre.getZkWallet();
 
   const deployer: Deployer = new Deployer(hre, wallet);
 
   const comptrollerAddress: string = hre.getMainAddress("comptroller");
-  const interestRateModel: string = hre.getMainAddress("interest");
 
-  const underlyingAddr: string = hre.getUnderlyingToken(underlying);
+
+  const cTokenConfig: CTokenConfig = getCTokenConfig(config, pool, cTokenKey);
+  const interestRateKey: string = `interest:${cTokenConfig.interestRateModel}`;
+  const interestRateAddress: string = hre.getMainAddress(interestRateKey);
 
   const cToken: ethers.Contract = await deployCToken(
     deployer,
-    underlyingAddr,
     comptrollerAddress,
-    interestRateModel,
-    exchangeRateDecimals
+    cTokenConfig.underlying,
+    interestRateAddress
   );
 
-  hre.recordCTokenAddress(underlying, cToken.address);
+  hre.recordCTokenAddress(cTokenConfig.underlying, cToken.address);
 }
 
 task("deployCToken", "Deploy a new CToken")
-.addPositionalParam("underlying", "Token name from tokens.json, e.g. wbtc")
-.addPositionalParam(
-  "exchangeRateDecimals",
-  "Price decimals (18) - CToken decimals (8) + underlying decimals"
-)
+.addOptionalParam("pool", "Isolated pool name from config.ts, e.g. degen", "core")
+.addPositionalParam("cToken", "CToken name from zTokens.json, e.g. wbtc")
 .setAction(
   async (
-    { underlying, exchangeRateDecimals }: DeployCTokenParams,
+    { pool, cToken }: DeployCTokenParams,
     hre: HardhatRuntimeEnvironment
   ) => {
     console.log("Deploying a new ZToken...");
 
-    await main(hre, underlying, exchangeRateDecimals);
+    await main(hre, pool, cToken, config);
   }
 );

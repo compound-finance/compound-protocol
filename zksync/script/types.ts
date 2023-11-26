@@ -31,14 +31,13 @@ export interface AddressConfig {
   [contract: string]: { [chainId: number]: string };
 }
 
-export interface DeployCTokenParams {
-  underlying: string;
-  exchangeRateDecimals: number;
-}
-
-export interface AddCTokenToMarketParams {
+export interface CTokenTaskParams {
+  pool: string;
   cToken: string;
 }
+
+export interface DeployCTokenParams extends CTokenTaskParams {}
+export interface AddCTokenToMarketParams extends CTokenTaskParams {}
 
 export interface DeprecateCTokenParams {
   cToken: string;
