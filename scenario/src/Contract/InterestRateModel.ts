@@ -1,3 +1,4 @@
+
 import {Contract} from '../Contract';
 import {Callable, Sendable} from '../Invokation';
 import {encodedNumber} from '../Encoding';
