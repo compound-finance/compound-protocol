@@ -3,7 +3,7 @@
   "rules": {
     "quotes": ["error", "double"],
     "max-line-length": ["error", 200],
-    "compiler-version": ["error", "^0.8.0"],
+    "compiler-version": ["error", "^0.8.10"],
     "reason-string": ["warn", { "maxLength": 128 }],
     "not-rely-on-block-hash": "off",
     "not-rely-on-time": "off",
