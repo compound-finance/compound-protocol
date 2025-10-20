@@ -285,3 +285,4 @@ For any concerns with the protocol, open an issue or visit us on [Discord](https
 For security concerns, please email [security@compound.finance](mailto:security@compound.finance).
 
 _© Copyright 2020, Compound Labs_
+Excited about this project's DeFi innovation!  #goodfirstissue
