@@ -95,7 +95,7 @@ contract CErc20 is CToken, CErc20Interface {
 
     /**
      * @notice Sender repays a borrow belonging to borrower
-     * @param borrower the account with the debt being payed off
+     * @param borrower the account with the debt being paid off
      * @param repayAmount The amount to repay, or -1 for the full outstanding amount
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
