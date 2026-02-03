@@ -94,7 +94,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
         uint newProposalID = proposalCount;
         Proposal storage newProposal = proposals[newProposalID];
         // This should never happen but add a check in case.
-        require(newProposal.id == 0, "GovernorBravo::propose: ProposalID collsion");
+        require(newProposal.id == 0, "GovernorBravo::propose: ProposalID collision");
         newProposal.id = newProposalID;
         newProposal.proposer = msg.sender;
         newProposal.eta = 0;
