@@ -261,7 +261,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, GovernorBravoE
     }
 
     /**
-      * @notice Internal function that caries out voting logic
+      * @notice Internal function that carries out voting logic
       * @param voter The voter that is casting their vote
       * @param proposalId The id of the proposal to vote on
       * @param support The support value for the vote. 0=against, 1=for, 2=abstain
