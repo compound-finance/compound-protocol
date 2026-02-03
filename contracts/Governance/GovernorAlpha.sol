@@ -153,7 +153,7 @@ contract GovernorAlpha {
         uint proposalId = proposalCount;
         Proposal storage newProposal = proposals[proposalId];
         // This should never happen but add a check in case.
-        require(newProposal.id == 0, "GovernorAlpha::propose: ProposalID collsion");
+        require(newProposal.id == 0, "GovernorAlpha::propose: ProposalID collision");
         newProposal.id = proposalId;
         newProposal.proposer = msg.sender;
         newProposal.eta = 0;
