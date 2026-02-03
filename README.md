@@ -174,7 +174,7 @@ After you deploy, as above, you can run a truffle console with the following com
 
     yarn console -n goerli
 
-This command will start a saddle console conencted to Goerli testnet (see [Saddle README](https://github.com/compound-finance/saddle#cli)):
+This command will start a saddle console connected to Goerli testnet (see [Saddle README](https://github.com/compound-finance/saddle#cli)):
 
 ```javascript
     Using network goerli https://goerli.infura.io/v3/e1a5d4d2c06a4e81945fca56d0d5d8ea
