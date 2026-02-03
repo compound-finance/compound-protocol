@@ -317,7 +317,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
      * @dev Will fail unless called by another cToken during the process of liquidation.
-     *  Its absolutely critical to use msg.sender as the borrowed cToken and not a parameter.
+     *  It's absolutely critical to use msg.sender as the borrowed cToken and not a parameter.
      * @param liquidator The account receiving seized collateral
      * @param borrower The account having collateral seized
      * @param seizeTokens The number of cTokens to seize
