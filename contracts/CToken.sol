@@ -778,7 +778,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
      * @dev Will fail unless called by another cToken during the process of liquidation.
-     *  Its absolutely critical to use msg.sender as the borrowed cToken and not a parameter.
+     *  It's absolutely critical to use msg.sender as the borrowed cToken and not a parameter.
      * @param liquidator The account receiving seized collateral
      * @param borrower The account having collateral seized
      * @param seizeTokens The number of cTokens to seize
@@ -793,7 +793,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
      * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another CToken.
-     *  Its absolutely critical to use msg.sender as the seizer cToken and not a parameter.
+     *  It's absolutely critical to use msg.sender as the seizer cToken and not a parameter.
      * @param seizerToken The contract seizing the collateral (i.e. borrowed cToken)
      * @param liquidator The account receiving seized collateral
      * @param borrower The account having collateral seized
