@@ -34,7 +34,7 @@
 * `CToken <CTokenEvent>` - Runs given CToken event
   * E.g. `CToken cZRX Mint 5e18`
 * `Erc20 <Erc20Event>` - Runs given Erc20 event
-  * E.g. `Erc20 ZRX Facuet Geoff 5e18`
+  * E.g. `Erc20 ZRX Faucet Geoff 5e18`
 * `InterestRateModel ...event` - Runs given interest rate model event
   * E.g. `InterestRateModel Deployed (Fixed 0.5)`
 * `PriceOracle <PriceOracleEvent>` - Runs given Price Oracle event
@@ -90,7 +90,7 @@
 * `Erc20 <Erc20> Approve <User> <Address> <Amount>` - Adds an allowance between user and address
   * E.g. `Erc20 ZRX Approve Geoff cZRX 1.0e18`
 * `Erc20 <Erc20> Faucet <Address> <Amount>` - Adds an arbitrary balance to given user
-  * E.g. `Erc20 ZRX Facuet Geoff 1.0e18`
+  * E.g. `Erc20 ZRX Faucet Geoff 1.0e18`
 
 ## Price Oracle Events
 
