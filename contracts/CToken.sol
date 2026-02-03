@@ -624,7 +624,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
 
     /**
      * @notice Sender repays a borrow belonging to borrower
-     * @param borrower the account with the debt being payed off
+     * @param borrower the account with the debt being paid off
      * @param repayAmount The amount to repay, or -1 for the full outstanding amount
      */
     function repayBorrowBehalfInternal(address borrower, uint repayAmount) internal nonReentrant {
@@ -636,7 +636,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     /**
      * @notice Borrows are repaid by another user (possibly the borrower).
      * @param payer the account paying off the borrow
-     * @param borrower the account with the debt being payed off
+     * @param borrower the account with the debt being paid off
      * @param repayAmount the amount of underlying tokens being returned, or -1 for the full outstanding amount
      * @return (uint) the actual repayment amount.
      */
