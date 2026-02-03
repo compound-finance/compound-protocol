@@ -1275,7 +1275,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         uint borrowIndex = borrowState.index;
         uint borrowerIndex = compBorrowerIndex[cToken][borrower];
 
-        // Update borrowers's index to the current index since we are distributing accrued COMP
+        // Update borrower's index to the current index since we are distributing accrued COMP
         compBorrowerIndex[cToken][borrower] = borrowIndex;
 
         if (borrowerIndex == 0 && borrowIndex >= compInitialIndex) {
