@@ -93,7 +93,7 @@ contract CompoundLens {
             compBorrowSpeed = abi.decode(compBorrowSpeedReturnData, (uint));
         }
 
-        // If the split comp speeds call doesn't work, try the  oldest non-spit version.
+        // If the split comp speeds call doesn't work, try the oldest non-split version.
         if (!compSupplySpeedSuccess || !compBorrowSpeedSuccess) {
             (bool compSpeedSuccess, bytes memory compSpeedReturnData) =
             address(comptroller).call(
