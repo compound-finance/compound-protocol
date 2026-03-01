@@ -17,7 +17,7 @@ export async function getInterestRateModelAddress(world: World, interestRateMode
 }
 
 export async function getBorrowRate(world: World, interestRateModel: InterestRateModel, cash: NumberV, borrows: NumberV, reserves: NumberV): Promise<NumberV> {
-  return new NumberV(await interestRateModel.methods.getBorrowRate(cash.encode(), borrows.encode(), reserves.encode()).call(), 1.0e18 / 2102400);
+  return new NumberV(await interestRateModel.methods.getBorrowRate(cash.encode(), borrows.encode(), reserves.encode()).call());
 }
 
 export function interestRateModelFetchers() {
@@ -37,11 +37,8 @@ export function interestRateModelFetchers() {
     ),
 
     new Fetcher<{interestRateModel: InterestRateModel, cash: NumberV, borrows: NumberV, reserves: NumberV}, NumberV>(`
-        #### BorrowRate
-
-        * "<InterestRateModel> BorrowRate" - Gets the borrow rate of the interest rate model
-          * E.g. "InterestRateModel MyInterestRateModel BorrowRate 0 10 0"
-      `,
+Assert Equal (Erc20 Sushi TokenBalance cSUSHI) (0)
+`,
       "BorrowRate",
       [
         new Arg("interestRateModel", getInterestRateModel),

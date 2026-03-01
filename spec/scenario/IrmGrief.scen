@@ -1,0 +1,32 @@
+
+Only "griefs new market"
+    NewComptroller price:1.0
+    InterestRateModel Deploy JumpRateModelV2 MyInterestRateModel 0 0.04 1.09 0.8 Geoff
+    NewCToken ZRX cZRX
+    NewCToken BAT cBAT
+    CToken cBAT SetInterestRateModel (InterestRateModel MyInterestRateModel Address)
+    Support cZRX collateralFactor:0.5
+    Support cBAT collateralFactor:0.5
+    Prep Geoff 50e30 ZRX cZRX
+    Mint Geoff 50e30 cZRX
+    EnterMarkets Geoff cZRX
+    From Geoff (Erc20 BAT Approve (Address cBAT) UInt256Max)
+    Give Geoff 1e30 BAT
+    Mint Geoff 10 cBAT
+    From Geoff (CToken cBAT AddReserves 5e25)
+    Borrow Geoff 5e25 cBAT
+    Borrow Geoff 1 cBAT
+    Read (CToken cBAT InterestRate) 
+    Read (CToken cBAT Cash)
+    Read (CToken cBAT TotalBorrows) 
+    Read (CToken cBAT Reserves) 
+    AccrueInterest cBAT -- Note: we have to accrue interest
+    AdvanceBlocks 1000
+    Read (CToken cBAT InterestRate) 
+    Read (CToken cBAT InterestRate) 
+    Print "geofs bal"
+    Read (cToken cBAT BorrowBalance Geoff)
+    Print "geofs bal"
+    Borrow Geoff 1 cBAT
+    Read (CToken cBAT InterestRate) 
+    Print "borrowsed last dollar bal"

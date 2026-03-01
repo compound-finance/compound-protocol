@@ -1,0 +1,37 @@
+#!/usr/bin/env -S yarn repl -s
+
+PrintTransactionLogs
+
+-- Token holder addresses for mocking
+Alias Whale "0x8aceab8167c80cb8b3de7fa6228b889bb1130ee8"
+Alias SushiWhale "0xf977814e90da44bfa03b6295a0616a897441acec"
+Alias CUSDCHolder "0xF977814e90dA44bFA03b6295A0616a897441aceC" -- Binance 8
+
+
+-- Fork the block prior to proposal 62 executing
+Web3Fork "https://mainnet-eth.compound.finance/@13500000" (Whale CUSDCHolder)
+UseConfigs mainnet
+
+Assert Equal (Erc20 Sushi TokenBalance cSUSHI) (66085116375758027942476)
+Assert Equal (CToken cSUSHI Reserves) (142777559733511352607)
+Assert Equal (CToken cSUSHI TotalBorrows) (1787605503602609272936)
+
+-- cmon
+From SushiWhale (Erc20 Sushi Approve (Address cSUSHI) UInt256Max)
+From SushiWhale (CToken cSUSHI AddReserves 67729944319627125862804)
+
+--- need total borrows + new borrows = reserves + new reserves
+From Whale (Comptroller EnterMarkets (cETH))
+--- borrow everything to existing reserves such that borrows - reserves = 1
+From Whale (CToken cSUSHI Borrow 133815060695385153805280)
+
+--- add to existing reserves such that old borrows + new borrow  = reserves + 1
+--- 1787605503602609272936 + 66085116375758027942476 = 142777559733511352607 + x + 1
+
+Assert Equal (Erc20 Sushi TokenBalance cSUSHI) (0)
+Assert Equal (CToken cSUSHI TotalBorrows) (135602699567695135325686)
+Assert Equal (CToken cSUSHI Reserves) (135602699567695135325685)
+Assert Equal (CToken cSUSHI InterestRate) (66085116375758027942476)
+From Whale (CToken cSUSHI RepayBorrow 66085116375758027942476)
+
+Print "Done"
