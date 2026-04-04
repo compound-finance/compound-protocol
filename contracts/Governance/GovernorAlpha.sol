@@ -247,7 +247,7 @@ contract GovernorAlpha {
     }
 
     function castVote(uint proposalId, bool support) public {
-        return _castVote(msg.sender, proposalId, support);
+        _castVote(msg.sender, proposalId, support);
     }
 
     function castVoteBySig(uint proposalId, bool support, uint8 v, bytes32 r, bytes32 s) public {
@@ -256,7 +256,7 @@ contract GovernorAlpha {
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "GovernorAlpha::castVoteBySig: invalid signature");
-        return _castVote(signatory, proposalId, support);
+        _castVote(signatory, proposalId, support);
     }
 
     function _castVote(address voter, uint proposalId, bool support) internal {
