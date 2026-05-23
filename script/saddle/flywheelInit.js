@@ -118,7 +118,7 @@ let writeFixture = async (data) => {
 
 // chunk([1,2,3,4,5], 5) => [[1,2], [2,3], [5]]
 let getChunks = (src, chunkSize) => {
-	assert(chunkSize > 0, 'chunkSize cant be 0');
+	assert(chunkSize > 0, 'chunkSize can't be 0');
 	let first = src.slice(0, chunkSize);
 	let rest = src.slice(chunkSize);
 	if (rest.length == 0) return [first];

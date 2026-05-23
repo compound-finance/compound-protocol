@@ -304,7 +304,7 @@ describe('Comptroller', () => {
     // show deprecated markets can be liquidated even if healthy
     expect(await send(comptroller, 'liquidateBorrowAllowed', [cTokenBorrow._address, cTokenCollat._address, liquidator, borrower, borrowAmount])).toSucceed();
 
-    // even if deprecated, cant over repay
+    // even if deprecated, can't over repay
     await expect(send(comptroller, 'liquidateBorrowAllowed', [cTokenBorrow._address, cTokenCollat._address, liquidator, borrower, borrowAmount * 2])).rejects.toRevert('revert Can not repay more than the total borrow');
   });
 })
