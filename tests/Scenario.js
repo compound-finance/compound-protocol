@@ -7,6 +7,7 @@ const {ConsolePrinter} = require('../scenario/.tsbuilt/Printer.js');
 
 const fs = require('fs');
 const path = require('path');
+const _ = require('lodash');
 
 const basePath = process.env.proj_root || path.join(process.cwd());
 const baseScenarioPath = path.join(basePath, 'spec', 'scenario');
@@ -62,8 +63,9 @@ function run(file) {
   const network = process.env['NETWORK'] || process.env['network'] || 'test';
 
   if (scenarioEnv) {
-    console.log(`running scenarios matching: /${scenarioEnv}/i`);
-    scenarioFilter = new RegExp(scenarioEnv, 'i');
+    const safeScenarioEnv = _.escapeRegExp(scenarioEnv);
+    console.log(`running scenarios matching: /${safeScenarioEnv}/i`);
+    scenarioFilter = new RegExp(safeScenarioEnv, 'i');
   }
 
   describe('ScenarioTest', () => {

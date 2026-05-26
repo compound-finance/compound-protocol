@@ -4,7 +4,9 @@
   "description": "The Compound Money Market",
   "main": "index.js",
   "scripts": {
-    "build": "./script/webpack"
+    "build": "./script/webpack",
+    "prepare": "yarn run snyk-protect",
+    "snyk-protect": "snyk-protect"
   },
   "repository": "git@github.com:compound-finance/money-market.git",
   "author": "Compound Finance",
@@ -22,13 +24,15 @@
   "dependencies": {
     "bignumber.js": "9.0.0",
     "eth-saddle": "^0.1.25",
-    "ethers": "^5.0.8",
+    "ethers": "^6.0.0",
     "immutable": "^4.0.0-rc.12",
     "truffle-flattener": "^1.4.4",
-    "web3": "^1.2.11"
+    "web3": "^4.0.1",
+    "@snyk/protect": "latest"
   },
   "resolutions": {
     "scrypt.js": "https://registry.npmjs.org/@compound-finance/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz",
     "**/ganache-core": "github:compound-finance/ganache-core.git#jflatow/unbreak-fork"
-  }
+  },
+  "snyk": true
 }
