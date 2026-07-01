@@ -14,7 +14,7 @@ contract DAIInterestRateModelV3 is JumpRateModelV2 {
     uint256 private constant BASE = 1e18;
     uint256 private constant RAY_BASE = 1e27;
     uint256 private constant RAY_TO_BASE_SCALE = 1e9;
-    uint256 private constant SECONDS_PER_BLOCK = 15;
+    uint256 private constant SECONDS_PER_BLOCK = 12; // post-Merge Ethereum target
 
     /**
      * @notice The additional margin per block separating the base borrow rate from the roof.
