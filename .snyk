@@ -1,0 +1,196 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.1
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-LODASH-567746:
+    - eth-saddle > @0x/subproviders > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: eth-saddle > @0x/subproviders > lodash
+    - eth-saddle > @compound-finance/sol-coverage > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: eth-saddle > @compound-finance/sol-coverage > lodash
+    - eth-saddle > @0x/subproviders > @0x/assert > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: eth-saddle > @0x/subproviders > @0x/assert > lodash
+    - eth-saddle > @0x/subproviders > @0x/utils > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: eth-saddle > @0x/subproviders > @0x/utils > lodash
+    - eth-saddle > @0x/subproviders > @0x/web3-wrapper > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: eth-saddle > @0x/subproviders > @0x/web3-wrapper > lodash
+    - eth-saddle > @0x/subproviders > @ledgerhq/hw-transport-node-hid > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @0x/subproviders > @ledgerhq/hw-transport-node-hid >
+          lodash
+    - eth-saddle > @compound-finance/sol-coverage > @0x/subproviders > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @compound-finance/sol-coverage > @0x/subproviders >
+          lodash
+    - eth-saddle > @compound-finance/sol-coverage > @compound-finance/sol-tracing-utils > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @compound-finance/sol-coverage >
+          @compound-finance/sol-tracing-utils > lodash
+    - eth-saddle > @0x/subproviders > @0x/assert > @0x/utils > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: eth-saddle > @0x/subproviders > @0x/assert > @0x/utils > lodash
+    - eth-saddle > @0x/subproviders > ganache-core > async > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: eth-saddle > @0x/subproviders > ganache-core > async > lodash
+    - eth-saddle > @compound-finance/sol-coverage > @0x/subproviders > @0x/assert > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @compound-finance/sol-coverage > @0x/subproviders >
+          @0x/assert > lodash
+    - eth-saddle > @compound-finance/sol-coverage > @0x/subproviders > @0x/web3-wrapper > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @compound-finance/sol-coverage > @0x/subproviders >
+          @0x/web3-wrapper > lodash
+    - eth-saddle > @compound-finance/sol-coverage > @compound-finance/sol-tracing-utils > @0x/dev-utils > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @compound-finance/sol-coverage >
+          @compound-finance/sol-tracing-utils > @0x/dev-utils > lodash
+    - eth-saddle > @compound-finance/sol-coverage > @compound-finance/sol-tracing-utils > @0x/sol-compiler > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @compound-finance/sol-coverage >
+          @compound-finance/sol-tracing-utils > @0x/sol-compiler > lodash
+    - eth-saddle > @0x/subproviders > ganache-core > ethereumjs-block > async > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @0x/subproviders > ganache-core > ethereumjs-block >
+          async > lodash
+    - eth-saddle > @compound-finance/sol-coverage > @0x/subproviders > @0x/assert > @0x/utils > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @compound-finance/sol-coverage > @0x/subproviders >
+          @0x/assert > @0x/utils > lodash
+    - eth-saddle > @compound-finance/sol-coverage > @compound-finance/sol-tracing-utils > @0x/sol-compiler > @0x/sol-resolver > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @compound-finance/sol-coverage >
+          @compound-finance/sol-tracing-utils > @0x/sol-compiler >
+          @0x/sol-resolver > lodash
+    - eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine > eth-block-tracker > json-rpc-engine > babel-preset-env > babel-plugin-transform-es2015-block-scoping > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine >
+          eth-block-tracker > json-rpc-engine > babel-preset-env >
+          babel-plugin-transform-es2015-block-scoping > lodash
+    - eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine > eth-block-tracker > json-rpc-engine > babelify > babel-core > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine >
+          eth-block-tracker > json-rpc-engine > babelify > babel-core > lodash
+    - eth-saddle > jest > jest-cli > @jest/core > @jest/reporters > @jest/environment > @jest/transform > @babel/core > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > jest > jest-cli > @jest/core > @jest/reporters >
+          @jest/environment > @jest/transform > @babel/core > lodash
+    - eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine > eth-block-tracker > json-rpc-engine > babel-preset-env > babel-plugin-transform-es2015-classes > babel-helper-define-map > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine >
+          eth-block-tracker > json-rpc-engine > babel-preset-env >
+          babel-plugin-transform-es2015-classes > babel-helper-define-map >
+          lodash
+    - eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine > eth-block-tracker > json-rpc-engine > babel-preset-env > babel-plugin-transform-es2015-sticky-regex > babel-helper-regex > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine >
+          eth-block-tracker > json-rpc-engine > babel-preset-env >
+          babel-plugin-transform-es2015-sticky-regex > babel-helper-regex >
+          lodash
+    - eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine > eth-block-tracker > json-rpc-engine > babelify > babel-core > babel-generator > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine >
+          eth-block-tracker > json-rpc-engine > babelify > babel-core >
+          babel-generator > lodash
+    - eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine > eth-block-tracker > json-rpc-engine > babelify > babel-core > babel-register > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine >
+          eth-block-tracker > json-rpc-engine > babelify > babel-core >
+          babel-register > lodash
+    - eth-saddle > jest > jest-cli > @jest/core > @jest/reporters > @jest/environment > @jest/transform > @babel/core > @babel/generator > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > jest > jest-cli > @jest/core > @jest/reporters >
+          @jest/environment > @jest/transform > @babel/core > @babel/generator >
+          lodash
+    - eth-saddle > jest > jest-cli > @jest/core > @jest/reporters > @jest/environment > @jest/transform > @babel/core > @babel/generator > @babel/types > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > jest > jest-cli > @jest/core > @jest/reporters >
+          @jest/environment > @jest/transform > @babel/core > @babel/generator >
+          @babel/types > lodash
+    - eth-saddle > jest > jest-cli > @jest/core > @jest/reporters > @jest/environment > @jest/transform > @babel/core > @babel/helpers > @babel/traverse > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > jest > jest-cli > @jest/core > @jest/reporters >
+          @jest/environment > @jest/transform > @babel/core > @babel/helpers >
+          @babel/traverse > lodash
+    - eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine > eth-block-tracker > json-rpc-engine > babel-preset-env > babel-plugin-transform-async-to-generator > babel-helper-remap-async-to-generator > babel-helper-function-name > babel-template > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine >
+          eth-block-tracker > json-rpc-engine > babel-preset-env >
+          babel-plugin-transform-async-to-generator >
+          babel-helper-remap-async-to-generator > babel-helper-function-name >
+          babel-template > lodash
+    - eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine > eth-block-tracker > json-rpc-engine > babel-preset-env > babel-plugin-transform-async-to-generator > babel-helper-remap-async-to-generator > babel-helper-function-name > babel-helper-get-function-arity > babel-types > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine >
+          eth-block-tracker > json-rpc-engine > babel-preset-env >
+          babel-plugin-transform-async-to-generator >
+          babel-helper-remap-async-to-generator > babel-helper-function-name >
+          babel-helper-get-function-arity > babel-types > lodash
+    - eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine > eth-block-tracker > json-rpc-engine > babel-preset-env > babel-plugin-transform-async-to-generator > babel-helper-remap-async-to-generator > babel-helper-function-name > babel-template > babel-traverse > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          eth-saddle > @0x/subproviders > ganache-core > web3-provider-engine >
+          eth-block-tracker > json-rpc-engine > babel-preset-env >
+          babel-plugin-transform-async-to-generator >
+          babel-helper-remap-async-to-generator > babel-helper-function-name >
+          babel-template > babel-traverse > lodash
+    - eth-saddle > @0x/subproviders > ganache-core > lodash:
+        patched: '2025-03-08T23:32:45.853Z'
+        id: SNYK-JS-LODASH-567746
+        path: eth-saddle > @0x/subproviders > ganache-core > lodash

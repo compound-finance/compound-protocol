@@ -7,6 +7,7 @@ const {ConsolePrinter} = require('../scenario/.tsbuilt/Printer.js');
 
 const fs = require('fs');
 const path = require('path');
+const _ = require('lodash');
 
 const basePath = process.env.proj_root || path.join(process.cwd());
 const baseScenarioPath = path.join(basePath, 'spec', 'scenario');

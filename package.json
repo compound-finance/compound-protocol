@@ -14,7 +14,9 @@
     "report": "npx run ./script/saddle/gasReport.js",
     "test": "./script/test",
     "test:prepare": "NO_RUN=true ./script/test",
-    "checksize": "npx run ./script/saddle/comptrollerSize.js"
+    "checksize": "npx run ./script/saddle/comptrollerSize.js",
+    "prepare": "yarn run snyk-protect",
+    "snyk-protect": "snyk-protect"
   },
   "repository": "git@github.com:compound-finance/compound-protocol.git",
   "author": "Compound Finance",
@@ -29,10 +31,13 @@
   },
   "dependencies": {
     "@solidity-parser/parser": "^0.13.2",
-    "eth-saddle": "^0.1.25"
+    "eth-saddle": "^0.1.25",
+    "lodash": "^4.17.21",
+    "@snyk/protect": "^1.0.0"
   },
   "resolutions": {
     "scrypt.js": "https://registry.npmjs.org/@compound-finance/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz",
     "**/ganache-core": "github:compound-finance/ganache-core.git#jflatow/unbreak-fork"
-  }
+  },
+  "snyk": true
 }
